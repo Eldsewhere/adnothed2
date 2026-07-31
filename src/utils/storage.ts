@@ -121,27 +121,27 @@ async function chooseExistingStateFile(
   suggestedName: string = DEFAULT_FILE_NAME,
 ): Promise<FileSystemFileHandle | null> {
   const openPicker = getShowOpenFilePicker();
-  if (openPicker) {
-    try {
-      const handles = await openPicker({
-        multiple: false,
-        types: [
-          {
-            description: "Adnothed state file",
-            accept: {
-              "application/json": [".json"],
-            },
-          },
-        ],
-        excludeAcceptAllOption: true,
-      });
-      return handles[0] ?? null;
-    } catch {
-      // ignore and fall back to save picker
-    }
+  if (!openPicker) {
+    return null;
   }
 
-  return await chooseStateFile(suggestedName);
+  try {
+    const handles = await openPicker({
+      multiple: false,
+      types: [
+        {
+          description: "Adnothed state file",
+          accept: {
+            "application/json": [".json"],
+          },
+        },
+      ],
+      excludeAcceptAllOption: true,
+    });
+    return handles[0] ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function openPersistedStateFile(
