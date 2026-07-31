@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
@@ -39,7 +39,7 @@ type ItemListProps = {
   onToggleSelect: (id: string) => void;
 };
 
-const ROW_HEIGHT = 56;
+const ROW_HEIGHT = 80;
 const OVERSCAN = 6;
 const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
 
@@ -63,10 +63,15 @@ const ItemList = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
 
-  const categoriesById = new Map(
-    categories.map((category) => [category.id, category]),
+  const categoriesById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
   );
-  const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
+
+  const sortedItems = useMemo(
+    () => [...items].sort((a, b) => b.createdAt - a.createdAt),
+    [items],
+  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -105,53 +110,60 @@ const ItemList = ({
     closeMenu();
   };
 
-  const filteredItems = sortedItems.filter((item) => {
-    if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-      if (item.categoryId !== null) {
-        return false;
-      }
-    } else if (filters.categoryId && item.categoryId !== filters.categoryId) {
-      return false;
-    }
-    if (
-      filters.text &&
-      !item.text.toLowerCase().includes(filters.text.toLowerCase())
-    ) {
-      return false;
-    }
-    if (!filters.endDate) {
-      if (
-        filters.date &&
-        dateRegex.test(filters.date) &&
-        !formatDate(item.createdAt).startsWith(filters.date.trim())
-      ) {
-        return false;
-      }
-    } else {
-      if (
-        filters.date &&
-        dateRegex.test(filters.date) &&
-        filters.endDate &&
-        dateRegex.test(filters.endDate) &&
-        filters.date.length === filters.endDate.length &&
-        !(
-          formatDate(item.createdAt).substring(0, filters.date.length) >=
-            filters.date.trim() &&
-          formatDate(item.createdAt).substring(0, filters.endDate.length) <=
-            filters.endDate.trim()
-        )
-      ) {
-        return false;
-      }
-    }
-    if (filters.hasUrl && !containsUrl(item.text)) {
-      return false;
-    }
-    if (filters.hasNumber && !isOnlyNumbers(item.text)) {
-      return false;
-    }
-    return true;
-  });
+  const filteredItems = useMemo(
+    () =>
+      sortedItems.filter((item) => {
+        if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          filters.categoryId &&
+          item.categoryId !== filters.categoryId
+        ) {
+          return false;
+        }
+        if (
+          filters.text &&
+          !item.text.toLowerCase().includes(filters.text.toLowerCase())
+        ) {
+          return false;
+        }
+        if (!filters.endDate) {
+          if (
+            filters.date &&
+            dateRegex.test(filters.date) &&
+            !formatDate(item.createdAt).startsWith(filters.date.trim())
+          ) {
+            return false;
+          }
+        } else {
+          if (
+            filters.date &&
+            dateRegex.test(filters.date) &&
+            filters.endDate &&
+            dateRegex.test(filters.endDate) &&
+            filters.date.length === filters.endDate.length &&
+            !(
+              formatDate(item.createdAt).substring(0, filters.date.length) >=
+                filters.date.trim() &&
+              formatDate(item.createdAt).substring(0, filters.endDate.length) <=
+                filters.endDate.trim()
+            )
+          ) {
+            return false;
+          }
+        }
+        if (filters.hasUrl && !containsUrl(item.text)) {
+          return false;
+        }
+        if (filters.hasNumber && !isOnlyNumbers(item.text)) {
+          return false;
+        }
+        return true;
+      }),
+    [sortedItems, filters],
+  );
 
   const totalHeight = filteredItems.length * ROW_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
@@ -233,8 +245,11 @@ const ItemList = ({
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
                     <Typography
                       component="div"
-                      noWrap
-                      sx={{ textAlign: "left" }}
+                      sx={{
+                        textAlign: "left",
+                        whiteSpace: "pre-wrap",
+                        wordBreak: "break-word",
+                      }}
                     >
                       {splitTextByUrls(item.text).map((part, partIndex) =>
                         part.isUrl ? (
@@ -247,6 +262,7 @@ const ItemList = ({
                             sx={{
                               color: "info.main",
                               textDecoration: "underline",
+                              wordBreak: "break-word",
                             }}
                           >
                             {part.value}
@@ -261,7 +277,7 @@ const ItemList = ({
                       color="text.secondary"
                       sx={{ textAlign: "left", display: "block" }}
                     >
-                      {formatTimestamp(item.createdAt)}
+                      {formatTimestamp(item.createdAt * 1000)}
                     </Typography>
                   </Box>
                   <Box sx={{ flexShrink: 0 }}>

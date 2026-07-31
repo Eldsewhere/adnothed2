@@ -13,12 +13,6 @@ type PersistedState = {
   items: Item[];
 };
 
-export const STORAGE_KEY = "adnothed:state";
-const DB_NAME = "adnothed-state-db";
-const DB_VERSION = 1;
-const STATE_STORE = "state";
-const HANDLE_STORE = "handles";
-const HANDLE_KEY = "state-file-handle";
 export const DEFAULT_FILE_NAME = "adnothed-state.json";
 
 const emptyPersistedState: PersistedState = { categories: [], items: [] };
@@ -26,6 +20,8 @@ const emptyAppState: { categories: Category[]; items: Item[] } = {
   categories: [],
   items: [],
 };
+
+let currentFileHandle: FileSystemFileHandle | null = null;
 
 type FileSystemFileHandle = {
   name: string;
@@ -79,139 +75,17 @@ function isFileSystemAccessSupported(): boolean {
   return !!getShowSaveFilePicker() || !!getShowOpenFilePicker();
 }
 
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(STATE_STORE)) {
-        db.createObjectStore(STATE_STORE);
-      }
-      if (!db.objectStoreNames.contains(HANDLE_STORE)) {
-        db.createObjectStore(HANDLE_STORE);
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-    request.onblocked = () => reject(new Error("IndexedDB open blocked"));
-  });
+function setCurrentFileHandle(handle: FileSystemFileHandle) {
+  currentFileHandle = handle;
 }
 
-async function readStateFromIdb(): Promise<PersistedState> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(STATE_STORE, "readonly");
-    const store = tx.objectStore(STATE_STORE);
-    return await new Promise((resolve) => {
-      const request = store.get(STORAGE_KEY);
-      request.onsuccess = () => {
-        const raw = request.result as string | null;
-        if (!raw) {
-          resolve(emptyPersistedState);
-          return;
-        }
-        try {
-          const parsed = JSON.parse(raw) as Partial<PersistedState>;
-          resolve({
-            categories: parsed.categories ?? [],
-            items: parsed.items ?? [],
-          });
-        } catch {
-          resolve(emptyPersistedState);
-        }
-      };
-      request.onerror = () => resolve(emptyPersistedState);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function writeStateToIdb(state: PersistedState): Promise<void> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(STATE_STORE, "readwrite");
-    const store = tx.objectStore(STATE_STORE);
-    store.put(JSON.stringify(state), STORAGE_KEY);
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve(undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function deleteStateFromIdb(): Promise<void> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(STATE_STORE, "readwrite");
-    const store = tx.objectStore(STATE_STORE);
-    store.delete(STORAGE_KEY);
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve(undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function getStoredHandle(): Promise<FileSystemFileHandle | null> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(HANDLE_STORE, "readonly");
-    const store = tx.objectStore(HANDLE_STORE);
-    return await new Promise((resolve) => {
-      const request = store.get(HANDLE_KEY);
-      request.onsuccess = () => resolve(request.result ?? null);
-      request.onerror = () => resolve(null);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function storeHandle(handle: FileSystemFileHandle): Promise<void> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(HANDLE_STORE, "readwrite");
-    const store = tx.objectStore(HANDLE_STORE);
-    store.put(handle, HANDLE_KEY);
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve(undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
-}
-
-async function deleteStoredHandle(): Promise<void> {
-  const db = await openDb();
-  try {
-    const tx = db.transaction(HANDLE_STORE, "readwrite");
-    const store = tx.objectStore(HANDLE_STORE);
-    store.delete(HANDLE_KEY);
-    await new Promise((resolve, reject) => {
-      tx.oncomplete = () => resolve(undefined);
-      tx.onerror = () => reject(tx.error);
-      tx.onabort = () => reject(tx.error);
-    });
-  } finally {
-    db.close();
-  }
+function getCurrentFileHandle(): FileSystemFileHandle | null {
+  return currentFileHandle;
 }
 
 export async function getPersistedFileName(): Promise<string> {
   try {
-    const handle = await getStoredHandle();
-    return handle?.name ?? DEFAULT_FILE_NAME;
+    return getCurrentFileHandle()?.name ?? DEFAULT_FILE_NAME;
   } catch {
     return DEFAULT_FILE_NAME;
   }
@@ -239,6 +113,84 @@ async function chooseStateFile(
       excludeAcceptAllOption: true,
     });
   } catch {
+    return null;
+  }
+}
+
+async function chooseExistingStateFile(
+  suggestedName: string = DEFAULT_FILE_NAME,
+): Promise<FileSystemFileHandle | null> {
+  const openPicker = getShowOpenFilePicker();
+  if (openPicker) {
+    try {
+      const handles = await openPicker({
+        multiple: false,
+        types: [
+          {
+            description: "Adnothed state file",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+      });
+      return handles[0] ?? null;
+    } catch {
+      // ignore and fall back to save picker
+    }
+  }
+
+  return await chooseStateFile(suggestedName);
+}
+
+export async function openPersistedStateFile(
+  suggestedFileName: string = DEFAULT_FILE_NAME,
+): Promise<{
+  categories: Category[];
+  items: Item[];
+  fileName: string;
+} | null> {
+  if (!isFileSystemAccessSupported()) {
+    return null;
+  }
+
+  const handle = await chooseExistingStateFile(suggestedFileName);
+  if (!handle) {
+    return null;
+  }
+
+  setCurrentFileHandle(handle);
+
+  const file = await handle.getFile();
+  const raw = await file.text();
+  const state = deserializeState(parseState(raw));
+  return { ...state, fileName: handle.name };
+}
+
+export async function createPersistedStateFile(
+  suggestedFileName: string = DEFAULT_FILE_NAME,
+): Promise<{ fileName: string } | null> {
+  if (!isFileSystemAccessSupported()) {
+    return null;
+  }
+
+  const handle = await chooseStateFile(
+    suggestedFileName.trim() || DEFAULT_FILE_NAME,
+  );
+  if (!handle) {
+    return null;
+  }
+
+  setCurrentFileHandle(handle);
+
+  try {
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(emptyPersistedState, null, 2));
+    await writable.close();
+    return { fileName: handle.name };
+  } catch {
+    currentFileHandle = null;
     return null;
   }
 }
@@ -305,45 +257,31 @@ function parseState(raw: string | null): PersistedState {
   }
 }
 
-export async function loadPersistedState(
-  suggestedFileName: string = DEFAULT_FILE_NAME,
-): Promise<{
+export function hasPersistedStateFile(): boolean {
+  return !!getCurrentFileHandle();
+}
+
+export async function loadPersistedState(): Promise<{
   categories: Category[];
   items: Item[];
+  fileName: string;
 }> {
   try {
-    if (isFileSystemAccessSupported()) {
-      let handle = await getStoredHandle();
-      if (handle && handle.name !== suggestedFileName) {
-        await deleteStoredHandle();
-        handle = null;
-      }
-
-      const selectedHandle =
-        handle ?? (await chooseStateFile(suggestedFileName));
-      if (selectedHandle) {
-        if (!handle) {
-          await storeHandle(selectedHandle);
-        }
-        try {
-          const file = await selectedHandle.getFile();
-          const raw = await file.text();
-          return deserializeState(parseState(raw));
-        } catch {
-          await deleteStoredHandle();
-          // fall through to fallback storage
-        }
-      }
+    if (!isFileSystemAccessSupported()) {
+      return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
     }
 
-    const idbState = await readStateFromIdb();
-    if (idbState.categories.length || idbState.items.length) {
-      return deserializeState(idbState);
+    const handle = getCurrentFileHandle();
+    if (!handle) {
+      return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
     }
 
-    return deserializeState(parseState(localStorage.getItem(STORAGE_KEY)));
+    const file = await handle.getFile();
+    const raw = await file.text();
+    return { ...deserializeState(parseState(raw)), fileName: handle.name };
   } catch {
-    return emptyAppState;
+    currentFileHandle = null;
+    return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
   }
 }
 
@@ -356,47 +294,30 @@ export async function savePersistedState(
 ): Promise<void> {
   const serialized = serializeState(state);
 
-  try {
-    if (isFileSystemAccessSupported()) {
-      let handle = await getStoredHandle();
-      if (!handle) {
-        handle = await chooseStateFile(
-          suggestedFileName.trim() || DEFAULT_FILE_NAME,
-        );
-        if (handle) {
-          await storeHandle(handle);
-        }
-      }
-      if (handle) {
-        try {
-          const writable = await handle.createWritable();
-          await writable.write(JSON.stringify(serialized));
-          await writable.close();
-          return;
-        } catch {
-          await deleteStoredHandle();
-          // fall back to other storage
-        }
-      }
+  if (!isFileSystemAccessSupported()) {
+    return;
+  }
+
+  let handle = getCurrentFileHandle();
+  if (!handle) {
+    handle = await chooseStateFile(
+      suggestedFileName.trim() || DEFAULT_FILE_NAME,
+    );
+    if (!handle) {
+      return;
     }
-  } catch {
-    // fall through to fallback storage
+    setCurrentFileHandle(handle);
   }
 
   try {
-    await writeStateToIdb(serialized);
+    const writable = await handle.createWritable();
+    await writable.write(JSON.stringify(serialized));
+    await writable.close();
   } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
+    currentFileHandle = null;
   }
 }
 
 export async function clearPersistedState(): Promise<void> {
-  try {
-    await deleteStateFromIdb();
-    await deleteStoredHandle();
-  } catch {
-    // ignore
-  } finally {
-    localStorage.removeItem(STORAGE_KEY);
-  }
+  currentFileHandle = null;
 }

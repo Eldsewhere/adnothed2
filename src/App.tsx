@@ -17,9 +17,11 @@ import {
   Tabs,
   TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
+  mdiCheck,
   mdiCheckboxMultipleMarkedOutline,
   mdiFolderMoveOutline,
   mdiTrashCanOutline,
@@ -32,10 +34,12 @@ import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
 import type { Category, Item } from "./types";
 import {
-  clearPersistedState,
   DEFAULT_FILE_NAME,
   getPersistedFileName,
+  hasPersistedStateFile,
   loadPersistedState,
+  openPersistedStateFile,
+  createPersistedStateFile,
   savePersistedState,
 } from "./utils/storage";
 import {
@@ -44,15 +48,17 @@ import {
 } from "./utils/notifications";
 import { emptyItemFilters } from "./utils/itemFilters";
 
+type TabValue = "items" | "categories" | "utils";
+
 function App() {
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState<TabValue>("utils");
+  console.log(activeTab);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [itemFilters, setItemFilters] = useState(emptyItemFilters);
-  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
     new Set(),
@@ -74,14 +80,15 @@ function App() {
       }
 
       setStorageFileName(persistedFileName);
-      const persistedState = await loadPersistedState(persistedFileName);
+      const persistedState = await loadPersistedState();
       if (!mounted) {
         return;
       }
 
       setCategories(persistedState.categories);
       setItems(persistedState.items);
-      setStorageReady(true);
+      setStorageFileName(persistedState.fileName);
+      setStorageReady(hasPersistedStateFile());
     }
 
     loadState();
@@ -99,17 +106,39 @@ function App() {
   }, [categories, items, storageReady, storageFileName]);
 
   useEffect(() => {
+    if (!storageReady) {
+      setActiveTab("utils");
+    }
+  }, [storageReady]);
+
+  useEffect(() => {
     requestNotificationPermission();
   }, []);
 
-  const handleClearStorage = async () => {
-    await clearPersistedState();
+  const handleOpenStorageFile = async () => {
+    const result = await openPersistedStateFile(storageFileName);
+    if (!result) {
+      return;
+    }
+
+    setCategories(result.categories);
+    setItems(result.items);
+    setStorageFileName(result.fileName);
+    setStorageReady(true);
+    setActiveTab("items");
+  };
+
+  const handleCreateStorageFile = async () => {
+    const result = await createPersistedStateFile(storageFileName);
+    if (!result) {
+      return;
+    }
+
     setCategories([]);
     setItems([]);
-    setEditingCategory(null);
-    setEditingItem(null);
-    setStorageFileName(DEFAULT_FILE_NAME);
-    setConfirmClearOpen(false);
+    setStorageFileName(result.fileName);
+    setStorageReady(true);
+    setActiveTab("items");
   };
 
   const handleExportJson = () => {
@@ -185,7 +214,7 @@ function App() {
         id: crypto.randomUUID(),
         categoryId,
         text: values.text,
-        createdAt: Date.now(),
+        createdAt: Math.floor(Date.now() / 1000),
       },
     ]);
     setNotification(`${categoryName}: ${values.text}`);
@@ -246,13 +275,47 @@ function App() {
         >
           <Tabs
             value={activeTab}
-            onChange={(_event, newValue) => setActiveTab(newValue)}
+            onChange={(_event, newValue) => {
+              const normalized =
+                newValue === "items" ||
+                newValue === "categories" ||
+                newValue === "utils"
+                  ? newValue
+                  : (String(newValue) as TabValue);
+              setActiveTab(normalized);
+            }}
           >
-            <Tab label="Items" id="tab-0" aria-controls="tabpanel-0" />
-            <Tab label="Categories" id="tab-1" aria-controls="tabpanel-1" />
-            <Tab label="Utils" id="tab-2" aria-controls="tabpanel-2" />
+            {storageReady ? (
+              [
+                <Tab
+                  value="items"
+                  label="Items"
+                  id="tab-items"
+                  aria-controls="tabpanel-items"
+                />,
+                <Tab
+                  value="categories"
+                  label="Categories"
+                  id="tab-categories"
+                  aria-controls="tabpanel-categories"
+                />,
+                <Tab
+                  value="utils"
+                  label="Utils"
+                  id="tab-utils"
+                  aria-controls="tabpanel-utils"
+                />,
+              ]
+            ) : (
+              <Tab
+                value="utils"
+                label="Utils"
+                id="tab-utils"
+                aria-controls="tabpanel-utils"
+              />
+            )}
           </Tabs>
-          {activeTab === 0 && (
+          {activeTab === "items" && (
             <Stack direction="row" sx={{ alignItems: "center" }}>
               {selectMode && selectedItemIds.size > 0 && (
                 <>
@@ -298,7 +361,7 @@ function App() {
           )}
         </Stack>
         <Box sx={{ pt: 3 }}>
-          <TabPanel value={activeTab} index={0}>
+          <TabPanel value={activeTab} index="items">
             <Stack spacing={3}>
               <ItemForm
                 categories={categories}
@@ -326,7 +389,7 @@ function App() {
               />
             </Stack>
           </TabPanel>
-          <TabPanel value={activeTab} index={1}>
+          <TabPanel value={activeTab} index="categories">
             <Stack spacing={3}>
               <CategoryForm
                 editingCategory={editingCategory}
@@ -340,23 +403,37 @@ function App() {
               />
             </Stack>
           </TabPanel>
-          <TabPanel value={activeTab} index={2}>
+          <TabPanel value={activeTab} index="utils">
             <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
-              <TextField
-                label="Storage file name"
-                value={storageFileName}
-                onChange={(event) => setStorageFileName(event.target.value)}
-                size="small"
-                helperText="Editable file name used when choosing the storage file"
-              />
+              <Stack direction="row" spacing={2}>
+                <TextField
+                  label="Storage file name"
+                  value={storageFileName}
+                  onChange={(event) => setStorageFileName(event.target.value)}
+                  size="small"
+                  sx={{ width: 200 }}
+                />
+
+                <IconButton
+                  onClick={handleCreateStorageFile}
+                  aria-label="Create"
+                  color={"primary"}
+                >
+                  <Icon path={mdiCheck} size={0.9} />
+                </IconButton>
+              </Stack>
               <Button
-                color="error"
                 variant="outlined"
                 size="small"
-                onClick={() => setConfirmClearOpen(true)}
+                onClick={handleOpenStorageFile}
               >
-                Clear local storage
+                Open storage file
               </Button>
+              {!storageReady && (
+                <Typography variant="body2" color="text.secondary">
+                  No storage file loaded. Select a file above to enable the app.
+                </Typography>
+              )}
               <Button
                 variant="outlined"
                 size="small"
@@ -374,24 +451,6 @@ function App() {
         onClose={() => setNotification(null)}
         message={notification}
       />
-      <Dialog
-        open={confirmClearOpen}
-        onClose={() => setConfirmClearOpen(false)}
-      >
-        <DialogTitle>Clear local storage?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This will permanently delete all categories and items. This action
-            cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmClearOpen(false)}>Cancel</Button>
-          <Button color="error" onClick={handleClearStorage}>
-            Clear
-          </Button>
-        </DialogActions>
-      </Dialog>
       <Dialog
         open={confirmBulkDeleteOpen}
         onClose={() => setConfirmBulkDeleteOpen(false)}

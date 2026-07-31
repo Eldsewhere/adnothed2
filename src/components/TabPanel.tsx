@@ -1,10 +1,10 @@
-import type { ReactNode } from 'react';
-import { Box } from '@mui/material';
+import type { ReactNode } from "react";
+import { Box } from "@mui/material";
 
 type TabPanelProps = {
   children: ReactNode;
-  value: number;
-  index: number;
+  value: "items" | "categories" | "utils";
+  index: "items" | "categories" | "utils";
 };
 
 const TabPanel = ({ children, value, index }: TabPanelProps) => {
@@ -12,7 +12,11 @@ const TabPanel = ({ children, value, index }: TabPanelProps) => {
     return null;
   }
   return (
-    <Box role="tabpanel" id={`tabpanel-${index}`} aria-labelledby={`tab-${index}`}>
+    <Box
+      role="tabpanel"
+      id={`tabpanel-${index}`}
+      aria-labelledby={`tab-${index}`}
+    >
       {children}
     </Box>
   );
