@@ -34,6 +34,7 @@ export type ItemFilters = {
   categoryId: string;
   text: string;
   date: string;
+  endDate: string;
   hasUrl: boolean;
   hasNumber: boolean;
 };

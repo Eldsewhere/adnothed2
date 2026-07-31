@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from 'react';
+import { useState, type MouseEvent } from "react";
 import {
   Badge,
   Box,
@@ -11,11 +11,14 @@ import {
   Stack,
   TextField,
   Typography,
-} from '@mui/material';
-import { Icon } from '@mdi/react';
-import { mdiFilterOutline } from '@mdi/js';
-import type { Category, ItemFilters as ItemFiltersValue } from '../types';
-import { emptyItemFilters, NO_CATEGORY_FILTER_VALUE } from '../utils/itemFilters';
+} from "@mui/material";
+import { Icon } from "@mdi/react";
+import { mdiFilterOutline } from "@mdi/js";
+import type { Category, ItemFilters as ItemFiltersValue } from "../types";
+import {
+  emptyItemFilters,
+  NO_CATEGORY_FILTER_VALUE,
+} from "../utils/itemFilters";
 
 type ItemFiltersProps = {
   categories: Category[];
@@ -23,18 +26,22 @@ type ItemFiltersProps = {
   onChange: (filters: ItemFiltersValue) => void;
 };
 
+const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
+
 const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
   const activeFilterCount = [
-    filters.categoryId !== '',
-    filters.text !== '',
-    filters.date !== '',
+    filters.categoryId !== "",
+    filters.text !== "",
+    filters.date !== "",
+    filters.endDate !== "",
     filters.hasUrl,
     filters.hasNumber,
   ].filter(Boolean).length;
 
-  const handleOpen = (event: MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
+  const handleOpen = (event: MouseEvent<HTMLButtonElement>) =>
+    setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   return (
@@ -48,8 +55,8 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         open={!!anchorEl}
         anchorEl={anchorEl}
         onClose={handleClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Box sx={{ p: 2, width: 260 }}>
           <Typography variant="subtitle2" gutterBottom>
@@ -61,7 +68,9 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               label="Category"
               size="small"
               value={filters.categoryId}
-              onChange={(event) => onChange({ ...filters, categoryId: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...filters, categoryId: event.target.value })
+              }
             >
               <MenuItem value="">All categories</MenuItem>
               <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No category</MenuItem>
@@ -75,21 +84,37 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               label="Text contains"
               size="small"
               value={filters.text}
-              onChange={(event) => onChange({ ...filters, text: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...filters, text: event.target.value })
+              }
             />
             <TextField
               label="Date"
               size="small"
-              placeholder="YYYY, YYYY-MM or YYYY-MM-DD"
-              helperText="Format: YYYY, YYYY-MM or YYYY-MM-DD"
+              placeholder="YYYY-MM-DD"
               value={filters.date}
-              onChange={(event) => onChange({ ...filters, date: event.target.value })}
+              onChange={(event) =>
+                onChange({ ...filters, date: event.target.value })
+              }
             />
+            {filters.date && dateRegex.test(filters.date) && (
+              <TextField
+                label="End Date"
+                size="small"
+                placeholder="YYYY-MM-DD"
+                value={filters.endDate}
+                onChange={(event) =>
+                  onChange({ ...filters, endDate: event.target.value })
+                }
+              />
+            )}
             <FormControlLabel
               control={
                 <Checkbox
                   checked={filters.hasUrl}
-                  onChange={(event) => onChange({ ...filters, hasUrl: event.target.checked })}
+                  onChange={(event) =>
+                    onChange({ ...filters, hasUrl: event.target.checked })
+                  }
                 />
               }
               label="Only messages with URLs"
@@ -98,7 +123,9 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               control={
                 <Checkbox
                   checked={filters.hasNumber}
-                  onChange={(event) => onChange({ ...filters, hasNumber: event.target.checked })}
+                  onChange={(event) =>
+                    onChange({ ...filters, hasNumber: event.target.checked })
+                  }
                 />
               }
               label="Only messages with numbers"

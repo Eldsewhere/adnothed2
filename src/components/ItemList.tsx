@@ -39,6 +39,7 @@ type ItemListProps = {
 
 const ROW_HEIGHT = 56;
 const OVERSCAN = 6;
+const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
 
 const ItemList = ({
   items,
@@ -110,11 +111,30 @@ const ItemList = ({
     ) {
       return false;
     }
-    if (
-      filters.date &&
-      !formatDate(item.createdAt).startsWith(filters.date.trim())
-    ) {
-      return false;
+    if (!filters.endDate) {
+      if (
+        filters.date &&
+        dateRegex.test(filters.date) &&
+        !formatDate(item.createdAt).startsWith(filters.date.trim())
+      ) {
+        return false;
+      }
+    } else {
+      if (
+        filters.date &&
+        dateRegex.test(filters.date) &&
+        filters.endDate &&
+        dateRegex.test(filters.endDate) &&
+        filters.date.length === filters.endDate.length &&
+        !(
+          formatDate(item.createdAt).substring(0, filters.date.length) >=
+            filters.date.trim() &&
+          formatDate(item.createdAt).substring(0, filters.endDate.length) <=
+            filters.endDate.trim()
+        )
+      ) {
+        return false;
+      }
     }
     if (filters.hasUrl && !containsUrl(item.text)) {
       return false;
