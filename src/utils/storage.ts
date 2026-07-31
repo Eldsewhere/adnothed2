@@ -1,6 +1,6 @@
 import type { Category, Item } from '../types';
 
-const STORAGE_KEY = 'category-manager:state';
+const STORAGE_KEY = 'adnothed:state';
 
 type PersistedState = {
   categories: Category[];

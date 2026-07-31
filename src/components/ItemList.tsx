@@ -1,11 +1,29 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { Box, Checkbox, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
-import { Icon } from '@mdi/react';
-import { mdiContentCopy, mdiDotsVertical, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
-import type { Category, Item, ItemFilters as ItemFiltersValue } from '../types';
-import { formatDate, formatTimestamp } from '../utils/formatTimestamp';
-import { NO_CATEGORY_FILTER_VALUE } from '../utils/itemFilters';
-import { containsUrl, isOnlyNumbers, splitTextByUrls } from '../utils/textPatterns';
+import { useEffect, useRef, useState, type MouseEvent } from "react";
+import {
+  Box,
+  Checkbox,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { Icon } from "@mdi/react";
+import {
+  mdiContentCopy,
+  mdiDotsVertical,
+  mdiNoteText,
+  mdiPencilOutline,
+  mdiTrashCanOutline,
+} from "@mdi/js";
+import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
+import { formatDate, formatTimestamp } from "../utils/formatTimestamp";
+import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
+import {
+  containsUrl,
+  isOnlyNumbers,
+  splitTextByUrls,
+} from "../utils/textPatterns";
 
 type ItemListProps = {
   items: Item[];
@@ -33,12 +51,17 @@ const ItemList = ({
   selectedIds,
   onToggleSelect,
 }: ItemListProps) => {
-  const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; item: Item } | null>(null);
+  const [menuAnchor, setMenuAnchor] = useState<{
+    el: HTMLElement;
+    item: Item;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
 
-  const categoriesById = new Map(categories.map((category) => [category.id, category]));
+  const categoriesById = new Map(
+    categories.map((category) => [category.id, category]),
+  );
   const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
 
   useEffect(() => {
@@ -81,10 +104,16 @@ const ItemList = ({
     } else if (filters.categoryId && item.categoryId !== filters.categoryId) {
       return false;
     }
-    if (filters.text && !item.text.toLowerCase().includes(filters.text.toLowerCase())) {
+    if (
+      filters.text &&
+      !item.text.toLowerCase().includes(filters.text.toLowerCase())
+    ) {
       return false;
     }
-    if (filters.date && !formatDate(item.createdAt).startsWith(filters.date.trim())) {
+    if (
+      filters.date &&
+      !formatDate(item.createdAt).startsWith(filters.date.trim())
+    ) {
       return false;
     }
     if (filters.hasUrl && !containsUrl(item.text)) {
@@ -108,39 +137,43 @@ const ItemList = ({
     <Box>
       {filteredItems.length === 0 ? (
         <Typography color="text.secondary">
-          {sortedItems.length === 0 ? 'No items added yet.' : 'No items match the current filters.'}
+          {sortedItems.length === 0
+            ? "No items added yet."
+            : "No items match the current filters."}
         </Typography>
       ) : (
         <Box
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: 'calc(100vh - 320px)',
+            height: "calc(100vh - 320px)",
             minHeight: 200,
-            overflowY: 'auto',
-            position: 'relative',
+            overflowY: "auto",
+            position: "relative",
           }}
         >
-          <Box sx={{ height: totalHeight, position: 'relative' }}>
+          <Box sx={{ height: totalHeight, position: "relative" }}>
             {visibleItems.map((item, i) => {
               const index = startIndex + i;
-              const category = item.categoryId ? categoriesById.get(item.categoryId) : undefined;
+              const category = item.categoryId
+                ? categoriesById.get(item.categoryId)
+                : undefined;
               return (
                 <Box
                   key={item.id}
                   sx={{
-                    position: 'absolute',
+                    position: "absolute",
                     top: index * ROW_HEIGHT,
                     left: 0,
                     right: 0,
                     height: ROW_HEIGHT,
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderBottom: '1px solid',
-                    borderColor: 'divider',
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: "1px solid",
+                    borderColor: "divider",
                     px: 1,
                   }}
-                                >
+                >
                   {selectMode && (
                     <Checkbox
                       size="small"
@@ -149,21 +182,32 @@ const ItemList = ({
                       sx={{ p: 0.5, mr: 0.5 }}
                     />
                   )}
-                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, pr: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexShrink: 0,
+                      pr: 1,
+                    }}
+                  >
                     {category ? (
                       <Tooltip title={category.name}>
-                        <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <Box
+                          sx={{ display: "inline-flex", alignItems: "center" }}
+                        >
                           <Icon path={category.icon.path} size={0.8} />
                         </Box>
                       </Tooltip>
                     ) : (
-                      <Typography variant="body2" color="text.secondary" component="span">
-                        N/A
-                      </Typography>
+                      <Icon path={mdiNoteText} size={0.8} />
                     )}
                   </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: 'left' }}>
-                    <Typography component="div" noWrap sx={{ textAlign: 'left' }}>
+                  <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+                    <Typography
+                      component="div"
+                      noWrap
+                      sx={{ textAlign: "left" }}
+                    >
                       {splitTextByUrls(item.text).map((part, partIndex) =>
                         part.isUrl ? (
                           <Box
@@ -172,7 +216,10 @@ const ItemList = ({
                             href={part.value}
                             target="_blank"
                             rel="noopener noreferrer"
-                            sx={{ color: 'info.main', textDecoration: 'underline' }}
+                            sx={{
+                              color: "info.main",
+                              textDecoration: "underline",
+                            }}
                           >
                             {part.value}
                           </Box>
@@ -181,11 +228,22 @@ const ItemList = ({
                         ),
                       )}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'left', display: 'block' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ textAlign: "left", display: "block" }}
+                    >
                       {formatTimestamp(item.createdAt)}
                     </Typography>
                   </Box>
                   <Box sx={{ flexShrink: 0 }}>
+                    <IconButton
+                      aria-label={`Copy ${item.text}`}
+                      size="small"
+                      onClick={() => handleCopy(item)}
+                    >
+                      <Icon path={mdiContentCopy} size={0.8} />
+                    </IconButton>
                     <IconButton
                       aria-label={`Actions for ${item.text}`}
                       size="small"
@@ -204,19 +262,19 @@ const ItemList = ({
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+          >
             <Icon path={mdiPencilOutline} size={0.7} />
           </Box>
           Edit
         </MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}>
-            <Icon path={mdiContentCopy} size={0.7} />
-          </Box>
-          Copy
-        </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleDelete(menuAnchor.item)}>
-          <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+          >
             <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
           Delete

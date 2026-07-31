@@ -20,6 +20,6 @@ export const showAppNotification = async (title: string, body: string) => {
   await registration.showNotification(title, {
     body,
     icon: '/favicon.svg',
-    tag: 'category-manager-item',
+    tag: 'adnothed-item',
   });
 };

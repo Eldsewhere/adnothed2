@@ -60,9 +60,8 @@ const CategoryForm = ({
   return (
     <Box component="form" onSubmit={submit} noValidate>
       <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={3}
-        sx={{ alignItems: "flex-start", flexWrap: "wrap" }}
+        direction="row"
+        sx={{ alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}
       >
         <Controller
           name="icon"
@@ -77,7 +76,7 @@ const CategoryForm = ({
               filterOptions={filterOptions}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
-              sx={{ minWidth: 160 }}
+              sx={{ width: 80 }}
               renderOption={(props, option) => (
                 <Box component="li" {...props} key={option.name}>
                   <Box
@@ -101,42 +100,44 @@ const CategoryForm = ({
             />
           )}
         />
-        <Controller
-          name="name"
-          control={control}
-          rules={{ required: "Name is required" }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Name"
-              size="small"
-              error={!!errors.name}
-              helperText={errors.name?.message}
-              sx={{ minWidth: 160 }}
-            />
-          )}
-        />
-        <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
-          <IconButton
-            type="submit"
-            aria-label="Toggle select mode"
-            color={"primary"}
-          >
-            <Icon path={mdiCheck} size={0.9} />
-          </IconButton>
-          {editingCategory && (
+        <Stack direction="row">
+          <Controller
+            name="name"
+            control={control}
+            rules={{ required: "Name is required" }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                label="Name"
+                size="small"
+                error={!!errors.name}
+                helperText={errors.name?.message}
+                sx={{ minWidth: 160 }}
+              />
+            )}
+          />
+          <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
             <IconButton
+              type="submit"
               aria-label="Toggle select mode"
               color={"primary"}
-              onClick={() => {
-                onCancelEdit();
-                reset(emptyValues);
-              }}
             >
-              <Icon path={mdiCancel} size={0.9} />
+              <Icon path={mdiCheck} size={0.9} />
             </IconButton>
-          )}
-        </Box>
+            {editingCategory && (
+              <IconButton
+                aria-label="Toggle select mode"
+                color={"primary"}
+                onClick={() => {
+                  onCancelEdit();
+                  reset(emptyValues);
+                }}
+              >
+                <Icon path={mdiCancel} size={0.9} />
+              </IconButton>
+            )}
+          </Box>
+        </Stack>
       </Stack>
     </Box>
   );

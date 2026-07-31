@@ -2,13 +2,11 @@ import { useEffect, useState } from "react";
 import {
   Box,
   Button,
-  Container,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -88,7 +86,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "category-manager-export.json";
+    link.download = "adnothed-export.json";
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -133,6 +131,8 @@ function App() {
     values,
   ) => {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
+    const categoryName =
+      categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
 
     if (editingItem) {
       setItems((prev) =>
@@ -155,22 +155,13 @@ function App() {
         createdAt: Date.now(),
       },
     ]);
-    setNotification(`Item added: ${values.text}`);
-    showAppNotification("Item added", values.text);
+    setNotification(`${categoryName}: ${values.text}`);
+    showAppNotification(categoryName, values.text);
   };
 
   const handleItemCopy = (item: Item) => {
-    setItems((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        categoryId: item.categoryId,
-        text: item.text,
-        createdAt: Date.now(),
-      },
-    ]);
-    setNotification(`Item added: ${item.text}`);
-    showAppNotification("Item added", item.text);
+    navigator.clipboard.writeText(item.text);
+    setNotification(`Item Copied`);
   };
 
   const handleItemDelete = (item: Item) => {
@@ -214,8 +205,8 @@ function App() {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: 4 }}>
-      <Paper sx={{ p: 3 }}>
+    <Box sx={{ margin: 1 }}>
+      <Paper sx={{ p: 2 }}>
         <Stack
           direction="row"
           sx={{ alignItems: "center", justifyContent: "space-between" }}
@@ -282,7 +273,6 @@ function App() {
                 onSubmit={handleItemSubmit}
                 onCancelEdit={() => setEditingItem(null)}
               />
-              <Divider />
               <ItemList
                 items={items}
                 categories={categories}
@@ -303,7 +293,6 @@ function App() {
                 onSubmit={handleSubmit}
                 onCancelEdit={() => setEditingCategory(null)}
               />
-              <Divider />
               <CategoryList
                 categories={categories}
                 onEdit={setEditingCategory}
@@ -399,7 +388,7 @@ function App() {
           </MenuItem>
         ))}
       </Menu>
-    </Container>
+    </Box>
   );
 }
 
