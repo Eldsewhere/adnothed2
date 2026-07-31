@@ -1,0 +1,94 @@
+import { useState, type MouseEvent } from 'react';
+import {
+  Badge,
+  Box,
+  Button,
+  IconButton,
+  MenuItem,
+  Popover,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { Icon } from '@mdi/react';
+import { mdiFilterOutline } from '@mdi/js';
+import type { Category, ItemFilters as ItemFiltersValue } from '../types';
+import { emptyItemFilters, NO_CATEGORY_FILTER_VALUE } from '../utils/itemFilters';
+
+type ItemFiltersProps = {
+  categories: Category[];
+  filters: ItemFiltersValue;
+  onChange: (filters: ItemFiltersValue) => void;
+};
+
+const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
+  const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+
+  const activeFilterCount = Object.values(filters).filter((value) => value !== '').length;
+
+  const handleOpen = (event: MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+
+  return (
+    <>
+      <IconButton aria-label="Filter items" onClick={handleOpen}>
+        <Badge badgeContent={activeFilterCount} color="primary">
+          <Icon path={mdiFilterOutline} size={0.9} />
+        </Badge>
+      </IconButton>
+      <Popover
+        open={!!anchorEl}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Box sx={{ p: 2, width: 260 }}>
+          <Typography variant="subtitle2" gutterBottom>
+            Filter items
+          </Typography>
+          <Stack spacing={2}>
+            <TextField
+              select
+              label="Category"
+              size="small"
+              value={filters.categoryId}
+              onChange={(event) => onChange({ ...filters, categoryId: event.target.value })}
+            >
+              <MenuItem value="">All categories</MenuItem>
+              <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No category</MenuItem>
+              {categories.map((category) => (
+                <MenuItem key={category.id} value={category.id}>
+                  {category.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              label="Text contains"
+              size="small"
+              value={filters.text}
+              onChange={(event) => onChange({ ...filters, text: event.target.value })}
+            />
+            <TextField
+              label="Date"
+              size="small"
+              placeholder="YYYY, YYYY-MM or YYYY-MM-DD"
+              helperText="Format: YYYY, YYYY-MM or YYYY-MM-DD"
+              value={filters.date}
+              onChange={(event) => onChange({ ...filters, date: event.target.value })}
+            />
+            <Button
+              size="small"
+              disabled={activeFilterCount === 0}
+              onClick={() => onChange(emptyItemFilters)}
+            >
+              Clear filters
+            </Button>
+          </Stack>
+        </Box>
+      </Popover>
+    </>
+  );
+};
+
+export default ItemFilters;
