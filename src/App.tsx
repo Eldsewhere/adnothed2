@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Button,
@@ -69,6 +69,8 @@ function App() {
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(false);
+  const isInitializingRef = useRef(true);
+  const skipNextAutoSaveRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -89,6 +91,7 @@ function App() {
       setItems(persistedState.items);
       setStorageFileName(persistedState.fileName);
       setStorageReady(hasPersistedStateFile());
+      isInitializingRef.current = false;
     }
 
     loadState();
@@ -98,7 +101,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!storageReady) {
+    if (!storageReady || isInitializingRef.current) {
+      return;
+    }
+
+    if (skipNextAutoSaveRef.current) {
+      skipNextAutoSaveRef.current = false;
       return;
     }
 
@@ -121,6 +129,7 @@ function App() {
       return;
     }
 
+    skipNextAutoSaveRef.current = true;
     setCategories(result.categories);
     setItems(result.items);
     setStorageFileName(result.fileName);
@@ -134,6 +143,7 @@ function App() {
       return;
     }
 
+    skipNextAutoSaveRef.current = true;
     setCategories([]);
     setItems([]);
     setStorageFileName(result.fileName);
