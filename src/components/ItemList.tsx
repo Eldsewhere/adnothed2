@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
+  mdiBellOutline,
   mdiContentCopy,
   mdiDotsVertical,
   mdiNoteText,
@@ -32,6 +33,7 @@ type ItemListProps = {
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
+  onNotify: (item: Item) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -48,6 +50,7 @@ const ItemList = ({
   onEdit,
   onDelete,
   onCopy,
+  onNotify,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -94,6 +97,11 @@ const ItemList = ({
 
   const handleCopy = (item: Item) => {
     onCopy(item);
+    closeMenu();
+  };
+
+  const handleNotify = (item: Item) => {
+    onNotify(item);
     closeMenu();
   };
 
@@ -281,6 +289,15 @@ const ItemList = ({
         </Box>
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
+        <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+          >
+            <Icon path={mdiBellOutline} size={0.7} />
+          </Box>
+          Notify
+        </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"

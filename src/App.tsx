@@ -41,15 +41,11 @@ import {
 } from "./utils/notifications";
 import { emptyItemFilters } from "./utils/itemFilters";
 
-const persistedState = loadPersistedState();
-
 function App() {
   const [activeTab, setActiveTab] = useState(0);
-  const [categories, setCategories] = useState<Category[]>(
-    persistedState.categories,
-  );
+  const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [items, setItems] = useState<Item[]>(persistedState.items);
+  const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [itemFilters, setItemFilters] = useState(emptyItemFilters);
@@ -61,17 +57,42 @@ function App() {
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [bulkCategoryAnchor, setBulkCategoryAnchor] =
     useState<HTMLElement | null>(null);
+  const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
+    let mounted = true;
+
+    async function loadState() {
+      const persistedState = await loadPersistedState();
+      if (!mounted) {
+        return;
+      }
+
+      setCategories(persistedState.categories);
+      setItems(persistedState.items);
+      setStorageReady(true);
+    }
+
+    loadState();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!storageReady) {
+      return;
+    }
+
     savePersistedState({ categories, items });
-  }, [categories, items]);
+  }, [categories, items, storageReady]);
 
   useEffect(() => {
     requestNotificationPermission();
   }, []);
 
-  const handleClearStorage = () => {
-    clearPersistedState();
+  const handleClearStorage = async () => {
+    await clearPersistedState();
     setCategories([]);
     setItems([]);
     setEditingCategory(null);
@@ -280,6 +301,13 @@ function App() {
                 onEdit={setEditingItem}
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
+                onNotify={(item) => {
+                  const categoryName =
+                    categories.find((c) => c.id === item.categoryId)?.name ??
+                    "Reminder";
+                  setNotification(`${categoryName}: ${item.text}`);
+                  showAppNotification(categoryName, item.text);
+                }}
                 selectMode={selectMode}
                 selectedIds={selectedItemIds}
                 onToggleSelect={toggleItemSelected}

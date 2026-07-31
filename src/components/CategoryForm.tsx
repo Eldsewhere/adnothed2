@@ -76,7 +76,7 @@ const CategoryForm = ({
               filterOptions={filterOptions}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
-              sx={{ width: 80 }}
+              sx={{ width: 130 }}
               renderOption={(props, option) => (
                 <Box component="li" {...props} key={option.name}>
                   <Box
