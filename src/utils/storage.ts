@@ -1,19 +1,34 @@
-﻿import type { Category, Item } from "../types";
+﻿import { mdiNoteText } from "@mdi/js";
+import { mdiIconOptions } from "../hooks/useMdiIconOptions";
+import type { Category, Item } from "../types";
+
+type PersistedCategory = {
+  id: string;
+  name: string;
+  iconName: string;
+};
 
 type PersistedState = {
-  categories: Category[];
+  categories: PersistedCategory[];
   items: Item[];
 };
 
-const STORAGE_KEY = "adnothed:state";
+export const STORAGE_KEY = "adnothed:state";
 const DB_NAME = "adnothed-state-db";
 const DB_VERSION = 1;
 const STATE_STORE = "state";
-const DEFAULT_FILE_NAME = "adnothed-state.json";
+const HANDLE_STORE = "handles";
+const HANDLE_KEY = "state-file-handle";
+export const DEFAULT_FILE_NAME = "adnothed-state.json";
 
-const emptyState: PersistedState = { categories: [], items: [] };
+const emptyPersistedState: PersistedState = { categories: [], items: [] };
+const emptyAppState: { categories: Category[]; items: Item[] } = {
+  categories: [],
+  items: [],
+};
 
 type FileSystemFileHandle = {
+  name: string;
   getFile(): Promise<File>;
   createWritable(options?: {
     keepExistingData?: boolean;
@@ -73,6 +88,9 @@ function openDb(): Promise<IDBDatabase> {
       if (!db.objectStoreNames.contains(STATE_STORE)) {
         db.createObjectStore(STATE_STORE);
       }
+      if (!db.objectStoreNames.contains(HANDLE_STORE)) {
+        db.createObjectStore(HANDLE_STORE);
+      }
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -91,7 +109,7 @@ async function readStateFromIdb(): Promise<PersistedState> {
       request.onsuccess = () => {
         const raw = request.result as string | null;
         if (!raw) {
-          resolve(emptyState);
+          resolve(emptyPersistedState);
           return;
         }
         try {
@@ -101,10 +119,10 @@ async function readStateFromIdb(): Promise<PersistedState> {
             items: parsed.items ?? [],
           });
         } catch {
-          resolve(emptyState);
+          resolve(emptyPersistedState);
         }
       };
-      request.onerror = () => resolve(emptyState);
+      request.onerror = () => resolve(emptyPersistedState);
     });
   } finally {
     db.close();
@@ -143,7 +161,65 @@ async function deleteStateFromIdb(): Promise<void> {
   }
 }
 
-async function chooseStateFile(): Promise<FileSystemFileHandle | null> {
+async function getStoredHandle(): Promise<FileSystemFileHandle | null> {
+  const db = await openDb();
+  try {
+    const tx = db.transaction(HANDLE_STORE, "readonly");
+    const store = tx.objectStore(HANDLE_STORE);
+    return await new Promise((resolve) => {
+      const request = store.get(HANDLE_KEY);
+      request.onsuccess = () => resolve(request.result ?? null);
+      request.onerror = () => resolve(null);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+async function storeHandle(handle: FileSystemFileHandle): Promise<void> {
+  const db = await openDb();
+  try {
+    const tx = db.transaction(HANDLE_STORE, "readwrite");
+    const store = tx.objectStore(HANDLE_STORE);
+    store.put(handle, HANDLE_KEY);
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(undefined);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+async function deleteStoredHandle(): Promise<void> {
+  const db = await openDb();
+  try {
+    const tx = db.transaction(HANDLE_STORE, "readwrite");
+    const store = tx.objectStore(HANDLE_STORE);
+    store.delete(HANDLE_KEY);
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = () => resolve(undefined);
+      tx.onerror = () => reject(tx.error);
+      tx.onabort = () => reject(tx.error);
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export async function getPersistedFileName(): Promise<string> {
+  try {
+    const handle = await getStoredHandle();
+    return handle?.name ?? DEFAULT_FILE_NAME;
+  } catch {
+    return DEFAULT_FILE_NAME;
+  }
+}
+
+async function chooseStateFile(
+  suggestedName: string = DEFAULT_FILE_NAME,
+): Promise<FileSystemFileHandle | null> {
   const picker = getShowSaveFilePicker();
   if (!picker) {
     return null;
@@ -151,7 +227,7 @@ async function chooseStateFile(): Promise<FileSystemFileHandle | null> {
 
   try {
     return await picker({
-      suggestedName: DEFAULT_FILE_NAME,
+      suggestedName,
       types: [
         {
           description: "Adnothed state file",
@@ -167,9 +243,55 @@ async function chooseStateFile(): Promise<FileSystemFileHandle | null> {
   }
 }
 
+function resolveIconOption(name: string): Category["icon"] {
+  const option = mdiIconOptions.find((item) => item.name === name);
+  if (option) {
+    return option;
+  }
+
+  const label = name
+    .replace(/^mdi/, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .trim();
+
+  return {
+    name,
+    label,
+    path: mdiNoteText,
+  };
+}
+
+function serializeState(state: {
+  categories: Category[];
+  items: Item[];
+}): PersistedState {
+  return {
+    categories: state.categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      iconName: category.icon.name,
+    })),
+    items: state.items,
+  };
+}
+
+function deserializeState(state: PersistedState): {
+  categories: Category[];
+  items: Item[];
+} {
+  return {
+    categories: state.categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      icon: resolveIconOption(category.iconName),
+    })),
+    items: state.items,
+  };
+}
+
 function parseState(raw: string | null): PersistedState {
   if (!raw) {
-    return emptyState;
+    return emptyPersistedState;
   }
 
   try {
@@ -179,20 +301,36 @@ function parseState(raw: string | null): PersistedState {
       items: parsed.items ?? [],
     };
   } catch {
-    return emptyState;
+    return emptyPersistedState;
   }
 }
 
-export async function loadPersistedState(): Promise<PersistedState> {
+export async function loadPersistedState(
+  suggestedFileName: string = DEFAULT_FILE_NAME,
+): Promise<{
+  categories: Category[];
+  items: Item[];
+}> {
   try {
     if (isFileSystemAccessSupported()) {
-      const handle = await chooseStateFile();
-      if (handle) {
+      let handle = await getStoredHandle();
+      if (handle && handle.name !== suggestedFileName) {
+        await deleteStoredHandle();
+        handle = null;
+      }
+
+      const selectedHandle =
+        handle ?? (await chooseStateFile(suggestedFileName));
+      if (selectedHandle) {
+        if (!handle) {
+          await storeHandle(selectedHandle);
+        }
         try {
-          const file = await handle.getFile();
+          const file = await selectedHandle.getFile();
           const raw = await file.text();
-          return parseState(raw);
+          return deserializeState(parseState(raw));
         } catch {
+          await deleteStoredHandle();
           // fall through to fallback storage
         }
       }
@@ -200,26 +338,43 @@ export async function loadPersistedState(): Promise<PersistedState> {
 
     const idbState = await readStateFromIdb();
     if (idbState.categories.length || idbState.items.length) {
-      return idbState;
+      return deserializeState(idbState);
     }
 
-    return parseState(localStorage.getItem(STORAGE_KEY));
+    return deserializeState(parseState(localStorage.getItem(STORAGE_KEY)));
   } catch {
-    return emptyState;
+    return emptyAppState;
   }
 }
 
-export async function savePersistedState(state: PersistedState): Promise<void> {
+export async function savePersistedState(
+  state: {
+    categories: Category[];
+    items: Item[];
+  },
+  suggestedFileName: string = DEFAULT_FILE_NAME,
+): Promise<void> {
+  const serialized = serializeState(state);
+
   try {
     if (isFileSystemAccessSupported()) {
-      const handle = await chooseStateFile();
+      let handle = await getStoredHandle();
+      if (!handle) {
+        handle = await chooseStateFile(
+          suggestedFileName.trim() || DEFAULT_FILE_NAME,
+        );
+        if (handle) {
+          await storeHandle(handle);
+        }
+      }
       if (handle) {
         try {
           const writable = await handle.createWritable();
-          await writable.write(JSON.stringify(state));
+          await writable.write(JSON.stringify(serialized));
           await writable.close();
           return;
         } catch {
+          await deleteStoredHandle();
           // fall back to other storage
         }
       }
@@ -229,15 +384,16 @@ export async function savePersistedState(state: PersistedState): Promise<void> {
   }
 
   try {
-    await writeStateToIdb(state);
+    await writeStateToIdb(serialized);
   } catch {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(serialized));
   }
 }
 
 export async function clearPersistedState(): Promise<void> {
   try {
     await deleteStateFromIdb();
+    await deleteStoredHandle();
   } catch {
     // ignore
   } finally {

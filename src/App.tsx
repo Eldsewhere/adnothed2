@@ -15,6 +15,7 @@ import {
   Stack,
   Tab,
   Tabs,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -32,6 +33,8 @@ import TabPanel from "./components/TabPanel";
 import type { Category, Item } from "./types";
 import {
   clearPersistedState,
+  DEFAULT_FILE_NAME,
+  getPersistedFileName,
   loadPersistedState,
   savePersistedState,
 } from "./utils/storage";
@@ -57,13 +60,21 @@ function App() {
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [bulkCategoryAnchor, setBulkCategoryAnchor] =
     useState<HTMLElement | null>(null);
+  const [storageFileName, setStorageFileName] =
+    useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     async function loadState() {
-      const persistedState = await loadPersistedState();
+      const persistedFileName = await getPersistedFileName();
+      if (!mounted) {
+        return;
+      }
+
+      setStorageFileName(persistedFileName);
+      const persistedState = await loadPersistedState(persistedFileName);
       if (!mounted) {
         return;
       }
@@ -84,8 +95,8 @@ function App() {
       return;
     }
 
-    savePersistedState({ categories, items });
-  }, [categories, items, storageReady]);
+    savePersistedState({ categories, items }, storageFileName);
+  }, [categories, items, storageReady, storageFileName]);
 
   useEffect(() => {
     requestNotificationPermission();
@@ -97,6 +108,7 @@ function App() {
     setItems([]);
     setEditingCategory(null);
     setEditingItem(null);
+    setStorageFileName(DEFAULT_FILE_NAME);
     setConfirmClearOpen(false);
   };
 
@@ -330,6 +342,13 @@ function App() {
           </TabPanel>
           <TabPanel value={activeTab} index={2}>
             <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
+              <TextField
+                label="Storage file name"
+                value={storageFileName}
+                onChange={(event) => setStorageFileName(event.target.value)}
+                size="small"
+                helperText="Editable file name used when choosing the storage file"
+              />
               <Button
                 color="error"
                 variant="outlined"
