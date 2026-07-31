@@ -1,39 +1,60 @@
-import { useState, type MouseEvent } from 'react';
-import {
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Tooltip,
-  Typography,
-} from '@mui/material';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { Box, Checkbox, IconButton, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { Icon } from '@mdi/react';
 import { mdiContentCopy, mdiDotsVertical, mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
 import type { Category, Item, ItemFilters as ItemFiltersValue } from '../types';
 import { formatDate, formatTimestamp } from '../utils/formatTimestamp';
-import { emptyItemFilters, NO_CATEGORY_FILTER_VALUE } from '../utils/itemFilters';
-import ItemFilters from './ItemFilters';
+import { NO_CATEGORY_FILTER_VALUE } from '../utils/itemFilters';
+import { containsUrl, isOnlyNumbers, splitTextByUrls } from '../utils/textPatterns';
 
 type ItemListProps = {
   items: Item[];
   categories: Category[];
+  filters: ItemFiltersValue;
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
+  selectMode: boolean;
+  selectedIds: Set<string>;
+  onToggleSelect: (id: string) => void;
 };
 
-const ItemList = ({ items, categories, onEdit, onDelete, onCopy }: ItemListProps) => {
-  const [filters, setFilters] = useState<ItemFiltersValue>(emptyItemFilters);
+const ROW_HEIGHT = 56;
+const OVERSCAN = 6;
+
+const ItemList = ({
+  items,
+  categories,
+  filters,
+  onEdit,
+  onDelete,
+  onCopy,
+  selectMode,
+  selectedIds,
+  onToggleSelect,
+}: ItemListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{ el: HTMLElement; item: Item } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [viewportHeight, setViewportHeight] = useState(400);
+
   const categoriesById = new Map(categories.map((category) => [category.id, category]));
   const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) {
+      return;
+    }
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries[0];
+      if (entry) {
+        setViewportHeight(entry.contentRect.height);
+      }
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const closeMenu = () => setMenuAnchor(null);
 
@@ -66,72 +87,120 @@ const ItemList = ({ items, categories, onEdit, onDelete, onCopy }: ItemListProps
     if (filters.date && !formatDate(item.createdAt).startsWith(filters.date.trim())) {
       return false;
     }
+    if (filters.hasUrl && !containsUrl(item.text)) {
+      return false;
+    }
+    if (filters.hasNumber && !isOnlyNumbers(item.text)) {
+      return false;
+    }
     return true;
   });
 
+  const totalHeight = filteredItems.length * ROW_HEIGHT;
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const endIndex = Math.min(
+    filteredItems.length,
+    Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN,
+  );
+  const visibleItems = filteredItems.slice(startIndex, endIndex);
+
   return (
     <Box>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" component="h2" gutterBottom>
-          Items
-        </Typography>
-        <ItemFilters categories={categories} filters={filters} onChange={setFilters} />
-      </Stack>
       {filteredItems.length === 0 ? (
         <Typography color="text.secondary">
           {sortedItems.length === 0 ? 'No items added yet.' : 'No items match the current filters.'}
         </Typography>
       ) : (
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>Cat</TableCell>
-                <TableCell>Text</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredItems.map((item) => {
-                const category = item.categoryId ? categoriesById.get(item.categoryId) : undefined;
-                return (
-                  <TableRow key={item.id}>
-                    <TableCell>
-                      {category ? (
-                        <Tooltip title={category.name}>
-                          <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <Icon path={category.icon.path} size={0.8} />
-                          </Box>
-                        </Tooltip>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary" component="span">
-                          N/A
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Typography component="div">{item.text}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatTimestamp(item.createdAt)}
+        <Box
+          ref={containerRef}
+          onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+          sx={{
+            height: 'calc(100vh - 320px)',
+            minHeight: 200,
+            overflowY: 'auto',
+            position: 'relative',
+          }}
+        >
+          <Box sx={{ height: totalHeight, position: 'relative' }}>
+            {visibleItems.map((item, i) => {
+              const index = startIndex + i;
+              const category = item.categoryId ? categoriesById.get(item.categoryId) : undefined;
+              return (
+                <Box
+                  key={item.id}
+                  sx={{
+                    position: 'absolute',
+                    top: index * ROW_HEIGHT,
+                    left: 0,
+                    right: 0,
+                    height: ROW_HEIGHT,
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderBottom: '1px solid',
+                    borderColor: 'divider',
+                    px: 1,
+                  }}
+                                >
+                  {selectMode && (
+                    <Checkbox
+                      size="small"
+                      checked={selectedIds.has(item.id)}
+                      onChange={() => onToggleSelect(item.id)}
+                      sx={{ p: 0.5, mr: 0.5 }}
+                    />
+                  )}
+                  <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, pr: 1 }}>
+                    {category ? (
+                      <Tooltip title={category.name}>
+                        <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <Icon path={category.icon.path} size={0.8} />
+                        </Box>
+                      </Tooltip>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary" component="span">
+                        N/A
                       </Typography>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        aria-label={`Actions for ${item.text}`}
-                        size="small"
-                        onClick={(event: MouseEvent<HTMLElement>) =>
-                          setMenuAnchor({ el: event.currentTarget, item })
-                        }
-                      >
-                        <Icon path={mdiDotsVertical} size={0.8} />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                    )}
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: 'left' }}>
+                    <Typography component="div" noWrap sx={{ textAlign: 'left' }}>
+                      {splitTextByUrls(item.text).map((part, partIndex) =>
+                        part.isUrl ? (
+                          <Box
+                            key={partIndex}
+                            component="a"
+                            href={part.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{ color: 'info.main', textDecoration: 'underline' }}
+                          >
+                            {part.value}
+                          </Box>
+                        ) : (
+                          <span key={partIndex}>{part.value}</span>
+                        ),
+                      )}
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'left', display: 'block' }}>
+                      {formatTimestamp(item.createdAt)}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flexShrink: 0 }}>
+                    <IconButton
+                      aria-label={`Actions for ${item.text}`}
+                      size="small"
+                      onClick={(event: MouseEvent<HTMLElement>) =>
+                        setMenuAnchor({ el: event.currentTarget, item })
+                      }
+                    >
+                      <Icon path={mdiDotsVertical} size={0.8} />
+                    </IconButton>
+                  </Box>
+                </Box>
+              );
+            })}
+          </Box>
+        </Box>
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>

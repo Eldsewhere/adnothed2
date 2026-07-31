@@ -3,6 +3,8 @@ import {
   Badge,
   Box,
   Button,
+  Checkbox,
+  FormControlLabel,
   IconButton,
   MenuItem,
   Popover,
@@ -24,7 +26,13 @@ type ItemFiltersProps = {
 const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
-  const activeFilterCount = Object.values(filters).filter((value) => value !== '').length;
+  const activeFilterCount = [
+    filters.categoryId !== '',
+    filters.text !== '',
+    filters.date !== '',
+    filters.hasUrl,
+    filters.hasNumber,
+  ].filter(Boolean).length;
 
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
@@ -76,6 +84,24 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               helperText="Format: YYYY, YYYY-MM or YYYY-MM-DD"
               value={filters.date}
               onChange={(event) => onChange({ ...filters, date: event.target.value })}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.hasUrl}
+                  onChange={(event) => onChange({ ...filters, hasUrl: event.target.checked })}
+                />
+              }
+              label="Only messages with URLs"
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={filters.hasNumber}
+                  onChange={(event) => onChange({ ...filters, hasNumber: event.target.checked })}
+                />
+              }
+              label="Only messages with numbers"
             />
             <Button
               size="small"

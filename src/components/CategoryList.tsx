@@ -8,10 +8,10 @@ import {
   TableHead,
   TableRow,
   Typography,
-} from '@mui/material';
-import { Icon } from '@mdi/react';
-import { mdiPencilOutline, mdiTrashCanOutline } from '@mdi/js';
-import type { Category } from '../types';
+} from "@mui/material";
+import { Icon } from "@mdi/react";
+import { mdiPencilOutline, mdiTrashCanOutline } from "@mdi/js";
+import type { Category } from "../types";
 
 type CategoryListProps = {
   categories: Category[];
@@ -22,9 +22,6 @@ type CategoryListProps = {
 const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
   return (
     <Box>
-      <Typography variant="h6" component="h2" gutterBottom>
-        Categories
-      </Typography>
       {categories.length === 0 ? (
         <Typography color="text.secondary">No categories added yet.</Typography>
       ) : (
@@ -32,18 +29,18 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Name</TableCell>
-                <TableCell>Icon</TableCell>
+                <TableCell sx={{ pr: 1 }}>Icon</TableCell>
+                <TableCell sx={{ pl: 0 }}>Name</TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
-                  <TableCell>{category.name}</TableCell>
-                  <TableCell>
+                  <TableCell sx={{ pr: 1, flexShrink: 0, width: 60 }}>
                     <Icon path={category.icon.path} size={1} />
                   </TableCell>
+                  <TableCell sx={{ pl: 0 }}>{category.name}</TableCell>
                   <TableCell align="right">
                     <IconButton
                       aria-label={`Edit ${category.name}`}
@@ -53,11 +50,11 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
                       <Icon path={mdiPencilOutline} size={0.8} />
                     </IconButton>
                     <IconButton
-                      aria-label={`Delete ${category.name}`}
-                      size="small"
+                      aria-label="Toggle select mode"
+                      color={"primary"}
                       onClick={() => onDelete(category)}
                     >
-                      <Icon path={mdiTrashCanOutline} size={0.8} />
+                      <Icon path={mdiTrashCanOutline} size={0.9} />
                     </IconButton>
                   </TableCell>
                 </TableRow>

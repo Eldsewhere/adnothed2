@@ -3,13 +3,14 @@ import { Controller, useForm } from 'react-hook-form';
 import {
   Box,
   Button,
+  IconButton,
   MenuItem,
   Stack,
   TextField,
-  Typography,
 } from '@mui/material';
 import { Icon } from '@mdi/react';
 import type { Category, Item, ItemFormValues } from '../types';
+import { mdiCheck } from '@mdi/js';
 
 type ItemFormProps = {
   categories: Category[];
@@ -43,13 +44,10 @@ const ItemForm = ({ categories, editingItem, onSubmit, onCancelEdit }: ItemFormP
 
   return (
     <Box component="form" onSubmit={submit} noValidate>
-      <Typography variant="h6" component="h2" gutterBottom>
-        {editingItem ? 'Edit Item' : 'Add Item'}
-      </Typography>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ alignItems: 'flex-start' }}
+        spacing={3}
+        sx={{ alignItems: 'flex-start', flexWrap: 'wrap' }}
       >
         <Controller
           name="categoryId"
@@ -62,7 +60,7 @@ const ItemForm = ({ categories, editingItem, onSubmit, onCancelEdit }: ItemFormP
               size="small"
               error={!!errors.categoryId}
               helperText={errors.categoryId?.message}
-              sx={{ minWidth: 220 }}
+              sx={{ minWidth: 160 }}
             >
               <MenuItem value="">No category</MenuItem>
               {categories.map((category) => (
@@ -90,14 +88,18 @@ const ItemForm = ({ categories, editingItem, onSubmit, onCancelEdit }: ItemFormP
               size="small"
               error={!!errors.text}
               helperText={errors.text?.message}
-              sx={{ minWidth: 220 }}
+              sx={{ minWidth: 160 }}
             />
           )}
         />
-        <Stack direction="row" spacing={1}>
-          <Button type="submit" variant="contained">
-            {editingItem ? 'Update' : 'Add'}
-          </Button>
+        <Box sx={{ display: 'flex', gap: 1, ml: { sm: 1 } }}>
+          <IconButton
+            type="submit"
+            aria-label="Toggle select mode"
+            color={"primary"}
+          >
+            <Icon path={mdiCheck} size={0.9} />
+          </IconButton>
           {editingItem && (
             <Button
               type="button"
@@ -110,7 +112,7 @@ const ItemForm = ({ categories, editingItem, onSubmit, onCancelEdit }: ItemFormP
               Cancel
             </Button>
           )}
-        </Stack>
+        </Box>
       </Stack>
     </Box>
   );

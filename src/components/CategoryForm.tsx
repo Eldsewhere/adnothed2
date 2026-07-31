@@ -1,9 +1,17 @@
-import { useEffect } from 'react';
-import { Controller, useForm } from 'react-hook-form';
-import { Autocomplete, Box, Button, Stack, TextField, Typography, createFilterOptions } from '@mui/material';
-import { Icon } from '@mdi/react';
-import useMdiIconOptions from '../hooks/useMdiIconOptions';
-import type { Category, CategoryFormValues, IconOption } from '../types';
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Autocomplete,
+  Box,
+  IconButton,
+  Stack,
+  TextField,
+  createFilterOptions,
+} from "@mui/material";
+import { Icon } from "@mdi/react";
+import useMdiIconOptions from "../hooks/useMdiIconOptions";
+import type { Category, CategoryFormValues, IconOption } from "../types";
+import { mdiCancel, mdiCheck } from "@mdi/js";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
@@ -18,9 +26,13 @@ const filterOptions = createFilterOptions<IconOption>({
   stringify: (option) => option.label,
 });
 
-const emptyValues: CategoryFormValues = { name: '', icon: null };
+const emptyValues: CategoryFormValues = { name: "", icon: null };
 
-const CategoryForm = ({ editingCategory, onSubmit, onCancelEdit }: CategoryFormProps) => {
+const CategoryForm = ({
+  editingCategory,
+  onSubmit,
+  onCancelEdit,
+}: CategoryFormProps) => {
   const iconOptions = useMdiIconOptions();
   const {
     control,
@@ -31,7 +43,9 @@ const CategoryForm = ({ editingCategory, onSubmit, onCancelEdit }: CategoryFormP
 
   useEffect(() => {
     reset(
-      editingCategory ? { name: editingCategory.name, icon: editingCategory.icon } : emptyValues,
+      editingCategory
+        ? { name: editingCategory.name, icon: editingCategory.icon }
+        : emptyValues,
     );
   }, [editingCategory, reset]);
 
@@ -45,33 +59,15 @@ const CategoryForm = ({ editingCategory, onSubmit, onCancelEdit }: CategoryFormP
 
   return (
     <Box component="form" onSubmit={submit} noValidate>
-      <Typography variant="h6" component="h2" gutterBottom>
-        {editingCategory ? 'Edit Category' : 'Add Category'}
-      </Typography>
       <Stack
-        direction={{ xs: 'column', sm: 'row' }}
-        spacing={2}
-        sx={{ alignItems: 'flex-start' }}
+        direction={{ xs: "column", sm: "row" }}
+        spacing={3}
+        sx={{ alignItems: "flex-start", flexWrap: "wrap" }}
       >
-        <Controller
-          name="name"
-          control={control}
-          rules={{ required: 'Name is required' }}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              label="Name"
-              size="small"
-              error={!!errors.name}
-              helperText={errors.name?.message}
-              sx={{ minWidth: 220 }}
-            />
-          )}
-        />
         <Controller
           name="icon"
           control={control}
-          rules={{ required: 'Icon is required' }}
+          rules={{ required: "Icon is required" }}
           render={({ field: { onChange, value, ...field } }) => (
             <Autocomplete
               {...field}
@@ -81,12 +77,12 @@ const CategoryForm = ({ editingCategory, onSubmit, onCancelEdit }: CategoryFormP
               filterOptions={filterOptions}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
-              sx={{ minWidth: 260 }}
+              sx={{ minWidth: 160 }}
               renderOption={(props, option) => (
                 <Box component="li" {...props} key={option.name}>
                   <Box
                     component="span"
-                    sx={{ display: 'inline-flex', alignItems: 'center', mr: 1 }}
+                    sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
                   >
                     <Icon path={option.path} size={0.9} />
                   </Box>
@@ -105,23 +101,42 @@ const CategoryForm = ({ editingCategory, onSubmit, onCancelEdit }: CategoryFormP
             />
           )}
         />
-        <Stack direction="row" spacing={1}>
-          <Button type="submit" variant="contained">
-            {editingCategory ? 'Update' : 'Add'}
-          </Button>
+        <Controller
+          name="name"
+          control={control}
+          rules={{ required: "Name is required" }}
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Name"
+              size="small"
+              error={!!errors.name}
+              helperText={errors.name?.message}
+              sx={{ minWidth: 160 }}
+            />
+          )}
+        />
+        <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
+          <IconButton
+            type="submit"
+            aria-label="Toggle select mode"
+            color={"primary"}
+          >
+            <Icon path={mdiCheck} size={0.9} />
+          </IconButton>
           {editingCategory && (
-            <Button
-              type="button"
-              variant="text"
+            <IconButton
+              aria-label="Toggle select mode"
+              color={"primary"}
               onClick={() => {
                 onCancelEdit();
                 reset(emptyValues);
               }}
             >
-              Cancel
-            </Button>
+              <Icon path={mdiCancel} size={0.9} />
+            </IconButton>
           )}
-        </Stack>
+        </Box>
       </Stack>
     </Box>
   );

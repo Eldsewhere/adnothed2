@@ -2,4 +2,10 @@ import type { ItemFilters } from '../types';
 
 export const NO_CATEGORY_FILTER_VALUE = '__none__';
 
-export const emptyItemFilters: ItemFilters = { categoryId: '', text: '', date: '' };
+export const emptyItemFilters: ItemFilters = {
+  categoryId: '',
+  text: '',
+  date: '',
+  hasUrl: false,
+  hasNumber: false,
+};
