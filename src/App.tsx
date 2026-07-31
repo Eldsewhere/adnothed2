@@ -15,13 +15,10 @@ import {
   Stack,
   Tab,
   Tabs,
-  TextField,
   Tooltip,
-  Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiCheck,
   mdiCheckboxMultipleMarkedOutline,
   mdiFolderMoveOutline,
   mdiTrashCanOutline,
