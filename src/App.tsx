@@ -36,10 +36,8 @@ import type { Category, Item } from "./types";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
-  hasPersistedStateFile,
   loadPersistedState,
   openPersistedStateFile,
-  createPersistedStateFile,
   savePersistedState,
 } from "./utils/storage";
 import {
@@ -52,7 +50,6 @@ type TabValue = "items" | "categories" | "utils";
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("utils");
-  console.log(activeTab);
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -68,9 +65,8 @@ function App() {
     useState<HTMLElement | null>(null);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
-  const [storageReady, setStorageReady] = useState(false);
+  const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
-  const skipNextAutoSaveRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -90,7 +86,8 @@ function App() {
       setCategories(persistedState.categories);
       setItems(persistedState.items);
       setStorageFileName(persistedState.fileName);
-      setStorageReady(hasPersistedStateFile());
+      setStorageReady(true);
+      setActiveTab("items");
       isInitializingRef.current = false;
     }
 
@@ -102,11 +99,6 @@ function App() {
 
   useEffect(() => {
     if (!storageReady || isInitializingRef.current) {
-      return;
-    }
-
-    if (skipNextAutoSaveRef.current) {
-      skipNextAutoSaveRef.current = false;
       return;
     }
 
@@ -129,7 +121,6 @@ function App() {
       return;
     }
 
-    skipNextAutoSaveRef.current = true;
     setCategories(result.categories);
     setItems(result.items);
     setStorageFileName(result.fileName);
@@ -137,28 +128,19 @@ function App() {
     setActiveTab("items");
   };
 
-  const handleCreateStorageFile = async () => {
-    const result = await createPersistedStateFile(storageFileName);
-    if (!result) {
-      return;
-    }
-
-    skipNextAutoSaveRef.current = true;
-    setCategories([]);
-    setItems([]);
-    setStorageFileName(result.fileName);
-    setStorageReady(true);
-    setActiveTab("items");
-  };
-
   const handleExportJson = () => {
-    const blob = new Blob([JSON.stringify({ categories, items }, null, 2)], {
+    const payload = { categories, items };
+    const cleanFileName = storageFileName.trim() || DEFAULT_FILE_NAME;
+    const downloadName = cleanFileName.endsWith(".json")
+      ? cleanFileName
+      : `${cleanFileName}.json`;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "adnothed-export.json";
+    link.download = downloadName;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -415,23 +397,6 @@ function App() {
           </TabPanel>
           <TabPanel value={activeTab} index="utils">
             <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
-              <Stack direction="row" spacing={2}>
-                <TextField
-                  label="Storage file name"
-                  value={storageFileName}
-                  onChange={(event) => setStorageFileName(event.target.value)}
-                  size="small"
-                  sx={{ width: 200 }}
-                />
-
-                <IconButton
-                  onClick={handleCreateStorageFile}
-                  aria-label="Create"
-                  color={"primary"}
-                >
-                  <Icon path={mdiCheck} size={0.9} />
-                </IconButton>
-              </Stack>
               <Button
                 variant="outlined"
                 size="small"
@@ -439,11 +404,6 @@ function App() {
               >
                 Open storage file
               </Button>
-              {!storageReady && (
-                <Typography variant="body2" color="text.secondary">
-                  No storage file loaded. Select a file above to enable the app.
-                </Typography>
-              )}
               <Button
                 variant="outlined"
                 size="small"

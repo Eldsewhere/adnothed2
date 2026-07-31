@@ -91,9 +91,11 @@ const ItemForm = ({
                 {...field}
                 label="Text"
                 size="small"
+                multiline
+                minRows={2}
                 error={!!errors.text}
                 helperText={errors.text?.message}
-                sx={{ width: 160 }}
+                sx={{ width: { xs: 220, sm: 320 } }}
               />
             )}
           />

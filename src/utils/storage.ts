@@ -14,6 +14,8 @@ type PersistedState = {
 };
 
 export const DEFAULT_FILE_NAME = "adnothed-state.json";
+const STORAGE_KEY = "adnothed-local-storage";
+const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
 
 const emptyPersistedState: PersistedState = { categories: [], items: [] };
 const emptyAppState: { categories: Category[]; items: Item[] } = {
@@ -21,40 +23,37 @@ const emptyAppState: { categories: Category[]; items: Item[] } = {
   items: [],
 };
 
-let currentFileHandle: FileSystemFileHandle | null = null;
-
-type FileSystemFileHandle = {
-  name: string;
-  getFile(): Promise<File>;
-  createWritable(options?: {
-    keepExistingData?: boolean;
-  }): Promise<FileSystemWritableFileStream>;
-};
-
-type FileSystemWritableFileStream = {
-  write(
-    data: string | Blob | ArrayBufferView | ArrayBuffer | BlobPart[],
-  ): Promise<void>;
-  close(): Promise<void>;
-};
-
-type SaveFilePickerOptions = {
-  suggestedName?: string;
-  types?: Array<{
-    description?: string;
-    accept: Record<string, string[]>;
-  }>;
-  excludeAcceptAllOption?: boolean;
-  startIn?: unknown;
-};
-
-function getShowSaveFilePicker():
-  | ((options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>)
-  | undefined {
+function getStoredValue(): string | null {
   if (typeof window === "undefined") {
-    return undefined;
+    return null;
   }
-  return (window as any).showSaveFilePicker;
+
+  return window.localStorage.getItem(STORAGE_KEY);
+}
+
+function setStoredValue(value: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(STORAGE_KEY, value);
+}
+
+function setStoredFileName(value: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.setItem(FILE_NAME_STORAGE_KEY, value);
+}
+
+function clearStoredValue(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  window.localStorage.removeItem(STORAGE_KEY);
+  window.localStorage.removeItem(FILE_NAME_STORAGE_KEY);
 }
 
 function getShowOpenFilePicker():
@@ -68,132 +67,14 @@ function getShowOpenFilePicker():
   if (typeof window === "undefined") {
     return undefined;
   }
+
   return (window as any).showOpenFilePicker;
 }
 
-function isFileSystemAccessSupported(): boolean {
-  return !!getShowSaveFilePicker() || !!getShowOpenFilePicker();
-}
-
-function setCurrentFileHandle(handle: FileSystemFileHandle) {
-  currentFileHandle = handle;
-}
-
-function getCurrentFileHandle(): FileSystemFileHandle | null {
-  return currentFileHandle;
-}
-
-export async function getPersistedFileName(): Promise<string> {
-  try {
-    return getCurrentFileHandle()?.name ?? DEFAULT_FILE_NAME;
-  } catch {
-    return DEFAULT_FILE_NAME;
-  }
-}
-
-async function chooseStateFile(
-  suggestedName: string = DEFAULT_FILE_NAME,
-): Promise<FileSystemFileHandle | null> {
-  const picker = getShowSaveFilePicker();
-  if (!picker) {
-    return null;
-  }
-
-  try {
-    return await picker({
-      suggestedName,
-      types: [
-        {
-          description: "Adnothed state file",
-          accept: {
-            "application/json": [".json"],
-          },
-        },
-      ],
-      excludeAcceptAllOption: true,
-    });
-  } catch {
-    return null;
-  }
-}
-
-async function chooseExistingStateFile(
-  suggestedName: string = DEFAULT_FILE_NAME,
-): Promise<FileSystemFileHandle | null> {
-  const openPicker = getShowOpenFilePicker();
-  if (!openPicker) {
-    return null;
-  }
-
-  try {
-    const handles = await openPicker({
-      multiple: false,
-      types: [
-        {
-          description: "Adnothed state file",
-          accept: {
-            "application/json": [".json"],
-          },
-        },
-      ],
-      excludeAcceptAllOption: true,
-    });
-    return handles[0] ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export async function openPersistedStateFile(
-  suggestedFileName: string = DEFAULT_FILE_NAME,
-): Promise<{
-  categories: Category[];
-  items: Item[];
-  fileName: string;
-} | null> {
-  if (!isFileSystemAccessSupported()) {
-    return null;
-  }
-
-  const handle = await chooseExistingStateFile(suggestedFileName);
-  if (!handle) {
-    return null;
-  }
-
-  setCurrentFileHandle(handle);
-
-  const file = await handle.getFile();
-  const raw = await file.text();
-  const state = deserializeState(parseState(raw));
-  return { ...state, fileName: handle.name };
-}
-
-export async function createPersistedStateFile(
-  suggestedFileName: string = DEFAULT_FILE_NAME,
-): Promise<{ fileName: string } | null> {
-  if (!isFileSystemAccessSupported()) {
-    return null;
-  }
-
-  const handle = await chooseStateFile(
-    suggestedFileName.trim() || DEFAULT_FILE_NAME,
-  );
-  if (!handle) {
-    return null;
-  }
-
-  setCurrentFileHandle(handle);
-
-  try {
-    const writable = await handle.createWritable();
-    await writable.write(JSON.stringify(emptyPersistedState, null, 2));
-    await writable.close();
-    return { fileName: handle.name };
-  } catch {
-    currentFileHandle = null;
-    return null;
-  }
-}
+type FileSystemFileHandle = {
+  name: string;
+  getFile(): Promise<File>;
+};
 
 function resolveIconOption(name: string): Category["icon"] {
   const option = mdiIconOptions.find((item) => item.name === name);
@@ -257,8 +138,97 @@ function parseState(raw: string | null): PersistedState {
   }
 }
 
+export async function getPersistedFileName(): Promise<string> {
+  try {
+    if (typeof window === "undefined") {
+      return DEFAULT_FILE_NAME;
+    }
+
+    return (
+      window.localStorage.getItem(FILE_NAME_STORAGE_KEY)?.trim() ||
+      DEFAULT_FILE_NAME
+    );
+  } catch {
+    return DEFAULT_FILE_NAME;
+  }
+}
+
+export async function openPersistedStateFile(
+  suggestedFileName: string = DEFAULT_FILE_NAME,
+): Promise<{
+  categories: Category[];
+  items: Item[];
+  fileName: string;
+} | null> {
+  const openPicker = getShowOpenFilePicker();
+
+  let file: File | null = null;
+  let fileName = suggestedFileName.trim() || DEFAULT_FILE_NAME;
+
+  if (openPicker) {
+    try {
+      const handles = await openPicker({
+        multiple: false,
+        types: [
+          {
+            description: "Adnothed state file",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+      });
+
+      const handle = handles[0];
+      if (!handle) {
+        return null;
+      }
+
+      file = await handle.getFile();
+      fileName = handle.name || fileName;
+    } catch {
+      return null;
+    }
+  } else {
+    try {
+      const picker = document.createElement("input");
+      picker.type = "file";
+      picker.accept = ".json,application/json";
+
+      const selected = await new Promise<File | null>((resolve) => {
+        picker.onchange = () => {
+          const selectedFile = picker.files?.[0] ?? null;
+          resolve(selectedFile);
+        };
+        picker.click();
+      });
+
+      if (!selected) {
+        return null;
+      }
+
+      file = selected;
+      fileName = selected.name || fileName;
+    } catch {
+      return null;
+    }
+  }
+
+  try {
+    const raw = await file.text();
+    const state = deserializeState(parseState(raw));
+    const serialized = serializeState(state);
+    setStoredValue(JSON.stringify(serialized));
+    setStoredFileName(fileName);
+    return { ...state, fileName };
+  } catch {
+    return null;
+  }
+}
+
 export function hasPersistedStateFile(): boolean {
-  return !!getCurrentFileHandle();
+  return !!getStoredValue();
 }
 
 export async function loadPersistedState(): Promise<{
@@ -267,20 +237,11 @@ export async function loadPersistedState(): Promise<{
   fileName: string;
 }> {
   try {
-    if (!isFileSystemAccessSupported()) {
-      return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
-    }
-
-    const handle = getCurrentFileHandle();
-    if (!handle) {
-      return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
-    }
-
-    const file = await handle.getFile();
-    const raw = await file.text();
-    return { ...deserializeState(parseState(raw)), fileName: handle.name };
+    const raw = getStoredValue();
+    const fileName = await getPersistedFileName();
+    return { ...deserializeState(parseState(raw)), fileName };
   } catch {
-    currentFileHandle = null;
+    clearStoredValue();
     return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
   }
 }
@@ -294,30 +255,14 @@ export async function savePersistedState(
 ): Promise<void> {
   const serialized = serializeState(state);
 
-  if (!isFileSystemAccessSupported()) {
-    return;
-  }
-
-  let handle = getCurrentFileHandle();
-  if (!handle) {
-    handle = await chooseStateFile(
-      suggestedFileName.trim() || DEFAULT_FILE_NAME,
-    );
-    if (!handle) {
-      return;
-    }
-    setCurrentFileHandle(handle);
-  }
-
   try {
-    const writable = await handle.createWritable();
-    await writable.write(JSON.stringify(serialized));
-    await writable.close();
+    setStoredValue(JSON.stringify(serialized));
+    setStoredFileName(suggestedFileName.trim() || DEFAULT_FILE_NAME);
   } catch {
-    currentFileHandle = null;
+    clearStoredValue();
   }
 }
 
 export async function clearPersistedState(): Promise<void> {
-  currentFileHandle = null;
+  clearStoredValue();
 }

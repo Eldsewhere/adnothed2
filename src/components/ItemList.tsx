@@ -248,6 +248,7 @@ const ItemList = ({
                       sx={{
                         textAlign: "left",
                         whiteSpace: "pre-wrap",
+                        overflowWrap: "anywhere",
                         wordBreak: "break-word",
                       }}
                     >
