@@ -16,7 +16,9 @@ import { mdiCancel, mdiCheck } from "@mdi/js";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
-  onSubmit: (values: CategoryFormValues & { icon: IconOption }) => void;
+  onSubmit: (
+    values: CategoryFormValues & { icon: IconOption },
+  ) => boolean | void;
   onCancelEdit: () => void;
 };
 
@@ -54,8 +56,10 @@ const CategoryForm = ({
     if (!values.icon) {
       return;
     }
-    onSubmit({ ...values, icon: values.icon });
-    reset(emptyValues);
+    const result = onSubmit({ ...values, icon: values.icon });
+    if (result !== false) {
+      reset(emptyValues);
+    }
   });
 
   return (
@@ -89,7 +93,7 @@ const CategoryForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Icon"
+                  label="Group Icon"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
@@ -111,11 +115,11 @@ const CategoryForm = ({
           <Controller
             name="name"
             control={control}
-            rules={{ required: "Name is required" }}
+            rules={{ required: "Group name is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Name"
+                label="Group Name"
                 size="small"
                 error={!!errors.name}
                 helperText={errors.name?.message}

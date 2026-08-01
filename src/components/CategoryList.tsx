@@ -1,6 +1,7 @@
 import { useState } from "react";
 import {
   Box,
+  Chip,
   IconButton,
   Menu,
   MenuItem,
@@ -20,9 +21,15 @@ type CategoryListProps = {
   categories: Category[];
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
+  newCategoryId?: string | null;
 };
 
-const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
+const CategoryList = ({
+  categories,
+  onEdit,
+  onDelete,
+  newCategoryId,
+}: CategoryListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
     category: Category | null;
@@ -53,27 +60,61 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
     handleCloseMenu();
   };
 
+  const orderedCategories = categories
+    .slice()
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <Box>
-      {categories.length === 0 ? (
-        <Typography color="text.secondary">No categories added yet.</Typography>
+      {orderedCategories.length === 0 ? (
+        <Typography color="text.secondary">No groups added yet</Typography>
       ) : (
-        <TableContainer>
-          <Table size="small">
-            <TableBody>
-              {categories.map((category) => (
-                <TableRow key={category.id}>
-                  <TableCell sx={{ pr: 1, flexShrink: 0, width: 60 }}>
-                    <Tooltip title={category.icon.name}>
-                      <span>
+        <Box
+          sx={{
+            maxHeight: "calc(100vh - 280px)",
+            overflowY: "auto",
+            minHeight: 0,
+          }}
+        >
+          <TableContainer>
+            <Table size="small">
+              <TableBody>
+                {orderedCategories.map((category) => (
+                  <TableRow key={category.id}>
+                    <TableCell
+                      sx={{
+                        pr: 1,
+                        flexShrink: 0,
+                        width: 60,
+                        verticalAlign: "middle",
+                      }}
+                    >
+                      <Tooltip
+                        title={category.icon.name}
+                        aria-label={`Icon for ${category.name}`}
+                      >
                         <Icon path={category.icon.path} size={1} />
-                      </span>
-                    </Tooltip>
-                  </TableCell>
-                  <TableCell sx={{ pl: 0 }}>{category.name}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="More options">
-                      <span>
+                      </Tooltip>
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        pl: 0,
+                      }}
+                    >
+                      <Typography noWrap>
+                        {category.name}{" "}
+                        {category.id === newCategoryId ? (
+                          <Chip
+                            label="New"
+                            size="small"
+                            color="primary"
+                            sx={{ height: 22, fontWeight: 600 }}
+                          />
+                        ) : null}
+                      </Typography>
+                    </TableCell>
+                    <TableCell align="right" sx={{ verticalAlign: "middle" }}>
+                      <Tooltip title="Actions">
                         <IconButton
                           aria-label={`Open actions for ${category.name}`}
                           size="small"
@@ -81,14 +122,14 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
                         >
                           <Icon path={mdiDotsVertical} size={0.8} />
                         </IconButton>
-                      </span>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
       )}
       <Menu
         anchorEl={menuState.anchorEl}

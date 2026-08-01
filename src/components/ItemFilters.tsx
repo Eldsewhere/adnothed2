@@ -43,11 +43,18 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) =>
     setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
+  const filtersActive = Boolean(anchorEl) || activeFilterCount > 0;
 
   return (
     <>
-      <Tooltip title="Open filters">
-        <IconButton aria-label="Filter items" onClick={handleOpen}>
+      <Tooltip
+        title={`Open filters ${activeFilterCount ? ` (${activeFilterCount} active)` : ""}`}
+      >
+        <IconButton
+          aria-label="Filter notes"
+          onClick={handleOpen}
+          color={filtersActive ? "primary" : "default"}
+        >
           <Badge badgeContent={activeFilterCount} color="primary">
             <Icon path={mdiFilterOutline} size={0.9} />
           </Badge>
@@ -60,9 +67,9 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 2, width: 260 }}>
-          <Typography variant="subtitle2" gutterBottom>
-            Filter items
+        <Box sx={{ p: 1, width: 260 }}>
+          <Typography variant="body1" gutterBottom>
+            Filter notes
           </Typography>
           <Stack spacing={2}>
             <TextField
@@ -83,7 +90,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               ))}
             </TextField>
             <TextField
-              label="Text contains"
+              label="Note contains"
               size="small"
               value={filters.text}
               onChange={(event) =>
@@ -91,7 +98,11 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               }
             />
             <TextField
-              label="Date"
+              label={
+                filters.date && dateRegex.test(filters.date) && filters.endDate
+                  ? "Date after"
+                  : "Date equals"
+              }
               size="small"
               placeholder="YYYY-MM-DD"
               value={filters.date}
@@ -101,7 +112,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
             />
             {filters.date && dateRegex.test(filters.date) && (
               <TextField
-                label="End Date"
+                label="Date before"
                 size="small"
                 placeholder="YYYY-MM-DD"
                 value={filters.endDate}
@@ -110,28 +121,30 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
                 }
               />
             )}
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filters.hasUrl}
-                  onChange={(event) =>
-                    onChange({ ...filters, hasUrl: event.target.checked })
-                  }
-                />
-              }
-              label="Only messages with URLs"
-            />
-            <FormControlLabel
-              control={
-                <Checkbox
-                  checked={filters.hasNumber}
-                  onChange={(event) =>
-                    onChange({ ...filters, hasNumber: event.target.checked })
-                  }
-                />
-              }
-              label="Only messages with numbers"
-            />
+            <Stack spacing={1}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filters.hasUrl}
+                    onChange={(event) =>
+                      onChange({ ...filters, hasUrl: event.target.checked })
+                    }
+                  />
+                }
+                label="With URLs"
+              />
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={filters.hasNumber}
+                    onChange={(event) =>
+                      onChange({ ...filters, hasNumber: event.target.checked })
+                    }
+                  />
+                }
+                label="Only numbers"
+              />
+            </Stack>
             <Tooltip
               title={
                 activeFilterCount === 0

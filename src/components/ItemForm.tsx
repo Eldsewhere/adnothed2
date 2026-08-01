@@ -45,11 +45,11 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
             <Controller
               name="text"
               control={control}
-              rules={{ required: "Text is required" }}
+              rules={{ required: "Note is required" }}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Text"
+                  label="Note"
                   size="small"
                   fullWidth
                   multiline
@@ -61,11 +61,11 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
             />
           </Box>
           <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
-            <Tooltip title={editingItem ? "Update item" : "Add item"}>
+            <Tooltip title={editingItem ? "Update note" : "Add note"}>
               <span>
                 <IconButton
                   type="submit"
-                  aria-label={editingItem ? "Update item" : "Add item"}
+                  aria-label={editingItem ? "Update note" : "Add note"}
                   color={"primary"}
                 >
                   <Icon path={mdiCheck} size={0.9} />

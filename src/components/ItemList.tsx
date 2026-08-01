@@ -377,13 +377,23 @@ const ItemList = ({
                         )}
                       </Typography>
                     </Tooltip>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ textAlign: "left", display: "block" }}
-                    >
-                      {formatTimestamp(item.createdAt)}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        sx={{ textAlign: "left", display: "block" }}
+                      >
+                        {formatTimestamp(item.createdAt)}
+                      </Typography>
+                      <Tooltip title="Recent" arrow>
+                        <Badge
+                          variant="dot"
+                          color="error"
+                          overlap="circular"
+                          invisible={!Boolean(item.hasNotification)}
+                        />
+                      </Tooltip>
+                    </Box>
                   </Box>
                   <Box
                     sx={{
@@ -401,27 +411,17 @@ const ItemList = ({
                         <Icon path={mdiContentCopy} size={0.8} />
                       </IconButton>
                     </Tooltip>
-                    <Badge
-                      variant="dot"
-                      color="error"
-                      overlap="circular"
-                      invisible={!Boolean((item as any).hasNotification)}
-                      sx={{ mr: 0.5 }}
-                    >
-                      <Tooltip title="More options">
-                        <span>
-                          <IconButton
-                            aria-label={`Actions for ${item.text}`}
-                            size="small"
-                            onClick={(event: MouseEvent<HTMLElement>) =>
-                              setMenuAnchor({ el: event.currentTarget, item })
-                            }
-                          >
-                            <Icon path={mdiDotsVertical} size={0.8} />
-                          </IconButton>
-                        </span>
-                      </Tooltip>
-                    </Badge>
+                    <Tooltip title="Actions">
+                      <IconButton
+                        aria-label={`Actions for ${item.text}`}
+                        size="small"
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          setMenuAnchor({ el: event.currentTarget, item })
+                        }
+                      >
+                        <Icon path={mdiDotsVertical} size={0.8} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 </Box>
               );

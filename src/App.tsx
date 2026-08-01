@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Box,
   Button,
   Dialog,
@@ -7,7 +8,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
+  mdiCancel,
   mdiCheckboxMultipleMarkedOutline,
   mdiFolderMoveOutline,
   mdiTrashCanOutline,
@@ -54,6 +55,9 @@ function App() {
   const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [notification, setNotification] = useState<string | null>(null);
+  const [notificationSeverity, setNotificationSeverity] = useState<
+    "success" | "error" | "info" | "warning"
+  >("success");
   const [itemFilters, setItemFilters] = useState(emptyItemFilters);
   const [selectMode, setSelectMode] = useState(false);
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
@@ -64,6 +68,7 @@ function App() {
     useState<HTMLElement | null>(null);
   const [confirmDeleteCategory, setConfirmDeleteCategory] =
     useState<Category | null>(null);
+  const [latestCategoryId, setLatestCategoryId] = useState<string | null>(null);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
@@ -88,6 +93,7 @@ function App() {
       setItems(persistedState.items);
       setStorageFileName(persistedState.fileName);
       if (persistedState.parseError) {
+        setNotificationSeverity("error");
         setNotification(persistedState.parseError);
       }
       setStorageReady(true);
@@ -129,6 +135,7 @@ function App() {
     setItems(result.items);
     setStorageFileName(result.fileName);
     if (result.parseError) {
+      setNotificationSeverity("error");
       setNotification(result.parseError);
     }
     setStorageReady(true);
@@ -162,8 +169,9 @@ function App() {
       (c) => c.id === iconName && c.id !== editingCategory?.id,
     );
     if (conflict) {
+      setNotificationSeverity("error");
       setNotification("A group with that icon already exists.");
-      return;
+      return false;
     }
 
     if (editingCategory) {
@@ -179,6 +187,8 @@ function App() {
             : category,
         ),
       );
+      setNotificationSeverity("success");
+      setNotification(`Updated group "${values.name}"`);
       setEditingCategory(null);
       return;
     }
@@ -187,6 +197,9 @@ function App() {
       ...prev,
       { id: iconName, name: values.name, icon: values.icon },
     ]);
+    setLatestCategoryId(iconName);
+    setNotificationSeverity("success");
+    setNotification(`Added group "${values.name}"`);
   };
 
   const handleDelete = (category: Category) => {
@@ -242,7 +255,8 @@ function App() {
 
   const handleItemCopy = (item: Item) => {
     navigator.clipboard.writeText(item.text);
-    setNotification(`Item Copied`);
+    setNotificationSeverity("success");
+    setNotification("Note Copied");
   };
 
   const handleItemDelete = (item: Item) => {
@@ -319,7 +333,7 @@ function App() {
             <Stack direction="row" sx={{ alignItems: "center" }}>
               <Tooltip
                 title={
-                  selectMode ? "Exit select mode" : "Select multiple items"
+                  selectMode ? "Cancel select mode" : "Select multiple notes"
                 }
               >
                 <IconButton
@@ -356,7 +370,7 @@ function App() {
                     title={
                       selectedItemIds.size > 0
                         ? "Change group"
-                        : "Select items to enable"
+                        : "Select notes to enable"
                     }
                   >
                     <span>
@@ -379,7 +393,7 @@ function App() {
                     title={
                       selectedItemIds.size > 0
                         ? "Delete selected"
-                        : "Select items to enable"
+                        : "Select notes to enable"
                     }
                   >
                     <span>
@@ -393,6 +407,21 @@ function App() {
                         sx={{ textTransform: "none" }}
                       >
                         Delete
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip title="Exit select mode">
+                    <span>
+                      <Button
+                        variant="text"
+                        startIcon={<Icon path={mdiCancel} size={0.9} />}
+                        onClick={() => {
+                          setSelectedItemIds(new Set());
+                          setSelectMode(false);
+                        }}
+                        sx={{ textTransform: "none" }}
+                      >
+                        Cancel
                       </Button>
                     </span>
                   </Tooltip>
@@ -449,8 +478,8 @@ function App() {
                 categories={categories}
                 onEdit={setEditingCategory}
                 onDelete={requestDeleteCategory}
+                newCategoryId={latestCategoryId}
               />
-              <Divider sx={{ my: 2 }} />
               <Stack
                 direction="row"
                 spacing={1}
@@ -467,7 +496,7 @@ function App() {
                     </Button>
                   </span>
                 </Tooltip>
-                <Tooltip title="Export current data to JSON file">
+                <Tooltip title="Save current data to JSON file">
                   <span>
                     <Button
                       variant="outlined"
@@ -487,16 +516,23 @@ function App() {
         open={!!notification}
         autoHideDuration={3000}
         onClose={() => setNotification(null)}
-        message={notification}
-      />
+      >
+        <Alert
+          onClose={() => setNotification(null)}
+          severity={notificationSeverity}
+          sx={{ width: "100%" }}
+        >
+          {notification}
+        </Alert>
+      </Snackbar>
       <Dialog
         open={confirmBulkDeleteOpen}
         onClose={() => setConfirmBulkDeleteOpen(false)}
       >
-        <DialogTitle>Delete {selectedItemIds.size} item(s)?</DialogTitle>
+        <DialogTitle>Delete {selectedItemIds.size} Note(s)?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will permanently delete the selected items. This action cannot
+            This will permanently delete the selected notes. This action cannot
             be undone.
           </DialogContentText>
         </DialogContent>
@@ -519,8 +555,7 @@ function App() {
         <DialogContent>
           <DialogContentText>
             Deleting this group will remove it and set any items in this group
-            to have no group. This action cannot be undone. Are you sure you
-            want to continue?
+            to have no group. Are you sure you want to continue?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -530,6 +565,10 @@ function App() {
             onClick={() => {
               if (confirmDeleteCategory) {
                 handleDelete(confirmDeleteCategory);
+                setNotificationSeverity("success");
+                setNotification(
+                  `Deleted group "${confirmDeleteCategory.name}"`,
+                );
               }
               setConfirmDeleteCategory(null);
             }}
