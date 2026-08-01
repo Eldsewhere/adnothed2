@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -44,10 +45,10 @@ import {
 } from "./utils/notifications";
 import { emptyItemFilters } from "./utils/itemFilters";
 
-type TabValue = "items" | "categories" | "utils";
+type TabValue = "items" | "categories";
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabValue>("utils");
+  const [activeTab, setActiveTab] = useState<TabValue>("items");
   const [categories, setCategories] = useState<Category[]>([]);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [items, setItems] = useState<Item[]>([]);
@@ -110,7 +111,7 @@ function App() {
 
   useEffect(() => {
     if (!storageReady) {
-      setActiveTab("utils");
+      setActiveTab("categories");
     }
   }, [storageReady]);
 
@@ -296,43 +297,24 @@ function App() {
             value={activeTab}
             onChange={(_event, newValue) => {
               const normalized =
-                newValue === "items" ||
-                newValue === "categories" ||
-                newValue === "utils"
+                newValue === "items" || newValue === "categories"
                   ? newValue
                   : (String(newValue) as TabValue);
               setActiveTab(normalized);
             }}
           >
-            {storageReady ? (
-              [
-                <Tab
-                  value="items"
-                  label="Notes"
-                  id="tab-items"
-                  aria-controls="tabpanel-items"
-                />,
-                <Tab
-                  value="categories"
-                  label="Groups"
-                  id="tab-categories"
-                  aria-controls="tabpanel-categories"
-                />,
-                <Tab
-                  value="utils"
-                  label="Data"
-                  id="tab-utils"
-                  aria-controls="tabpanel-utils"
-                />,
-              ]
-            ) : (
-              <Tab
-                value="utils"
-                label="Utils"
-                id="tab-utils"
-                aria-controls="tabpanel-utils"
-              />
-            )}
+            <Tab
+              value="items"
+              label="Notes"
+              id="tab-items"
+              aria-controls="tabpanel-items"
+            />
+            <Tab
+              value="categories"
+              label="Groups"
+              id="tab-categories"
+              aria-controls="tabpanel-categories"
+            />
           </Tabs>
           {activeTab === "items" && (
             <Stack direction="row" sx={{ alignItems: "center" }}>
@@ -439,24 +421,27 @@ function App() {
                 onEdit={setEditingCategory}
                 onDelete={requestDeleteCategory}
               />
-            </Stack>
-          </TabPanel>
-          <TabPanel value={activeTab} index="utils">
-            <Stack spacing={2} sx={{ alignItems: "flex-start" }}>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleOpenStorageFile}
+              <Divider sx={{ my: 2 }} />
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{ width: "100%", justifyContent: "flex-end" }}
               >
-                Import JSON
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleExportJson}
-              >
-                Export JSON
-              </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleOpenStorageFile}
+                >
+                  Import JSON
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleExportJson}
+                >
+                  Export JSON
+                </Button>
+              </Stack>
             </Stack>
           </TabPanel>
         </Box>
