@@ -154,6 +154,17 @@ function App() {
   const handleSubmit: React.ComponentProps<typeof CategoryForm>["onSubmit"] = (
     values,
   ) => {
+    const iconName = values.icon.name;
+
+    // ensure the icon is unique across categories
+    const conflict = categories.some(
+      (c) => c.id === iconName && c.id !== editingCategory?.id,
+    );
+    if (conflict) {
+      setNotification("A group with that icon already exists.");
+      return;
+    }
+
     if (editingCategory) {
       setCategories((prev) =>
         prev.map((category) =>
@@ -162,7 +173,7 @@ function App() {
                 ...category,
                 name: values.name,
                 icon: values.icon,
-                id: values.icon.name,
+                id: iconName,
               }
             : category,
         ),
@@ -174,7 +185,7 @@ function App() {
     // use icon name as the category identifier
     setCategories((prev) => [
       ...prev,
-      { id: values.icon.name, name: values.name, icon: values.icon },
+      { id: iconName, name: values.name, icon: values.icon },
     ]);
   };
 
@@ -203,19 +214,6 @@ function App() {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
     const categoryName =
       categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
-    const trimmed = values.text.trim();
-
-    // prevent duplicate item texts (case-insensitive)
-    const duplicate = (items || []).some(
-      (it) =>
-        it.text.trim().toLowerCase() === trimmed.toLowerCase() &&
-        it.id !== editingItem?.id,
-    );
-    if (duplicate) {
-      setNotification("An item with this text already exists.");
-      return;
-    }
-
     if (editingItem) {
       setItems((prev) =>
         prev.map((item) =>
