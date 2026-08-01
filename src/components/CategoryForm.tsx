@@ -123,11 +123,7 @@ const CategoryForm = ({
             )}
           />
           <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-            <IconButton
-              type="submit"
-              aria-label="Save category"
-              color={"primary"}
-            >
+            <IconButton type="submit" aria-label="Save group" color={"primary"}>
               <Icon path={mdiCheck} size={0.9} />
             </IconButton>
             {editingCategory && (

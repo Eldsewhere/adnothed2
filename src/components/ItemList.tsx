@@ -229,7 +229,7 @@ const ItemList = ({
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: "calc(100vh - 320px)",
+            height: "calc(100vh - 200px)",
             minHeight: 200,
             overflowY: "auto",
             position: "relative",
@@ -281,11 +281,11 @@ const ItemList = ({
                     }}
                   >
                     <Tooltip
-                      title={category ? category.name : "No category"}
+                      title={category ? category.name : "No Group"}
                       arrow
                     >
                       <IconButton
-                        aria-label={`Change category for ${item.text}`}
+                        aria-label={`Change group for ${item.text}`}
                         size="small"
                         onClick={(event: MouseEvent<HTMLElement>) =>
                           openCategoryMenu(event, item)
@@ -464,7 +464,7 @@ const ItemList = ({
           >
             <Icon path={mdiNoteText} size={0.7} />
           </Box>
-          No category
+          No group
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

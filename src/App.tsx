@@ -183,7 +183,6 @@ function App() {
       return;
     }
 
-    // use icon name as the category identifier
     setCategories((prev) => [
       ...prev,
       { id: iconName, name: values.name, icon: values.icon },
@@ -287,8 +286,8 @@ function App() {
   };
 
   return (
-    <Box sx={{ margin: 1 }}>
-      <Paper sx={{ p: 2 }}>
+    <Box>
+      <Paper sx={{ p: 1 }}>
         <Stack
           direction="row"
           sx={{ alignItems: "center", justifyContent: "space-between" }}
@@ -356,7 +355,7 @@ function App() {
                   <Tooltip
                     title={
                       selectedItemIds.size > 0
-                        ? "Change category"
+                        ? "Change group"
                         : "Select items to enable"
                     }
                   >
@@ -537,7 +536,7 @@ function App() {
         onClose={() => setBulkCategoryAnchor(null)}
       >
         <MenuItem onClick={() => handleBulkCategoryChange(null)}>
-          No category
+          No group
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

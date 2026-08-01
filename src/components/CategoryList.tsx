@@ -42,8 +42,7 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
                       <Icon path={mdiPencilOutline} size={0.8} />
                     </IconButton>
                     <IconButton
-                      aria-label="Toggle select mode"
-                      color={"primary"}
+                      aria-label={`Delete ${category.name}`}
                       onClick={() => onDelete(category)}
                     >
                       <Icon path={mdiTrashCanOutline} size={0.9} />
