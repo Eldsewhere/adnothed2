@@ -1,19 +1,11 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import {
-  Box,
-  Button,
-  IconButton,
-  MenuItem,
-  Stack,
-  TextField,
-} from "@mui/material";
+import { Box, IconButton, Stack, TextField } from "@mui/material";
 import { Icon } from "@mdi/react";
-import type { Category, Item, ItemFormValues } from "../types";
-import { mdiCheck } from "@mdi/js";
+import type { Item, ItemFormValues } from "../types";
+import { mdiCancel, mdiCheck } from "@mdi/js";
 
 type ItemFormProps = {
-  categories: Category[];
   editingItem: Item | null;
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
@@ -21,12 +13,7 @@ type ItemFormProps = {
 
 const emptyValues: ItemFormValues = { categoryId: "", text: "" };
 
-const ItemForm = ({
-  categories,
-  editingItem,
-  onSubmit,
-  onCancelEdit,
-}: ItemFormProps) => {
+const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
   const {
     control,
     handleSubmit,
@@ -53,52 +40,26 @@ const ItemForm = ({
         direction="row"
         sx={{ alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}
       >
-        <Controller
-          name="categoryId"
-          control={control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              select
-              label="Cat"
-              size="small"
-              error={!!errors.categoryId}
-              helperText={errors.categoryId?.message}
-              sx={{ width: 80 }}
-            >
-              <MenuItem value=""> No category</MenuItem>
-              {categories.map((category) => (
-                <MenuItem key={category.id} value={category.id}>
-                  <Box
-                    component="span"
-                    sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-                  >
-                    <Icon path={category.icon.path} size={0.8} />
-                  </Box>
-                  {category.name.substring(0, 3)}
-                </MenuItem>
-              ))}
-            </TextField>
-          )}
-        />
-        <Stack direction="row">
-          <Controller
-            name="text"
-            control={control}
-            rules={{ required: "Text is required" }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Text"
-                size="small"
-                multiline
-                minRows={2}
-                error={!!errors.text}
-                helperText={errors.text?.message}
-                sx={{ width: { xs: 220, sm: 320 } }}
-              />
-            )}
-          />
+        <Stack direction="row" sx={{ alignItems: "flex-start", width: "100%" }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Controller
+              name="text"
+              control={control}
+              rules={{ required: "Text is required" }}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Text"
+                  size="small"
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  error={!!errors.text}
+                  helperText={errors.text?.message}
+                />
+              )}
+            />
+          </Box>
           <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
             <IconButton
               type="submit"
@@ -108,16 +69,16 @@ const ItemForm = ({
               <Icon path={mdiCheck} size={0.9} />
             </IconButton>
             {editingItem && (
-              <Button
-                type="button"
-                variant="text"
+              <IconButton
                 onClick={() => {
                   onCancelEdit();
                   reset(emptyValues);
                 }}
+                aria-label="Cancel"
+                color={"primary"}
               >
-                Cancel
-              </Button>
+                <Icon path={mdiCancel} size={0.9} />
+              </IconButton>
             )}
           </Box>
         </Stack>

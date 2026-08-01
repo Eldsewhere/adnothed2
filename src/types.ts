@@ -23,6 +23,7 @@ export type Item = {
   categoryId: string | null;
   text: string;
   createdAt: number;
+  hasNotification?: boolean;
 };
 
 export type ItemFormValues = {
@@ -38,4 +39,3 @@ export type ItemFilters = {
   hasUrl: boolean;
   hasNumber: boolean;
 };
-

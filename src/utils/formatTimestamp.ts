@@ -33,10 +33,20 @@ export function formatTimestamp(timestamp: number): string {
   const yesterday = new Date(now);
   yesterday.setDate(yesterday.getDate() - 1);
   if (isSameDay(date, yesterday)) {
-    return `Yesterday ${time}`;
+    return `Yesterday, ${time}`;
   }
 
   return `${formatDate(timestamp)} ${time}`;
+}
+
+export function isToday(timestamp: number): boolean {
+  return isSameDay(new Date(timestamp * 1000), new Date());
+}
+
+export function isYesterday(timestamp: number): boolean {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return isSameDay(new Date(timestamp * 1000), yesterday);
 }
 
 export const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;

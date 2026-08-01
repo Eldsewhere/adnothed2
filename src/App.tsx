@@ -36,6 +36,7 @@ import {
   loadPersistedState,
   openPersistedStateFile,
   savePersistedState,
+  serializeState,
 } from "./utils/storage";
 import {
   requestNotificationPermission,
@@ -60,6 +61,8 @@ function App() {
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [bulkCategoryAnchor, setBulkCategoryAnchor] =
     useState<HTMLElement | null>(null);
+  const [confirmDeleteCategory, setConfirmDeleteCategory] =
+    useState<Category | null>(null);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
@@ -83,6 +86,9 @@ function App() {
       setCategories(persistedState.categories);
       setItems(persistedState.items);
       setStorageFileName(persistedState.fileName);
+      if (persistedState.parseError) {
+        setNotification(persistedState.parseError);
+      }
       setStorageReady(true);
       setActiveTab("items");
       isInitializingRef.current = false;
@@ -121,12 +127,15 @@ function App() {
     setCategories(result.categories);
     setItems(result.items);
     setStorageFileName(result.fileName);
+    if (result.parseError) {
+      setNotification(result.parseError);
+    }
     setStorageReady(true);
     setActiveTab("items");
   };
 
   const handleExportJson = () => {
-    const payload = { categories, items };
+    const payload = serializeState({ categories, items });
     const cleanFileName = storageFileName.trim() || DEFAULT_FILE_NAME;
     const downloadName = cleanFileName.endsWith(".json")
       ? cleanFileName
@@ -149,7 +158,12 @@ function App() {
       setCategories((prev) =>
         prev.map((category) =>
           category.id === editingCategory.id
-            ? { ...category, name: values.name, icon: values.icon }
+            ? {
+                ...category,
+                name: values.name,
+                icon: values.icon,
+                id: values.icon.name,
+              }
             : category,
         ),
       );
@@ -157,9 +171,10 @@ function App() {
       return;
     }
 
+    // use icon name as the category identifier
     setCategories((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), name: values.name, icon: values.icon },
+      { id: values.icon.name, name: values.name, icon: values.icon },
     ]);
   };
 
@@ -178,12 +193,28 @@ function App() {
     }
   };
 
+  const requestDeleteCategory = (category: Category) => {
+    setConfirmDeleteCategory(category);
+  };
+
   const handleItemSubmit: React.ComponentProps<typeof ItemForm>["onSubmit"] = (
     values,
   ) => {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
     const categoryName =
       categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
+    const trimmed = values.text.trim();
+
+    // prevent duplicate item texts (case-insensitive)
+    const duplicate = (items || []).some(
+      (it) =>
+        it.text.trim().toLowerCase() === trimmed.toLowerCase() &&
+        it.id !== editingItem?.id,
+    );
+    if (duplicate) {
+      setNotification("An item with this text already exists.");
+      return;
+    }
 
     if (editingItem) {
       setItems((prev) =>
@@ -204,6 +235,7 @@ function App() {
         categoryId,
         text: values.text,
         createdAt: Math.floor(Date.now() / 1000),
+        hasNotification: true,
       },
     ]);
     setNotification(`${categoryName}: ${values.text}`);
@@ -278,19 +310,19 @@ function App() {
               [
                 <Tab
                   value="items"
-                  label="Items"
+                  label="Notes"
                   id="tab-items"
                   aria-controls="tabpanel-items"
                 />,
                 <Tab
                   value="categories"
-                  label="Categories"
+                  label="Groups"
                   id="tab-categories"
                   aria-controls="tabpanel-categories"
                 />,
                 <Tab
                   value="utils"
-                  label="Utils"
+                  label="Data"
                   id="tab-utils"
                   aria-controls="tabpanel-utils"
                 />,
@@ -353,7 +385,6 @@ function App() {
           <TabPanel value={activeTab} index="items">
             <Stack spacing={3}>
               <ItemForm
-                categories={categories}
                 editingItem={editingItem}
                 onSubmit={handleItemSubmit}
                 onCancelEdit={() => setEditingItem(null)}
@@ -369,8 +400,28 @@ function App() {
                   const categoryName =
                     categories.find((c) => c.id === item.categoryId)?.name ??
                     "Reminder";
+                  // mark item as having an active notification
+                  setItems((prev) =>
+                    prev.map((existingItem) =>
+                      existingItem.id === item.id
+                        ? { ...existingItem, hasNotification: true }
+                        : existingItem,
+                    ),
+                  );
                   setNotification(`${categoryName}: ${item.text}`);
                   showAppNotification(categoryName, item.text);
+                }}
+                onCategoryChange={(item, categoryId) => {
+                  setItems((prev) =>
+                    prev.map((existingItem) =>
+                      existingItem.id === item.id
+                        ? { ...existingItem, categoryId }
+                        : existingItem,
+                    ),
+                  );
+                  if (editingItem?.id === item.id) {
+                    setEditingItem({ ...editingItem, categoryId });
+                  }
                 }}
                 selectMode={selectMode}
                 selectedIds={selectedItemIds}
@@ -388,7 +439,7 @@ function App() {
               <CategoryList
                 categories={categories}
                 onEdit={setEditingCategory}
-                onDelete={handleDelete}
+                onDelete={requestDeleteCategory}
               />
             </Stack>
           </TabPanel>
@@ -434,6 +485,35 @@ function App() {
             Cancel
           </Button>
           <Button color="error" onClick={handleBulkDelete}>
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={!!confirmDeleteCategory}
+        onClose={() => setConfirmDeleteCategory(null)}
+      >
+        <DialogTitle>
+          {`Delete group "${confirmDeleteCategory?.name ?? ""}"?`}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Deleting this group will remove it and set any items in this group
+            to have no group. This action cannot be undone. Are you sure you
+            want to continue?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDeleteCategory(null)}>Cancel</Button>
+          <Button
+            color="error"
+            onClick={() => {
+              if (confirmDeleteCategory) {
+                handleDelete(confirmDeleteCategory);
+              }
+              setConfirmDeleteCategory(null);
+            }}
+          >
             Delete
           </Button>
         </DialogActions>

@@ -1,9 +1,9 @@
 ﻿import { mdiNoteText } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
+import { PersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
 
 type PersistedCategory = {
-  id: string;
   name: string;
   iconName: string;
 };
@@ -11,6 +11,11 @@ type PersistedCategory = {
 type PersistedState = {
   categories: PersistedCategory[];
   items: Item[];
+};
+
+type ParseResult = {
+  state: PersistedState;
+  error: string | null;
 };
 
 export const DEFAULT_FILE_NAME = "adnothed-state.json";
@@ -94,17 +99,23 @@ function resolveIconOption(name: string): Category["icon"] {
   };
 }
 
-function serializeState(state: {
+export function serializeState(state: {
   categories: Category[];
   items: Item[];
 }): PersistedState {
   return {
+    // only persist name + iconName; iconName is the unique identifier
     categories: state.categories.map((category) => ({
-      id: category.id,
       name: category.name,
       iconName: category.icon.name,
     })),
-    items: state.items,
+    // strip runtime-only fields (e.g. hasNotification) before persisting
+    items: state.items.map(({ id, categoryId, text, createdAt }) => ({
+      id,
+      categoryId,
+      text,
+      createdAt,
+    })),
   };
 }
 
@@ -113,8 +124,9 @@ function deserializeState(state: PersistedState): {
   items: Item[];
 } {
   return {
+    // recreate category id from iconName (iconName is unique identifier)
     categories: state.categories.map((category) => ({
-      id: category.id,
+      id: category.iconName,
       name: category.name,
       icon: resolveIconOption(category.iconName),
     })),
@@ -122,19 +134,27 @@ function deserializeState(state: PersistedState): {
   };
 }
 
-function parseState(raw: string | null): PersistedState {
+function parseState(raw: string | null): ParseResult {
   if (!raw) {
-    return emptyPersistedState;
+    return { state: emptyPersistedState, error: null };
   }
 
   try {
-    const parsed = JSON.parse(raw) as Partial<PersistedState>;
+    const parsed = JSON.parse(raw);
+    const result = PersistedStateSchema.safeParse(parsed);
+    if (!result.success) {
+      return {
+        state: emptyPersistedState,
+        error: `Failed to parse saved data: ${result.error.message}`,
+      };
+    }
+
+    return { state: result.data, error: null };
+  } catch (error) {
     return {
-      categories: parsed.categories ?? [],
-      items: parsed.items ?? [],
+      state: emptyPersistedState,
+      error: `Failed to parse saved data: ${(error as Error)?.message ?? "Invalid JSON"}`,
     };
-  } catch {
-    return emptyPersistedState;
   }
 }
 
@@ -159,6 +179,7 @@ export async function openPersistedStateFile(
   categories: Category[];
   items: Item[];
   fileName: string;
+  parseError: string | null;
 } | null> {
   const openPicker = getShowOpenFilePicker();
 
@@ -217,11 +238,12 @@ export async function openPersistedStateFile(
 
   try {
     const raw = await file.text();
-    const state = deserializeState(parseState(raw));
+    const parseResult = parseState(raw);
+    const state = deserializeState(parseResult.state);
     const serialized = serializeState(state);
     setStoredValue(JSON.stringify(serialized));
     setStoredFileName(fileName);
-    return { ...state, fileName };
+    return { ...state, fileName, parseError: parseResult.error };
   } catch {
     return null;
   }
@@ -235,14 +257,20 @@ export async function loadPersistedState(): Promise<{
   categories: Category[];
   items: Item[];
   fileName: string;
+  parseError: string | null;
 }> {
   try {
     const raw = getStoredValue();
     const fileName = await getPersistedFileName();
-    return { ...deserializeState(parseState(raw)), fileName };
+    const parseResult = parseState(raw);
+    return {
+      ...deserializeState(parseResult.state),
+      fileName,
+      parseError: parseResult.error,
+    };
   } catch {
     clearStoredValue();
-    return { ...emptyAppState, fileName: DEFAULT_FILE_NAME };
+    return { ...emptyAppState, fileName: DEFAULT_FILE_NAME, parseError: null };
   }
 }
 

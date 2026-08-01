@@ -59,10 +59,7 @@ const CategoryForm = ({
 
   return (
     <Box component="form" onSubmit={submit} noValidate>
-      <Stack
-        direction="row"
-        sx={{ alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}
-      >
+      <Stack direction="column" sx={{ gap: 1, width: "100%" }}>
         <Controller
           name="icon"
           control={control}
@@ -76,7 +73,7 @@ const CategoryForm = ({
               filterOptions={filterOptions}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
-              sx={{ width: 130 }}
+              sx={{ width: "100%" }}
               renderOption={(props, option) => (
                 <Box component="li" {...props} key={option.name}>
                   <Box
@@ -95,12 +92,21 @@ const CategoryForm = ({
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
+                  fullWidth
                 />
               )}
             />
           )}
         />
-        <Stack direction="row">
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: "center",
+            gap: 1,
+            width: "100%",
+            flexWrap: "nowrap",
+          }}
+        >
           <Controller
             name="name"
             control={control}
@@ -112,21 +118,21 @@ const CategoryForm = ({
                 size="small"
                 error={!!errors.name}
                 helperText={errors.name?.message}
-                sx={{ minWidth: 160 }}
+                fullWidth
               />
             )}
           />
-          <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
+          <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
             <IconButton
               type="submit"
-              aria-label="Toggle select mode"
+              aria-label="Save category"
               color={"primary"}
             >
               <Icon path={mdiCheck} size={0.9} />
             </IconButton>
             {editingCategory && (
               <IconButton
-                aria-label="Toggle select mode"
+                aria-label="Cancel edit"
                 color={"primary"}
                 onClick={() => {
                   onCancelEdit();

@@ -5,7 +5,6 @@ import {
   TableBody,
   TableCell,
   TableContainer,
-  TableHead,
   TableRow,
   Typography,
 } from "@mui/material";
@@ -27,13 +26,6 @@ const CategoryList = ({ categories, onEdit, onDelete }: CategoryListProps) => {
       ) : (
         <TableContainer>
           <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell sx={{ pr: 1 }}>Icon</TableCell>
-                <TableCell sx={{ pl: 0 }}>Name</TableCell>
-                <TableCell align="right">Actions</TableCell>
-              </TableRow>
-            </TableHead>
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   Box,
+  Badge,
   Checkbox,
   IconButton,
   Menu,
@@ -22,6 +23,8 @@ import {
   dateRegex,
   formatDate,
   formatTimestamp,
+  isToday,
+  isYesterday,
 } from "../utils/formatTimestamp";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 import {
@@ -38,6 +41,7 @@ type ItemListProps = {
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
   onNotify: (item: Item) => void;
+  onCategoryChange: (item: Item, categoryId: string | null) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -54,6 +58,7 @@ const ItemList = ({
   onDelete,
   onCopy,
   onNotify,
+  onCategoryChange,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -63,6 +68,13 @@ const ItemList = ({
     item: Item;
   } | null>(null);
   const [tooltipItemId, setTooltipItemId] = useState<string | null>(null);
+  const [hoveredOverflowItemId, setHoveredOverflowItemId] = useState<
+    string | null
+  >(null);
+  const [categoryMenuAnchor, setCategoryMenuAnchor] = useState<{
+    el: HTMLElement;
+    item: Item;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
@@ -114,8 +126,31 @@ const ItemList = ({
     closeMenu();
   };
 
-  const handleTextClick = (itemId: string) => {
+  const handleTextClick = (event: MouseEvent<HTMLElement>, itemId: string) => {
+    const target = event.currentTarget as HTMLElement;
+    const isOverflowing =
+      target.scrollWidth > target.clientWidth ||
+      target.scrollHeight > target.clientHeight;
+
+    if (!isOverflowing) {
+      return;
+    }
+
     setTooltipItemId((current) => (current === itemId ? null : itemId));
+  };
+
+  const openCategoryMenu = (event: MouseEvent<HTMLElement>, item: Item) => {
+    setCategoryMenuAnchor({ el: event.currentTarget, item });
+  };
+
+  const closeCategoryMenu = () => setCategoryMenuAnchor(null);
+
+  const handleCategorySelect = (categoryId: string | null) => {
+    if (!categoryMenuAnchor) {
+      return;
+    }
+    onCategoryChange(categoryMenuAnchor.item, categoryId);
+    closeCategoryMenu();
   };
 
   const filteredItems = useMemo(
@@ -143,7 +178,6 @@ const ItemList = ({
             dateRegex.test(filters.date) &&
             !formatDate(item.createdAt).startsWith(filters.date.trim())
           ) {
-            console.log(formatDate(item.createdAt), filters.date.trim());
             return false;
           }
         } else {
@@ -207,6 +241,8 @@ const ItemList = ({
               const category = item.categoryId
                 ? categoriesById.get(item.categoryId)
                 : undefined;
+              const today = isToday(item.createdAt);
+              const yesterday = isYesterday(item.createdAt);
               return (
                 <Box
                   key={item.id}
@@ -220,8 +256,12 @@ const ItemList = ({
                     alignItems: "center",
                     borderBottom: "1px solid",
                     borderColor: "divider",
-                    px: 1,
                     overflow: "hidden",
+                    bgcolor: today
+                      ? "grey.700"
+                      : yesterday
+                        ? "grey.800"
+                        : "inherit",
                   }}
                 >
                   {selectMode && (
@@ -240,17 +280,25 @@ const ItemList = ({
                       pr: 1,
                     }}
                   >
-                    {category ? (
-                      <Tooltip title={category.name}>
-                        <Box
-                          sx={{ display: "inline-flex", alignItems: "center" }}
-                        >
+                    <Tooltip
+                      title={category ? category.name : "No category"}
+                      arrow
+                    >
+                      <IconButton
+                        aria-label={`Change category for ${item.text}`}
+                        size="small"
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          openCategoryMenu(event, item)
+                        }
+                        sx={{ p: 0.5 }}
+                      >
+                        {category ? (
                           <Icon path={category.icon.path} size={0.8} />
-                        </Box>
-                      </Tooltip>
-                    ) : (
-                      <Icon path={mdiNoteText} size={0.8} />
-                    )}
+                        ) : (
+                          <Icon path={mdiNoteText} size={0.8} />
+                        )}
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
                     <Tooltip
@@ -261,11 +309,37 @@ const ItemList = ({
                       disableFocusListener
                       enterDelay={0}
                       leaveDelay={200}
+                      arrow
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            bgcolor: "grey.900",
+                            color: "#ffffff",
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            maxWidth: "calc(100vw - 32px)",
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: "grey.900",
+                          },
+                        },
+                      }}
                       sx={{ width: "100%" }}
                     >
                       <Typography
                         component="div"
-                        onClick={() => handleTextClick(item.id)}
+                        onClick={(event) => handleTextClick(event, item.id)}
+                        onMouseEnter={(event) => {
+                          const target = event.currentTarget as HTMLElement;
+                          const isOverflowing =
+                            target.scrollWidth > target.clientWidth ||
+                            target.scrollHeight > target.clientHeight;
+                          setHoveredOverflowItemId(
+                            isOverflowing ? item.id : null,
+                          );
+                        }}
+                        onMouseLeave={() => setHoveredOverflowItemId(null)}
                         sx={{
                           textAlign: "left",
                           whiteSpace: "pre-wrap",
@@ -275,7 +349,10 @@ const ItemList = ({
                           display: "-webkit-box",
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: "vertical",
-                          cursor: "pointer",
+                          cursor:
+                            hoveredOverflowItemId === item.id
+                              ? "pointer"
+                              : "default",
                         }}
                       >
                         {splitTextByUrls(item.text).map((part, partIndex) =>
@@ -308,7 +385,13 @@ const ItemList = ({
                       {formatTimestamp(item.createdAt)}
                     </Typography>
                   </Box>
-                  <Box sx={{ flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
                     <IconButton
                       aria-label={`Copy ${item.text}`}
                       size="small"
@@ -316,15 +399,23 @@ const ItemList = ({
                     >
                       <Icon path={mdiContentCopy} size={0.8} />
                     </IconButton>
-                    <IconButton
-                      aria-label={`Actions for ${item.text}`}
-                      size="small"
-                      onClick={(event: MouseEvent<HTMLElement>) =>
-                        setMenuAnchor({ el: event.currentTarget, item })
-                      }
+                    <Badge
+                      variant="dot"
+                      color="error"
+                      overlap="circular"
+                      invisible={!Boolean((item as any).hasNotification)}
+                      sx={{ mr: 0.5 }}
                     >
-                      <Icon path={mdiDotsVertical} size={0.8} />
-                    </IconButton>
+                      <IconButton
+                        aria-label={`Actions for ${item.text}`}
+                        size="small"
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          setMenuAnchor({ el: event.currentTarget, item })
+                        }
+                      >
+                        <Icon path={mdiDotsVertical} size={0.8} />
+                      </IconButton>
+                    </Badge>
                   </Box>
                 </Box>
               );
@@ -360,6 +451,35 @@ const ItemList = ({
           </Box>
           Delete
         </MenuItem>
+      </Menu>
+      <Menu
+        anchorEl={categoryMenuAnchor?.el}
+        open={!!categoryMenuAnchor}
+        onClose={closeCategoryMenu}
+      >
+        <MenuItem onClick={() => handleCategorySelect(null)}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+          >
+            <Icon path={mdiNoteText} size={0.7} />
+          </Box>
+          No category
+        </MenuItem>
+        {categories.map((category) => (
+          <MenuItem
+            key={category.id}
+            onClick={() => handleCategorySelect(category.id)}
+          >
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            >
+              <Icon path={category.icon.path} size={0.7} />
+            </Box>
+            {category.name}
+          </MenuItem>
+        ))}
       </Menu>
     </Box>
   );
