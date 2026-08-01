@@ -11,7 +11,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       includeAssets: ["favicon.svg", "icons.svg"],
       manifest: {
-        name: "Category Manager",
+        name: "Adnothed",
         short_name: "Adnothed",
         description: "Note manager with categories and notifications",
         theme_color: "#1976d2",
