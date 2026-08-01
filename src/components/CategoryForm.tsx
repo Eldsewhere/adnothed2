@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Autocomplete,
@@ -37,6 +37,7 @@ const CategoryForm = ({
   onCancelEdit,
 }: CategoryFormProps) => {
   const iconOptions = useMdiIconOptions();
+  const [iconInputValue, setIconInputValue] = useState("");
   const {
     control,
     handleSubmit,
@@ -74,7 +75,11 @@ const CategoryForm = ({
               {...field}
               value={value}
               onChange={(_event, newValue) => onChange(newValue)}
-              options={iconOptions}
+              inputValue={iconInputValue}
+              onInputChange={(_event, newInputValue) =>
+                setIconInputValue(newInputValue)
+              }
+              options={iconInputValue ? iconOptions : []}
               filterOptions={filterOptions}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
@@ -93,7 +98,7 @@ const CategoryForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Group Icon"
+                  label="Search group icons"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}

@@ -221,8 +221,8 @@ const ItemList = ({
       {filteredItems.length === 0 ? (
         <Typography color="text.secondary">
           {sortedItems.length === 0
-            ? "No items added yet."
-            : "No items match the current filters."}
+            ? "No notes added yet"
+            : "No notes match the current filters"}
         </Typography>
       ) : (
         <Box
@@ -281,7 +281,9 @@ const ItemList = ({
                     }}
                   >
                     <Tooltip
-                      title={category ? category.name : "No Group"}
+                      title={
+                        category ? category.name : "Press to assign a group"
+                      }
                       arrow
                     >
                       <IconButton
@@ -290,7 +292,10 @@ const ItemList = ({
                         onClick={(event: MouseEvent<HTMLElement>) =>
                           openCategoryMenu(event, item)
                         }
-                        sx={{ p: 0.5 }}
+                        sx={{
+                          p: 0.5,
+                          color: category ? "inherit" : "grey.500",
+                        }}
                       >
                         {category ? (
                           <Icon path={category.icon.path} size={0.8} />
@@ -463,14 +468,22 @@ const ItemList = ({
         open={!!categoryMenuAnchor}
         onClose={closeCategoryMenu}
       >
-        <MenuItem onClick={() => handleCategorySelect(null)}>
+        <MenuItem
+          onClick={() => handleCategorySelect(null)}
+          sx={{ color: "grey.500" }}
+        >
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              color: "grey.500",
+            }}
           >
             <Icon path={mdiNoteText} size={0.7} />
           </Box>
-          No group
+          {categories.length == 0 ? "No groups available" : "No group"}
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

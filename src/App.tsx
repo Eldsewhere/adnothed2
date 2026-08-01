@@ -24,6 +24,8 @@ import {
   mdiCheckboxMultipleMarkedOutline,
   mdiFolderMoveOutline,
   mdiTrashCanOutline,
+  mdiUpload,
+  mdiDownload,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -69,6 +71,13 @@ function App() {
   const [confirmDeleteCategory, setConfirmDeleteCategory] =
     useState<Category | null>(null);
   const [latestCategoryId, setLatestCategoryId] = useState<string | null>(null);
+  const [confirmImportOpen, setConfirmImportOpen] = useState(false);
+  const [pendingImport, setPendingImport] = useState<{
+    categories: Category[];
+    items: Item[];
+    fileName: string;
+    parseError: string | null;
+  } | null>(null);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
@@ -125,29 +134,43 @@ function App() {
     requestNotificationPermission();
   }, []);
 
-  const handleOpenStorageFile = async () => {
+  const selectImportFile = async () => {
     const result = await openPersistedStateFile(storageFileName);
-    if (!result) {
-      return;
-    }
-
-    setCategories(result.categories);
-    setItems(result.items);
-    setStorageFileName(result.fileName);
+    if (!result) return;
     if (result.parseError) {
       setNotificationSeverity("error");
       setNotification(result.parseError);
+      return;
     }
+    setPendingImport(result);
+    setConfirmImportOpen(true);
+  };
+
+  const confirmImport = () => {
+    if (!pendingImport) {
+      setConfirmImportOpen(false);
+      return;
+    }
+    setCategories(pendingImport.categories);
+    setItems(pendingImport.items);
+    setStorageFileName(pendingImport.fileName);
     setStorageReady(true);
-    setActiveTab("items");
+    setNotificationSeverity("success");
+    setNotification(`Imported ${pendingImport.fileName}`);
+    setPendingImport(null);
+    setConfirmImportOpen(false);
   };
 
   const handleExportJson = () => {
     const payload = serializeState({ categories, items });
-    const cleanFileName = storageFileName.trim() || DEFAULT_FILE_NAME;
-    const downloadName = cleanFileName.endsWith(".json")
-      ? cleanFileName
-      : `${cleanFileName}.json`;
+    // filename format: adnothed-state_YYYY-MM-DD_HH-MM.json
+    const now = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
+      now.getDate(),
+    )}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
+    const baseName = "adnothed-state";
+    const downloadName = `${baseName}_${ts}.json`;
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
     });
@@ -156,6 +179,8 @@ function App() {
     link.href = url;
     link.download = downloadName;
     link.click();
+    setNotificationSeverity("success");
+    setNotification(`Exported ${downloadName}`);
     URL.revokeObjectURL(url);
   };
 
@@ -283,6 +308,14 @@ function App() {
     });
   };
 
+  // if there are no notes, ensure select mode is disabled
+  useEffect(() => {
+    if (items.length === 0 && selectMode) {
+      setSelectMode(false);
+      setSelectedItemIds(new Set());
+    }
+  }, [items.length, selectMode]);
+
   const handleBulkDelete = () => {
     setItems((prev) => prev.filter((item) => !selectedItemIds.has(item.id)));
     setSelectedItemIds(new Set());
@@ -336,18 +369,26 @@ function App() {
                   selectMode ? "Cancel select mode" : "Select multiple notes"
                 }
               >
-                <IconButton
-                  aria-label="Toggle select mode"
-                  color={selectMode ? "primary" : "default"}
-                  onClick={toggleSelectMode}
-                >
-                  <Icon path={mdiCheckboxMultipleMarkedOutline} size={0.9} />
-                </IconButton>
+                <span>
+                  <IconButton
+                    aria-label="Toggle select mode"
+                    color={selectMode ? "primary" : "default"}
+                    onClick={toggleSelectMode}
+                    disabled={items.length === 0}
+                  >
+                    <Icon path={mdiCheckboxMultipleMarkedOutline} size={0.9} />
+                  </IconButton>
+                </span>
               </Tooltip>
               <ItemFilters
                 categories={categories}
                 filters={itemFilters}
-                onChange={setItemFilters}
+                onChange={(f) => {
+                  setItemFilters(f);
+                  // exit select mode when filters are applied
+                  setSelectMode(false);
+                  setSelectedItemIds(new Set());
+                }}
               />
             </Stack>
           )}
@@ -490,7 +531,8 @@ function App() {
                     <Button
                       variant="outlined"
                       size="small"
-                      onClick={handleOpenStorageFile}
+                      onClick={selectImportFile}
+                      startIcon={<Icon path={mdiUpload} size={0.9} />}
                     >
                       Import JSON
                     </Button>
@@ -502,8 +544,9 @@ function App() {
                       variant="outlined"
                       size="small"
                       onClick={handleExportJson}
+                      startIcon={<Icon path={mdiDownload} size={0.9} />}
                     >
-                      Export JSON
+                      Save as JSON
                     </Button>
                   </span>
                 </Tooltip>
@@ -575,6 +618,34 @@ function App() {
           >
             Delete
           </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={confirmImportOpen}
+        onClose={() => {
+          setConfirmImportOpen(false);
+          setPendingImport(null);
+        }}
+      >
+        <DialogTitle>Import JSON file</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {pendingImport?.fileName
+              ? `Importing "${pendingImport.fileName}" will replace all current groups and notes in the app.`
+              : "Importing a JSON file will replace all current groups and notes in the app."}
+            This action cannot be undone. Do you want to continue?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setConfirmImportOpen(false);
+              setPendingImport(null);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button onClick={confirmImport}>Import</Button>
         </DialogActions>
       </Dialog>
       <Menu

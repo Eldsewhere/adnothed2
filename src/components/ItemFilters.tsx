@@ -31,6 +31,13 @@ type ItemFiltersProps = {
 const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
+  const selectedCategory = categories.find(
+    (category) => category.id === filters.categoryId,
+  );
+  const buttonIconPath = selectedCategory
+    ? selectedCategory.icon.path
+    : mdiFilterOutline;
+
   const activeFilterCount = [
     filters.categoryId !== "",
     filters.text !== "",
@@ -55,9 +62,19 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
           onClick={handleOpen}
           color={filtersActive ? "primary" : "default"}
         >
-          <Badge badgeContent={activeFilterCount} color="primary">
-            <Icon path={mdiFilterOutline} size={0.9} />
-          </Badge>
+          {
+            <Badge
+              badgeContent={
+                activeFilterCount &&
+                !(activeFilterCount === 1 && filters.categoryId !== "")
+                  ? activeFilterCount
+                  : null
+              }
+              color="primary"
+            >
+              <Icon path={buttonIconPath} size={0.9} />
+            </Badge>
+          }
         </IconButton>
       </Tooltip>
       <Popover
