@@ -6,6 +6,7 @@ import {
   IconButton,
   Stack,
   TextField,
+  Tooltip,
   createFilterOptions,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -123,20 +124,32 @@ const CategoryForm = ({
             )}
           />
           <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-            <IconButton type="submit" aria-label="Save group" color={"primary"}>
-              <Icon path={mdiCheck} size={0.9} />
-            </IconButton>
+            <Tooltip title={editingCategory ? "Update group" : "Save group"}>
+              <span>
+                <IconButton
+                  type="submit"
+                  aria-label="Save group"
+                  color={"primary"}
+                >
+                  <Icon path={mdiCheck} size={0.9} />
+                </IconButton>
+              </span>
+            </Tooltip>
             {editingCategory && (
-              <IconButton
-                aria-label="Cancel edit"
-                color={"primary"}
-                onClick={() => {
-                  onCancelEdit();
-                  reset(emptyValues);
-                }}
-              >
-                <Icon path={mdiCancel} size={0.9} />
-              </IconButton>
+              <Tooltip title="Cancel edit">
+                <span>
+                  <IconButton
+                    aria-label="Cancel edit"
+                    color={"primary"}
+                    onClick={() => {
+                      onCancelEdit();
+                      reset(emptyValues);
+                    }}
+                  >
+                    <Icon path={mdiCancel} size={0.9} />
+                  </IconButton>
+                </span>
+              </Tooltip>
             )}
           </Box>
         </Stack>

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Box, IconButton, Stack, TextField } from "@mui/material";
+import { Box, IconButton, Stack, TextField, Tooltip } from "@mui/material";
 import { Icon } from "@mdi/react";
 import type { Item, ItemFormValues } from "../types";
 import { mdiCancel, mdiCheck } from "@mdi/js";
@@ -61,24 +61,32 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
             />
           </Box>
           <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
-            <IconButton
-              type="submit"
-              aria-label="Toggle select mode"
-              color={"primary"}
-            >
-              <Icon path={mdiCheck} size={0.9} />
-            </IconButton>
+            <Tooltip title={editingItem ? "Update item" : "Add item"}>
+              <span>
+                <IconButton
+                  type="submit"
+                  aria-label={editingItem ? "Update item" : "Add item"}
+                  color={"primary"}
+                >
+                  <Icon path={mdiCheck} size={0.9} />
+                </IconButton>
+              </span>
+            </Tooltip>
             {editingItem && (
-              <IconButton
-                onClick={() => {
-                  onCancelEdit();
-                  reset(emptyValues);
-                }}
-                aria-label="Cancel"
-                color={"primary"}
-              >
-                <Icon path={mdiCancel} size={0.9} />
-              </IconButton>
+              <Tooltip title="Cancel edit">
+                <span>
+                  <IconButton
+                    onClick={() => {
+                      onCancelEdit();
+                      reset(emptyValues);
+                    }}
+                    aria-label="Cancel"
+                    color={"primary"}
+                  >
+                    <Icon path={mdiCancel} size={0.9} />
+                  </IconButton>
+                </span>
+              </Tooltip>
             )}
           </Box>
         </Stack>

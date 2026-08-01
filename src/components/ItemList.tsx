@@ -392,13 +392,15 @@ const ItemList = ({
                       alignItems: "center",
                     }}
                   >
-                    <IconButton
-                      aria-label={`Copy ${item.text}`}
-                      size="small"
-                      onClick={() => handleCopy(item)}
-                    >
-                      <Icon path={mdiContentCopy} size={0.8} />
-                    </IconButton>
+                    <Tooltip title="Copy note">
+                      <IconButton
+                        aria-label={`Copy ${item.text}`}
+                        size="small"
+                        onClick={() => handleCopy(item)}
+                      >
+                        <Icon path={mdiContentCopy} size={0.8} />
+                      </IconButton>
+                    </Tooltip>
                     <Badge
                       variant="dot"
                       color="error"
@@ -406,15 +408,19 @@ const ItemList = ({
                       invisible={!Boolean((item as any).hasNotification)}
                       sx={{ mr: 0.5 }}
                     >
-                      <IconButton
-                        aria-label={`Actions for ${item.text}`}
-                        size="small"
-                        onClick={(event: MouseEvent<HTMLElement>) =>
-                          setMenuAnchor({ el: event.currentTarget, item })
-                        }
-                      >
-                        <Icon path={mdiDotsVertical} size={0.8} />
-                      </IconButton>
+                      <Tooltip title="More options">
+                        <span>
+                          <IconButton
+                            aria-label={`Actions for ${item.text}`}
+                            size="small"
+                            onClick={(event: MouseEvent<HTMLElement>) =>
+                              setMenuAnchor({ el: event.currentTarget, item })
+                            }
+                          >
+                            <Icon path={mdiDotsVertical} size={0.8} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
                     </Badge>
                   </Box>
                 </Box>

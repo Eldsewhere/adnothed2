@@ -456,20 +456,28 @@ function App() {
                 spacing={1}
                 sx={{ width: "100%", justifyContent: "flex-end" }}
               >
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleOpenStorageFile}
-                >
-                  Import JSON
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={handleExportJson}
-                >
-                  Export JSON
-                </Button>
+                <Tooltip title="Import data from JSON file">
+                  <span>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleOpenStorageFile}
+                    >
+                      Import JSON
+                    </Button>
+                  </span>
+                </Tooltip>
+                <Tooltip title="Export current data to JSON file">
+                  <span>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={handleExportJson}
+                    >
+                      Export JSON
+                    </Button>
+                  </span>
+                </Tooltip>
               </Stack>
             </Stack>
           </TabPanel>

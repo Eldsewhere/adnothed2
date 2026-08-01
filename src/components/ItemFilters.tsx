@@ -10,6 +10,7 @@ import {
   Popover,
   Stack,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -45,11 +46,13 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
 
   return (
     <>
-      <IconButton aria-label="Filter items" onClick={handleOpen}>
-        <Badge badgeContent={activeFilterCount} color="primary">
-          <Icon path={mdiFilterOutline} size={0.9} />
-        </Badge>
-      </IconButton>
+      <Tooltip title="Open filters">
+        <IconButton aria-label="Filter items" onClick={handleOpen}>
+          <Badge badgeContent={activeFilterCount} color="primary">
+            <Icon path={mdiFilterOutline} size={0.9} />
+          </Badge>
+        </IconButton>
+      </Tooltip>
       <Popover
         open={!!anchorEl}
         anchorEl={anchorEl}
@@ -129,13 +132,23 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               }
               label="Only messages with numbers"
             />
-            <Button
-              size="small"
-              disabled={activeFilterCount === 0}
-              onClick={() => onChange(emptyItemFilters)}
+            <Tooltip
+              title={
+                activeFilterCount === 0
+                  ? "No filters to clear"
+                  : "Clear filters"
+              }
             >
-              Clear filters
-            </Button>
+              <span>
+                <Button
+                  size="small"
+                  disabled={activeFilterCount === 0}
+                  onClick={() => onChange(emptyItemFilters)}
+                >
+                  Clear filters
+                </Button>
+              </span>
+            </Tooltip>
           </Stack>
         </Box>
       </Popover>
