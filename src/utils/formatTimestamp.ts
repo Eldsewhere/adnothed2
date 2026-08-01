@@ -1,6 +1,6 @@
 export function formatDate(timestamp: number): string {
-  const date = new Date(timestamp);
-  const pad = (value: number) => value.toString().padStart(2, '0');
+  const date = new Date(timestamp * 1000);
+  const pad = (value: number) => value.toString().padStart(2, "0");
 
   const year = date.getFullYear();
   const month = pad(date.getMonth() + 1);
@@ -18,8 +18,8 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 export function formatTimestamp(timestamp: number): string {
-  const date = new Date(timestamp);
-  const pad = (value: number) => value.toString().padStart(2, '0');
+  const date = new Date(timestamp * 1000);
+  const pad = (value: number) => value.toString().padStart(2, "0");
 
   const hours = pad(date.getHours());
   const minutes = pad(date.getMinutes());
@@ -38,3 +38,5 @@ export function formatTimestamp(timestamp: number): string {
 
   return `${formatDate(timestamp)} ${time}`;
 }
+
+export const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;

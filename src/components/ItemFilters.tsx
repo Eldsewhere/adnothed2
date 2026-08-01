@@ -19,14 +19,13 @@ import {
   emptyItemFilters,
   NO_CATEGORY_FILTER_VALUE,
 } from "../utils/itemFilters";
+import { dateRegex } from "../utils/formatTimestamp";
 
 type ItemFiltersProps = {
   categories: Category[];
   filters: ItemFiltersValue;
   onChange: (filters: ItemFiltersValue) => void;
 };
-
-const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
 
 const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);

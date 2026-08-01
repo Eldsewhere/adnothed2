@@ -18,7 +18,11 @@ import {
   mdiTrashCanOutline,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
-import { formatDate, formatTimestamp } from "../utils/formatTimestamp";
+import {
+  dateRegex,
+  formatDate,
+  formatTimestamp,
+} from "../utils/formatTimestamp";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 import {
   containsUrl,
@@ -41,7 +45,6 @@ type ItemListProps = {
 
 const ROW_HEIGHT = 80;
 const OVERSCAN = 6;
-const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
 
 const ItemList = ({
   items,
@@ -140,6 +143,7 @@ const ItemList = ({
             dateRegex.test(filters.date) &&
             !formatDate(item.createdAt).startsWith(filters.date.trim())
           ) {
+            console.log(formatDate(item.createdAt), filters.date.trim());
             return false;
           }
         } else {
@@ -301,7 +305,7 @@ const ItemList = ({
                       color="text.secondary"
                       sx={{ textAlign: "left", display: "block" }}
                     >
-                      {formatTimestamp(item.createdAt * 1000)}
+                      {formatTimestamp(item.createdAt)}
                     </Typography>
                   </Box>
                   <Box sx={{ flexShrink: 0 }}>

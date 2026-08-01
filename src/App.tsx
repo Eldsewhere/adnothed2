@@ -399,7 +399,7 @@ function App() {
                 size="small"
                 onClick={handleOpenStorageFile}
               >
-                Open storage file
+                Import JSON
               </Button>
               <Button
                 variant="outlined"
