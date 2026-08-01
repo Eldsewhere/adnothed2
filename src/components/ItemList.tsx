@@ -59,6 +59,7 @@ const ItemList = ({
     el: HTMLElement;
     item: Item;
   } | null>(null);
+  const [tooltipItemId, setTooltipItemId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
@@ -108,6 +109,10 @@ const ItemList = ({
   const handleNotify = (item: Item) => {
     onNotify(item);
     closeMenu();
+  };
+
+  const handleTextClick = (itemId: string) => {
+    setTooltipItemId((current) => (current === itemId ? null : itemId));
   };
 
   const filteredItems = useMemo(
@@ -212,6 +217,7 @@ const ItemList = ({
                     borderBottom: "1px solid",
                     borderColor: "divider",
                     px: 1,
+                    overflow: "hidden",
                   }}
                 >
                   {selectMode && (
@@ -243,36 +249,53 @@ const ItemList = ({
                     )}
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
-                    <Typography
-                      component="div"
-                      sx={{
-                        textAlign: "left",
-                        whiteSpace: "pre-wrap",
-                        overflowWrap: "anywhere",
-                        wordBreak: "break-word",
-                      }}
+                    <Tooltip
+                      title={item.text}
+                      open={tooltipItemId === item.id}
+                      onClose={() => setTooltipItemId(null)}
+                      disableHoverListener
+                      disableFocusListener
+                      enterDelay={0}
+                      leaveDelay={200}
+                      sx={{ width: "100%" }}
                     >
-                      {splitTextByUrls(item.text).map((part, partIndex) =>
-                        part.isUrl ? (
-                          <Box
-                            key={partIndex}
-                            component="a"
-                            href={part.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{
-                              color: "info.main",
-                              textDecoration: "underline",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {part.value}
-                          </Box>
-                        ) : (
-                          <span key={partIndex}>{part.value}</span>
-                        ),
-                      )}
-                    </Typography>
+                      <Typography
+                        component="div"
+                        onClick={() => handleTextClick(item.id)}
+                        sx={{
+                          textAlign: "left",
+                          whiteSpace: "pre-wrap",
+                          overflow: "hidden",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                          cursor: "pointer",
+                        }}
+                      >
+                        {splitTextByUrls(item.text).map((part, partIndex) =>
+                          part.isUrl ? (
+                            <Box
+                              key={partIndex}
+                              component="a"
+                              href={part.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                color: "info.main",
+                                textDecoration: "underline",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {part.value}
+                            </Box>
+                          ) : (
+                            <span key={partIndex}>{part.value}</span>
+                          ),
+                        )}
+                      </Typography>
+                    </Tooltip>
                     <Typography
                       variant="caption"
                       color="text.secondary"
