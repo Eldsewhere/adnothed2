@@ -318,28 +318,6 @@ function App() {
           </Tabs>
           {activeTab === "items" && (
             <Stack direction="row" sx={{ alignItems: "center" }}>
-              {selectMode && selectedItemIds.size > 0 && (
-                <>
-                  <Tooltip title="Change category">
-                    <IconButton
-                      aria-label="Change category for selected items"
-                      onClick={(event) =>
-                        setBulkCategoryAnchor(event.currentTarget)
-                      }
-                    >
-                      <Icon path={mdiFolderMoveOutline} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete selected">
-                    <IconButton
-                      aria-label="Delete selected items"
-                      onClick={() => setConfirmBulkDeleteOpen(true)}
-                    >
-                      <Icon path={mdiTrashCanOutline} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
               <Tooltip
                 title={
                   selectMode ? "Exit select mode" : "Select multiple items"
@@ -369,6 +347,58 @@ function App() {
                 onSubmit={handleItemSubmit}
                 onCancelEdit={() => setEditingItem(null)}
               />
+              {selectMode && (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center" }}
+                >
+                  <Tooltip
+                    title={
+                      selectedItemIds.size > 0
+                        ? "Change category"
+                        : "Select items to enable"
+                    }
+                  >
+                    <span>
+                      <Button
+                        variant="text"
+                        startIcon={
+                          <Icon path={mdiFolderMoveOutline} size={0.9} />
+                        }
+                        disabled={selectedItemIds.size === 0}
+                        onClick={(event) =>
+                          setBulkCategoryAnchor(event.currentTarget)
+                        }
+                        sx={{ textTransform: "none" }}
+                      >
+                        Group
+                      </Button>
+                    </span>
+                  </Tooltip>
+                  <Tooltip
+                    title={
+                      selectedItemIds.size > 0
+                        ? "Delete selected"
+                        : "Select items to enable"
+                    }
+                  >
+                    <span>
+                      <Button
+                        variant="text"
+                        startIcon={
+                          <Icon path={mdiTrashCanOutline} size={0.9} />
+                        }
+                        disabled={selectedItemIds.size === 0}
+                        onClick={() => setConfirmBulkDeleteOpen(true)}
+                        sx={{ textTransform: "none" }}
+                      >
+                        Delete
+                      </Button>
+                    </span>
+                  </Tooltip>
+                </Stack>
+              )}
               <ItemList
                 items={items}
                 categories={categories}
