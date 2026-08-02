@@ -202,16 +202,26 @@ function App() {
 
     if (editingCategory) {
       setCategories((prev) =>
-        prev.map((category) =>
-          category.id === editingCategory.id
-            ? {
-                ...category,
-                name: values.name,
-                icon: values.icon,
-                id: iconName,
-              }
-            : category,
-        ),
+        prev.map((prevCategory) => {
+          if (prevCategory.id === editingCategory.id) {
+            setItems((prev) =>
+              prev.map((item) =>
+                item.categoryId === prevCategory.id
+                  ? { ...item, categoryId: iconName }
+                  : item,
+              ),
+            );
+
+            return {
+              ...prevCategory,
+              name: values.name,
+              icon: values.icon,
+              id: iconName,
+            };
+          }
+
+          return prevCategory;
+        }),
       );
       setNotificationSeverity("success");
       setNotification(`Updated label "${values.name}"`);
