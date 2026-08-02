@@ -1,25 +1,47 @@
-import { useEffect } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Box, IconButton, Stack, TextField, Tooltip } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  Stack,
+  TextField,
+  Tooltip,
+} from "@mui/material";
 import { Icon } from "@mdi/react";
-import type { Item, ItemFormValues } from "../types";
-import { mdiCancel, mdiCheckCircleOutline } from "@mdi/js";
+import type { Category, Item, ItemFormValues } from "../types";
+import {
+  mdiCancel,
+  mdiCheckCircleOutline,
+  mdiChevronDown,
+  mdiNoteText,
+} from "@mdi/js";
 
 type ItemFormProps = {
   editingItem: Item | null;
+  categories: Category[];
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
 };
 
 const emptyValues: ItemFormValues = { categoryId: "", text: "" };
 
-const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
+const ItemForm = ({
+  editingItem,
+  categories,
+  onSubmit,
+  onCancelEdit,
+}: ItemFormProps) => {
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<ItemFormValues>({ defaultValues: emptyValues });
+  const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
+    null,
+  );
 
   useEffect(() => {
     reset(
@@ -33,6 +55,14 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
     onSubmit(values);
     reset(emptyValues);
   });
+
+  const openLabelMenu = (event: MouseEvent<HTMLElement>) => {
+    setLabelMenuAnchor(event.currentTarget);
+  };
+
+  const closeLabelMenu = () => {
+    setLabelMenuAnchor(null);
+  };
 
   return (
     <Box component="form" onSubmit={submit} noValidate>
@@ -60,9 +90,122 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
               )}
             />
           </Box>
-          <Box sx={{ display: "flex", gap: 1, ml: { sm: 1 } }}>
-            <Tooltip title={editingItem ? "Update note" : "Add note"}>
-              <span>
+          <Stack
+            sx={{
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              ml: { sm: 1 },
+            }}
+          >
+            <Controller
+              name="categoryId"
+              control={control}
+              render={({ field }) => {
+                const selectedCategory = categories.find(
+                  (category) => category.id === field.value,
+                );
+
+                return (
+                  <>
+                    <Tooltip
+                      title={
+                        selectedCategory
+                          ? selectedCategory.name
+                          : "Assign a label"
+                      }
+                      arrow
+                    >
+                      <IconButton
+                        aria-label="Choose label"
+                        size="small"
+                        onClick={openLabelMenu}
+                        sx={{
+                          color: selectedCategory ? "inherit" : "grey.500",
+                          position: "relative",
+                          pr: 1.25,
+                        }}
+                      >
+                        {selectedCategory ? (
+                          <Icon path={selectedCategory.icon.path} size={0.8} />
+                        ) : (
+                          <Icon path={mdiNoteText} size={0.8} />
+                        )}
+                        <Box
+                          component="span"
+                          sx={{
+                            position: "absolute",
+                            right: -2,
+                            bottom: 2,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "text.secondary",
+                            lineHeight: 1,
+                          }}
+                        >
+                          <Icon path={mdiChevronDown} size={0.6} />
+                        </Box>
+                      </IconButton>
+                    </Tooltip>
+                    <Menu
+                      anchorEl={labelMenuAnchor}
+                      open={Boolean(labelMenuAnchor)}
+                      onClose={closeLabelMenu}
+                    >
+                      <MenuItem
+                        autoFocus={field.value === ""}
+                        selected={field.value === ""}
+                        onClick={() => {
+                          field.onChange("");
+                          closeLabelMenu();
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 1,
+                            color: "grey.500",
+                          }}
+                        >
+                          <Icon path={mdiNoteText} size={0.8} />
+                          <span>
+                            {categories.length === 0
+                              ? "No labels available"
+                              : "No label"}
+                          </span>
+                        </Box>
+                      </MenuItem>
+                      {categories.map((category) => (
+                        <MenuItem
+                          key={category.id}
+                          autoFocus={field.value === category.id}
+                          selected={field.value === category.id}
+                          onClick={() => {
+                            field.onChange(category.id);
+                            closeLabelMenu();
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <Icon path={category.icon.path} size={0.7} />
+                            <span>{category.name}</span>
+                          </Box>
+                        </MenuItem>
+                      ))}
+                    </Menu>
+                  </>
+                );
+              }}
+            />
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Tooltip title={editingItem ? "Update note" : "Add note"}>
                 <IconButton
                   type="submit"
                   aria-label={editingItem ? "Update note" : "Add note"}
@@ -70,11 +213,9 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
                 >
                   <Icon path={mdiCheckCircleOutline} size={0.9} />
                 </IconButton>
-              </span>
-            </Tooltip>
-            {editingItem && (
-              <Tooltip title="Cancel edit">
-                <span>
+              </Tooltip>
+              {editingItem && (
+                <Tooltip title="Cancel edit">
                   <IconButton
                     onClick={() => {
                       onCancelEdit();
@@ -85,10 +226,10 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
                   >
                     <Icon path={mdiCancel} size={0.9} />
                   </IconButton>
-                </span>
-              </Tooltip>
-            )}
-          </Box>
+                </Tooltip>
+              )}
+            </Box>
+          </Stack>
         </Stack>
       </Stack>
     </Box>

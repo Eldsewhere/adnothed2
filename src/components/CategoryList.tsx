@@ -67,7 +67,9 @@ const CategoryList = ({
   return (
     <Box>
       {orderedCategories.length === 0 ? (
-        <Typography color="text.secondary">No labels added yet</Typography>
+        <Typography color="text.secondary">
+          No labels added yet. Add labels to filter notes together
+        </Typography>
       ) : (
         <Box
           sx={{

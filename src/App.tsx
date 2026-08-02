@@ -393,11 +393,12 @@ function App() {
             </Stack>
           )}
         </Stack>
-        <Box sx={{ pt: 3 }}>
+        <Box sx={{ pt: 2 }}>
           <TabPanel value={activeTab} index="items">
-            <Stack spacing={3}>
+            <Stack spacing={1}>
               <ItemForm
                 editingItem={editingItem}
+                categories={categories}
                 onSubmit={handleItemSubmit}
                 onCancelEdit={() => setEditingItem(null)}
               />
@@ -597,7 +598,7 @@ function App() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Deleting this label will remove it and set any items in this label
+            Deleting this label will remove it and set any notes in this label
             to have no label. Are you sure you want to continue?
           </DialogContentText>
         </DialogContent>

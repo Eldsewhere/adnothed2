@@ -1,3 +1,3 @@
 # Adnothed
 
-App to add notes, which cause a notification and can be grouped for filtering.
+App to add notes, which cause a notification and can be labelled for filtering.

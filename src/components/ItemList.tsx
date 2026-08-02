@@ -8,6 +8,7 @@ import {
   MenuItem,
   Tooltip,
   Typography,
+  colors,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
@@ -229,7 +230,7 @@ const ItemList = ({
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: "calc(100vh - 200px)",
+            height: "calc(100vh - 180px)",
             minHeight: 200,
             overflowY: "auto",
             position: "relative",
@@ -258,9 +259,9 @@ const ItemList = ({
                     borderColor: "divider",
                     overflow: "hidden",
                     bgcolor: today
-                      ? "grey.700"
+                      ? colors.blueGrey[800]
                       : yesterday
-                        ? "grey.800"
+                        ? colors.blueGrey[900]
                         : "inherit",
                   }}
                 >
@@ -281,9 +282,7 @@ const ItemList = ({
                     }}
                   >
                     <Tooltip
-                      title={
-                        category ? category.name : "Press to assign a label"
-                      }
+                      title={category ? category.name : "Assign a label"}
                       arrow
                     >
                       <IconButton
@@ -469,6 +468,8 @@ const ItemList = ({
         onClose={closeCategoryMenu}
       >
         <MenuItem
+          autoFocus={categoryMenuAnchor?.item.categoryId === null}
+          selected={categoryMenuAnchor?.item.categoryId === null}
           onClick={() => handleCategorySelect(null)}
           sx={{ color: "grey.500" }}
         >
@@ -488,6 +489,8 @@ const ItemList = ({
         {categories.map((category) => (
           <MenuItem
             key={category.id}
+            autoFocus={categoryMenuAnchor?.item.categoryId === category.id}
+            selected={categoryMenuAnchor?.item.categoryId === category.id}
             onClick={() => handleCategorySelect(category.id)}
           >
             <Box
