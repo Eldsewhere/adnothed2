@@ -576,15 +576,17 @@ function App() {
         <DialogTitle>Delete {selectedItemIds.size} Note(s)?</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            This will permanently delete the selected notes. This action cannot
-            be undone.
+            This will permanently delete the selected notes
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmBulkDeleteOpen(false)}>
+          <Button
+            variant="outlined"
+            onClick={() => setConfirmBulkDeleteOpen(false)}
+          >
             Cancel
           </Button>
-          <Button color="error" onClick={handleBulkDelete}>
+          <Button variant="outlined" color="error" onClick={handleBulkDelete}>
             Delete
           </Button>
         </DialogActions>
@@ -599,12 +601,18 @@ function App() {
         <DialogContent>
           <DialogContentText>
             Deleting this label will remove it and set any notes in this label
-            to have no label. Are you sure you want to continue?
+            to have no label
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setConfirmDeleteCategory(null)}>Cancel</Button>
           <Button
+            variant="outlined"
+            onClick={() => setConfirmDeleteCategory(null)}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outlined"
             color="error"
             onClick={() => {
               if (confirmDeleteCategory) {
@@ -632,9 +640,8 @@ function App() {
         <DialogContent>
           <DialogContentText>
             {pendingImport?.fileName
-              ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app.`
-              : "Importing a JSON file will replace all current labels and notes in the app."}
-            This action cannot be undone. Do you want to continue?
+              ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app`
+              : "Importing a JSON file will replace all current labels and notes in the app"}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -643,10 +650,13 @@ function App() {
               setConfirmImportOpen(false);
               setPendingImport(null);
             }}
+            variant="outlined"
           >
             Cancel
           </Button>
-          <Button onClick={confirmImport}>Import</Button>
+          <Button color="error" variant="outlined" onClick={confirmImport}>
+            Import
+          </Button>
         </DialogActions>
       </Dialog>
       <Menu

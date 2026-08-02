@@ -80,7 +80,7 @@ const ItemForm = ({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Note"
+                  label="Write note"
                   size="small"
                   fullWidth
                   multiline

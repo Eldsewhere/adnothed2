@@ -85,20 +85,20 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <Box sx={{ p: 1, width: 260 }}>
-          <Typography variant="body1" gutterBottom>
+          <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
             Filter notes
           </Typography>
           <Stack spacing={2}>
             <TextField
               select
-              label="Category"
+              label="Label"
               size="small"
               value={filters.categoryId}
               onChange={(event) =>
                 onChange({ ...filters, categoryId: event.target.value })
               }
             >
-              <MenuItem value="">All categories</MenuItem>
+              <MenuItem value="">All</MenuItem>
               <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No label</MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
@@ -172,6 +172,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               <span>
                 <Button
                   size="small"
+                  variant="outlined"
                   disabled={activeFilterCount === 0}
                   onClick={() => onChange(emptyItemFilters)}
                 >

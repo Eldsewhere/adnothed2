@@ -9,6 +9,7 @@ import {
   Tooltip,
   Typography,
   colors,
+  Stack,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
@@ -383,13 +384,36 @@ const ItemList = ({
                       </Typography>
                     </Tooltip>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Typography
-                        variant="caption"
-                        color="text.secondary"
-                        sx={{ textAlign: "left", display: "block" }}
+                      <Stack
+                        sx={{
+                          justifyContent: "space-between",
+                          flexDirection: "row",
+                          width: "100%",
+                        }}
                       >
-                        {formatTimestamp(item.createdAt)}
-                      </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            textAlign: "left",
+                            display: "block",
+                            color: colors.blueGrey[300],
+                          }}
+                        >
+                          {formatTimestamp(item.createdAt)}
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            textAlign: "left",
+                            display: "block",
+                            color: colors.blueGrey[500],
+                          }}
+                        >
+                          #{filteredItems.length - index}
+                        </Typography>
+                      </Stack>
                       <Tooltip title="Recent" arrow>
                         <Badge
                           variant="dot"
@@ -407,15 +431,6 @@ const ItemList = ({
                       alignItems: "center",
                     }}
                   >
-                    <Tooltip title="Copy note">
-                      <IconButton
-                        aria-label={`Copy ${item.text}`}
-                        size="small"
-                        onClick={() => handleCopy(item)}
-                      >
-                        <Icon path={mdiContentCopy} size={0.8} />
-                      </IconButton>
-                    </Tooltip>
                     <Tooltip title="Actions">
                       <IconButton
                         aria-label={`Actions for ${item.text}`}
@@ -435,10 +450,31 @@ const ItemList = ({
         </Box>
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
+        <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiContentCopy} size={0.8} />
+          </Box>
+          Copy
+        </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
           >
             <Icon path={mdiBellOutline} size={0.7} />
           </Box>
@@ -447,7 +483,13 @@ const ItemList = ({
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
           >
             <Icon path={mdiPencilOutline} size={0.7} />
           </Box>
@@ -456,7 +498,13 @@ const ItemList = ({
         <MenuItem onClick={() => menuAnchor && handleDelete(menuAnchor.item)}>
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
           >
             <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>

@@ -1,9 +1,6 @@
 export type IconOption = {
-  /** Raw export name from @mdi/js, e.g. "mdiAccountOutline" */
   name: string;
-  /** Human readable label, e.g. "Account Outline" */
   label: string;
-  /** SVG path data used to render the icon */
   path: string;
 };
 

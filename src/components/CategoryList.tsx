@@ -164,7 +164,13 @@ const CategoryList = ({
         <MenuItem onClick={handleMenuEdit}>
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
           >
             <Icon path={mdiPencilOutline} size={0.7} />
           </Box>
@@ -173,7 +179,13 @@ const CategoryList = ({
         <MenuItem onClick={handleMenuDelete}>
           <Box
             component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
           >
             <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
