@@ -7,6 +7,7 @@ import {
   Stack,
   TextField,
   Tooltip,
+  colors,
   createFilterOptions,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -103,6 +104,20 @@ const CategoryForm = ({
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
                   fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                  }}
                 />
               )}
             />
@@ -129,6 +144,19 @@ const CategoryForm = ({
                 error={!!errors.name}
                 helperText={errors.name?.message}
                 fullWidth
+                sx={{
+                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                    borderColor: colors.blueGrey[500],
+                  },
+                  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: colors.blueGrey[500],
+                    },
+                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                    {
+                      borderColor: colors.blueGrey[500],
+                    },
+                }}
               />
             )}
           />

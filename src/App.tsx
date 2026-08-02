@@ -510,7 +510,7 @@ function App() {
             </Stack>
           </TabPanel>
           <TabPanel value={activeTab} index="categories">
-            <Stack spacing={3}>
+            <Stack spacing={2}>
               <CategoryForm
                 editingCategory={editingCategory}
                 onSubmit={handleSubmit}

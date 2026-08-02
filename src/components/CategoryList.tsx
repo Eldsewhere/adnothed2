@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   Box,
   Chip,
+  colors,
   IconButton,
   Menu,
   MenuItem,
@@ -76,19 +77,24 @@ const CategoryList = ({
             maxHeight: "calc(100vh - 280px)",
             overflowY: "auto",
             minHeight: 0,
+            bgcolor: colors.blueGrey[900],
           }}
         >
           <TableContainer>
             <Table size="small">
               <TableBody>
-                {orderedCategories.map((category) => (
+                {orderedCategories.map((category, index) => (
                   <TableRow key={category.id}>
                     <TableCell
                       sx={{
-                        pr: 1,
+                        paddingY: 2,
                         flexShrink: 0,
-                        width: 60,
+                        width: 40,
                         verticalAlign: "middle",
+                        borderColor:
+                          index < orderedCategories.length - 1
+                            ? colors.blueGrey[700]
+                            : "transparent",
                       }}
                     >
                       <Tooltip
@@ -100,7 +106,12 @@ const CategoryList = ({
                     </TableCell>
                     <TableCell
                       sx={{
+                        paddingY: 2,
                         pl: 0,
+                        borderColor:
+                          index < orderedCategories.length - 1
+                            ? colors.blueGrey[700]
+                            : "transparent",
                       }}
                     >
                       <Typography noWrap>
@@ -115,7 +126,17 @@ const CategoryList = ({
                         ) : null}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right" sx={{ verticalAlign: "middle" }}>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        verticalAlign: "middle",
+                        paddingY: 2,
+                        borderColor:
+                          index < orderedCategories.length - 1
+                            ? colors.blueGrey[700]
+                            : "transparent",
+                      }}
+                    >
                       <Tooltip title="Actions">
                         <IconButton
                           aria-label={`Open actions for ${category.name}`}

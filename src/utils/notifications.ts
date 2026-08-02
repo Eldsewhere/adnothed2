@@ -22,6 +22,7 @@ export const showAppNotification = async (title: string, body: string) => {
   await registration.showNotification(title, {
     body,
     icon: "/favicon.svg",
+    badge: "/badge.svg",
     tag,
   });
 };

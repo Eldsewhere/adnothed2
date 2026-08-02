@@ -256,13 +256,14 @@ const ItemList = ({
                     display: "flex",
                     alignItems: "center",
                     borderBottom: "1px solid",
-                    borderColor: "divider",
+                    paddingX: 1,
+                    borderColor: colors.blueGrey[700],
                     overflow: "hidden",
                     bgcolor: today
                       ? colors.blueGrey[800]
                       : yesterday
-                        ? colors.blueGrey[900]
-                        : "inherit",
+                        ? colors.blueGrey[800]
+                        : colors.blueGrey[900],
                   }}
                 >
                   {selectMode && (
@@ -293,7 +294,7 @@ const ItemList = ({
                         }
                         sx={{
                           p: 0.5,
-                          color: category ? "inherit" : "grey.500",
+                          color: category ? "inherit" : colors.blueGrey[500],
                         }}
                       >
                         {category ? (
@@ -471,7 +472,7 @@ const ItemList = ({
           autoFocus={categoryMenuAnchor?.item.categoryId === null}
           selected={categoryMenuAnchor?.item.categoryId === null}
           onClick={() => handleCategorySelect(null)}
-          sx={{ color: "grey.500" }}
+          sx={{ color: colors.blueGrey[300] }}
         >
           <Box
             component="span"
@@ -479,7 +480,7 @@ const ItemList = ({
               display: "inline-flex",
               alignItems: "center",
               mr: 1,
-              color: "grey.500",
+              color: colors.blueGrey[300],
             }}
           >
             <Icon path={mdiNoteText} size={0.7} />

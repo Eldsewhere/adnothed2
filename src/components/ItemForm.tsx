@@ -2,6 +2,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Box,
+  colors,
   IconButton,
   Menu,
   MenuItem,
@@ -86,6 +87,20 @@ const ItemForm = ({
                   minRows={2}
                   error={!!errors.text}
                   helperText={errors.text?.message}
+                  sx={{
+                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                  }}
                 />
               )}
             />
@@ -121,7 +136,9 @@ const ItemForm = ({
                         size="small"
                         onClick={openLabelMenu}
                         sx={{
-                          color: selectedCategory ? "inherit" : "grey.500",
+                          color: selectedCategory
+                            ? "inherit"
+                            : colors.blueGrey[500],
                           position: "relative",
                           pr: 1.25,
                         }}
@@ -140,7 +157,7 @@ const ItemForm = ({
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
-                            color: "text.secondary",
+                            color: colors.blueGrey[500],
                             lineHeight: 1,
                           }}
                         >
@@ -166,7 +183,7 @@ const ItemForm = ({
                             display: "flex",
                             alignItems: "center",
                             gap: 1,
-                            color: "grey.500",
+                            color: colors.blueGrey[300],
                           }}
                         >
                           <Icon path={mdiNoteText} size={0.8} />
