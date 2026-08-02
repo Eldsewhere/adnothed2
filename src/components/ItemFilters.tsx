@@ -45,6 +45,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
     filters.endDate !== "",
     filters.hasUrl,
     filters.hasNumber,
+    filters.indexAt !== "",
   ].filter(Boolean).length;
 
   const handleOpen = (event: MouseEvent<HTMLButtonElement>) =>
@@ -84,7 +85,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 1, width: 260 }}>
+        <Box sx={{ p: 1, width: 200 }}>
           <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
             Filter notes
           </Typography>
@@ -112,6 +113,15 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               value={filters.text}
               onChange={(event) =>
                 onChange({ ...filters, text: event.target.value })
+              }
+            />
+            <TextField
+              label="Note Index"
+              size="small"
+              type="number"
+              value={filters.indexAt}
+              onChange={(event) =>
+                onChange({ ...filters, indexAt: event.target.value })
               }
             />
             <TextField

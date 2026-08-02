@@ -9,4 +9,5 @@ export const emptyItemFilters: ItemFilters = {
   endDate: "",
   hasUrl: false,
   hasNumber: false,
+  indexAt: "",
 };

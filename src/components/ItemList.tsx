@@ -157,7 +157,7 @@ const ItemList = ({
 
   const filteredItems = useMemo(
     () =>
-      sortedItems.filter((item) => {
+      sortedItems.filter((item, index) => {
         if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
           if (item.categoryId !== null) {
             return false;
@@ -204,6 +204,11 @@ const ItemList = ({
         }
         if (filters.hasNumber && !isOnlyNumbers(item.text)) {
           return false;
+        }
+        if (filters.indexAt) {
+          {
+            return index === sortedItems.length - Number(filters.indexAt);
+          }
         }
         return true;
       }),
@@ -408,10 +413,14 @@ const ItemList = ({
                           sx={{
                             textAlign: "left",
                             display: "block",
-                            color: colors.blueGrey[500],
+                            color: colors.blueGrey[400],
                           }}
                         >
-                          #{filteredItems.length - index}
+                          #
+                          {sortedItems.length -
+                            sortedItems.findIndex(
+                              (currenItem) => currenItem.id === item.id,
+                            )}
                         </Typography>
                       </Stack>
                       <Tooltip title="Recent" arrow>

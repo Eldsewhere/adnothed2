@@ -35,4 +35,5 @@ export type ItemFilters = {
   endDate: string;
   hasUrl: boolean;
   hasNumber: boolean;
+  indexAt: string;
 };
