@@ -99,7 +99,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
               }
             >
               <MenuItem value="">All categories</MenuItem>
-              <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No group</MenuItem>
+              <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No label</MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
                   {category.name}

@@ -3,7 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Box, IconButton, Stack, TextField, Tooltip } from "@mui/material";
 import { Icon } from "@mdi/react";
 import type { Item, ItemFormValues } from "../types";
-import { mdiCancel, mdiCheck } from "@mdi/js";
+import { mdiCancel, mdiCheckCircleOutline } from "@mdi/js";
 
 type ItemFormProps = {
   editingItem: Item | null;
@@ -68,7 +68,7 @@ const ItemForm = ({ editingItem, onSubmit, onCancelEdit }: ItemFormProps) => {
                   aria-label={editingItem ? "Update note" : "Add note"}
                   color={"primary"}
                 >
-                  <Icon path={mdiCheck} size={0.9} />
+                  <Icon path={mdiCheckCircleOutline} size={0.9} />
                 </IconButton>
               </span>
             </Tooltip>

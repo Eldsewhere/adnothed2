@@ -195,7 +195,7 @@ function App() {
     );
     if (conflict) {
       setNotificationSeverity("error");
-      setNotification("A group with that icon already exists.");
+      setNotification("A label with that icon already exists.");
       return false;
     }
 
@@ -213,7 +213,7 @@ function App() {
         ),
       );
       setNotificationSeverity("success");
-      setNotification(`Updated group "${values.name}"`);
+      setNotification(`Updated label "${values.name}"`);
       setEditingCategory(null);
       return;
     }
@@ -224,7 +224,7 @@ function App() {
     ]);
     setLatestCategoryId(iconName);
     setNotificationSeverity("success");
-    setNotification(`Added group "${values.name}"`);
+    setNotification(`Added label "${values.name}"`);
   };
 
   const handleDelete = (category: Category) => {
@@ -357,7 +357,7 @@ function App() {
             />
             <Tab
               value="categories"
-              label="Groups"
+              label="Labels"
               id="tab-categories"
               aria-controls="tabpanel-categories"
             />
@@ -410,7 +410,7 @@ function App() {
                   <Tooltip
                     title={
                       selectedItemIds.size > 0
-                        ? "Change group"
+                        ? "Change label"
                         : "Select notes to enable"
                     }
                   >
@@ -426,7 +426,7 @@ function App() {
                         }
                         sx={{ textTransform: "none" }}
                       >
-                        Group
+                        Label
                       </Button>
                     </span>
                   </Tooltip>
@@ -593,12 +593,12 @@ function App() {
         onClose={() => setConfirmDeleteCategory(null)}
       >
         <DialogTitle>
-          {`Delete group "${confirmDeleteCategory?.name ?? ""}"?`}
+          {`Delete label "${confirmDeleteCategory?.name ?? ""}"?`}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Deleting this group will remove it and set any items in this group
-            to have no group. Are you sure you want to continue?
+            Deleting this label will remove it and set any items in this label
+            to have no label. Are you sure you want to continue?
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -610,7 +610,7 @@ function App() {
                 handleDelete(confirmDeleteCategory);
                 setNotificationSeverity("success");
                 setNotification(
-                  `Deleted group "${confirmDeleteCategory.name}"`,
+                  `Deleted label "${confirmDeleteCategory.name}"`,
                 );
               }
               setConfirmDeleteCategory(null);
@@ -631,8 +631,8 @@ function App() {
         <DialogContent>
           <DialogContentText>
             {pendingImport?.fileName
-              ? `Importing "${pendingImport.fileName}" will replace all current groups and notes in the app.`
-              : "Importing a JSON file will replace all current groups and notes in the app."}
+              ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app.`
+              : "Importing a JSON file will replace all current labels and notes in the app."}
             This action cannot be undone. Do you want to continue?
           </DialogContentText>
         </DialogContent>
@@ -654,7 +654,7 @@ function App() {
         onClose={() => setBulkCategoryAnchor(null)}
       >
         <MenuItem onClick={() => handleBulkCategoryChange(null)}>
-          No group
+          No label
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

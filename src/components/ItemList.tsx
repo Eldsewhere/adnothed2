@@ -282,12 +282,12 @@ const ItemList = ({
                   >
                     <Tooltip
                       title={
-                        category ? category.name : "Press to assign a group"
+                        category ? category.name : "Press to assign a label"
                       }
                       arrow
                     >
                       <IconButton
-                        aria-label={`Change group for ${item.text}`}
+                        aria-label={`Change label for ${item.text}`}
                         size="small"
                         onClick={(event: MouseEvent<HTMLElement>) =>
                           openCategoryMenu(event, item)
@@ -483,7 +483,7 @@ const ItemList = ({
           >
             <Icon path={mdiNoteText} size={0.7} />
           </Box>
-          {categories.length == 0 ? "No groups available" : "No group"}
+          {categories.length == 0 ? "No labels available" : "No label"}
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

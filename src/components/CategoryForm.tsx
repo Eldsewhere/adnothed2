@@ -12,7 +12,7 @@ import {
 import { Icon } from "@mdi/react";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Category, CategoryFormValues, IconOption } from "../types";
-import { mdiCancel, mdiCheck } from "@mdi/js";
+import { mdiCancel, mdiCheckCircleOutline } from "@mdi/js";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
@@ -98,7 +98,7 @@ const CategoryForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search group icons"
+                  label="Search label icons"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
@@ -120,11 +120,11 @@ const CategoryForm = ({
           <Controller
             name="name"
             control={control}
-            rules={{ required: "Group name is required" }}
+            rules={{ required: "Label name is required" }}
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Group Name"
+                label="Label Name"
                 size="small"
                 error={!!errors.name}
                 helperText={errors.name?.message}
@@ -133,14 +133,14 @@ const CategoryForm = ({
             )}
           />
           <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-            <Tooltip title={editingCategory ? "Update group" : "Save group"}>
+            <Tooltip title={editingCategory ? "Update label" : "Save label"}>
               <span>
                 <IconButton
                   type="submit"
-                  aria-label="Save group"
+                  aria-label="Save label"
                   color={"primary"}
                 >
-                  <Icon path={mdiCheck} size={0.9} />
+                  <Icon path={mdiCheckCircleOutline} size={0.9} />
                 </IconButton>
               </span>
             </Tooltip>

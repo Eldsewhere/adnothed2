@@ -67,7 +67,7 @@ const CategoryList = ({
   return (
     <Box>
       {orderedCategories.length === 0 ? (
-        <Typography color="text.secondary">No groups added yet</Typography>
+        <Typography color="text.secondary">No labels added yet</Typography>
       ) : (
         <Box
           sx={{
