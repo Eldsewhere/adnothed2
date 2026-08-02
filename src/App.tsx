@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  Badge,
   Box,
   Button,
   Dialog,
@@ -369,16 +370,16 @@ function App() {
                   selectMode ? "Cancel select mode" : "Select multiple notes"
                 }
               >
-                <span>
-                  <IconButton
-                    aria-label="Toggle select mode"
-                    color={selectMode ? "primary" : "default"}
-                    onClick={toggleSelectMode}
-                    disabled={items.length === 0}
-                  >
+                <IconButton
+                  aria-label="Toggle select mode"
+                  color={selectMode ? "primary" : "default"}
+                  onClick={toggleSelectMode}
+                  disabled={items.length === 0}
+                >
+                  <Badge badgeContent={selectedItemIds.size} color="primary">
                     <Icon path={mdiCheckboxMultipleMarkedOutline} size={0.9} />
-                  </IconButton>
-                </span>
+                  </Badge>
+                </IconButton>
               </Tooltip>
               <ItemFilters
                 categories={categories}

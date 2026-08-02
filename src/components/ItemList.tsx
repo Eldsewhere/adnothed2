@@ -407,21 +407,23 @@ const ItemList = ({
                         >
                           {formatTimestamp(item.createdAt)}
                         </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            textAlign: "left",
-                            display: "block",
-                            color: colors.blueGrey[400],
-                          }}
-                        >
-                          #
-                          {sortedItems.length -
-                            sortedItems.findIndex(
-                              (currenItem) => currenItem.id === item.id,
-                            )}
-                        </Typography>
+                        {selectMode && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              textAlign: "left",
+                              display: "block",
+                              color: colors.blueGrey[400],
+                            }}
+                          >
+                            #
+                            {sortedItems.length -
+                              sortedItems.findIndex(
+                                (currenItem) => currenItem.id === item.id,
+                              )}
+                          </Typography>
+                        )}
                       </Stack>
                       <Tooltip title="Recent" arrow>
                         <Badge

@@ -85,7 +85,7 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 1, width: 200 }}>
+        <Box sx={{ p: 1, width: 180 }}>
           <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
             Filter notes
           </Typography>
