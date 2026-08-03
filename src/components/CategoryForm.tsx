@@ -80,22 +80,40 @@ const CategoryForm = ({
               onInputChange={(_event, newInputValue) =>
                 setIconInputValue(newInputValue)
               }
-              options={iconInputValue ? iconOptions : []}
-              filterOptions={filterOptions}
+              options={iconOptions}
+              filterOptions={iconInputValue ? filterOptions : (x) => x}
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
               sx={{ width: "100%" }}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} key={option.name}>
+              renderOption={(props, option) =>
+                iconInputValue ? (
+                  <Box component="li" {...props} key={option.name}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        mr: 1,
+                      }}
+                    >
+                      <Icon path={option.path} size={0.9} />
+                    </Box>
+                    {option.label}
+                  </Box>
+                ) : (
                   <Box
-                    component="span"
-                    sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+                    component="li"
+                    {...props}
+                    key={option.name}
+                    sx={{
+                      display: "inline-flex !important",
+                      px: "0.7rem !important",
+                    }}
                   >
                     <Icon path={option.path} size={0.9} />
                   </Box>
-                  {option.label}
-                </Box>
-              )}
+                )
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -103,6 +121,15 @@ const CategoryForm = ({
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
+                  slotProps={{
+                    ...params.slotProps,
+                    input: {
+                      ...params.slotProps.input,
+                      startAdornment: value?.path ? (
+                        <Icon path={value.path} size={0.9} />
+                      ) : null,
+                    },
+                  }}
                   fullWidth
                   sx={{
                     "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
