@@ -184,30 +184,17 @@ const ItemList = ({
         ) {
           return false;
         }
-        if (!filters.endDate) {
-          if (
-            filters.date &&
-            dateRegex.test(filters.date) &&
-            !formatDate(item.createdAt).startsWith(filters.date.trim())
-          ) {
-            return false;
-          }
-        } else {
-          if (
-            filters.date &&
-            dateRegex.test(filters.date) &&
-            filters.endDate &&
-            dateRegex.test(filters.endDate) &&
-            filters.date.length === filters.endDate.length &&
-            !(
-              formatDate(item.createdAt).substring(0, filters.date.length) >=
-                filters.date.trim() &&
-              formatDate(item.createdAt).substring(0, filters.endDate.length) <=
-                filters.endDate.trim()
-            )
-          ) {
-            return false;
-          }
+        const itemDate = formatDate(item.createdAt);
+        const hasStartDate =
+          filters.date.length === 10 && dateRegex.test(filters.date);
+        const hasEndDate =
+          filters.endDate.length === 10 && dateRegex.test(filters.endDate);
+
+        if (hasStartDate && itemDate < filters.date.trim()) {
+          return false;
+        }
+        if (hasEndDate && itemDate > filters.endDate.trim()) {
+          return false;
         }
         if (filters.hasUrl && !containsUrl(item.text)) {
           return false;

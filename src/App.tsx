@@ -394,6 +394,7 @@ function App() {
               </Tooltip>
               <ItemFilters
                 categories={categories}
+                items={items}
                 filters={itemFilters}
                 onChange={(f) => {
                   setItemFilters(f);

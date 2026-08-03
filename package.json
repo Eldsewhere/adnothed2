@@ -18,6 +18,8 @@
     "@mdi/js": "^7.4.47",
     "@mdi/react": "^1.6.1",
     "@mui/material": "^9.2.0",
+    "@mui/x-date-pickers": "^9.10.1",
+    "dayjs": "^1.11.21",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-hook-form": "^7.83.0",
