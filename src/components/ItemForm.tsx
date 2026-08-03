@@ -71,7 +71,7 @@ const ItemForm = ({
         direction="row"
         sx={{ alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}
       >
-        <Stack direction="row" sx={{ alignItems: "flex-start", width: "100%" }}>
+        <Stack direction="row" sx={{ alignItems: "center", width: "100%" }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Controller
               name="text"
@@ -84,7 +84,7 @@ const ItemForm = ({
                   size="small"
                   fullWidth
                   multiline
-                  minRows={2}
+                  minRows={2.2}
                   error={!!errors.text}
                   helperText={errors.text?.message}
                   sx={{
@@ -110,6 +110,7 @@ const ItemForm = ({
               alignItems: "center",
               justifyContent: "center",
               ml: 1,
+              gap: 1
             }}
           >
             <Controller
