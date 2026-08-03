@@ -46,14 +46,13 @@ const NoteDay = ({
   const key = dayjs(day).format("YYYY-MM-DD");
   const noteCount = noteCountsByDay.get(key) ?? 0;
   const hasNotes = noteCount > 0;
-  const showBadge = noteCount > 1;
   const isOutside = Boolean(outsideCurrentMonth);
   const isFuture = dayjs(day).isAfter(dayjs(), "day");
 
   return (
     <Badge
       overlap="circular"
-      badgeContent={showBadge ? noteCount : null}
+      badgeContent={noteCount}
       color="success"
       sx={{
         "& .MuiBadge-badge": {
@@ -74,10 +73,6 @@ const NoteDay = ({
         sx={{
           color: isOutside ? colors.blueGrey[500] : colors.blueGrey[100],
           opacity: isOutside ? 0.6 : 1,
-          border: `1px solid ${isOutside ? "transparent" : colors.blueGrey[700]}`,
-          backgroundColor: isOutside
-            ? "rgba(96, 125, 139, 0.08)"
-            : "rgba(96, 125, 139, 0.16)",
           "&:hover, &:focus": {
             backgroundColor: isOutside
               ? "rgba(96, 125, 139, 0.18)"
@@ -320,6 +315,7 @@ const ItemFilters = ({
               maxDate={today}
               onChange={(value: Dayjs | null) => {
                 const nextStart = value ? value.format("YYYY-MM-DD") : "";
+                console.log("nextStart", nextStart);
                 if (
                   filters.endDate &&
                   nextStart &&
@@ -332,6 +328,7 @@ const ItemFilters = ({
               }}
               slots={{ day: CalendarDay }}
               slotProps={calendarSlotProps}
+              format="YYYY-MM-DD"
             />
             <DatePicker
               label="To date"
@@ -347,6 +344,7 @@ const ItemFilters = ({
               }
               slots={{ day: CalendarDay }}
               slotProps={calendarSlotProps}
+              format="YYYY-MM-DD"
             />
             <Stack spacing={1}>
               <FormControlLabel
