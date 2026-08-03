@@ -49,4 +49,4 @@ export function isYesterday(timestamp: number): boolean {
   return isSameDay(new Date(timestamp * 1000), yesterday);
 }
 
-export const dateRegex = /^\d{4}(?:-(0[1-9]|1[0-2])(?:-(0[1-9]|\d|3))?)?$/;
+export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;

@@ -35,7 +35,7 @@ import ItemForm from "./components/ItemForm";
 import ItemFilters from "./components/ItemFilters";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
-import type { Category, Item } from "./types";
+import type { Category, Item, ItemFilters as ItemFiltersValue } from "./types";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
@@ -396,9 +396,8 @@ function App() {
                 categories={categories}
                 items={items}
                 filters={itemFilters}
-                onChange={(f) => {
+                onChange={(f: ItemFiltersValue) => {
                   setItemFilters(f);
-                  // exit select mode when filters are applied
                   setSelectMode(false);
                   setSelectedItemIds(new Set());
                 }}
@@ -539,7 +538,12 @@ function App() {
               <Stack
                 direction="row"
                 spacing={1}
-                sx={{ width: "100%", justifyContent: "flex-end", flexWrap: "wrap", rowGap: 1 }}
+                sx={{
+                  width: "100%",
+                  justifyContent: "flex-end",
+                  flexWrap: "wrap",
+                  rowGap: 1,
+                }}
               >
                 <Tooltip title="Import data from JSON file">
                   <span>

@@ -25,6 +25,7 @@ import {
   NO_CATEGORY_FILTER_VALUE,
 } from "../utils/itemFilters";
 import { dateRegex, formatDate } from "../utils/formatTimestamp";
+import { containsUrl, isOnlyNumbers } from "../utils/textPatterns";
 
 type ItemFiltersProps = {
   categories: Category[];
@@ -129,14 +130,108 @@ const ItemFilters = ({
 }: ItemFiltersProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
 
+  const sortedItems = useMemo(
+    () => [...items].sort((a, b) => b.createdAt - a.createdAt),
+    [items],
+  );
+
+  const calendarFilteredItems = useMemo(
+    () =>
+      sortedItems.filter((item, index) => {
+        if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          filters.categoryId &&
+          item.categoryId !== filters.categoryId
+        ) {
+          return false;
+        }
+
+        if (
+          filters.text &&
+          !item.text.toLowerCase().includes(filters.text.toLowerCase())
+        ) {
+          return false;
+        }
+
+        if (filters.hasUrl && !containsUrl(item.text)) {
+          return false;
+        }
+
+        if (filters.hasNumber && !isOnlyNumbers(item.text)) {
+          return false;
+        }
+
+        if (filters.indexAt) {
+          return index === sortedItems.length - Number(filters.indexAt);
+        }
+
+        return true;
+      }),
+    [filters, sortedItems],
+  );
+
+  const fullyFilteredItemsCount = useMemo(
+    () =>
+      sortedItems.filter((item, index) => {
+        if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          filters.categoryId &&
+          item.categoryId !== filters.categoryId
+        ) {
+          return false;
+        }
+
+        if (
+          filters.text &&
+          !item.text.toLowerCase().includes(filters.text.toLowerCase())
+        ) {
+          return false;
+        }
+
+        const itemDate = formatDate(item.createdAt);
+        const hasStartDate =
+          filters.date.length === 10 && dateRegex.test(filters.date);
+        const hasEndDate =
+          filters.endDate.length === 10 && dateRegex.test(filters.endDate);
+
+        if (hasStartDate && itemDate < filters.date.trim()) {
+          return false;
+        }
+        if (hasEndDate && itemDate > filters.endDate.trim()) {
+          return false;
+        }
+
+        if (filters.hasUrl && !containsUrl(item.text)) {
+          return false;
+        }
+
+        if (filters.hasNumber && !isOnlyNumbers(item.text)) {
+          return false;
+        }
+
+        if (filters.indexAt) {
+          return index === sortedItems.length - Number(filters.indexAt);
+        }
+
+        return true;
+      }).length,
+    [filters, sortedItems],
+  );
+
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const item of items) {
+    for (const item of calendarFilteredItems) {
       const dayKey = formatDate(item.createdAt);
       counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
     }
     return counts;
-  }, [items]);
+  }, [calendarFilteredItems]);
 
   const oldestNoteDate = useMemo(() => {
     if (items.length === 0) {
@@ -147,6 +242,27 @@ const ItemFilters = ({
   }, [items]);
 
   const today = useMemo(() => dayjs().startOf("day"), []);
+
+  const filteredMinDate = useMemo(() => {
+    if (calendarFilteredItems.length === 0) {
+      return oldestNoteDate;
+    }
+    const minTimestamp = Math.min(
+      ...calendarFilteredItems.map((item) => item.createdAt),
+    );
+    return dayjs.unix(minTimestamp).startOf("day");
+  }, [calendarFilteredItems, oldestNoteDate]);
+
+  const filteredMaxDate = useMemo(() => {
+    if (calendarFilteredItems.length === 0) {
+      return today;
+    }
+    const maxTimestamp = Math.max(
+      ...calendarFilteredItems.map((item) => item.createdAt),
+    );
+    const latestFiltered = dayjs.unix(maxTimestamp).startOf("day");
+    return latestFiltered.isAfter(today) ? today : latestFiltered;
+  }, [calendarFilteredItems, today]);
 
   const startDateValue =
     filters.date && dateRegex.test(filters.date) && filters.date.length === 10
@@ -253,7 +369,7 @@ const ItemFilters = ({
             gutterBottom
             sx={{ mb: 2, color: colors.blueGrey[100] }}
           >
-            Filter notes
+            {`Filtered notes: ${fullyFilteredItemsCount}`}
           </Typography>
           <Stack spacing={2}>
             <TextField
@@ -272,21 +388,25 @@ const ItemFilters = ({
               >
                 <Box
                   component="span"
-                  sx={{ display: "flex", alignItems: "center", mr: 1 }}
+                  sx={{ display: "flex", alignItems: "center", gap: 1 }}
                 >
                   <Icon path={mdiNoteText} size={0.7} />
+                  {` No label`}
                 </Box>
-                No label
               </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
                   <Box
                     component="span"
-                    sx={{ display: "flex", alignItems: "center", mr: 1 }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                    }}
                   >
                     <Icon path={category.icon.path} size={0.7} />
+                    {` ${category.name}`}
                   </Box>
-                  {category.name}
                 </MenuItem>
               ))}
             </TextField>
@@ -308,34 +428,25 @@ const ItemFilters = ({
               }
             />
             <DatePicker
-              label="From date"
+              label="Start date"
               value={startDateValue}
               showDaysOutsideCurrentMonth
-              minDate={oldestNoteDate}
-              maxDate={today}
+              minDate={filteredMinDate}
+              maxDate={filteredMaxDate}
               onChange={(value: Dayjs | null) => {
                 const nextStart = value ? value.format("YYYY-MM-DD") : "";
-                console.log("nextStart", nextStart);
-                if (
-                  filters.endDate &&
-                  nextStart &&
-                  filters.endDate < nextStart
-                ) {
-                  onChange({ ...filters, date: nextStart, endDate: nextStart });
-                  return;
-                }
-                onChange({ ...filters, date: nextStart });
+                onChange({ ...filters, date: nextStart, endDate: nextStart });
               }}
               slots={{ day: CalendarDay }}
               slotProps={calendarSlotProps}
               format="YYYY-MM-DD"
             />
             <DatePicker
-              label="To date"
+              label="End date"
               value={endDateValue}
               showDaysOutsideCurrentMonth
-              minDate={startDateValue ?? oldestNoteDate}
-              maxDate={today}
+              minDate={startDateValue ?? filteredMinDate}
+              maxDate={filteredMaxDate}
               onChange={(value: Dayjs | null) =>
                 onChange({
                   ...filters,
