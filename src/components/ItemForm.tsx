@@ -80,7 +80,7 @@ const ItemForm = ({
               render={({ field }) => (
                 <TextField
                   {...field}
-                  label="Write note"
+                  label="Note"
                   size="small"
                   fullWidth
                   multiline
@@ -109,8 +109,7 @@ const ItemForm = ({
             sx={{
               alignItems: "center",
               justifyContent: "center",
-              gap: 1,
-              ml: { sm: 1 },
+              ml: 1,
             }}
           >
             <Controller

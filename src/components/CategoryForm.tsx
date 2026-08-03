@@ -99,7 +99,7 @@ const CategoryForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search label icons"
+                  label="Search icon"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
@@ -139,7 +139,7 @@ const CategoryForm = ({
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Label Name"
+                label="Label"
                 size="small"
                 error={!!errors.name}
                 helperText={errors.name?.message}

@@ -406,6 +406,15 @@ const ItemList = ({
                           }}
                         >
                           {formatTimestamp(item.createdAt)}
+                          <Tooltip title="Recent" arrow>
+                            <Badge
+                              variant="dot"
+                              color="error"
+                              overlap="circular"
+                              invisible={!Boolean(item.hasNotification)}
+                              sx={{ ml: 1 }}
+                            />
+                          </Tooltip>
                         </Typography>
                         {selectMode && (
                           <Typography
@@ -425,14 +434,6 @@ const ItemList = ({
                           </Typography>
                         )}
                       </Stack>
-                      <Tooltip title="Recent" arrow>
-                        <Badge
-                          variant="dot"
-                          color="error"
-                          overlap="circular"
-                          invisible={!Boolean(item.hasNotification)}
-                        />
-                      </Tooltip>
                     </Box>
                   </Box>
                   <Box
