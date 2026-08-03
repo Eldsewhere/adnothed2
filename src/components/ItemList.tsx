@@ -155,6 +155,16 @@ const ItemList = ({
     closeCategoryMenu();
   };
 
+  const activeFilterCount = [
+    filters.categoryId !== "",
+    filters.text !== "",
+    filters.date !== "",
+    filters.endDate !== "",
+    filters.hasUrl,
+    filters.hasNumber,
+    filters.indexAt !== "",
+  ].filter(Boolean).length;
+
   const filteredItems = useMemo(
     () =>
       sortedItems.filter((item, index) => {
@@ -416,23 +426,24 @@ const ItemList = ({
                             />
                           </Tooltip>
                         </Typography>
-                        {selectMode && (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                              textAlign: "left",
-                              display: "block",
-                              color: colors.blueGrey[400],
-                            }}
-                          >
-                            #
-                            {sortedItems.length -
-                              sortedItems.findIndex(
-                                (currenItem) => currenItem.id === item.id,
-                              )}
-                          </Typography>
-                        )}
+                        {selectMode ||
+                          (activeFilterCount > 0 && (
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                textAlign: "left",
+                                display: "block",
+                                color: colors.blueGrey[400],
+                              }}
+                            >
+                              #
+                              {sortedItems.length -
+                                sortedItems.findIndex(
+                                  (currenItem) => currenItem.id === item.id,
+                                )}
+                            </Typography>
+                          ))}
                       </Stack>
                     </Box>
                   </Box>

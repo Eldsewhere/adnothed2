@@ -85,6 +85,18 @@ const CategoryForm = ({
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
               sx={{ width: "100%" }}
+              slotProps={{
+                paper: {
+                  sx: !iconInputValue? {
+                    "& .MuiAutocomplete-listbox": {
+                      display: "inline-flex",
+                      justifyContent: "center",
+                      flexWrap: "wrap",
+                      backgroundColor: colors.blueGrey[900],
+                    },
+                  } : undefined,
+                },
+              }}
               renderOption={(props, option) =>
                 iconInputValue ? (
                   <Box component="li" {...props} key={option.name}>

@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -533,10 +534,11 @@ function App() {
                 onDelete={requestDeleteCategory}
                 newCategoryId={latestCategoryId}
               />
+              <Divider sx={{ pt: 1 }} />
               <Stack
                 direction="row"
                 spacing={1}
-                sx={{ width: "100%", justifyContent: "flex-end" }}
+                sx={{ width: "100%", justifyContent: "flex-end", flexWrap: "wrap", rowGap: 1 }}
               >
                 <Tooltip title="Import data from JSON file">
                   <span>

@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   Checkbox,
+  colors,
   FormControlLabel,
   IconButton,
   MenuItem,
@@ -14,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiFilterOutline } from "@mdi/js";
+import { mdiFilterOutline, mdiNoteText } from "@mdi/js";
 import type { Category, ItemFilters as ItemFiltersValue } from "../types";
 import {
   emptyItemFilters,
@@ -84,9 +85,16 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
         onClose={handleClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
+        slotProps={{
+          paper: {
+           sx: {
+             backgroundColor: colors.blueGrey[900],
+           },
+          },
+        }}
       >
         <Box sx={{ p: 1, width: 180 }}>
-          <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
+          <Typography variant="body1" gutterBottom sx={{ mb: 2, color: colors.blueGrey[100] }} >
             Filter notes
           </Typography>
           <Stack spacing={2}>
@@ -99,10 +107,27 @@ const ItemFilters = ({ categories, filters, onChange }: ItemFiltersProps) => {
                 onChange({ ...filters, categoryId: event.target.value })
               }
             >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value={NO_CATEGORY_FILTER_VALUE}>No label</MenuItem>
+              <MenuItem value="">Show all</MenuItem>
+              <MenuItem
+                value={NO_CATEGORY_FILTER_VALUE}
+                sx={{ color: colors.blueGrey[300] }}
+              >
+                <Box
+                  component="span"
+                  sx={{ display: "flex", alignItems: "center", mr: 1 }}
+                >
+                  <Icon path={mdiNoteText} size={0.7} />
+                </Box>
+                No label
+              </MenuItem>
               {categories.map((category) => (
                 <MenuItem key={category.id} value={category.id}>
+                  <Box
+                    component="span"
+                    sx={{ display: "flex", alignItems: "center", mr: 1 }}
+                  >
+                    <Icon path={category.icon.path} size={0.7} />
+                  </Box>
                   {category.name}
                 </MenuItem>
               ))}
