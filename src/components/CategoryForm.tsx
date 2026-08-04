@@ -202,12 +202,13 @@ const CategoryForm = ({
             )}
           />
           <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-            <Tooltip title={editingCategory ? "Update label" : "Save label"}>
+            <Tooltip title={editingCategory ? "Update label" : "Add label"}>
               <span>
                 <IconButton
                   type="submit"
-                  aria-label="Save label"
+                  aria-label="Add label"
                   color={"primary"}
+                  sx={{ color: colors.lightGreen[400] }}
                 >
                   <Icon path={mdiCheckCircle} size={0.9} />
                 </IconButton>

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Box,
-  Chip,
   colors,
   IconButton,
   Menu,
@@ -114,16 +113,16 @@ const CategoryList = ({
                             : "transparent",
                       }}
                     >
-                      <Typography noWrap>
-                        {category.name}{" "}
-                        {category.id === newCategoryId ? (
-                          <Chip
-                            label="New"
-                            size="small"
-                            color="primary"
-                            sx={{ height: 22, fontWeight: 600 }}
-                          />
-                        ) : null}
+                      <Typography
+                        noWrap
+                        sx={{
+                          color:
+                            category.id === newCategoryId
+                              ? colors.lightGreen[400]
+                              : "inherit",
+                        }}
+                      >
+                        {category.name}
                       </Typography>
                     </TableCell>
                     <TableCell

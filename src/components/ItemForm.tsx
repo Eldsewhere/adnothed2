@@ -227,6 +227,7 @@ const ItemForm = ({
                   type="submit"
                   aria-label={editingItem ? "Update note" : "Add note"}
                   color={"primary"}
+                  sx={{ color: colors.lightGreen[400] }}
                 >
                   <Icon path={mdiCheckCircle} size={0.9} />
                 </IconButton>
