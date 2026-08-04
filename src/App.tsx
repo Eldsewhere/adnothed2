@@ -51,7 +51,10 @@ import {
   requestNotificationPermission,
   showAppNotification,
 } from "./utils/notifications";
-import { emptyItemFilters, NO_CATEGORY_FILTER_VALUE } from "./utils/itemFilters";
+import {
+  emptyItemFilters,
+  NO_CATEGORY_FILTER_VALUE,
+} from "./utils/itemFilters";
 
 type TabValue = "items" | "categories";
 
@@ -403,6 +406,7 @@ function App() {
                   aria-label="Filter by date"
                   color={itemFilters.date ? "primary" : "default"}
                   onClick={() => itemFiltersRef.current?.openWithCalendar()}
+                  disabled={items.length === 0}
                 >
                   <Icon path={mdiCalendar} size={0.9} />
                 </IconButton>
@@ -412,6 +416,7 @@ function App() {
                   aria-label="Filter by label"
                   color={itemFilters.categoryId ? "primary" : "default"}
                   onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
+                  disabled={items.length === 0}
                 >
                   <Icon
                     path={
@@ -723,11 +728,17 @@ function App() {
         </MenuItem>
         <MenuItem
           onClick={() => {
-            setItemFilters((f) => ({ ...f, categoryId: NO_CATEGORY_FILTER_VALUE }));
+            setItemFilters((f) => ({
+              ...f,
+              categoryId: NO_CATEGORY_FILTER_VALUE,
+            }));
             setLabelFilterAnchor(null);
           }}
         >
-          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+          <Box
+            component="span"
+            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+          >
             <Icon path={mdiNoteText} size={0.8} />
           </Box>
           No label
@@ -740,7 +751,10 @@ function App() {
               setLabelFilterAnchor(null);
             }}
           >
-            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            >
               <Icon path={category.icon.path} size={0.8} />
             </Box>
             {category.name}

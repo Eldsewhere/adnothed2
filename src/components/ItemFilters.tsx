@@ -345,6 +345,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             aria-label="Filter notes"
             onClick={handleOpen}
             color={filtersActive ? "primary" : "default"}
+             disabled={items.length === 0}
           >
             {
               <Badge badgeContent={activeFilterCount} color="primary">

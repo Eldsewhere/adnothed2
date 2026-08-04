@@ -320,7 +320,14 @@ const ItemList = ({
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
                     <Tooltip
-                      title={item.text}
+                      title={
+                        <Typography
+                          variant="body2"
+                          sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
+                        >
+                          {item.text}
+                        </Typography>
+                      }
                       open={tooltipItemId === item.id}
                       onClose={() => setTooltipItemId(null)}
                       disableHoverListener
@@ -425,24 +432,23 @@ const ItemList = ({
                             />
                           </Tooltip>
                         </Typography>
-                        {selectMode ||
-                          (activeFilterCount > 0 && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                textAlign: "left",
-                                display: "block",
-                                color: colors.blueGrey[400],
-                              }}
-                            >
-                              #
-                              {sortedItems.length -
-                                sortedItems.findIndex(
-                                  (currenItem) => currenItem.id === item.id,
-                                )}
-                            </Typography>
-                          ))}
+                        {(selectMode || activeFilterCount > 0) && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              textAlign: "left",
+                              display: "block",
+                              color: colors.blueGrey[400],
+                            }}
+                          >
+                            #
+                            {sortedItems.length -
+                              sortedItems.findIndex(
+                                (currenItem) => currenItem.id === item.id,
+                              )}
+                          </Typography>
+                        )}
                       </Stack>
                     </Box>
                   </Box>
