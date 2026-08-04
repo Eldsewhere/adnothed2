@@ -30,8 +30,8 @@ import {
 } from "../utils/formatTimestamp";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 import {
+  containsNumbers,
   containsUrl,
-  isOnlyNumbers,
   splitTextByUrls,
 } from "../utils/textPatterns";
 
@@ -199,7 +199,7 @@ const ItemList = ({
         if (filters.hasUrl && !containsUrl(item.text)) {
           return false;
         }
-        if (filters.hasNumber && !isOnlyNumbers(item.text)) {
+        if (filters.hasNumber && !containsNumbers(item.text)) {
           return false;
         }
         if (filters.indexAt) {
@@ -408,7 +408,7 @@ const ItemList = ({
                               variant="dot"
                               color="error"
                               overlap="circular"
-                              invisible={!Boolean(item.hasNotification)}
+                              invisible={!item.hasNotification}
                               sx={{ ml: 1 }}
                             />
                           </Tooltip>

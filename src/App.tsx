@@ -29,6 +29,7 @@ import {
   mdiUpload,
   mdiDownload,
   mdiCalendar,
+  mdiNoteText,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -50,7 +51,7 @@ import {
   requestNotificationPermission,
   showAppNotification,
 } from "./utils/notifications";
-import { emptyItemFilters } from "./utils/itemFilters";
+import { emptyItemFilters, NO_CATEGORY_FILTER_VALUE } from "./utils/itemFilters";
 
 type TabValue = "items" | "categories";
 
@@ -87,6 +88,8 @@ function App() {
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
   const itemFiltersRef = useRef<ItemFiltersHandle>(null);
+  const [labelFilterAnchor, setLabelFilterAnchor] =
+    useState<HTMLElement | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -395,13 +398,28 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-              <Tooltip title="History">
+              <Tooltip title="Filter by date">
                 <IconButton
-                  aria-label="Calendar"
+                  aria-label="Filter by date"
                   color={itemFilters.date ? "primary" : "default"}
                   onClick={() => itemFiltersRef.current?.openWithCalendar()}
                 >
                   <Icon path={mdiCalendar} size={0.9} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Filter by label">
+                <IconButton
+                  aria-label="Filter by label"
+                  color={itemFilters.categoryId ? "primary" : "default"}
+                  onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
+                >
+                  <Icon
+                    path={
+                      categories.find((c) => c.id === itemFilters.categoryId)
+                        ?.icon.path ?? mdiNoteText
+                    }
+                    size={0.9}
+                  />
                 </IconButton>
               </Tooltip>
               <ItemFilters
@@ -690,6 +708,45 @@ function App() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Menu
+        anchorEl={labelFilterAnchor}
+        open={!!labelFilterAnchor}
+        onClose={() => setLabelFilterAnchor(null)}
+      >
+        <MenuItem
+          onClick={() => {
+            setItemFilters((f) => ({ ...f, categoryId: "" }));
+            setLabelFilterAnchor(null);
+          }}
+        >
+          Show all
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setItemFilters((f) => ({ ...f, categoryId: NO_CATEGORY_FILTER_VALUE }));
+            setLabelFilterAnchor(null);
+          }}
+        >
+          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+            <Icon path={mdiNoteText} size={0.8} />
+          </Box>
+          No label
+        </MenuItem>
+        {categories.map((category) => (
+          <MenuItem
+            key={category.id}
+            onClick={() => {
+              setItemFilters((f) => ({ ...f, categoryId: category.id }));
+              setLabelFilterAnchor(null);
+            }}
+          >
+            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+              <Icon path={category.icon.path} size={0.8} />
+            </Box>
+            {category.name}
+          </MenuItem>
+        ))}
+      </Menu>
       <Menu
         anchorEl={bulkCategoryAnchor}
         open={!!bulkCategoryAnchor}
