@@ -55,6 +55,7 @@ import {
   emptyItemFilters,
   NO_CATEGORY_FILTER_VALUE,
 } from "./utils/itemFilters";
+import { isToday } from "./utils/formatTimestamp";
 
 type TabValue = "items" | "categories";
 
@@ -585,11 +586,24 @@ function App() {
                   const categoryName =
                     categories.find((c) => c.id === item.categoryId)?.name ??
                     "Reminder";
+                  const now = Math.floor(Date.now() / 1000);
                   // mark item as having an active notification
                   setItems((prev) =>
                     prev.map((existingItem) =>
                       existingItem.id === item.id
-                        ? { ...existingItem, hasNotification: true }
+                        ? (() => {
+                            const shouldRefreshTimestamp = isToday(
+                              existingItem.createdAt,
+                            );
+
+                            return {
+                              ...existingItem,
+                              hasNotification: true,
+                              createdAt: shouldRefreshTimestamp
+                                ? now
+                                : existingItem.createdAt,
+                            };
+                          })()
                         : existingItem,
                     ),
                   );
