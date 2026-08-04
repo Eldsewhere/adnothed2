@@ -418,6 +418,10 @@ function App() {
                 newValue === "items" || newValue === "categories"
                   ? newValue
                   : (String(newValue) as TabValue);
+              if (normalized === "categories") {
+                setItemFilters(emptyItemFilters);
+                setSelectMode(false);
+              }
               setActiveTab(normalized);
             }}
           >

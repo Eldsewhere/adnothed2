@@ -608,7 +608,7 @@ const ItemList = ({
               onClick={() => handleToggleBullet(overflowModalItem)}
             >
               {allNonEmptyRowsBulleted(overflowModalItem.text)
-                ? "Remove bullets"
+                ? "Del bullets"
                 : "Add bullets"}
             </Button>
             <Button
