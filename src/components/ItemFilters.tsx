@@ -12,6 +12,7 @@ import {
   Button,
   Checkbox,
   colors,
+  DialogTitle,
   FormControlLabel,
   IconButton,
   MenuItem,
@@ -25,7 +26,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
-import { mdiFilterOutline, mdiNoteText } from "@mdi/js";
+import { mdiClose, mdiFilterOutline, mdiNoteText } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   emptyItemFilters,
@@ -39,6 +40,7 @@ type ItemFiltersProps = {
   items: Item[];
   filters: ItemFiltersValue;
   onChange: (filters: ItemFiltersValue) => void;
+  selectMode: boolean;
 };
 
 type NoteDayProps = PickerDayProps & {
@@ -134,7 +136,10 @@ export type ItemFiltersHandle = {
 };
 
 const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
-  function ItemFilters({ categories, items, filters, onChange }, ref) {
+  function ItemFilters(
+    { categories, items, filters, onChange, selectMode },
+    ref,
+  ) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
     const [startDateOpen, setStartDateOpen] = useState(false);
     const filterButtonRef = useRef<HTMLButtonElement>(null);
@@ -345,7 +350,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             aria-label="Filter notes"
             onClick={handleOpen}
             color={filtersActive ? "primary" : "default"}
-             disabled={items.length === 0}
+            disabled={items.length === 0 || selectMode}
           >
             {
               <Badge badgeContent={activeFilterCount} color="primary">
@@ -364,18 +369,45 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             paper: {
               sx: {
                 backgroundColor: colors.blueGrey[900],
+                border: `1px solid ${colors.blueGrey[700]}`,
+                minWidth: 280,
               },
             },
           }}
         >
-          <Box sx={{ p: 1, width: 220 }}>
-            <Typography
-              variant="body1"
-              gutterBottom
-              sx={{ mb: 2, color: colors.blueGrey[100] }}
+          <DialogTitle
+            sx={{
+              py: 1,
+              px: 2,
+              borderBottom: `1px solid ${colors.blueGrey[700]}`,
+              color: colors.blueGrey[100],
+              backgroundColor: colors.blueGrey[900],
+            }}
+          >
+            <Stack
+              direction="row"
+              sx={{ alignItems: "center", justifyContent: "space-between" }}
             >
-              {`Filtered notes: ${fullyFilteredItemsCount}`}
-            </Typography>
+              <Typography variant="subtitle1">Filters</Typography>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: colors.blueGrey[300] }}
+                >
+                  {`Notes: ${fullyFilteredItemsCount}`}
+                </Typography>
+                <IconButton
+                  size="small"
+                  aria-label="Close filters"
+                  onClick={handleClose}
+                  sx={{ color: colors.blueGrey[100], p: 0.5 }}
+                >
+                  <Icon path={mdiClose} size={0.75} />
+                </IconButton>
+              </Stack>
+            </Stack>
+          </DialogTitle>
+          <Box sx={{ p: 2 }}>
             <Stack spacing={2}>
               <TextField
                 select
@@ -503,9 +535,12 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                 <span>
                   <Button
                     size="small"
-                    variant="outlined"
+                    variant="contained"
                     disabled={activeFilterCount === 0}
-                    onClick={() => { onChange(emptyItemFilters); handleClose(); }}
+                    onClick={() => {
+                      onChange(emptyItemFilters);
+                      handleClose();
+                    }}
                   >
                     Clear filters
                   </Button>

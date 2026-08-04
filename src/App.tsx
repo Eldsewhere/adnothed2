@@ -58,6 +58,43 @@ import {
 
 type TabValue = "items" | "categories";
 
+const BULLET_PREFIX = "• ";
+
+function toggleBulletRows(text: string): string {
+  const lines = text.split("\n");
+  const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
+  const hasNonEmptyLines = nonEmptyLines.length > 0;
+  const allNonEmptyAreBulleted =
+    hasNonEmptyLines &&
+    nonEmptyLines.every((line) => line.trimStart().startsWith(BULLET_PREFIX));
+
+  if (allNonEmptyAreBulleted) {
+    return lines
+      .map((line) => {
+        const trimmedStartLine = line.trimStart();
+        if (!trimmedStartLine.startsWith(BULLET_PREFIX)) {
+          return line;
+        }
+        const leadingWhitespaceLength = line.length - trimmedStartLine.length;
+        const leadingWhitespace = line.slice(0, leadingWhitespaceLength);
+        return `${leadingWhitespace}${trimmedStartLine.slice(BULLET_PREFIX.length)}`;
+      })
+      .join("\n");
+  }
+
+  return lines
+    .map((line) => {
+      if (line.trim().length === 0) {
+        return line;
+      }
+      const trimmedStartLine = line.trimStart();
+      const leadingWhitespaceLength = line.length - trimmedStartLine.length;
+      const leadingWhitespace = line.slice(0, leadingWhitespaceLength);
+      return `${leadingWhitespace}${BULLET_PREFIX}${trimmedStartLine}`;
+    })
+    .join("\n");
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("items");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -312,6 +349,20 @@ function App() {
     }
   };
 
+  const handleItemToggleBullet = (item: Item) => {
+    const nextText = toggleBulletRows(item.text);
+    setItems((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id
+          ? { ...existingItem, text: nextText }
+          : existingItem,
+      ),
+    );
+    if (editingItem?.id === item.id) {
+      setEditingItem({ ...editingItem, text: nextText });
+    }
+  };
+
   const toggleSelectMode = () => {
     setSelectMode((prev) => !prev);
     setSelectedItemIds(new Set());
@@ -406,7 +457,7 @@ function App() {
                   aria-label="Filter by date"
                   color={itemFilters.date ? "primary" : "default"}
                   onClick={() => itemFiltersRef.current?.openWithCalendar()}
-                  disabled={items.length === 0}
+                  disabled={items.length === 0 || selectMode}
                 >
                   <Icon path={mdiCalendar} size={0.9} />
                 </IconButton>
@@ -416,7 +467,7 @@ function App() {
                   aria-label="Filter by label"
                   color={itemFilters.categoryId ? "primary" : "default"}
                   onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
-                  disabled={items.length === 0}
+                  disabled={items.length === 0 || selectMode}
                 >
                   <Icon
                     path={
@@ -432,6 +483,7 @@ function App() {
                 categories={categories}
                 items={items}
                 filters={itemFilters}
+                selectMode={selectMode}
                 onChange={(f: ItemFiltersValue) => {
                   setItemFilters(f);
                   setSelectMode(false);
@@ -524,6 +576,7 @@ function App() {
                 onEdit={setEditingItem}
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
+                onToggleBullet={handleItemToggleBullet}
                 onNotify={(item) => {
                   const categoryName =
                     categories.find((c) => c.id === item.categoryId)?.name ??
@@ -640,7 +693,7 @@ function App() {
           >
             Cancel
           </Button>
-          <Button variant="outlined" color="error" onClick={handleBulkDelete}>
+          <Button variant="contained" onClick={handleBulkDelete}>
             Delete
           </Button>
         </DialogActions>
@@ -666,8 +719,7 @@ function App() {
             Cancel
           </Button>
           <Button
-            variant="outlined"
-            color="error"
+            variant="contained"
             onClick={() => {
               if (confirmDeleteCategory) {
                 handleDelete(confirmDeleteCategory);
@@ -708,7 +760,7 @@ function App() {
           >
             Cancel
           </Button>
-          <Button color="error" variant="outlined" onClick={confirmImport}>
+          <Button variant="contained" onClick={confirmImport}>
             Import
           </Button>
         </DialogActions>

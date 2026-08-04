@@ -3,6 +3,9 @@ import {
   Box,
   Badge,
   Checkbox,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   IconButton,
   Menu,
   MenuItem,
@@ -10,12 +13,16 @@ import {
   Typography,
   colors,
   Stack,
+  DialogActions,
+  Button,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiBellOutline,
+  mdiClose,
   mdiContentCopy,
   mdiDotsVertical,
+  mdiFormatListBulleted,
   mdiNoteText,
   mdiPencilOutline,
   mdiTrashCanOutline,
@@ -41,6 +48,7 @@ type ItemListProps = {
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
+  onToggleBullet: (item: Item) => void;
   onNotify: (item: Item) => void;
   onCategoryChange: (item: Item, categoryId: string | null) => void;
   selectMode: boolean;
@@ -50,6 +58,15 @@ type ItemListProps = {
 
 const ROW_HEIGHT = 80;
 const OVERSCAN = 6;
+const BULLET_PREFIX = "• ";
+
+const allNonEmptyRowsBulleted = (text: string): boolean => {
+  const rows = text.split("\n").filter((row) => row.trim().length > 0);
+  return (
+    rows.length > 0 &&
+    rows.every((row) => row.trimStart().startsWith(BULLET_PREFIX))
+  );
+};
 
 const ItemList = ({
   items,
@@ -58,6 +75,7 @@ const ItemList = ({
   onEdit,
   onDelete,
   onCopy,
+  onToggleBullet,
   onNotify,
   onCategoryChange,
   selectMode,
@@ -68,7 +86,9 @@ const ItemList = ({
     el: HTMLElement;
     item: Item;
   } | null>(null);
-  const [tooltipItemId, setTooltipItemId] = useState<string | null>(null);
+  const [overflowModalItemId, setOverflowModalItemId] = useState<string | null>(
+    null,
+  );
   const [hoveredOverflowItemId, setHoveredOverflowItemId] = useState<
     string | null
   >(null);
@@ -88,6 +108,10 @@ const ItemList = ({
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.createdAt - a.createdAt),
     [items],
+  );
+  const overflowModalItem = useMemo(
+    () => items.find((item) => item.id === overflowModalItemId) ?? null,
+    [items, overflowModalItemId],
   );
 
   useEffect(() => {
@@ -127,7 +151,12 @@ const ItemList = ({
     closeMenu();
   };
 
-  const handleTextClick = (event: MouseEvent<HTMLElement>, itemId: string) => {
+  const handleToggleBullet = (item: Item) => {
+    onToggleBullet(item);
+    closeMenu();
+  };
+
+  const handleTextClick = (event: MouseEvent<HTMLElement>, item: Item) => {
     const target = event.currentTarget as HTMLElement;
     const isOverflowing =
       target.scrollWidth > target.clientWidth ||
@@ -137,7 +166,7 @@ const ItemList = ({
       return;
     }
 
-    setTooltipItemId((current) => (current === itemId ? null : itemId));
+    setOverflowModalItemId(item.id);
   };
 
   const openCategoryMenu = (event: MouseEvent<HTMLElement>, item: Item) => {
@@ -319,89 +348,55 @@ const ItemList = ({
                     </Tooltip>
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
-                    <Tooltip
-                      title={
-                        <Typography
-                          variant="body2"
-                          sx={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}
-                        >
-                          {item.text}
-                        </Typography>
-                      }
-                      open={tooltipItemId === item.id}
-                      onClose={() => setTooltipItemId(null)}
-                      disableHoverListener
-                      disableFocusListener
-                      enterDelay={0}
-                      leaveDelay={200}
-                      arrow
-                      slotProps={{
-                        tooltip: {
-                          sx: {
-                            bgcolor: "grey.900",
-                            color: "#ffffff",
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            maxWidth: "calc(100vw - 32px)",
-                          },
-                        },
-                        arrow: {
-                          sx: {
-                            color: "grey.900",
-                          },
-                        },
+                    <Typography
+                      component="div"
+                      onClick={(event) => handleTextClick(event, item)}
+                      onMouseEnter={(event) => {
+                        const target = event.currentTarget as HTMLElement;
+                        const isOverflowing =
+                          target.scrollWidth > target.clientWidth ||
+                          target.scrollHeight > target.clientHeight;
+                        setHoveredOverflowItemId(
+                          isOverflowing ? item.id : null,
+                        );
                       }}
-                      sx={{ width: "100%" }}
+                      onMouseLeave={() => setHoveredOverflowItemId(null)}
+                      sx={{
+                        textAlign: "left",
+                        whiteSpace: "pre-wrap",
+                        overflow: "hidden",
+                        overflowWrap: "anywhere",
+                        wordBreak: "break-word",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        cursor:
+                          hoveredOverflowItemId === item.id
+                            ? "pointer"
+                            : "default",
+                      }}
                     >
-                      <Typography
-                        component="div"
-                        onClick={(event) => handleTextClick(event, item.id)}
-                        onMouseEnter={(event) => {
-                          const target = event.currentTarget as HTMLElement;
-                          const isOverflowing =
-                            target.scrollWidth > target.clientWidth ||
-                            target.scrollHeight > target.clientHeight;
-                          setHoveredOverflowItemId(
-                            isOverflowing ? item.id : null,
-                          );
-                        }}
-                        onMouseLeave={() => setHoveredOverflowItemId(null)}
-                        sx={{
-                          textAlign: "left",
-                          whiteSpace: "pre-wrap",
-                          overflow: "hidden",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          cursor:
-                            hoveredOverflowItemId === item.id
-                              ? "pointer"
-                              : "default",
-                        }}
-                      >
-                        {splitTextByUrls(item.text).map((part, partIndex) =>
-                          part.isUrl ? (
-                            <Box
-                              key={partIndex}
-                              component="a"
-                              href={part.value}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              sx={{
-                                color: "info.main",
-                                textDecoration: "underline",
-                                wordBreak: "break-word",
-                              }}
-                            >
-                              {part.value}
-                            </Box>
-                          ) : (
-                            <span key={partIndex}>{part.value}</span>
-                          ),
-                        )}
-                      </Typography>
-                    </Tooltip>
+                      {splitTextByUrls(item.text).map((part, partIndex) =>
+                        part.isUrl ? (
+                          <Box
+                            key={partIndex}
+                            component="a"
+                            href={part.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                              color: "info.main",
+                              textDecoration: "underline",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {part.value}
+                          </Box>
+                        ) : (
+                          <span key={partIndex}>{part.value}</span>
+                        ),
+                      )}
+                    </Typography>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Stack
                         sx={{
@@ -466,6 +461,7 @@ const ItemList = ({
                         onClick={(event: MouseEvent<HTMLElement>) =>
                           setMenuAnchor({ el: event.currentTarget, item })
                         }
+                        disabled={selectMode}
                       >
                         <Icon path={mdiDotsVertical} size={0.8} />
                       </IconButton>
@@ -539,6 +535,92 @@ const ItemList = ({
           Delete
         </MenuItem>
       </Menu>
+      {overflowModalItem && (
+        <Dialog
+          open
+          onClose={() => setOverflowModalItemId(null)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle sx={{ bgcolor: colors.blueGrey[900], p: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1,
+              }}
+            >
+              <Typography variant="body2">
+                {(() => {
+                  const category = categories.find(
+                    (category) => category.id === overflowModalItem?.categoryId,
+                  );
+
+                  return (
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 1,
+                      }}
+                    >
+                      {category ? (
+                        <Icon path={category.icon.path} size={0.8} />
+                      ) : (
+                        <Icon path={mdiNoteText} size={0.8} />
+                      )}
+                      {category ? category.name : "No label"}
+                    </Box>
+                  );
+                })()}
+              </Typography>
+              <IconButton
+                aria-label="Close note dialog"
+                size="small"
+                onClick={() => setOverflowModalItemId(null)}
+                sx={{ color: colors.blueGrey[100] }}
+              >
+                <Icon path={mdiClose} size={0.8} />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
+            <Typography
+              variant="body1"
+              sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", mt: 2 }}
+            >
+              {overflowModalItem?.text}
+            </Typography>
+          </DialogContent>
+          <DialogActions
+            sx={{
+              bgcolor: colors.blueGrey[900],
+              p: 1,
+              gap: 1,
+              flexWrap: "wrap",
+            }}
+          >
+            <Button
+              variant="contained"
+              startIcon={<Icon path={mdiFormatListBulleted} size={0.7} />}
+              onClick={() => handleToggleBullet(overflowModalItem)}
+            >
+              {allNonEmptyRowsBulleted(overflowModalItem.text)
+                ? "Remove bullets"
+                : "Add bullets"}
+            </Button>
+            <Button
+              variant="contained"
+              startIcon={<Icon path={mdiContentCopy} size={0.7} />}
+              onClick={() => onCopy(overflowModalItem)}
+            >
+              Copy
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
       <Menu
         anchorEl={categoryMenuAnchor?.el}
         open={!!categoryMenuAnchor}
