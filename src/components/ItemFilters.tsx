@@ -26,7 +26,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
-import { mdiClose, mdiFilterOutline, mdiNoteText } from "@mdi/js";
+import { mdiClose, mdiFilter, mdiNoteText } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   emptyItemFilters,
@@ -354,7 +354,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           >
             {
               <Badge badgeContent={activeFilterCount} color="primary">
-                <Icon path={mdiFilterOutline} size={0.9} />
+                <Icon path={mdiFilter} size={0.9} />
               </Badge>
             }
           </IconButton>

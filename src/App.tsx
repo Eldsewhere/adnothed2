@@ -23,9 +23,9 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
-  mdiCheckboxMultipleMarkedOutline,
-  mdiFolderMoveOutline,
-  mdiTrashCanOutline,
+  mdiCheckboxMultipleMarked,
+  mdiFolderMove,
+  mdiTrashCan,
   mdiUpload,
   mdiDownload,
   mdiCalendar,
@@ -204,6 +204,7 @@ function App() {
     setItems(pendingImport.items);
     setStorageFileName(pendingImport.fileName);
     setStorageReady(true);
+    setActiveTab("items");
     setNotificationSeverity("success");
     setNotification(`Imported ${pendingImport.fileName}`);
     setPendingImport(null);
@@ -453,7 +454,7 @@ function App() {
                   disabled={items.length === 0}
                 >
                   <Badge badgeContent={selectedItemIds.size} color="primary">
-                    <Icon path={mdiCheckboxMultipleMarkedOutline} size={0.9} />
+                    <Icon path={mdiCheckboxMultipleMarked} size={0.9} />
                   </Badge>
                 </IconButton>
               </Tooltip>
@@ -523,9 +524,7 @@ function App() {
                     <span>
                       <Button
                         variant="text"
-                        startIcon={
-                          <Icon path={mdiFolderMoveOutline} size={0.9} />
-                        }
+                        startIcon={<Icon path={mdiFolderMove} size={0.9} />}
                         disabled={selectedItemIds.size === 0}
                         onClick={(event) =>
                           setBulkCategoryAnchor(event.currentTarget)
@@ -546,9 +545,7 @@ function App() {
                     <span>
                       <Button
                         variant="text"
-                        startIcon={
-                          <Icon path={mdiTrashCanOutline} size={0.9} />
-                        }
+                        startIcon={<Icon path={mdiTrashCan} size={0.9} />}
                         disabled={selectedItemIds.size === 0}
                         onClick={() => setConfirmBulkDeleteOpen(true)}
                         sx={{ textTransform: "none" }}

@@ -13,7 +13,7 @@ import {
 import { Icon } from "@mdi/react";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Category, CategoryFormValues, IconOption } from "../types";
-import { mdiCancel, mdiCheckCircleOutline } from "@mdi/js";
+import { mdiCancel, mdiCheckCircle } from "@mdi/js";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
@@ -87,14 +87,16 @@ const CategoryForm = ({
               sx={{ width: "100%" }}
               slotProps={{
                 paper: {
-                  sx: !iconInputValue? {
-                    "& .MuiAutocomplete-listbox": {
-                      display: "inline-flex",
-                      justifyContent: "center",
-                      flexWrap: "wrap",
-                      backgroundColor: colors.blueGrey[900],
-                    },
-                  } : undefined,
+                  sx: !iconInputValue
+                    ? {
+                        "& .MuiAutocomplete-listbox": {
+                          display: "inline-flex",
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                          backgroundColor: colors.blueGrey[900],
+                        },
+                      }
+                    : undefined,
                 },
               }}
               renderOption={(props, option) =>
@@ -207,7 +209,7 @@ const CategoryForm = ({
                   aria-label="Save label"
                   color={"primary"}
                 >
-                  <Icon path={mdiCheckCircleOutline} size={0.9} />
+                  <Icon path={mdiCheckCircle} size={0.9} />
                 </IconButton>
               </span>
             </Tooltip>

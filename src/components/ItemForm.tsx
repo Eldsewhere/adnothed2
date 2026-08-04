@@ -14,7 +14,7 @@ import { Icon } from "@mdi/react";
 import type { Category, Item, ItemFormValues } from "../types";
 import {
   mdiCancel,
-  mdiCheckCircleOutline,
+  mdiCheckCircle,
   mdiChevronDown,
   mdiNoteText,
 } from "@mdi/js";
@@ -110,7 +110,7 @@ const ItemForm = ({
               alignItems: "center",
               justifyContent: "center",
               ml: 1,
-              gap: 1
+              gap: 1,
             }}
           >
             <Controller
@@ -228,7 +228,7 @@ const ItemForm = ({
                   aria-label={editingItem ? "Update note" : "Add note"}
                   color={"primary"}
                 >
-                  <Icon path={mdiCheckCircleOutline} size={0.9} />
+                  <Icon path={mdiCheckCircle} size={0.9} />
                 </IconButton>
               </Tooltip>
               {editingItem && (

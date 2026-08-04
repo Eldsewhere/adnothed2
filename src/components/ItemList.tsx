@@ -17,14 +17,14 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiBellOutline,
+  mdiBell,
   mdiClose,
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
   mdiNoteText,
-  mdiPencilOutline,
-  mdiTrashCanOutline,
+  mdiPencil,
+  mdiTrashCan,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
@@ -409,7 +409,8 @@ const ItemList = ({
                           color="text.secondary"
                           sx={{
                             textAlign: "left",
-                            display: "block",
+                            display: "flex",
+                            alignItems: "center",
                             color: isToday(item.createdAt)
                               ? colors.lightGreen[400]
                               : colors.blueGrey[300],
@@ -425,11 +426,10 @@ const ItemList = ({
                                 visibility: item.hasNotification
                                   ? "visible"
                                   : "hidden",
-                                color: colors.orange[300],
-                                verticalAlign: "middle",
+                                color: colors.lightGreen[400],
                               }}
                             >
-                              <Icon path={mdiBellOutline} size={0.5} />
+                              <Icon path={mdiBell} size={0.5} />
                             </Box>
                           </Tooltip>
                         </Typography>
@@ -506,7 +506,7 @@ const ItemList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiBellOutline} size={0.7} />
+            <Icon path={mdiBell} size={0.7} />
           </Box>
           Notify
         </MenuItem>
@@ -521,7 +521,7 @@ const ItemList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiPencilOutline} size={0.7} />
+            <Icon path={mdiPencil} size={0.7} />
           </Box>
           Edit
         </MenuItem>
@@ -536,7 +536,7 @@ const ItemList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiTrashCanOutline} size={0.7} />
+            <Icon path={mdiTrashCan} size={0.7} />
           </Box>
           Delete
         </MenuItem>
