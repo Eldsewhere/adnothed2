@@ -26,7 +26,6 @@ import {
   formatDate,
   formatTimestamp,
   isToday,
-  isYesterday,
 } from "../utils/formatTimestamp";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 import {
@@ -212,6 +211,18 @@ const ItemList = ({
     [sortedItems, filters],
   );
 
+  const dayIndexByDate = useMemo(() => {
+    const map = new Map<string, number>();
+    let index = 0;
+    for (const item of filteredItems) {
+      const date = formatDate(item.createdAt);
+      if (!map.has(date)) {
+        map.set(date, index++);
+      }
+    }
+    return map;
+  }, [filteredItems]);
+
   const totalHeight = filteredItems.length * ROW_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
   const endIndex = Math.min(
@@ -245,8 +256,8 @@ const ItemList = ({
               const category = item.categoryId
                 ? categoriesById.get(item.categoryId)
                 : undefined;
-              const today = isToday(item.createdAt);
-              const yesterday = isYesterday(item.createdAt);
+              const dayIndex =
+                dayIndexByDate.get(formatDate(item.createdAt)) ?? 0;
               return (
                 <Box
                   key={item.id}
@@ -262,9 +273,8 @@ const ItemList = ({
                     paddingX: 1,
                     borderColor: colors.blueGrey[700],
                     overflow: "hidden",
-                    bgcolor: today
-                      ? colors.blueGrey[800]
-                      : yesterday
+                    bgcolor:
+                      dayIndex % 2 === 0
                         ? colors.blueGrey[800]
                         : colors.blueGrey[900],
                   }}
@@ -399,7 +409,9 @@ const ItemList = ({
                           sx={{
                             textAlign: "left",
                             display: "block",
-                            color: colors.blueGrey[300],
+                            color: isToday(item.createdAt)
+                              ? colors.lightGreen[400]
+                              : colors.blueGrey[300],
                           }}
                         >
                           {formatTimestamp(item.createdAt)}
