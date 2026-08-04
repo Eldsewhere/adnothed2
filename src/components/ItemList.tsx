@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   Box,
-  Badge,
   Checkbox,
   Dialog,
   DialogContent,
@@ -417,14 +416,21 @@ const ItemList = ({
                           }}
                         >
                           {formatTimestamp(item.createdAt)}
-                          <Tooltip title="Recent" arrow>
-                            <Badge
-                              variant="dot"
-                              color="error"
-                              overlap="circular"
-                              invisible={!item.hasNotification}
-                              sx={{ ml: 1 }}
-                            />
+                          <Tooltip title="Notified" arrow>
+                            <Box
+                              component="span"
+                              sx={{
+                                ml: 0.5,
+                                display: "inline-flex",
+                                visibility: item.hasNotification
+                                  ? "visible"
+                                  : "hidden",
+                                color: colors.orange[300],
+                                verticalAlign: "middle",
+                              }}
+                            >
+                              <Icon path={mdiBellOutline} size={0.5} />
+                            </Box>
                           </Tooltip>
                         </Typography>
                         {(selectMode || activeFilterCount > 0) && (
