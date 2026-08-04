@@ -28,11 +28,13 @@ import {
   mdiTrashCanOutline,
   mdiUpload,
   mdiDownload,
+  mdiCalendar,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
 import ItemForm from "./components/ItemForm";
 import ItemFilters from "./components/ItemFilters";
+import type { ItemFiltersHandle } from "./components/ItemFilters";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "./types";
@@ -84,6 +86,7 @@ function App() {
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
+  const itemFiltersRef = useRef<ItemFiltersHandle>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -392,7 +395,17 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
+              <Tooltip title="History">
+                <IconButton
+                  aria-label="Calendar"
+                  color={itemFilters.date ? "primary" : "default"}
+                  onClick={() => itemFiltersRef.current?.openWithCalendar()}
+                >
+                  <Icon path={mdiCalendar} size={0.9} />
+                </IconButton>
+              </Tooltip>
               <ItemFilters
+                ref={itemFiltersRef}
                 categories={categories}
                 items={items}
                 filters={itemFilters}

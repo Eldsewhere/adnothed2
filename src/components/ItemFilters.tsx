@@ -1,4 +1,4 @@
-import { useMemo, useState, type MouseEvent } from "react";
+import { forwardRef, useImperativeHandle, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   Badge,
   Box,
@@ -122,13 +122,28 @@ const NoteDay = ({
   );
 };
 
-const ItemFilters = ({
+export type ItemFiltersHandle = {
+  openWithCalendar: () => void;
+};
+
+const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(function ItemFilters({
   categories,
   items,
   filters,
   onChange,
-}: ItemFiltersProps) => {
+}, ref) {
   const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  const [startDateOpen, setStartDateOpen] = useState(false);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
+
+  useImperativeHandle(ref, () => ({
+    openWithCalendar() {
+      if (filterButtonRef.current) {
+        setAnchorEl(filterButtonRef.current);
+      }
+      setStartDateOpen(true);
+    },
+  }));
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.createdAt - a.createdAt),
@@ -330,6 +345,7 @@ const ItemFilters = ({
         title={`Open filters ${activeFilterCount ? ` (${activeFilterCount} active)` : ""}`}
       >
         <IconButton
+          ref={filterButtonRef}
           aria-label="Filter notes"
           onClick={handleOpen}
           color={filtersActive ? "primary" : "default"}
@@ -430,12 +446,16 @@ const ItemFilters = ({
             <DatePicker
               label="Start date"
               value={startDateValue}
+              open={startDateOpen}
+              onOpen={() => setStartDateOpen(true)}
+              onClose={() => setStartDateOpen(false)}
               showDaysOutsideCurrentMonth
               minDate={filteredMinDate}
               maxDate={filteredMaxDate}
               onChange={(value: Dayjs | null) => {
                 const nextStart = value ? value.format("YYYY-MM-DD") : "";
                 onChange({ ...filters, date: nextStart, endDate: nextStart });
+                setStartDateOpen(false);
               }}
               slots={{ day: CalendarDay }}
               slotProps={calendarSlotProps}
@@ -504,6 +524,6 @@ const ItemFilters = ({
       </Popover>
     </>
   );
-};
+});
 
 export default ItemFilters;
