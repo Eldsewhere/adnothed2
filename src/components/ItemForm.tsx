@@ -76,7 +76,10 @@ const ItemForm = ({
             <Controller
               name="text"
               control={control}
-              rules={{ required: "Note is required" }}
+              rules={{
+                required: "Note is required",
+                maxLength: { value: 200, message: "Max 200 characters" },
+              }}
               render={({ field }) => (
                 <TextField
                   {...field}

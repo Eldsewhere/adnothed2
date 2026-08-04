@@ -107,6 +107,8 @@ const CategoryList = ({
                       sx={{
                         paddingY: 2,
                         pl: 0,
+                        maxWidth: 0,
+                        width: "100%",
                         borderColor:
                           index < orderedCategories.length - 1
                             ? colors.blueGrey[700]

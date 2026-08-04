@@ -15,6 +15,7 @@ import {
   DialogTitle,
   FormControlLabel,
   IconButton,
+  LinearProgress,
   MenuItem,
   Popover,
   Stack,
@@ -370,7 +371,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
               sx: {
                 backgroundColor: colors.blueGrey[900],
                 border: `1px solid ${colors.blueGrey[700]}`,
-                minWidth: 280,
+                width: 200,
               },
             },
           }}
@@ -394,7 +395,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                   variant="caption"
                   sx={{ color: colors.blueGrey[300] }}
                 >
-                  {`Notes: ${fullyFilteredItemsCount}`}
+                  {fullyFilteredItemsCount}
                 </Typography>
                 <IconButton
                   size="small"
@@ -455,15 +456,37 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                   onChange({ ...filters, text: event.target.value })
                 }
               />
-              <TextField
-                label="Note Index"
-                size="small"
-                type="number"
-                value={filters.indexAt}
-                onChange={(event) =>
-                  onChange({ ...filters, indexAt: event.target.value })
-                }
-              />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                <TextField
+                  label="Note Index"
+                  size="small"
+                  type="number"
+                  value={filters.indexAt}
+                  onChange={(event) => {
+                    const raw = event.target.value;
+                    if (raw === "") {
+                      onChange({ ...filters, indexAt: "" });
+                      return;
+                    }
+                    const n = Math.round(Number(raw));
+                    const clamped = Math.min(
+                      Math.max(n, 1),
+                      sortedItems.length,
+                    );
+                    onChange({ ...filters, indexAt: String(clamped) });
+                  }}
+                  slotProps={{
+                    htmlInput: { min: 1, max: sortedItems.length, step: 1 },
+                  }}
+                />
+                {filters.indexAt && sortedItems.length > 0 && (
+                  <LinearProgress
+                    variant="determinate"
+                    value={(Number(filters.indexAt) / sortedItems.length) * 100}
+                    sx={{ borderRadius: 1 }}
+                  />
+                )}
+              </Box>
               <DatePicker
                 label="Start date"
                 value={startDateValue}
@@ -498,7 +521,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                 slotProps={calendarSlotProps}
                 format="YYYY-MM-DD"
               />
-              <Stack spacing={1}>
+              <Stack>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -532,19 +555,17 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                     : "Clear filters"
                 }
               >
-                <span>
-                  <Button
-                    size="small"
-                    variant="contained"
-                    disabled={activeFilterCount === 0}
-                    onClick={() => {
-                      onChange(emptyItemFilters);
-                      handleClose();
-                    }}
-                  >
-                    Clear filters
-                  </Button>
-                </span>
+                <Button
+                  size="small"
+                  variant="contained"
+                  disabled={activeFilterCount === 0}
+                  onClick={() => {
+                    onChange(emptyItemFilters);
+                    handleClose();
+                  }}
+                >
+                  Clear filters
+                </Button>
               </Tooltip>
             </Stack>
           </Box>

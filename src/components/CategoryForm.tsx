@@ -176,7 +176,10 @@ const CategoryForm = ({
           <Controller
             name="name"
             control={control}
-            rules={{ required: "Label name is required" }}
+            rules={{
+              required: "Label name is required",
+              maxLength: { value: 15, message: "Max 15 characters" },
+            }}
             render={({ field }) => (
               <TextField
                 {...field}

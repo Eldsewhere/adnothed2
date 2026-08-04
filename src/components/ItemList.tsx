@@ -595,7 +595,13 @@ const ItemList = ({
           <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
             <Typography
               variant="body1"
-              sx={{ whiteSpace: "pre-wrap", overflowWrap: "anywhere", mt: 2 }}
+              sx={{
+                whiteSpace: "pre-wrap",
+                overflowWrap: "anywhere",
+                mt: 2,
+                maxHeight: "calc(10 * 1.5em)",
+                overflowY: "auto",
+              }}
             >
               {overflowModalItem?.text}
             </Typography>
