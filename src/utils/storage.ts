@@ -2,7 +2,7 @@
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { PersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
-import { hasDuplicateCreatedAt } from "./itemTimestamps";
+import { getUniqueCreatedAt, normalizeCreatedAt } from "./itemTimestamps";
 
 type PersistedCategory = {
   name: string;
@@ -106,6 +106,26 @@ function resolveIconOption(name: string): Category["icon"] {
   };
 }
 
+function normalizeItems(items: PersistedItem[]): Item[] {
+  const normalized: Item[] = [];
+
+  for (const item of items) {
+    const createdAt = getUniqueCreatedAt(
+      normalized,
+      normalizeCreatedAt(item.createdAt),
+    );
+
+    normalized.push({
+      id: String(createdAt),
+      categoryId: item.categoryId,
+      text: item.text,
+      createdAt,
+    });
+  }
+
+  return normalized;
+}
+
 export function serializeState(state: {
   categories: Category[];
   items: Item[];
@@ -120,7 +140,7 @@ export function serializeState(state: {
     items: state.items.map(({ categoryId, text, createdAt }) => ({
       categoryId,
       text,
-      createdAt,
+      createdAt: normalizeCreatedAt(createdAt),
     })),
   };
 }
@@ -136,10 +156,7 @@ function deserializeState(state: PersistedState): {
       name: category.name,
       icon: resolveIconOption(category.iconName),
     })),
-    items: state.items.map((item) => ({
-      ...item,
-      id: String(item.createdAt),
-    })),
+    items: normalizeItems(state.items),
   };
 }
 
@@ -158,15 +175,16 @@ function parseState(raw: string | null): ParseResult {
       };
     }
 
-    if (hasDuplicateCreatedAt(result.data.items)) {
-      return {
-        state: emptyPersistedState,
-        error:
-          "Failed to parse saved data: duplicate note timestamps detected.",
-      };
-    }
-
-    return { state: result.data, error: null };
+    return {
+      state: {
+        categories: result.data.categories,
+        items: result.data.items.map((item) => ({
+          ...item,
+          createdAt: normalizeCreatedAt(item.createdAt),
+        })),
+      },
+      error: null,
+    };
   } catch (error) {
     return {
       state: emptyPersistedState,
