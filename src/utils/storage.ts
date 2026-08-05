@@ -2,15 +2,22 @@
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { PersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
+import { hasDuplicateCreatedAt } from "./itemTimestamps";
 
 type PersistedCategory = {
   name: string;
   iconName: string;
 };
 
+type PersistedItem = {
+  categoryId: string | null;
+  text: string;
+  createdAt: number;
+};
+
 type PersistedState = {
   categories: PersistedCategory[];
-  items: Item[];
+  items: PersistedItem[];
 };
 
 type ParseResult = {
@@ -110,8 +117,7 @@ export function serializeState(state: {
       iconName: category.icon.name,
     })),
     // strip runtime-only fields (e.g. hasNotification) before persisting
-    items: state.items.map(({ id, categoryId, text, createdAt }) => ({
-      id,
+    items: state.items.map(({ categoryId, text, createdAt }) => ({
       categoryId,
       text,
       createdAt,
@@ -130,7 +136,10 @@ function deserializeState(state: PersistedState): {
       name: category.name,
       icon: resolveIconOption(category.iconName),
     })),
-    items: state.items,
+    items: state.items.map((item) => ({
+      ...item,
+      id: String(item.createdAt),
+    })),
   };
 }
 
@@ -146,6 +155,14 @@ function parseState(raw: string | null): ParseResult {
       return {
         state: emptyPersistedState,
         error: `Failed to parse saved data: ${result.error.message}`,
+      };
+    }
+
+    if (hasDuplicateCreatedAt(result.data.items)) {
+      return {
+        state: emptyPersistedState,
+        error:
+          "Failed to parse saved data: duplicate note timestamps detected.",
       };
     }
 

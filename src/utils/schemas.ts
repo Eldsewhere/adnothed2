@@ -19,6 +19,12 @@ export const ItemSchema = z.object({
   createdAt: z.number(),
 });
 
+export const PersistedItemSchema = z.object({
+  categoryId: z.string().nullable(),
+  text: z.string(),
+  createdAt: z.number(),
+});
+
 export const PersistedCategorySchema = z.object({
   name: z.string(),
   iconName: z.string(),
@@ -26,7 +32,7 @@ export const PersistedCategorySchema = z.object({
 
 export const PersistedStateSchema = z.object({
   categories: z.array(PersistedCategorySchema),
-  items: z.array(ItemSchema),
+  items: z.array(PersistedItemSchema),
 });
 
 export const AppStateSchema = z.object({

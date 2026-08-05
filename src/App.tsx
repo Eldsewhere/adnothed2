@@ -56,6 +56,7 @@ import {
   NO_CATEGORY_FILTER_VALUE,
 } from "./utils/itemFilters";
 import { isToday } from "./utils/formatTimestamp";
+import { getUniqueCreatedAt } from "./utils/itemTimestamps";
 
 type TabValue = "items" | "categories";
 
@@ -324,16 +325,20 @@ function App() {
       return;
     }
 
-    setItems((prev) => [
-      ...prev,
-      {
-        id: crypto.randomUUID(),
-        categoryId,
-        text: values.text,
-        createdAt: Math.floor(Date.now() / 1000),
-        hasNotification: true,
-      },
-    ]);
+    setItems((prev) => {
+      const createdAt = getUniqueCreatedAt(prev);
+
+      return [
+        ...prev,
+        {
+          id: String(createdAt),
+          categoryId,
+          text: values.text,
+          createdAt,
+          hasNotification: true,
+        },
+      ];
+    });
     setNotification(`${categoryName}: ${values.text}`);
     showAppNotification(categoryName, values.text);
   };
@@ -592,13 +597,15 @@ function App() {
                             const shouldRefreshTimestamp = isToday(
                               existingItem.createdAt,
                             );
+                            const nextCreatedAt = shouldRefreshTimestamp
+                              ? getUniqueCreatedAt(prev, now, existingItem.id)
+                              : existingItem.createdAt;
 
                             return {
                               ...existingItem,
                               hasNotification: true,
-                              createdAt: shouldRefreshTimestamp
-                                ? now
-                                : existingItem.createdAt,
+                              id: String(nextCreatedAt),
+                              createdAt: nextCreatedAt,
                             };
                           })()
                         : existingItem,
