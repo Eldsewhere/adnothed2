@@ -10,7 +10,7 @@ type PersistedLabel = {
 };
 
 type PersistedNote = {
-  icon?: string;
+  icon?: string | null;
   text: string;
   time: number;
 };
@@ -131,6 +131,20 @@ function normalizeItems(notes: PersistedNote[]): Item[] {
   return normalized;
 }
 
+function toPersistedNote(note: {
+  icon?: string | null;
+  text: string;
+  time: number;
+}): PersistedNote {
+  const icon = note.icon ?? undefined;
+
+  return {
+    ...(icon ? { icon } : {}),
+    text: note.text,
+    time: normalizeCreatedAt(note.time),
+  };
+}
+
 function normalizePersistedState(
   state: PersistedState | LegacyPersistedState,
 ): PersistedState {
@@ -140,11 +154,7 @@ function normalizePersistedState(
         name: label.name,
         icon: label.icon,
       })),
-      notes: state.notes.map((note) => ({
-        ...(note.icon ? { icon: note.icon } : {}),
-        text: note.text,
-        time: normalizeCreatedAt(note.time),
-      })),
+      notes: state.notes.map(toPersistedNote),
     };
   }
 
@@ -154,11 +164,13 @@ function normalizePersistedState(
       name: category.name,
       icon: category.iconName,
     })),
-    notes: state.items.map((item) => ({
-      ...(item.categoryId ? { icon: item.categoryId } : {}),
-      text: item.text,
-      time: normalizeCreatedAt(item.createdAt),
-    })),
+    notes: state.items.map((item) =>
+      toPersistedNote({
+        icon: item.categoryId,
+        text: item.text,
+        time: item.createdAt,
+      }),
+    ),
   };
 }
 
@@ -173,11 +185,13 @@ export function serializeState(state: {
       icon: category.icon.name,
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
-    notes: state.items.map(({ categoryId, text, createdAt }) => ({
-      ...(categoryId ? { icon: categoryId } : {}),
-      text,
-      time: normalizeCreatedAt(createdAt),
-    })),
+    notes: state.items.map(({ categoryId, text, createdAt }) =>
+      toPersistedNote({
+        icon: categoryId,
+        text,
+        time: createdAt,
+      }),
+    ),
   };
 }
 
