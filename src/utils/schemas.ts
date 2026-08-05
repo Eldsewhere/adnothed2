@@ -25,7 +25,7 @@ export const PersistedLabelSchema = z.object({
 });
 
 export const PersistedNoteSchema = z.object({
-  icon: z.string().nullable(),
+  icon: z.string().nullable().optional(),
   text: z.string(),
   time: z.number(),
 });

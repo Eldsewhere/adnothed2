@@ -10,7 +10,7 @@ type PersistedLabel = {
 };
 
 type PersistedNote = {
-  icon: string | null;
+  icon?: string;
   text: string;
   time: number;
 };
@@ -122,7 +122,7 @@ function normalizeItems(notes: PersistedNote[]): Item[] {
 
     normalized.push({
       id: String(createdAt),
-      categoryId: note.icon,
+      categoryId: note.icon ?? null,
       text: note.text,
       createdAt,
     });
@@ -141,7 +141,7 @@ function normalizePersistedState(
         icon: label.icon,
       })),
       notes: state.notes.map((note) => ({
-        icon: note.icon,
+        ...(note.icon ? { icon: note.icon } : {}),
         text: note.text,
         time: normalizeCreatedAt(note.time),
       })),
@@ -155,7 +155,7 @@ function normalizePersistedState(
       icon: category.iconName,
     })),
     notes: state.items.map((item) => ({
-      icon: item.categoryId,
+      ...(item.categoryId ? { icon: item.categoryId } : {}),
       text: item.text,
       time: normalizeCreatedAt(item.createdAt),
     })),
@@ -174,7 +174,7 @@ export function serializeState(state: {
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
     notes: state.items.map(({ categoryId, text, createdAt }) => ({
-      icon: categoryId,
+      ...(categoryId ? { icon: categoryId } : {}),
       text,
       time: normalizeCreatedAt(createdAt),
     })),
