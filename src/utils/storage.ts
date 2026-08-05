@@ -1,23 +1,28 @@
 ﻿import { mdiNoteText } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
-import { PersistedStateSchema } from "./schemas";
+import { AnyPersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./itemTimestamps";
 
-type PersistedCategory = {
+type PersistedLabel = {
   name: string;
-  iconName: string;
+  icon: string;
 };
 
-type PersistedItem = {
-  categoryId: string | null;
+type PersistedNote = {
+  icon: string | null;
   text: string;
-  createdAt: number;
+  time: number;
 };
 
 type PersistedState = {
-  categories: PersistedCategory[];
-  items: PersistedItem[];
+  labels: PersistedLabel[];
+  notes: PersistedNote[];
+};
+
+type LegacyPersistedState = {
+  categories: Array<{ name: string; iconName: string }>;
+  items: Array<{ categoryId: string | null; text: string; createdAt: number }>;
 };
 
 type ParseResult = {
@@ -29,7 +34,7 @@ export const DEFAULT_FILE_NAME = "adnothed-state.json";
 const STORAGE_KEY = "adnothed-local-storage";
 const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
 
-const emptyPersistedState: PersistedState = { categories: [], items: [] };
+const emptyPersistedState: PersistedState = { labels: [], notes: [] };
 const emptyAppState: { categories: Category[]; items: Item[] } = {
   categories: [],
   items: [],
@@ -106,19 +111,19 @@ function resolveIconOption(name: string): Category["icon"] {
   };
 }
 
-function normalizeItems(items: PersistedItem[]): Item[] {
+function normalizeItems(notes: PersistedNote[]): Item[] {
   const normalized: Item[] = [];
 
-  for (const item of items) {
+  for (const note of notes) {
     const createdAt = getUniqueCreatedAt(
       normalized,
-      normalizeCreatedAt(item.createdAt),
+      normalizeCreatedAt(note.time),
     );
 
     normalized.push({
       id: String(createdAt),
-      categoryId: item.categoryId,
-      text: item.text,
+      categoryId: note.icon,
+      text: note.text,
       createdAt,
     });
   }
@@ -126,21 +131,52 @@ function normalizeItems(items: PersistedItem[]): Item[] {
   return normalized;
 }
 
+function normalizePersistedState(
+  state: PersistedState | LegacyPersistedState,
+): PersistedState {
+  if ("labels" in state) {
+    return {
+      labels: state.labels.map((label) => ({
+        name: label.name,
+        icon: label.icon,
+      })),
+      notes: state.notes.map((note) => ({
+        icon: note.icon,
+        text: note.text,
+        time: normalizeCreatedAt(note.time),
+      })),
+    };
+  }
+
+  // TODO: remove this migration path after the legacy JSON format is retired.
+  return {
+    labels: state.categories.map((category) => ({
+      name: category.name,
+      icon: category.iconName,
+    })),
+    notes: state.items.map((item) => ({
+      icon: item.categoryId,
+      text: item.text,
+      time: normalizeCreatedAt(item.createdAt),
+    })),
+  };
+}
+
 export function serializeState(state: {
   categories: Category[];
   items: Item[];
 }): PersistedState {
   return {
-    // only persist name + iconName; iconName is the unique identifier
-    categories: state.categories.map((category) => ({
+    // Persist the renamed label shape; keep the old parser only for compatibility.
+    labels: state.categories.map((category) => ({
       name: category.name,
-      iconName: category.icon.name,
+      icon: category.icon.name,
     })),
-    // strip runtime-only fields (e.g. hasNotification) before persisting
-    items: state.items.map(({ categoryId, text, createdAt }) => ({
-      categoryId,
+    // Persist the renamed note shape; keep the old parser only for compatibility.
+    notes: state.items.map(({ categoryId, text, createdAt }) => ({
+      icon: categoryId,
       text,
-      createdAt: normalizeCreatedAt(createdAt),
+      time: normalizeCreatedAt(createdAt),
     })),
   };
 }
@@ -150,13 +186,13 @@ function deserializeState(state: PersistedState): {
   items: Item[];
 } {
   return {
-    // recreate category id from iconName (iconName is unique identifier)
-    categories: state.categories.map((category) => ({
-      id: category.iconName,
-      name: category.name,
-      icon: resolveIconOption(category.iconName),
+    // Recreate runtime categories from the renamed persisted label shape.
+    categories: state.labels.map((label) => ({
+      id: label.icon,
+      name: label.name,
+      icon: resolveIconOption(label.icon),
     })),
-    items: normalizeItems(state.items),
+    items: normalizeItems(state.notes),
   };
 }
 
@@ -167,7 +203,7 @@ function parseState(raw: string | null): ParseResult {
 
   try {
     const parsed = JSON.parse(raw);
-    const result = PersistedStateSchema.safeParse(parsed);
+    const result = AnyPersistedStateSchema.safeParse(parsed);
     if (!result.success) {
       return {
         state: emptyPersistedState,
@@ -176,13 +212,7 @@ function parseState(raw: string | null): ParseResult {
     }
 
     return {
-      state: {
-        categories: result.data.categories,
-        items: result.data.items.map((item) => ({
-          ...item,
-          createdAt: normalizeCreatedAt(item.createdAt),
-        })),
-      },
+      state: normalizePersistedState(result.data),
       error: null,
     };
   } catch (error) {
