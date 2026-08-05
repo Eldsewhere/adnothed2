@@ -33,7 +33,7 @@ export type ItemFilters = {
   text: string;
   date: string;
   endDate: string;
-  hasUrl: boolean;
   hasNumber: boolean;
+  isOneWord: boolean;
   indexAt: string;
 };

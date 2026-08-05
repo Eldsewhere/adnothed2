@@ -36,7 +36,6 @@ import {
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 import {
   containsNumbers,
-  containsUrl,
   splitTextByUrls,
 } from "../utils/textPatterns";
 
@@ -187,8 +186,8 @@ const ItemList = ({
     filters.text !== "",
     filters.date !== "",
     filters.endDate !== "",
-    filters.hasUrl,
     filters.hasNumber,
+    filters.isOneWord,
     filters.indexAt !== "",
   ].filter(Boolean).length;
 
@@ -223,10 +222,13 @@ const ItemList = ({
         if (hasEndDate && itemDate > filters.endDate.trim()) {
           return false;
         }
-        if (filters.hasUrl && !containsUrl(item.text)) {
+        if (filters.hasNumber && !containsNumbers(item.text)) {
           return false;
         }
-        if (filters.hasNumber && !containsNumbers(item.text)) {
+        if (
+          filters.isOneWord &&
+          item.text.trim().split(/\s+/).length !== 1
+        ) {
           return false;
         }
         if (filters.indexAt) {

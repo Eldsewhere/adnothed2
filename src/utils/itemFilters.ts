@@ -7,7 +7,7 @@ export const emptyItemFilters: ItemFilters = {
   text: "",
   date: "",
   endDate: "",
-  hasUrl: false,
   hasNumber: false,
+  isOneWord: false,
   indexAt: "",
 };

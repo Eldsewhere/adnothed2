@@ -34,7 +34,7 @@ import {
   NO_CATEGORY_FILTER_VALUE,
 } from "../utils/itemFilters";
 import { dateRegex, formatDate } from "../utils/formatTimestamp";
-import { containsNumbers, containsUrl } from "../utils/textPatterns";
+import { containsNumbers } from "../utils/textPatterns";
 
 type ItemFiltersProps = {
   categories: Category[];
@@ -180,11 +180,14 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             return false;
           }
 
-          if (filters.hasUrl && !containsUrl(item.text)) {
+          if (filters.hasNumber && !containsNumbers(item.text)) {
             return false;
           }
 
-          if (filters.hasNumber && !containsNumbers(item.text)) {
+          if (
+            filters.isOneWord &&
+            item.text.trim().split(/\s+/).length !== 1
+          ) {
             return false;
           }
 
@@ -231,11 +234,14 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             return false;
           }
 
-          if (filters.hasUrl && !containsUrl(item.text)) {
+          if (filters.hasNumber && !containsNumbers(item.text)) {
             return false;
           }
 
-          if (filters.hasNumber && !containsNumbers(item.text)) {
+          if (
+            filters.isOneWord &&
+            item.text.trim().split(/\s+/).length !== 1
+          ) {
             return false;
           }
 
@@ -305,8 +311,8 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
       filters.text !== "",
       filters.date !== "",
       filters.endDate !== "",
-      filters.hasUrl,
       filters.hasNumber,
+      filters.isOneWord,
       filters.indexAt !== "",
     ].filter(Boolean).length;
 
@@ -525,17 +531,6 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={filters.hasUrl}
-                      onChange={(event) =>
-                        onChange({ ...filters, hasUrl: event.target.checked })
-                      }
-                    />
-                  }
-                  label="With URLs"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
                       checked={filters.hasNumber}
                       onChange={(event) =>
                         onChange({
@@ -545,7 +540,21 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                       }
                     />
                   }
-                  label="With Numbers"
+                  label="with numbers"
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={filters.isOneWord}
+                      onChange={(event) =>
+                        onChange({
+                          ...filters,
+                          isOneWord: event.target.checked,
+                        })
+                      }
+                    />
+                  }
+                  label="with one word"
                 />
               </Stack>
               <Tooltip
