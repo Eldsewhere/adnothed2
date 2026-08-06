@@ -111,6 +111,7 @@ const NoteDay = ({
             backgroundColor: isOutside
               ? "rgba(96, 125, 139, 0.18)"
               : "rgba(96, 125, 139, 0.28)",
+            textTransform: "lowercase",
           },
           "&.Mui-selected": {
             backgroundColor: colors.blueGrey[500],
@@ -123,6 +124,7 @@ const NoteDay = ({
           },
           ...(hasNotes
             ? {
+                textTransform: "lowercase",
                 backgroundColor: isOutside
                   ? "rgba(76, 175, 80, 0.12)"
                   : "rgba(76, 175, 80, 0.2)",
@@ -210,6 +212,7 @@ function App() {
   const isInitializingRef = useRef(true);
   const startDateInputRef = useRef<HTMLInputElement | null>(null);
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
+  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
   const [showTextFilterInput, setShowTextFilterInput] = useState(false);
   const [showDateFilterInput, setShowDateFilterInput] = useState(false);
   const [labelFilterAnchor, setLabelFilterAnchor] =
@@ -653,6 +656,12 @@ function App() {
     <NoteDay {...props} noteCountsByDay={noteCountsByDay} />
   );
 
+  const dateFieldLocaleText = {
+    fieldYearPlaceholder: () => "yyyy",
+    fieldMonthPlaceholder: () => "mm",
+    fieldDayPlaceholder: () => "dd",
+  };
+
   return (
     <Box>
       <Paper sx={{ p: 1 }}>
@@ -713,11 +722,7 @@ function App() {
                     setShowTextFilterInput(false);
                     setShowDateFilterInput((prev) => {
                       const next = !prev;
-                      if (next) {
-                        window.requestAnimationFrame(() => {
-                          startDateInputRef.current?.focus();
-                        });
-                      }
+                      setStartDatePickerOpen(next);
                       return next;
                     });
                   }}
@@ -800,6 +805,10 @@ function App() {
                   <DatePicker
                     label="Start date"
                     value={startDateValue}
+                    localeText={dateFieldLocaleText}
+                    open={startDatePickerOpen}
+                    onOpen={() => setStartDatePickerOpen(true)}
+                    onClose={() => setStartDatePickerOpen(false)}
                     showDaysOutsideCurrentMonth
                     minDate={filteredMinDate}
                     maxDate={filteredMaxDate}
@@ -827,6 +836,11 @@ function App() {
                           flex: 1,
                           "& .MuiInputBase-input": {
                             pr: 0,
+                            textTransform: "lowercase",
+                          },
+                          "& .MuiInputBase-input::placeholder": {
+                            textTransform: "lowercase",
+                            opacity: 1,
                           },
                           "& .MuiInputAdornment-root": {
                             ml: 0,
@@ -862,6 +876,7 @@ function App() {
                   <DatePicker
                     label="End date"
                     value={endDateValue}
+                    localeText={dateFieldLocaleText}
                     showDaysOutsideCurrentMonth
                     minDate={startDateValue ?? filteredMinDate}
                     maxDate={filteredMaxDate}
@@ -876,11 +891,17 @@ function App() {
                         size: "small",
                         fullWidth: false,
                         inputRef: endDateInputRef,
+
                         sx: {
                           minWidth: 0,
                           flex: 1,
                           "& .MuiInputBase-input": {
                             pr: 0,
+                            textTransform: "lowercase",
+                          },
+                          "& .MuiInputBase-input::placeholder": {
+                            textTransform: "lowercase",
+                            opacity: 1,
                           },
                           "& .MuiInputAdornment-root": {
                             ml: 0,
@@ -918,6 +939,7 @@ function App() {
                       aria-label="Cancel date filter"
                       onClick={() => {
                         setShowDateFilterInput(false);
+                        setStartDatePickerOpen(false);
                         setItemFilters((prev) => ({
                           ...prev,
                           date: "",
