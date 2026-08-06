@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Badge,
@@ -24,6 +24,7 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
+  mdiFilter,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
   mdiTrashCan,
@@ -54,9 +55,11 @@ import {
 } from "./utils/notifications";
 import {
   emptyItemFilters,
+  matchesTextFilters,
   NO_CATEGORY_FILTER_VALUE,
+  parseTextFilters,
 } from "./utils/itemFilters";
-import { isToday } from "./utils/formatTimestamp";
+import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/itemTimestamps";
 
 type TabValue = "items" | "categories";
@@ -434,6 +437,52 @@ function App() {
     setEditingItem(item);
   };
 
+  const filteredItemsCount = useMemo(() => {
+    const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
+    const parsedTextFilters = parseTextFilters(itemFilters.text);
+
+    return sortedItems.filter((item, index) => {
+      if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+        if (item.categoryId !== null) {
+          return false;
+        }
+      } else if (
+        itemFilters.categoryId &&
+        item.categoryId !== itemFilters.categoryId
+      ) {
+        return false;
+      }
+
+      if (
+        !matchesTextFilters(
+          item.text,
+          item.createdAt,
+          index,
+          sortedItems.length,
+          parsedTextFilters,
+        )
+      ) {
+        return false;
+      }
+
+      const itemDate = formatDate(item.createdAt);
+      const hasStartDate =
+        itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
+      const hasEndDate =
+        itemFilters.endDate.length === 10 &&
+        dateRegex.test(itemFilters.endDate);
+
+      if (hasStartDate && itemDate < itemFilters.date.trim()) {
+        return false;
+      }
+      if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
+        return false;
+      }
+
+      return true;
+    }).length;
+  }, [items, itemFilters]);
+
   return (
     <Box>
       <Paper sx={{ p: 1 }}>
@@ -547,19 +596,43 @@ function App() {
                   spacing={1}
                   sx={{ alignItems: "center" }}
                 >
-                  <TextField
-                    label="Note contains"
-                    size="small"
-                    fullWidth
-                    autoFocus
-                    value={itemFilters.text}
-                    onChange={(event) =>
-                      setItemFilters((prev) => ({
-                        ...prev,
-                        text: event.target.value,
-                      }))
-                    }
-                  />
+                  <Box sx={{ position: "relative", flex: 1, minWidth: 0 }}>
+                    <TextField
+                      label="Note contains text"
+                      size="small"
+                      fullWidth
+                      autoFocus
+                      value={itemFilters.text}
+                      onChange={(event) =>
+                        setItemFilters((prev) => ({
+                          ...prev,
+                          text: event.target.value,
+                        }))
+                      }
+                      sx={{
+                        "& .MuiInputBase-input": {
+                          pr: 7,
+                        },
+                      }}
+                    />
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        right: 10,
+                        bottom: 9,
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        pointerEvents: "none",
+                        color: "text.secondary",
+                      }}
+                    >
+                      <Icon path={mdiFilter} size={0.6} />
+                      <Box component="span" sx={{ fontSize: "0.72rem" }}>
+                        {filteredItemsCount}
+                      </Box>
+                    </Box>
+                  </Box>
                   <Tooltip title="Cancel filter text">
                     <IconButton
                       aria-label="Cancel filter text"

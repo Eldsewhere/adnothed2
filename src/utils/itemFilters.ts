@@ -2,6 +2,9 @@ import type { ItemFilters } from "../types";
 import { dateRegex, formatDate } from "./formatTimestamp";
 import { containsEmail, containsNumbers, containsUrl } from "./textPatterns";
 
+const yearRegex = /^\d{4}$/;
+const yearMonthRegex = /^\d{4}-\d{2}$/;
+
 export const NO_CATEGORY_FILTER_VALUE = "__none__";
 
 export const emptyItemFilters: ItemFilters = {
@@ -112,7 +115,12 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
       continue;
     }
     if (key === "date") {
-      parsed.exactDate = dateRegex.test(value) ? value : null;
+      parsed.exactDate =
+        dateRegex.test(value) ||
+        yearRegex.test(value) ||
+        yearMonthRegex.test(value)
+          ? value
+          : null;
       continue;
     }
     if (key === "mindate") {
@@ -202,8 +210,18 @@ export function matchesTextFilters(
 
   const itemDate = formatDate(createdAt);
 
-  if (parsed.exactDate !== null && itemDate !== parsed.exactDate) {
-    return false;
+  if (parsed.exactDate !== null) {
+    if (yearRegex.test(parsed.exactDate)) {
+      if (!itemDate.startsWith(`${parsed.exactDate}-`)) {
+        return false;
+      }
+    } else if (yearMonthRegex.test(parsed.exactDate)) {
+      if (!itemDate.startsWith(`${parsed.exactDate}-`)) {
+        return false;
+      }
+    } else if (itemDate !== parsed.exactDate) {
+      return false;
+    }
   }
 
   if (parsed.minDate !== null && itemDate < parsed.minDate) {
