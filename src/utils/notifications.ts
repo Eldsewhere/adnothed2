@@ -13,7 +13,15 @@ export const requestNotificationPermission =
   };
 
 export const showAppNotification = async (title: string, body: string) => {
-  if (!isNotificationSupported() || Notification.permission !== "granted") {
+  if (!isNotificationSupported()) {
+    return;
+  }
+
+  if (Notification.permission === "default") {
+    await requestNotificationPermission();
+  }
+
+  if (Notification.permission !== "granted") {
     return;
   }
 

@@ -48,7 +48,6 @@ import {
   serializeState,
 } from "./utils/storage";
 import {
-  requestNotificationPermission,
   showAppNotification,
 } from "./utils/notifications";
 import {
@@ -179,10 +178,6 @@ function App() {
       setActiveTab("categories");
     }
   }, [storageReady]);
-
-  useEffect(() => {
-    requestNotificationPermission();
-  }, []);
 
   const selectImportFile = async () => {
     const result = await openPersistedStateFile(storageFileName);
