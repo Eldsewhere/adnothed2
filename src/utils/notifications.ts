@@ -1,6 +1,11 @@
 export const isNotificationSupported = () =>
   "Notification" in window && "serviceWorker" in navigator;
 
+export type AppNotificationResult =
+  | "shown"
+  | "permission-denied"
+  | "unsupported";
+
 export const requestNotificationPermission =
   async (): Promise<NotificationPermission> => {
     if (!isNotificationSupported()) {
@@ -12,9 +17,12 @@ export const requestNotificationPermission =
     return Notification.permission;
   };
 
-export const showAppNotification = async (title: string, body: string) => {
+export const showAppNotification = async (
+  title: string,
+  body: string,
+): Promise<AppNotificationResult> => {
   if (!isNotificationSupported()) {
-    return;
+    return "unsupported";
   }
 
   if (Notification.permission === "default") {
@@ -22,7 +30,7 @@ export const showAppNotification = async (title: string, body: string) => {
   }
 
   if (Notification.permission !== "granted") {
-    return;
+    return "permission-denied";
   }
 
   const registration = await navigator.serviceWorker.ready;
@@ -33,4 +41,6 @@ export const showAppNotification = async (title: string, body: string) => {
     badge: "/badge.svg",
     tag,
   });
+
+  return "shown";
 };

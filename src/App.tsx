@@ -48,6 +48,7 @@ import {
   serializeState,
 } from "./utils/storage";
 import {
+  type AppNotificationResult,
   showAppNotification,
 } from "./utils/notifications";
 import {
@@ -131,6 +132,23 @@ function App() {
   const itemFiltersRef = useRef<ItemFiltersHandle>(null);
   const [labelFilterAnchor, setLabelFilterAnchor] =
     useState<HTMLElement | null>(null);
+
+  const handleNotificationResult = (result: AppNotificationResult) => {
+    if (result === "permission-denied") {
+      setNotificationSeverity("warning");
+      setNotification(
+        "Notifications are blocked. Enable them in your browser or iOS Home Screen app settings.",
+      );
+      return;
+    }
+
+    if (result === "unsupported") {
+      setNotificationSeverity("warning");
+      setNotification(
+        "This device/browser does not support app notifications.",
+      );
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -335,7 +353,9 @@ function App() {
       ];
     });
     setNotification(`${categoryName}: ${values.text}`);
-    showAppNotification(categoryName, values.text);
+    void showAppNotification(categoryName, values.text).then(
+      handleNotificationResult,
+    );
   };
 
   const handleItemCopy = (item: Item) => {
@@ -607,7 +627,9 @@ function App() {
                     ),
                   );
                   setNotification(`${categoryName}: ${item.text}`);
-                  showAppNotification(categoryName, item.text);
+                  void showAppNotification(categoryName, item.text).then(
+                    handleNotificationResult,
+                  );
                 }}
                 onCategoryChange={(item, categoryId) => {
                   setItems((prev) =>
