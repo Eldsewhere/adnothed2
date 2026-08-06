@@ -37,7 +37,6 @@ import {
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
 import ItemForm from "./components/ItemForm";
-import ItemFilters from "./components/ItemFilters";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
 import type { Category, Item } from "./types";
@@ -763,16 +762,29 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-              <ItemFilters
-                itemsCount={items.length}
-                selectMode={selectMode}
-                isTextFilterVisible={showTextFilterInput}
-                isTextFilterActive={itemFilters.text.trim() !== ""}
-                onToggleTextFilterInput={() => {
-                  setShowDateFilterInput(false);
-                  setShowTextFilterInput((prev) => !prev);
-                }}
-              />
+              <Tooltip title="Filter note text">
+                <IconButton
+                  aria-label="Filter notes"
+                  onClick={() => {
+                    setShowDateFilterInput(false);
+                    setShowTextFilterInput((prev) => !prev);
+                  }}
+                  color={showTextFilterInput ? "primary" : "default"}
+                  disabled={items.length === 0 || selectMode}
+                >
+                  <Badge
+                    variant="dot"
+                    invisible={itemFilters.text.trim() === ""}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: colors.lightGreen[400],
+                      },
+                    }}
+                  >
+                    <Icon path={mdiFilter} size={0.9} />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
             </Stack>
           )}
         </Stack>
