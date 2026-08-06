@@ -822,7 +822,20 @@ function App() {
                         size: "small",
                         fullWidth: false,
                         inputRef: startDateInputRef,
-                        sx: { minWidth: 0, flex: 1 },
+                        sx: {
+                          minWidth: 0,
+                          flex: 1,
+                          "& .MuiInputBase-input": {
+                            pr: 0,
+                          },
+                          "& .MuiInputAdornment-root": {
+                            ml: 0,
+                          },
+                          "& .MuiIconButton-root": {
+                            p: 0,
+                            m: 0,
+                          },
+                        },
                       },
                       popper: {
                         sx: {
@@ -863,7 +876,20 @@ function App() {
                         size: "small",
                         fullWidth: false,
                         inputRef: endDateInputRef,
-                        sx: { minWidth: 0, flex: 1 },
+                        sx: {
+                          minWidth: 0,
+                          flex: 1,
+                          "& .MuiInputBase-input": {
+                            pr: 0,
+                          },
+                          "& .MuiInputAdornment-root": {
+                            ml: 0,
+                          },
+                          "& .MuiIconButton-root": {
+                            p: 0,
+                            m: 0,
+                          },
+                        },
                       },
                       popper: {
                         sx: {
