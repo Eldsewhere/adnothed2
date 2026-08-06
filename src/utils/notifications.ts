@@ -33,12 +33,15 @@ export const showAppNotification = async (
     return "permission-denied";
   }
 
+  const baseUrl = import.meta.env.BASE_URL;
+  const iconUrl = `${baseUrl}badge.png`;
+
   const registration = await navigator.serviceWorker.ready;
   const tag = `adnothed-item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   await registration.showNotification(title, {
     body,
-    icon: "/favicon.svg",
-    badge: "/badge.svg",
+    icon: iconUrl,
+    badge: iconUrl,
     tag,
   });
 
