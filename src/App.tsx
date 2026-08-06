@@ -25,7 +25,6 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
-  mdiCheckCircle,
   mdiFilter,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
@@ -511,7 +510,6 @@ function App() {
   };
 
   const handleEditItem = (item: Item) => {
-    setItemFilters(emptyItemFilters);
     setShowTextFilterInput(false);
     setShowDateFilterInput(false);
     setEditingItem(item);
@@ -711,21 +709,32 @@ function App() {
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
-                  color={
-                    itemFilters.date || itemFilters.endDate
-                      ? "primary"
-                      : "default"
-                  }
+                  color={showDateFilterInput ? "primary" : "default"}
                   onClick={() => {
                     setShowTextFilterInput(false);
-                    setShowDateFilterInput(true);
-                    window.requestAnimationFrame(() => {
-                      startDateInputRef.current?.focus();
+                    setShowDateFilterInput((prev) => {
+                      const next = !prev;
+                      if (next) {
+                        window.requestAnimationFrame(() => {
+                          startDateInputRef.current?.focus();
+                        });
+                      }
+                      return next;
                     });
                   }}
                   disabled={items.length === 0 || selectMode}
                 >
-                  <Icon path={mdiCalendar} size={0.9} />
+                  <Badge
+                    variant="dot"
+                    invisible={!itemFilters.date && !itemFilters.endDate}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: colors.lightGreen[400],
+                      },
+                    }}
+                  >
+                    <Icon path={mdiCalendar} size={0.9} />
+                  </Badge>
                 </IconButton>
               </Tooltip>
               <Tooltip title="Filter by label">
@@ -735,19 +744,30 @@ function App() {
                   onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
                   disabled={items.length === 0 || selectMode}
                 >
-                  <Icon
-                    path={
-                      categories.find((c) => c.id === itemFilters.categoryId)
-                        ?.icon.path ?? mdiNoteText
-                    }
-                    size={0.9}
-                  />
+                  <Badge
+                    variant="dot"
+                    invisible={!itemFilters.categoryId}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: colors.lightGreen[400],
+                      },
+                    }}
+                  >
+                    <Icon
+                      path={
+                        categories.find((c) => c.id === itemFilters.categoryId)
+                          ?.icon.path ?? mdiNoteText
+                      }
+                      size={0.9}
+                    />
+                  </Badge>
                 </IconButton>
               </Tooltip>
               <ItemFilters
                 itemsCount={items.length}
                 selectMode={selectMode}
                 isTextFilterVisible={showTextFilterInput}
+                isTextFilterActive={itemFilters.text.trim() !== ""}
                 onToggleTextFilterInput={() => {
                   setShowDateFilterInput(false);
                   setShowTextFilterInput((prev) => !prev);

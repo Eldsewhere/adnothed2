@@ -1,4 +1,4 @@
-import { IconButton, Tooltip } from "@mui/material";
+import { Badge, colors, IconButton, Tooltip } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiFilter } from "@mdi/js";
 
@@ -6,6 +6,7 @@ type ItemFiltersProps = {
   itemsCount: number;
   selectMode: boolean;
   isTextFilterVisible: boolean;
+  isTextFilterActive: boolean;
   onToggleTextFilterInput: () => void;
 };
 
@@ -13,6 +14,7 @@ const ItemFilters = ({
   itemsCount,
   selectMode,
   isTextFilterVisible,
+  isTextFilterActive,
   onToggleTextFilterInput,
 }: ItemFiltersProps) => {
   return (
@@ -23,7 +25,17 @@ const ItemFilters = ({
         color={isTextFilterVisible ? "primary" : "default"}
         disabled={itemsCount === 0 || selectMode}
       >
-        <Icon path={mdiFilter} size={0.9} />
+        <Badge
+          variant="dot"
+          invisible={!isTextFilterActive}
+          sx={{
+            "& .MuiBadge-badge": {
+              backgroundColor: colors.lightGreen[400],
+            },
+          }}
+        >
+          <Icon path={mdiFilter} size={0.9} />
+        </Badge>
       </IconButton>
     </Tooltip>
   );
