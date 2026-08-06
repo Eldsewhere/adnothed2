@@ -481,8 +481,16 @@ function App() {
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
-                  color={itemFilters.date ? "primary" : "default"}
-                  onClick={() => itemFiltersRef.current?.openWithCalendar()}
+                  color={
+                    itemFilters.date || itemFilters.endDate
+                      ? "primary"
+                      : "default"
+                  }
+                  onClick={(event) =>
+                    itemFiltersRef.current?.openWithCalendar(
+                      event.currentTarget,
+                    )
+                  }
                   disabled={items.length === 0 || selectMode}
                 >
                   <Icon path={mdiCalendar} size={0.9} />
@@ -506,7 +514,6 @@ function App() {
               </Tooltip>
               <ItemFilters
                 ref={itemFiltersRef}
-                categories={categories}
                 items={items}
                 filters={itemFilters}
                 selectMode={selectMode}

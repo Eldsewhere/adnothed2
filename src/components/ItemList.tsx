@@ -34,8 +34,12 @@ import {
   formatTimestamp,
   isToday,
 } from "../utils/formatTimestamp";
-import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
-import { containsNumbers, splitTextByUrls } from "../utils/textPatterns";
+import {
+  matchesTextFilters,
+  NO_CATEGORY_FILTER_VALUE,
+  parseTextFilters,
+} from "../utils/itemFilters";
+import { splitTextByUrls } from "../utils/textPatterns";
 
 type ItemListProps = {
   items: Item[];
@@ -184,10 +188,12 @@ const ItemList = ({
     filters.text !== "",
     filters.date !== "",
     filters.endDate !== "",
-    filters.hasNumber,
-    filters.isOneWord,
-    filters.indexAt !== "",
   ].filter(Boolean).length;
+
+  const parsedTextFilters = useMemo(
+    () => parseTextFilters(filters.text),
+    [filters.text],
+  );
 
   const filteredItems = useMemo(
     () =>
@@ -203,8 +209,13 @@ const ItemList = ({
           return false;
         }
         if (
-          filters.text &&
-          !item.text.toLowerCase().includes(filters.text.toLowerCase())
+          !matchesTextFilters(
+            item.text,
+            item.createdAt,
+            index,
+            sortedItems.length,
+            parsedTextFilters,
+          )
         ) {
           return false;
         }
@@ -220,20 +231,9 @@ const ItemList = ({
         if (hasEndDate && itemDate > filters.endDate.trim()) {
           return false;
         }
-        if (filters.hasNumber && !containsNumbers(item.text)) {
-          return false;
-        }
-        if (filters.isOneWord && item.text.trim().split(/\s+/).length !== 1) {
-          return false;
-        }
-        if (filters.indexAt) {
-          {
-            return index === sortedItems.length - Number(filters.indexAt);
-          }
-        }
         return true;
       }),
-    [sortedItems, filters],
+    [sortedItems, filters, parsedTextFilters],
   );
 
   const dayIndexByDate = useMemo(() => {

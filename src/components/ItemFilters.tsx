@@ -10,13 +10,9 @@ import {
   Badge,
   Box,
   Button,
-  Checkbox,
   colors,
   DialogTitle,
-  FormControlLabel,
   IconButton,
-  LinearProgress,
-  MenuItem,
   Popover,
   Stack,
   TextField,
@@ -27,17 +23,17 @@ import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
-import { mdiClose, mdiFilter, mdiNoteText } from "@mdi/js";
-import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
+import { mdiClose, mdiFilter } from "@mdi/js";
+import type { Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   emptyItemFilters,
+  matchesTextFilters,
   NO_CATEGORY_FILTER_VALUE,
+  parseTextFilters,
 } from "../utils/itemFilters";
 import { dateRegex, formatDate } from "../utils/formatTimestamp";
-import { containsNumbers } from "../utils/textPatterns";
 
 type ItemFiltersProps = {
-  categories: Category[];
   items: Item[];
   filters: ItemFiltersValue;
   onChange: (filters: ItemFiltersValue) => void;
@@ -133,23 +129,21 @@ const NoteDay = ({
 };
 
 export type ItemFiltersHandle = {
-  openWithCalendar: () => void;
+  openWithCalendar: (anchor: HTMLButtonElement | null) => void;
 };
 
 const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
-  function ItemFilters(
-    { categories, items, filters, onChange, selectMode },
-    ref,
-  ) {
+  function ItemFilters({ items, filters, onChange, selectMode }, ref) {
     const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+    const [dateAnchorEl, setDateAnchorEl] = useState<HTMLButtonElement | null>(
+      null,
+    );
     const [startDateOpen, setStartDateOpen] = useState(false);
     const filterButtonRef = useRef<HTMLButtonElement>(null);
 
     useImperativeHandle(ref, () => ({
-      openWithCalendar() {
-        if (filterButtonRef.current) {
-          setAnchorEl(filterButtonRef.current);
-        }
+      openWithCalendar(anchor) {
+        setDateAnchorEl(anchor ?? null);
         setStartDateOpen(true);
       },
     }));
@@ -157,6 +151,11 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
     const sortedItems = useMemo(
       () => [...items].sort((a, b) => b.createdAt - a.createdAt),
       [items],
+    );
+
+    const parsedTextFilters = useMemo(
+      () => parseTextFilters(filters.text),
+      [filters.text],
     );
 
     const calendarFilteredItems = useMemo(
@@ -174,30 +173,20 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           }
 
           if (
-            filters.text &&
-            !item.text.toLowerCase().includes(filters.text.toLowerCase())
+            !matchesTextFilters(
+              item.text,
+              item.createdAt,
+              index,
+              sortedItems.length,
+              parsedTextFilters,
+            )
           ) {
             return false;
-          }
-
-          if (filters.hasNumber && !containsNumbers(item.text)) {
-            return false;
-          }
-
-          if (
-            filters.isOneWord &&
-            item.text.trim().split(/\s+/).length !== 1
-          ) {
-            return false;
-          }
-
-          if (filters.indexAt) {
-            return index === sortedItems.length - Number(filters.indexAt);
           }
 
           return true;
         }),
-      [filters, sortedItems],
+      [filters, parsedTextFilters, sortedItems],
     );
 
     const fullyFilteredItemsCount = useMemo(
@@ -215,8 +204,13 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           }
 
           if (
-            filters.text &&
-            !item.text.toLowerCase().includes(filters.text.toLowerCase())
+            !matchesTextFilters(
+              item.text,
+              item.createdAt,
+              index,
+              sortedItems.length,
+              parsedTextFilters,
+            )
           ) {
             return false;
           }
@@ -234,24 +228,9 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
             return false;
           }
 
-          if (filters.hasNumber && !containsNumbers(item.text)) {
-            return false;
-          }
-
-          if (
-            filters.isOneWord &&
-            item.text.trim().split(/\s+/).length !== 1
-          ) {
-            return false;
-          }
-
-          if (filters.indexAt) {
-            return index === sortedItems.length - Number(filters.indexAt);
-          }
-
           return true;
         }).length,
-      [filters, sortedItems],
+      [filters, parsedTextFilters, sortedItems],
     );
 
     const noteCountsByDay = useMemo(() => {
@@ -311,15 +290,11 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
       filters.text !== "",
       filters.date !== "",
       filters.endDate !== "",
-      filters.hasNumber,
-      filters.isOneWord,
-      filters.indexAt !== "",
     ].filter(Boolean).length;
 
     const handleOpen = (event: MouseEvent<HTMLButtonElement>) =>
       setAnchorEl(event.currentTarget);
     const handleClose = () => setAnchorEl(null);
-    const filtersActive = Boolean(anchorEl) || activeFilterCount > 0;
 
     const CalendarDay = (props: PickerDayProps) => (
       <NoteDay {...props} noteCountsByDay={noteCountsByDay} />
@@ -349,21 +324,15 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
 
     return (
       <>
-        <Tooltip
-          title={`Open filters ${activeFilterCount ? ` (${activeFilterCount} active)` : ""}`}
-        >
+        <Tooltip title={`Filter note text`}>
           <IconButton
             ref={filterButtonRef}
             aria-label="Filter notes"
             onClick={handleOpen}
-            color={filtersActive ? "primary" : "default"}
+            color={filters.text.trim() ? "primary" : "default"}
             disabled={items.length === 0 || selectMode}
           >
-            {
-              <Badge badgeContent={activeFilterCount} color="primary">
-                <Icon path={mdiFilter} size={0.9} />
-              </Badge>
-            }
+            <Icon path={mdiFilter} size={0.9} />
           </IconButton>
         </Tooltip>
         <Popover
@@ -417,146 +386,14 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           <Box sx={{ p: 2 }}>
             <Stack spacing={2}>
               <TextField
-                select
-                label="Label"
-                size="small"
-                value={filters.categoryId}
-                onChange={(event) =>
-                  onChange({ ...filters, categoryId: event.target.value })
-                }
-              >
-                <MenuItem value="">Show all</MenuItem>
-                <MenuItem
-                  value={NO_CATEGORY_FILTER_VALUE}
-                  sx={{ color: colors.blueGrey[300] }}
-                >
-                  <Box
-                    component="span"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                  >
-                    <Icon path={mdiNoteText} size={0.7} />
-                    {` No label`}
-                  </Box>
-                </MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 1,
-                      }}
-                    >
-                      <Icon path={category.icon.path} size={0.7} />
-                      {` ${category.name}`}
-                    </Box>
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
                 label="Note contains"
                 size="small"
                 value={filters.text}
                 onChange={(event) =>
                   onChange({ ...filters, text: event.target.value })
                 }
+                helperText="Use / commands ending with ; like /index:3; /with:url; /minLength:20;"
               />
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                <TextField
-                  label="Note Index"
-                  size="small"
-                  type="number"
-                  value={filters.indexAt}
-                  onChange={(event) => {
-                    const raw = event.target.value;
-                    if (raw === "") {
-                      onChange({ ...filters, indexAt: "" });
-                      return;
-                    }
-                    const n = Math.round(Number(raw));
-                    const clamped = Math.min(
-                      Math.max(n, 1),
-                      sortedItems.length,
-                    );
-                    onChange({ ...filters, indexAt: String(clamped) });
-                  }}
-                  slotProps={{
-                    htmlInput: { min: 1, max: sortedItems.length, step: 1 },
-                  }}
-                />
-                {filters.indexAt && sortedItems.length > 0 && (
-                  <LinearProgress
-                    variant="determinate"
-                    value={(Number(filters.indexAt) / sortedItems.length) * 100}
-                    sx={{ borderRadius: 1 }}
-                  />
-                )}
-              </Box>
-              <DatePicker
-                label="Start date"
-                value={startDateValue}
-                open={startDateOpen}
-                onOpen={() => setStartDateOpen(true)}
-                onClose={() => setStartDateOpen(false)}
-                showDaysOutsideCurrentMonth
-                minDate={filteredMinDate}
-                maxDate={filteredMaxDate}
-                onChange={(value: Dayjs | null) => {
-                  const nextStart = value ? value.format("YYYY-MM-DD") : "";
-                  onChange({ ...filters, date: nextStart, endDate: nextStart });
-                  setStartDateOpen(false);
-                }}
-                slots={{ day: CalendarDay }}
-                slotProps={calendarSlotProps}
-                format="YYYY-MM-DD"
-              />
-              <DatePicker
-                label="End date"
-                value={endDateValue}
-                showDaysOutsideCurrentMonth
-                minDate={startDateValue ?? filteredMinDate}
-                maxDate={filteredMaxDate}
-                onChange={(value: Dayjs | null) =>
-                  onChange({
-                    ...filters,
-                    endDate: value ? value.format("YYYY-MM-DD") : "",
-                  })
-                }
-                slots={{ day: CalendarDay }}
-                slotProps={calendarSlotProps}
-                format="YYYY-MM-DD"
-              />
-              <Stack>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={filters.hasNumber}
-                      onChange={(event) =>
-                        onChange({
-                          ...filters,
-                          hasNumber: event.target.checked,
-                        })
-                      }
-                    />
-                  }
-                  label="with numbers"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={filters.isOneWord}
-                      onChange={(event) =>
-                        onChange({
-                          ...filters,
-                          isOneWord: event.target.checked,
-                        })
-                      }
-                    />
-                  }
-                  label="with one word"
-                />
-              </Stack>
               <Tooltip
                 title={
                   activeFilterCount === 0
@@ -578,6 +415,71 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
               </Tooltip>
             </Stack>
           </Box>
+        </Popover>
+        <Popover
+          open={Boolean(dateAnchorEl)}
+          anchorEl={dateAnchorEl}
+          onClose={() => {
+            setDateAnchorEl(null);
+            setStartDateOpen(false);
+          }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
+          slotProps={{
+            paper: {
+              sx: {
+                backgroundColor: colors.blueGrey[900],
+                border: `1px solid ${colors.blueGrey[700]}`,
+                width: 260,
+                p: 2,
+              },
+            },
+          }}
+        >
+          <Stack spacing={2}>
+            <DatePicker
+              label="Start date"
+              value={startDateValue}
+              open={startDateOpen}
+              onOpen={() => setStartDateOpen(true)}
+              onClose={() => setStartDateOpen(false)}
+              showDaysOutsideCurrentMonth
+              minDate={filteredMinDate}
+              maxDate={filteredMaxDate}
+              onChange={(value: Dayjs | null) => {
+                const nextStart = value ? value.format("YYYY-MM-DD") : "";
+                onChange({ ...filters, date: nextStart, endDate: nextStart });
+                setStartDateOpen(false);
+              }}
+              slots={{ day: CalendarDay }}
+              slotProps={calendarSlotProps}
+              format="YYYY-MM-DD"
+            />
+            <DatePicker
+              label="End date"
+              value={endDateValue}
+              showDaysOutsideCurrentMonth
+              minDate={startDateValue ?? filteredMinDate}
+              maxDate={filteredMaxDate}
+              onChange={(value: Dayjs | null) =>
+                onChange({
+                  ...filters,
+                  endDate: value ? value.format("YYYY-MM-DD") : "",
+                })
+              }
+              slots={{ day: CalendarDay }}
+              slotProps={calendarSlotProps}
+              format="YYYY-MM-DD"
+            />
+            <Button
+              size="small"
+              variant="contained"
+              disabled={!filters.date && !filters.endDate}
+              onClick={() => onChange({ ...filters, date: "", endDate: "" })}
+            >
+              Clear date filter
+            </Button>
+          </Stack>
         </Popover>
       </>
     );
