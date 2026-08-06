@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Box,
   colors,
   IconButton,
@@ -67,9 +68,20 @@ const CategoryList = ({
   return (
     <Box>
       {orderedCategories.length === 0 ? (
-        <Typography color="text.secondary">
-          No labels added yet. Add labels to filter notes together
-        </Typography>
+        <Alert severity="info" sx={{ textAlign: "left" }}>
+          <Box> No labels added yet</Box>
+          <Box sx={{ mt: 0.5 }}>Add labels to filter notes together</Box>
+          <Box sx={{ mt: 0.5 }}>
+            Search icons by typing icon name from{" "}
+            <a
+              href="https://pictogrammers.com/library/mdi/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              https://pictogrammers.com/library/mdi/
+            </a>
+          </Box>
+        </Alert>
       ) : (
         <Box
           sx={{

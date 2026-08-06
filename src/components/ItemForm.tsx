@@ -79,7 +79,7 @@ const ItemForm = ({
               control={control}
               rules={{
                 required: "Note is required",
-                maxLength: { value: 200, message: "Max 200 characters" },
+                maxLength: { value: 500, message: "Max 500 characters" },
               }}
               render={({ field }) => {
                 const isEmpty = field.value.trim().length === 0;

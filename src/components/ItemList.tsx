@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
+  Alert,
   Dialog,
   DialogContent,
   DialogTitle,
@@ -34,10 +35,7 @@ import {
   isToday,
 } from "../utils/formatTimestamp";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
-import {
-  containsNumbers,
-  splitTextByUrls,
-} from "../utils/textPatterns";
+import { containsNumbers, splitTextByUrls } from "../utils/textPatterns";
 
 type ItemListProps = {
   items: Item[];
@@ -225,10 +223,7 @@ const ItemList = ({
         if (filters.hasNumber && !containsNumbers(item.text)) {
           return false;
         }
-        if (
-          filters.isOneWord &&
-          item.text.trim().split(/\s+/).length !== 1
-        ) {
+        if (filters.isOneWord && item.text.trim().split(/\s+/).length !== 1) {
           return false;
         }
         if (filters.indexAt) {
@@ -264,11 +259,26 @@ const ItemList = ({
   return (
     <Box>
       {filteredItems.length === 0 ? (
-        <Typography color="text.secondary">
-          {sortedItems.length === 0
-            ? "No notes added yet"
-            : "No notes match the current filters"}
-        </Typography>
+        <Alert severity="info" sx={{ textAlign: "left" }}>
+          {sortedItems.length === 0 ? (
+            <>
+              <Box>No notes added yet</Box>
+              <Box sx={{ mt: 0.5 }}>
+                Notes are kept in your browser only, so they might be lost if
+                browser history is cleared
+              </Box>
+              <Box sx={{ mt: 0.5 }}>
+                Backup notes using `Save as JSON` button on `Labels` tab
+              </Box>
+              <Box sx={{ mt: 0.5 }}>
+                Allow notification permission to receive a notification when
+                adding a note or clicking `Notify` button
+              </Box>
+            </>
+          ) : (
+            "No notes match the current filters"
+          )}
+        </Alert>
       ) : (
         <Box
           ref={containerRef}
