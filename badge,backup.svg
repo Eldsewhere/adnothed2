@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- Cutout silhouette of the clipboard notepad container -->
+  <path d="M8 2h16c3.3 0 6 2.7 6 6v16c0 3.3-2.7 6-6 6H8c-3.3 0-6-2.7-6-6V8c0-3.3 2.7-6 6-6zm0 2c-2.2 0-4 1.8-4 4v16c0 2.2 1.8 4 4 4h16c2.2 0 4-1.8 4-4V8c0-2.2-1.8-4-4-4H8z" fill="#FFFFFF"/>
+  
   <!-- Stylized inner note lines -->
   <rect x="6" y="9" width="14" height="2.5" rx="1.25" fill="#FFFFFF" />
   <rect x="6" y="14" width="11" height="2.5" rx="1.25" fill="#FFFFFF" />
