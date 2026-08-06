@@ -91,6 +91,7 @@ const ItemForm = ({
                       label="Note"
                       size="small"
                       fullWidth
+                      autoFocus
                       multiline
                       minRows={2.2}
                       error={!!errors.text}

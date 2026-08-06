@@ -4,7 +4,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type MouseEvent,
 } from "react";
 import {
   Badge,
@@ -20,7 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import dayjs, { type Dayjs } from "dayjs";
-import { DatePicker } from "@mui/x-date-pickers";
+import { StaticDatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
 import { mdiClose, mdiFilter } from "@mdi/js";
@@ -38,6 +37,8 @@ type ItemFiltersProps = {
   filters: ItemFiltersValue;
   onChange: (filters: ItemFiltersValue) => void;
   selectMode: boolean;
+  isTextFilterVisible: boolean;
+  onToggleTextFilterInput: () => void;
 };
 
 type NoteDayProps = PickerDayProps & {
@@ -133,18 +134,31 @@ export type ItemFiltersHandle = {
 };
 
 const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
-  function ItemFilters({ items, filters, onChange, selectMode }, ref) {
-    const [anchorEl, setAnchorEl] = useState<HTMLButtonElement | null>(null);
+  function ItemFilters(
+    {
+      items,
+      filters,
+      onChange,
+      selectMode,
+      isTextFilterVisible,
+      onToggleTextFilterInput,
+    },
+    ref,
+  ) {
     const [dateAnchorEl, setDateAnchorEl] = useState<HTMLButtonElement | null>(
       null,
     );
-    const [startDateOpen, setStartDateOpen] = useState(false);
+    const [showInlineCalendar, setShowInlineCalendar] = useState(false);
+    const [activeDateField, setActiveDateField] = useState<"start" | "end">(
+      "start",
+    );
     const filterButtonRef = useRef<HTMLButtonElement>(null);
 
     useImperativeHandle(ref, () => ({
       openWithCalendar(anchor) {
-        setDateAnchorEl(anchor ?? null);
-        setStartDateOpen(true);
+        setDateAnchorEl(anchor ?? filterButtonRef.current);
+        setActiveDateField("start");
+        setShowInlineCalendar(true);
       },
     }));
 
@@ -292,35 +306,27 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
       filters.endDate !== "",
     ].filter(Boolean).length;
 
-    const handleOpen = (event: MouseEvent<HTMLButtonElement>) =>
-      setAnchorEl(event.currentTarget);
-    const handleClose = () => setAnchorEl(null);
+    const handleDateClose = () => {
+      setDateAnchorEl(null);
+      setShowInlineCalendar(false);
+      setActiveDateField("start");
+    };
 
     const CalendarDay = (props: PickerDayProps) => (
       <NoteDay {...props} noteCountsByDay={noteCountsByDay} />
     );
 
-    const calendarSlotProps = {
-      textField: { size: "small" as const },
-      popper: {
-        sx: {
-          "& .MuiPaper-root": {
-            backgroundColor: colors.grey[900],
-            border: `1px solid ${colors.blueGrey[700]}`,
-          },
-          "& .MuiPickersCalendarHeader-label": {
-            color: colors.blueGrey[100],
-          },
-          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-            {
-              color: colors.blueGrey[200],
-            },
-          "& .MuiDayCalendar-weekDayLabel": {
-            color: colors.blueGrey[400],
-          },
-        },
-      },
-    };
+    const activeCalendarDateValue =
+      activeDateField === "start"
+        ? (startDateValue ?? endDateValue ?? filteredMaxDate)
+        : (endDateValue ?? startDateValue ?? filteredMaxDate);
+
+    const calendarMinDate =
+      activeDateField === "start"
+        ? filteredMinDate
+        : (startDateValue ?? filteredMinDate);
+
+    const calendarMaxDate = filteredMaxDate;
 
     return (
       <>
@@ -328,17 +334,17 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           <IconButton
             ref={filterButtonRef}
             aria-label="Filter notes"
-            onClick={handleOpen}
-            color={filters.text.trim() ? "primary" : "default"}
+            onClick={onToggleTextFilterInput}
+            color={isTextFilterVisible ? "primary" : "default"}
             disabled={items.length === 0 || selectMode}
           >
             <Icon path={mdiFilter} size={0.9} />
           </IconButton>
         </Tooltip>
         <Popover
-          open={!!anchorEl}
-          anchorEl={anchorEl}
-          onClose={handleClose}
+          open={!!dateAnchorEl}
+          anchorEl={dateAnchorEl}
+          onClose={handleDateClose}
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
           slotProps={{
@@ -346,7 +352,6 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
               sx: {
                 backgroundColor: colors.blueGrey[900],
                 border: `1px solid ${colors.blueGrey[700]}`,
-                width: 200,
               },
             },
           }}
@@ -364,7 +369,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
               direction="row"
               sx={{ alignItems: "center", justifyContent: "space-between" }}
             >
-              <Typography variant="subtitle1">Filters</Typography>
+              <Typography variant="subtitle1">Filter by date</Typography>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                 <Typography
                   variant="caption"
@@ -374,8 +379,8 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                 </Typography>
                 <IconButton
                   size="small"
-                  aria-label="Close filters"
-                  onClick={handleClose}
+                  aria-label="Close date filters"
+                  onClick={handleDateClose}
                   sx={{ color: colors.blueGrey[100], p: 0.5 }}
                 >
                   <Icon path={mdiClose} size={0.75} />
@@ -385,15 +390,90 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
           </DialogTitle>
           <Box sx={{ p: 2 }}>
             <Stack spacing={2}>
-              <TextField
-                label="Note contains"
+              <Stack direction="row" spacing={1}>
+                <TextField
+                  label="Start date"
+                  size="small"
+                  value={
+                    startDateValue ? startDateValue.format("YYYY-MM-DD") : ""
+                  }
+                  onClick={() => {
+                    setActiveDateField("start");
+                    setShowInlineCalendar(true);
+                  }}
+                  slotProps={{
+                    input: { readOnly: true },
+                  }}
+                  fullWidth
+                />
+                <TextField
+                  label="End date"
+                  size="small"
+                  value={endDateValue ? endDateValue.format("YYYY-MM-DD") : ""}
+                  onClick={() => {
+                    setActiveDateField("end");
+                    setShowInlineCalendar(true);
+                  }}
+                  slotProps={{
+                    input: { readOnly: true },
+                  }}
+                  fullWidth
+                />
+              </Stack>
+              {showInlineCalendar && (
+                <Box
+                  sx={{
+                    border: `1px solid ${colors.blueGrey[700]}`,
+                    borderRadius: 1,
+                    p: 1,
+                    "& .MuiPickersCalendarHeader-label": {
+                      color: colors.blueGrey[100],
+                    },
+                    "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                      {
+                        color: colors.blueGrey[200],
+                      },
+                    "& .MuiDayCalendar-weekDayLabel": {
+                      color: colors.blueGrey[400],
+                    },
+                  }}
+                >
+                  <StaticDatePicker
+                    displayStaticWrapperAs="desktop"
+                    value={activeCalendarDateValue}
+                    showDaysOutsideCurrentMonth
+                    minDate={calendarMinDate}
+                    maxDate={calendarMaxDate}
+                    onChange={(value: Dayjs | null) => {
+                      if (!value) {
+                        return;
+                      }
+                      const nextValue = value.format("YYYY-MM-DD");
+                      if (activeDateField === "start") {
+                        onChange({
+                          ...filters,
+                          date: nextValue,
+                          endDate:
+                            filters.endDate && filters.endDate < nextValue
+                              ? nextValue
+                              : filters.endDate || nextValue,
+                        });
+                        return;
+                      }
+                      onChange({ ...filters, endDate: nextValue });
+                    }}
+                    slots={{ day: CalendarDay }}
+                  />
+                </Box>
+              )}
+              <Button
                 size="small"
-                value={filters.text}
-                onChange={(event) =>
-                  onChange({ ...filters, text: event.target.value })
-                }
-                helperText="Use / commands ending with ; like /index:3; /with:url; /minLength:20;"
-              />
+                variant="contained"
+                disabled={!filters.date && !filters.endDate}
+                onClick={() => onChange({ ...filters, date: "", endDate: "" })}
+              >
+                Clear date filter
+              </Button>
               <Tooltip
                 title={
                   activeFilterCount === 0
@@ -407,7 +487,7 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
                   disabled={activeFilterCount === 0}
                   onClick={() => {
                     onChange(emptyItemFilters);
-                    handleClose();
+                    handleDateClose();
                   }}
                 >
                   Clear filters
@@ -415,71 +495,6 @@ const ItemFilters = forwardRef<ItemFiltersHandle, ItemFiltersProps>(
               </Tooltip>
             </Stack>
           </Box>
-        </Popover>
-        <Popover
-          open={Boolean(dateAnchorEl)}
-          anchorEl={dateAnchorEl}
-          onClose={() => {
-            setDateAnchorEl(null);
-            setStartDateOpen(false);
-          }}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{
-            paper: {
-              sx: {
-                backgroundColor: colors.blueGrey[900],
-                border: `1px solid ${colors.blueGrey[700]}`,
-                width: 260,
-                p: 2,
-              },
-            },
-          }}
-        >
-          <Stack spacing={2}>
-            <DatePicker
-              label="Start date"
-              value={startDateValue}
-              open={startDateOpen}
-              onOpen={() => setStartDateOpen(true)}
-              onClose={() => setStartDateOpen(false)}
-              showDaysOutsideCurrentMonth
-              minDate={filteredMinDate}
-              maxDate={filteredMaxDate}
-              onChange={(value: Dayjs | null) => {
-                const nextStart = value ? value.format("YYYY-MM-DD") : "";
-                onChange({ ...filters, date: nextStart, endDate: nextStart });
-                setStartDateOpen(false);
-              }}
-              slots={{ day: CalendarDay }}
-              slotProps={calendarSlotProps}
-              format="YYYY-MM-DD"
-            />
-            <DatePicker
-              label="End date"
-              value={endDateValue}
-              showDaysOutsideCurrentMonth
-              minDate={startDateValue ?? filteredMinDate}
-              maxDate={filteredMaxDate}
-              onChange={(value: Dayjs | null) =>
-                onChange({
-                  ...filters,
-                  endDate: value ? value.format("YYYY-MM-DD") : "",
-                })
-              }
-              slots={{ day: CalendarDay }}
-              slotProps={calendarSlotProps}
-              format="YYYY-MM-DD"
-            />
-            <Button
-              size="small"
-              variant="contained"
-              disabled={!filters.date && !filters.endDate}
-              onClick={() => onChange({ ...filters, date: "", endDate: "" })}
-            >
-              Clear date filter
-            </Button>
-          </Stack>
         </Popover>
       </>
     );

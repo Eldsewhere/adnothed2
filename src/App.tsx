@@ -18,6 +18,7 @@ import {
   Stack,
   Tab,
   Tabs,
+  TextField,
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -130,6 +131,7 @@ function App() {
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
   const itemFiltersRef = useRef<ItemFiltersHandle>(null);
+  const [showTextFilterInput, setShowTextFilterInput] = useState(false);
   const [labelFilterAnchor, setLabelFilterAnchor] =
     useState<HTMLElement | null>(null);
 
@@ -426,6 +428,12 @@ function App() {
     setBulkCategoryAnchor(null);
   };
 
+  const handleEditItem = (item: Item) => {
+    setItemFilters(emptyItemFilters);
+    setShowTextFilterInput(false);
+    setEditingItem(item);
+  };
+
   return (
     <Box>
       <Paper sx={{ p: 1 }}>
@@ -517,6 +525,10 @@ function App() {
                 items={items}
                 filters={itemFilters}
                 selectMode={selectMode}
+                isTextFilterVisible={showTextFilterInput}
+                onToggleTextFilterInput={() =>
+                  setShowTextFilterInput((prev) => !prev)
+                }
                 onChange={(f: ItemFiltersValue) => {
                   setItemFilters(f);
                   setSelectMode(false);
@@ -529,12 +541,46 @@ function App() {
         <Box sx={{ pt: 2 }}>
           <TabPanel value={activeTab} index="items">
             <Stack spacing={1}>
-              <ItemForm
-                editingItem={editingItem}
-                categories={categories}
-                onSubmit={handleItemSubmit}
-                onCancelEdit={() => setEditingItem(null)}
-              />
+              {showTextFilterInput ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center" }}
+                >
+                  <TextField
+                    label="Note contains"
+                    size="small"
+                    fullWidth
+                    autoFocus
+                    value={itemFilters.text}
+                    onChange={(event) =>
+                      setItemFilters((prev) => ({
+                        ...prev,
+                        text: event.target.value,
+                      }))
+                    }
+                  />
+                  <Tooltip title="Cancel filter text">
+                    <IconButton
+                      aria-label="Cancel filter text"
+                      onClick={() => {
+                        setShowTextFilterInput(false);
+                        setItemFilters((prev) => ({ ...prev, text: "" }));
+                      }}
+                      sx={{ mt: -2.75 }}
+                    >
+                      <Icon path={mdiCancel} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              ) : (
+                <ItemForm
+                  editingItem={editingItem}
+                  categories={categories}
+                  onSubmit={handleItemSubmit}
+                  onCancelEdit={() => setEditingItem(null)}
+                />
+              )}
               {selectMode && (
                 <Stack
                   direction="row"
@@ -602,7 +648,7 @@ function App() {
                 items={items}
                 categories={categories}
                 filters={itemFilters}
-                onEdit={setEditingItem}
+                onEdit={handleEditItem}
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
                 onToggleBullet={handleItemToggleBullet}
