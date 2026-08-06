@@ -4,6 +4,7 @@ import {
   Badge,
   Box,
   Button,
+  colors,
   Dialog,
   DialogActions,
   DialogContent,
@@ -24,6 +25,7 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
+  mdiCheckCircle,
   mdiFilter,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
@@ -37,10 +39,12 @@ import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
 import ItemForm from "./components/ItemForm";
 import ItemFilters from "./components/ItemFilters";
-import type { ItemFiltersHandle } from "./components/ItemFilters";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
-import type { Category, Item, ItemFilters as ItemFiltersValue } from "./types";
+import type { Category, Item } from "./types";
+import dayjs, { type Dayjs } from "dayjs";
+import { DatePicker } from "@mui/x-date-pickers";
+import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
@@ -65,6 +69,79 @@ import { getUniqueCreatedAt } from "./utils/itemTimestamps";
 type TabValue = "items" | "categories";
 
 const BULLET_PREFIX = "• ";
+
+type NoteDayProps = PickerDayProps & {
+  noteCountsByDay: Map<string, number>;
+};
+
+const NoteDay = ({
+  day,
+  noteCountsByDay,
+  outsideCurrentMonth,
+  ...other
+}: NoteDayProps) => {
+  const key = dayjs(day).format("YYYY-MM-DD");
+  const noteCount = noteCountsByDay.get(key) ?? 0;
+  const hasNotes = noteCount > 0;
+  const isOutside = Boolean(outsideCurrentMonth);
+
+  return (
+    <Badge
+      overlap="circular"
+      badgeContent={noteCount}
+      color="success"
+      sx={{
+        "& .MuiBadge-badge": {
+          minWidth: 14,
+          height: 14,
+          fontSize: "0.6rem",
+          lineHeight: 1,
+          p: 0,
+          top: 6,
+          right: 5,
+        },
+      }}
+    >
+      <PickerDay
+        day={day}
+        outsideCurrentMonth={outsideCurrentMonth}
+        {...other}
+        sx={{
+          color: isOutside ? colors.blueGrey[500] : colors.blueGrey[100],
+          opacity: isOutside ? 0.6 : 1,
+          "&:hover, &:focus": {
+            backgroundColor: isOutside
+              ? "rgba(96, 125, 139, 0.18)"
+              : "rgba(96, 125, 139, 0.28)",
+          },
+          "&.Mui-selected": {
+            backgroundColor: colors.blueGrey[500],
+            color: colors.blueGrey[900],
+            borderColor: colors.blueGrey[300],
+            opacity: 1,
+          },
+          "&.Mui-selected:hover, &.Mui-selected:focus": {
+            backgroundColor: colors.blueGrey[400],
+          },
+          ...(hasNotes
+            ? {
+                backgroundColor: isOutside
+                  ? "rgba(76, 175, 80, 0.12)"
+                  : "rgba(76, 175, 80, 0.2)",
+                color: colors.blueGrey[200],
+                border: `1px solid ${isOutside ? colors.blueGrey[600] : colors.blueGrey[400]}`,
+                "&:hover, &:focus": {
+                  backgroundColor: isOutside
+                    ? "rgba(76, 175, 80, 0.2)"
+                    : "rgba(76, 175, 80, 0.32)",
+                },
+              }
+            : {}),
+        }}
+      />
+    </Badge>
+  );
+};
 
 function toggleBulletRows(text: string): string {
   const lines = text.split("\n");
@@ -133,8 +210,10 @@ function App() {
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
-  const itemFiltersRef = useRef<ItemFiltersHandle>(null);
+  const startDateInputRef = useRef<HTMLInputElement | null>(null);
+  const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [showTextFilterInput, setShowTextFilterInput] = useState(false);
+  const [showDateFilterInput, setShowDateFilterInput] = useState(false);
   const [labelFilterAnchor, setLabelFilterAnchor] =
     useState<HTMLElement | null>(null);
 
@@ -434,8 +513,23 @@ function App() {
   const handleEditItem = (item: Item) => {
     setItemFilters(emptyItemFilters);
     setShowTextFilterInput(false);
+    setShowDateFilterInput(false);
     setEditingItem(item);
   };
+
+  const startDateValue =
+    itemFilters.date &&
+    dateRegex.test(itemFilters.date) &&
+    itemFilters.date.length === 10
+      ? dayjs(itemFilters.date)
+      : null;
+
+  const endDateValue =
+    itemFilters.endDate &&
+    dateRegex.test(itemFilters.endDate) &&
+    itemFilters.endDate.length === 10
+      ? dayjs(itemFilters.endDate)
+      : null;
 
   const filteredItemsCount = useMemo(() => {
     const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
@@ -482,6 +576,85 @@ function App() {
       return true;
     }).length;
   }, [items, itemFilters]);
+
+  const sortedItems = useMemo(
+    () => [...items].sort((a, b) => b.createdAt - a.createdAt),
+    [items],
+  );
+
+  const parsedTextFilters = useMemo(
+    () => parseTextFilters(itemFilters.text),
+    [itemFilters.text],
+  );
+
+  const calendarFilteredItems = useMemo(
+    () =>
+      sortedItems.filter((item, index) => {
+        if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          itemFilters.categoryId &&
+          item.categoryId !== itemFilters.categoryId
+        ) {
+          return false;
+        }
+
+        return matchesTextFilters(
+          item.text,
+          item.createdAt,
+          index,
+          sortedItems.length,
+          parsedTextFilters,
+        );
+      }),
+    [itemFilters.categoryId, parsedTextFilters, sortedItems],
+  );
+
+  const noteCountsByDay = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of calendarFilteredItems) {
+      const dayKey = formatDate(item.createdAt);
+      counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
+    }
+    return counts;
+  }, [calendarFilteredItems]);
+
+  const oldestNoteDate = useMemo(() => {
+    if (items.length === 0) {
+      return dayjs().startOf("day");
+    }
+    const minTimestamp = Math.min(...items.map((item) => item.createdAt));
+    return dayjs.unix(minTimestamp).startOf("day");
+  }, [items]);
+
+  const today = useMemo(() => dayjs().startOf("day"), []);
+
+  const filteredMinDate = useMemo(() => {
+    if (calendarFilteredItems.length === 0) {
+      return oldestNoteDate;
+    }
+    const minTimestamp = Math.min(
+      ...calendarFilteredItems.map((item) => item.createdAt),
+    );
+    return dayjs.unix(minTimestamp).startOf("day");
+  }, [calendarFilteredItems, oldestNoteDate]);
+
+  const filteredMaxDate = useMemo(() => {
+    if (calendarFilteredItems.length === 0) {
+      return today;
+    }
+    const maxTimestamp = Math.max(
+      ...calendarFilteredItems.map((item) => item.createdAt),
+    );
+    const latestFiltered = dayjs.unix(maxTimestamp).startOf("day");
+    return latestFiltered.isAfter(today) ? today : latestFiltered;
+  }, [calendarFilteredItems, today]);
+
+  const CalendarDay = (props: PickerDayProps) => (
+    <NoteDay {...props} noteCountsByDay={noteCountsByDay} />
+  );
 
   return (
     <Box>
@@ -543,11 +716,13 @@ function App() {
                       ? "primary"
                       : "default"
                   }
-                  onClick={(event) =>
-                    itemFiltersRef.current?.openWithCalendar(
-                      event.currentTarget,
-                    )
-                  }
+                  onClick={() => {
+                    setShowTextFilterInput(false);
+                    setShowDateFilterInput(true);
+                    window.requestAnimationFrame(() => {
+                      startDateInputRef.current?.focus();
+                    });
+                  }}
                   disabled={items.length === 0 || selectMode}
                 >
                   <Icon path={mdiCalendar} size={0.9} />
@@ -570,18 +745,12 @@ function App() {
                 </IconButton>
               </Tooltip>
               <ItemFilters
-                ref={itemFiltersRef}
-                items={items}
-                filters={itemFilters}
+                itemsCount={items.length}
                 selectMode={selectMode}
                 isTextFilterVisible={showTextFilterInput}
-                onToggleTextFilterInput={() =>
-                  setShowTextFilterInput((prev) => !prev)
-                }
-                onChange={(f: ItemFiltersValue) => {
-                  setItemFilters(f);
-                  setSelectMode(false);
-                  setSelectedItemIds(new Set());
+                onToggleTextFilterInput={() => {
+                  setShowDateFilterInput(false);
+                  setShowTextFilterInput((prev) => !prev);
                 }}
               />
             </Stack>
@@ -590,7 +759,119 @@ function App() {
         <Box sx={{ pt: 2 }}>
           <TabPanel value={activeTab} index="items">
             <Stack spacing={1}>
-              {showTextFilterInput ? (
+              {showDateFilterInput ? (
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ alignItems: "center", flexWrap: "nowrap" }}
+                >
+                  <DatePicker
+                    label="Start date"
+                    value={startDateValue}
+                    showDaysOutsideCurrentMonth
+                    minDate={filteredMinDate}
+                    maxDate={filteredMaxDate}
+                    onChange={(value: Dayjs | null) => {
+                      const nextStart = value ? value.format("YYYY-MM-DD") : "";
+                      setItemFilters((prev) => ({
+                        ...prev,
+                        date: nextStart,
+                        endDate:
+                          prev.endDate && prev.endDate < nextStart
+                            ? nextStart
+                            : prev.endDate || nextStart,
+                      }));
+                      window.requestAnimationFrame(() => {
+                        endDateInputRef.current?.focus();
+                      });
+                    }}
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                        fullWidth: false,
+                        inputRef: startDateInputRef,
+                        sx: { minWidth: 0, flex: 1 },
+                      },
+                      popper: {
+                        sx: {
+                          "& .MuiPaper-root": {
+                            backgroundColor: colors.blueGrey[900],
+                            border: `1px solid ${colors.blueGrey[700]}`,
+                          },
+                          "& .MuiPickersCalendarHeader-label": {
+                            color: colors.blueGrey[100],
+                          },
+                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                            {
+                              color: colors.blueGrey[200],
+                            },
+                          "& .MuiDayCalendar-weekDayLabel": {
+                            color: colors.blueGrey[400],
+                          },
+                        },
+                      },
+                    }}
+                    slots={{ day: CalendarDay }}
+                    format="YYYY-MM-DD"
+                  />
+                  <DatePicker
+                    label="End date"
+                    value={endDateValue}
+                    showDaysOutsideCurrentMonth
+                    minDate={startDateValue ?? filteredMinDate}
+                    maxDate={filteredMaxDate}
+                    onChange={(value: Dayjs | null) =>
+                      setItemFilters((prev) => ({
+                        ...prev,
+                        endDate: value ? value.format("YYYY-MM-DD") : "",
+                      }))
+                    }
+                    slotProps={{
+                      textField: {
+                        size: "small",
+                        fullWidth: false,
+                        inputRef: endDateInputRef,
+                        sx: { minWidth: 0, flex: 1 },
+                      },
+                      popper: {
+                        sx: {
+                          "& .MuiPaper-root": {
+                            backgroundColor: colors.blueGrey[900],
+                            border: `1px solid ${colors.blueGrey[700]}`,
+                          },
+                          "& .MuiPickersCalendarHeader-label": {
+                            color: colors.blueGrey[100],
+                          },
+                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                            {
+                              color: colors.blueGrey[200],
+                            },
+                          "& .MuiDayCalendar-weekDayLabel": {
+                            color: colors.blueGrey[400],
+                          },
+                        },
+                      },
+                    }}
+                    slots={{ day: CalendarDay }}
+                    format="YYYY-MM-DD"
+                  />
+                  <Tooltip title="Cancel date filter">
+                    <IconButton
+                      aria-label="Cancel date filter"
+                      onClick={() => {
+                        setShowDateFilterInput(false);
+                        setItemFilters((prev) => ({
+                          ...prev,
+                          date: "",
+                          endDate: "",
+                        }));
+                      }}
+                    >
+                      <Icon path={mdiCancel} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                </Stack>
+              ) : showTextFilterInput ? (
                 <Stack
                   direction="row"
                   spacing={1}
