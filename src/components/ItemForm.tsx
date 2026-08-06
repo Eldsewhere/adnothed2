@@ -16,6 +16,7 @@ import {
   mdiCancel,
   mdiCheckCircle,
   mdiChevronDown,
+  mdiContentPaste,
   mdiNoteText,
 } from "@mdi/js";
 
@@ -80,32 +81,61 @@ const ItemForm = ({
                 required: "Note is required",
                 maxLength: { value: 200, message: "Max 200 characters" },
               }}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  label="Note"
-                  size="small"
-                  fullWidth
-                  multiline
-                  minRows={2.2}
-                  error={!!errors.text}
-                  helperText={errors.text?.message}
-                  sx={{
-                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                  }}
-                />
-              )}
+              render={({ field }) => {
+                const isEmpty = field.value.trim().length === 0;
+
+                return (
+                  <Box sx={{ position: "relative" }}>
+                    <TextField
+                      {...field}
+                      label="Note"
+                      size="small"
+                      fullWidth
+                      multiline
+                      minRows={2.2}
+                      error={!!errors.text}
+                      helperText={errors.text?.message}
+                      sx={{
+                        "& .MuiInputBase-inputMultiline": {
+                          pb: isEmpty ? 4 : undefined,
+                        },
+                        "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                          {
+                            borderColor: colors.blueGrey[500],
+                          },
+                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                          {
+                            borderColor: colors.blueGrey[500],
+                          },
+                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                          {
+                            borderColor: colors.blueGrey[500],
+                          },
+                      }}
+                    />
+                    {isEmpty && (
+                      <Tooltip title="Paste note">
+                        <IconButton
+                          aria-label="Paste note"
+                          size="small"
+                          onClick={async () => {
+                            const text = await navigator.clipboard.readText();
+                            field.onChange(text);
+                          }}
+                          sx={{
+                            position: "absolute",
+                            right: 6,
+                            bottom: errors.text ? 24 : 6,
+                            color: colors.blueGrey[400],
+                          }}
+                        >
+                          <Icon path={mdiContentPaste} size={0.75} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                  </Box>
+                );
+              }}
             />
           </Box>
           <Stack
