@@ -33,7 +33,10 @@ export default defineConfig({
           },
         ],
       },
-      workbox: {
+      strategies: "injectManifest",
+      srcDir: "src",
+      filename: "sw.ts",
+      injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },

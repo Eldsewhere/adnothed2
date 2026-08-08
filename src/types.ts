@@ -28,6 +28,11 @@ export type ItemFormValues = {
   text: string;
 };
 
+export interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
 export type ItemFilters = {
   categoryId: string;
   text: string;

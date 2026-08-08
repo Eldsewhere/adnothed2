@@ -44,7 +44,12 @@ export const showAppNotification = async (
     icon: iconUrl,
     badge: badgeUrl,
     tag,
-  });
+    data: { body },
+    actions: [
+      { action: "open", title: "Open" },
+      { action: "copy", title: "Copy" },
+    ],
+  } as NotificationOptions);
 
   return "shown";
 };

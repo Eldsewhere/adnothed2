@@ -39,7 +39,7 @@ import CategoryList from "./components/CategoryList";
 import ItemForm from "./components/ItemForm";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
-import type { Category, Item } from "./types";
+import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
@@ -217,6 +217,38 @@ function App() {
   const [showDateFilterInput, setShowDateFilterInput] = useState(false);
   const [labelFilterAnchor, setLabelFilterAnchor] =
     useState<HTMLElement | null>(null);
+  const [installPrompt, setInstallPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return;
+    const handler = (event: MessageEvent) => {
+      if (
+        event.data &&
+        (event.data as { type: string }).type === "COPY_TEXT"
+      ) {
+        const text = (event.data as { text: string }).text;
+        void navigator.clipboard.writeText(text);
+      }
+    };
+    navigator.serviceWorker.addEventListener("message", handler);
+    return () => navigator.serviceWorker.removeEventListener("message", handler);
+  }, []);
+
+  const handleInstall = () => {
+    if (!installPrompt) return;
+    void installPrompt.prompt();
+    installPrompt.userChoice.then(() => setInstallPrompt(null));
+  };
 
   const handleNotificationResult = (result: AppNotificationResult) => {
     if (result === "permission-denied") {
@@ -1134,6 +1166,7 @@ function App() {
                 selectMode={selectMode}
                 selectedIds={selectedItemIds}
                 onToggleSelect={toggleItemSelected}
+                onInstall={installPrompt ? handleInstall : undefined}
               />
             </Stack>
           </TabPanel>

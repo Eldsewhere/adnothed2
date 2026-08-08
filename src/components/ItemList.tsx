@@ -54,6 +54,7 @@ type ItemListProps = {
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
+  onInstall?: () => void;
 };
 
 const ROW_HEIGHT = 80;
@@ -81,6 +82,7 @@ const ItemList = ({
   selectMode,
   selectedIds,
   onToggleSelect,
+  onInstall,
 }: ItemListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
@@ -274,6 +276,17 @@ const ItemList = ({
                 Allow notification permission to receive a notification when
                 adding a note or clicking `Notify` button
               </Box>
+              {onInstall && (
+                <Box sx={{ mt: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={onInstall}
+                  >
+                    Install app
+                  </Button>
+                </Box>
+              )}
             </>
           ) : (
             "No notes match the current filters"
