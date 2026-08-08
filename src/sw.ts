@@ -19,7 +19,6 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html")));
 self.addEventListener("notificationclick", (event) => {
   const action = event.action;
   const notification = event.notification;
-  notification.close();
 
   if (action === "copy") {
     const textToCopy: string =
