@@ -822,6 +822,7 @@ function App() {
                             ? nextStart
                             : prev.endDate || nextStart,
                       }));
+                      setStartDatePickerOpen(false);
                       window.requestAnimationFrame(() => {
                         endDateInputRef.current?.focus();
                       });

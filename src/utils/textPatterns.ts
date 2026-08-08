@@ -17,11 +17,22 @@ export function containsNumbers(text: string): boolean {
 export function splitTextByUrls(
   text: string,
 ): Array<{ value: string; isUrl: boolean }> {
-  const parts = text.split(URL_REGEX);
-  return parts
-    .filter((part) => part !== "")
-    .map((part) => ({
-      value: part,
-      isUrl: /^https?:\/\//i.test(part),
-    }));
+  const urlRegex = new RegExp(URL_REGEX.source, "gi");
+  const parts: Array<{ value: string; isUrl: boolean }> = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = urlRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ value: text.slice(lastIndex, match.index), isUrl: false });
+    }
+    parts.push({ value: match[0], isUrl: /^https?:\/\//i.test(match[0]) });
+    lastIndex = urlRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ value: text.slice(lastIndex), isUrl: false });
+  }
+
+  return parts.filter((p) => p.value !== "");
 }
