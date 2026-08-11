@@ -21,5 +21,14 @@
             "type": "image/svg+xml",
             "purpose": "maskable"
         }
-    ]
+    ],
+    "share_target": {
+        "action": "/adnothed2/",
+        "method": "GET",
+        "params": {
+            "text": "text",
+            "title": "title",
+            "url": "url"
+        }
+    }
 }
