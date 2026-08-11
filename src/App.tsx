@@ -220,6 +220,18 @@ function App() {
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
+  const [sharedText] = useState<string | null>(() => {
+    const params = new URLSearchParams(window.location.search);
+    const text = params.get("text");
+    const title = params.get("title");
+    const url = params.get("url");
+    const parts = [text, title, url].filter(Boolean);
+    if (parts.length === 0) return null;
+    const combined = parts.join("\n");
+    window.history.replaceState({}, "", window.location.pathname);
+    return combined;
+  });
+
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
@@ -1043,6 +1055,7 @@ function App() {
               ) : (
                 <ItemForm
                   editingItem={editingItem}
+                  initialText={sharedText ?? undefined}
                   categories={categories}
                   onSubmit={handleItemSubmit}
                   onCancelEdit={() => setEditingItem(null)}

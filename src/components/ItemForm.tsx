@@ -22,6 +22,7 @@ import {
 
 type ItemFormProps = {
   editingItem: Item | null;
+  initialText?: string;
   categories: Category[];
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
@@ -31,6 +32,7 @@ const emptyValues: ItemFormValues = { categoryId: "", text: "" };
 
 const ItemForm = ({
   editingItem,
+  initialText,
   categories,
   onSubmit,
   onCancelEdit,
@@ -40,7 +42,9 @@ const ItemForm = ({
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<ItemFormValues>({ defaultValues: emptyValues });
+  } = useForm<ItemFormValues>({
+    defaultValues: initialText ? { categoryId: "", text: initialText } : emptyValues,
+  });
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -49,9 +53,11 @@ const ItemForm = ({
     reset(
       editingItem
         ? { categoryId: editingItem.categoryId ?? "", text: editingItem.text }
-        : emptyValues,
+        : initialText
+          ? { categoryId: "", text: initialText }
+          : emptyValues,
     );
-  }, [editingItem, reset]);
+  }, [editingItem, initialText, reset]);
 
   const submit = handleSubmit((values) => {
     onSubmit(values);

@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "favicon-social.png", "icons.svg"],
+      includeAssets: ["favicon.svg", "favicon-social.png", "icons.svg", "screenshot-mobile.png", "screenshot-wide.png"],
       manifest: {
         name: "Adnothed",
         short_name: "Adnothed",
@@ -18,13 +18,8 @@ export default defineConfig({
         background_color: "#ffffff",
         display: "standalone",
         start_url: "/adnothed2/",
+        id: "/adnothed2/",
         icons: [
-          {
-            src: "favicon-social.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any",
-          },
           {
             src: "favicon-social.png",
             sizes: "512x512",
@@ -37,13 +32,30 @@ export default defineConfig({
             type: "image/png",
             purpose: "maskable",
           },
+        ],
+        screenshots: [
           {
-            src: "favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
-            purpose: "any",
+            src: "screenshot-mobile.png",
+            type: "image/png",
+            sizes: "390x844",
+          },
+          {
+            src: "screenshot-wide.png",
+            type: "image/png",
+            sizes: "1280x800",
+            form_factor: "wide",
           },
         ],
+        share_target: {
+          action: "/adnothed2/",
+          method: "GET",
+          enctype: "application/x-www-form-urlencoded",
+          params: {
+            text: "text",
+            title: "title",
+            url: "url",
+          },
+        },
       },
       strategies: "injectManifest",
       srcDir: "src",
