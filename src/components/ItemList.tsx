@@ -23,8 +23,10 @@ import {
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
+  mdiMagnify,
   mdiNoteText,
   mdiPencil,
+  mdiShareVariant,
   mdiTrashCan,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
@@ -158,6 +160,24 @@ const ItemList = ({
     closeMenu();
   };
 
+  const handleSearchGoogle = (item: Item) => {
+    window.open(
+      `https://www.google.com/search?q=${encodeURIComponent(item.text)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+    closeMenu();
+  };
+
+  const handleShare = async (item: Item) => {
+    closeMenu();
+    if (navigator.share) {
+      await navigator.share({ text: item.text });
+    } else {
+      await navigator.clipboard.writeText(item.text);
+    }
+  };
+
   const handleTextClick = (event: MouseEvent<HTMLElement>, item: Item) => {
     const target = event.currentTarget as HTMLElement;
     const isOverflowing =
@@ -278,11 +298,7 @@ const ItemList = ({
               </Box>
               {onInstall && (
                 <Box sx={{ mt: 1 }}>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    onClick={onInstall}
-                  >
+                  <Button variant="outlined" size="small" onClick={onInstall}>
                     Install app
                   </Button>
                 </Box>
@@ -534,6 +550,38 @@ const ItemList = ({
             <Icon path={mdiBell} size={0.7} />
           </Box>
           Notify
+        </MenuItem>
+        <MenuItem
+          onClick={() => menuAnchor && handleSearchGoogle(menuAnchor.item)}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiMagnify} size={0.7} />
+          </Box>
+          Google
+        </MenuItem>
+        <MenuItem onClick={() => menuAnchor && handleShare(menuAnchor.item)}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiShareVariant} size={0.7} />
+          </Box>
+          Share
         </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
