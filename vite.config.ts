@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icons.svg"],
+      includeAssets: ["favicon.svg", "favicon-social.png", "icons.svg"],
       manifest: {
         name: "Adnothed",
         short_name: "Adnothed",
@@ -20,16 +20,28 @@ export default defineConfig({
         start_url: "/adnothed2/",
         icons: [
           {
-            src: "favicon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
+            src: "favicon-social.png",
+            sizes: "192x192",
+            type: "image/png",
             purpose: "any",
+          },
+          {
+            src: "favicon-social.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
+          },
+          {
+            src: "favicon-social.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
           },
           {
             src: "favicon.svg",
             sizes: "any",
             type: "image/svg+xml",
-            purpose: "maskable",
+            purpose: "any",
           },
         ],
       },

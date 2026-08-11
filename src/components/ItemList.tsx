@@ -15,6 +15,7 @@ import {
   Stack,
   DialogActions,
   Button,
+  Divider,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
@@ -521,6 +522,22 @@ const ItemList = ({
         </Box>
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
+                <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiBell} size={0.7} />
+          </Box>
+          Notify
+        </MenuItem>
+        <Divider sx={{ m: `0 !important` }} />
         <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>
           <Box
             component="span"
@@ -535,21 +552,6 @@ const ItemList = ({
             <Icon path={mdiContentCopy} size={0.8} />
           </Box>
           Copy
-        </MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiBell} size={0.7} />
-          </Box>
-          Notify
         </MenuItem>
         <MenuItem
           onClick={() => menuAnchor && handleSearchGoogle(menuAnchor.item)}
@@ -583,6 +585,7 @@ const ItemList = ({
           </Box>
           Share
         </MenuItem>
+        <Divider sx={{ m: `0 !important` }} />
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
