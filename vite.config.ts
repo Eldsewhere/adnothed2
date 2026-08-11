@@ -21,13 +21,13 @@ export default defineConfig({
         id: "/adnothed2/",
         icons: [
           {
-            src: "favicon-social.png",
+            src: "/adnothed2/favicon-social.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "favicon-social.png",
+            src: "/adnothed2/favicon-social.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
@@ -35,12 +35,12 @@ export default defineConfig({
         ],
         screenshots: [
           {
-            src: "screenshot-mobile.png",
+            src: "/adnothed2/screenshot-mobile.png",
             type: "image/png",
             sizes: "390x844",
           },
           {
-            src: "screenshot-wide.png",
+            src: "/adnothed2/screenshot-wide.png",
             type: "image/png",
             sizes: "1280x800",
             form_factor: "wide",
@@ -60,6 +60,10 @@ export default defineConfig({
       strategies: "injectManifest",
       srcDir: "src",
       filename: "sw.ts",
+      devOptions: {
+        enabled: true,
+        type: "module",
+      },
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
