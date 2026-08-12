@@ -303,16 +303,14 @@ function App() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;
     const handler = (event: MessageEvent) => {
-      if (
-        event.data &&
-        (event.data as { type: string }).type === "COPY_TEXT"
-      ) {
+      if (event.data && (event.data as { type: string }).type === "COPY_TEXT") {
         const text = (event.data as { text: string }).text;
         void navigator.clipboard.writeText(text);
       }
     };
     navigator.serviceWorker.addEventListener("message", handler);
-    return () => navigator.serviceWorker.removeEventListener("message", handler);
+    return () =>
+      navigator.serviceWorker.removeEventListener("message", handler);
   }, []);
 
   const handleInstall = () => {
@@ -630,14 +628,13 @@ function App() {
     );
   };
 
-  const startDateValue =
-    itemFilters.dueDate
-      ? dayjs(itemFilters.dueDate)
-      : itemFilters.date &&
-          dateRegex.test(itemFilters.date) &&
-          itemFilters.date.length === 10
-        ? dayjs(itemFilters.date)
-        : null;
+  const startDateValue = itemFilters.dueDate
+    ? dayjs(itemFilters.dueDate)
+    : itemFilters.date &&
+        dateRegex.test(itemFilters.date) &&
+        itemFilters.date.length === 10
+      ? dayjs(itemFilters.date)
+      : null;
 
   const endDateValue =
     itemFilters.endDate &&
@@ -794,11 +791,24 @@ function App() {
   const calendarMaxDate = useMemo(() => {
     if (dueDaysByDate.size === 0) return filteredMaxDate;
     const endOfNextMonth = today.add(1, "month").endOf("month").startOf("day");
-    return endOfNextMonth.isAfter(filteredMaxDate) ? endOfNextMonth : filteredMaxDate;
+    return endOfNextMonth.isAfter(filteredMaxDate)
+      ? endOfNextMonth
+      : filteredMaxDate;
   }, [dueDaysByDate, filteredMaxDate, today]);
 
+  const dueFutureCount = useMemo(() => {
+    const todayUnix = today.unix();
+    return items.filter(
+      (item) => item.due !== undefined && item.due >= todayUnix,
+    ).length;
+  }, [items, today]);
+
   const CalendarDay = (props: PickerDayProps) => (
-    <NoteDay {...props} noteCountsByDay={noteCountsByDay} dueDaysByDate={dueDaysByDate} />
+    <NoteDay
+      {...props}
+      noteCountsByDay={noteCountsByDay}
+      dueDaysByDate={dueDaysByDate}
+    />
   );
 
   const dateFieldLocaleText = {
@@ -875,14 +885,36 @@ function App() {
                 >
                   <Badge
                     variant="dot"
-                    invisible={!itemFilters.date && !itemFilters.endDate && !itemFilters.dueDate && !itemFilters.hasDue}
+                    invisible={
+                      !itemFilters.date &&
+                      !itemFilters.endDate &&
+                      !itemFilters.dueDate &&
+                      !itemFilters.hasDue
+                    }
                     sx={{
                       "& .MuiBadge-badge": {
                         backgroundColor: colors.lightGreen[400],
                       },
                     }}
                   >
-                    <Icon path={mdiCalendar} size={0.9} />
+                    <Badge
+                      badgeContent={dueFutureCount}
+                      invisible={dueFutureCount === 0}
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                      sx={{
+                        "& .MuiBadge-badge": {
+                          backgroundColor: colors.orange[400],
+                          color: colors.grey[900],
+                          minWidth: 14,
+                          height: 14,
+                          fontSize: "0.6rem",
+                          lineHeight: 1,
+                          p: 0,
+                        },
+                      }}
+                    >
+                      <Icon path={mdiCalendar} size={0.9} />
+                    </Badge>
                   </Badge>
                 </IconButton>
               </Tooltip>
