@@ -49,4 +49,37 @@ export function isYesterday(timestamp: number): boolean {
   return isSameDay(new Date(timestamp * 1000), yesterday);
 }
 
+const MONTH_ABBREVS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+export function formatDueDate(timestamp: number): string {
+  const date = new Date(timestamp * 1000);
+  const pad = (value: number) => value.toString().padStart(2, "0");
+  const now = new Date();
+
+  const isMidnight = date.getHours() === 0 && date.getMinutes() === 0;
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const month = MONTH_ABBREVS[date.getMonth()];
+  const day = pad(date.getDate());
+
+  if (isMidnight) {
+    if (isSameDay(date, now)) return "Today";
+    if (isSameDay(date, tomorrow)) return "Tomorrow";
+    return `${month} ${day}`;
+  }
+
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const time = `${hours}:${minutes}`;
+
+  if (isSameDay(date, now)) return `Today ${time}`;
+  if (isSameDay(date, tomorrow)) return `Tomorrow ${time}`;
+  return `${month} ${day} ${time}`;
+}
+
 export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;

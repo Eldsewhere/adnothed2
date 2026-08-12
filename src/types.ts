@@ -21,6 +21,7 @@ export type Item = {
   text: string;
   createdAt: number;
   hasNotification?: boolean;
+  due?: number;
 };
 
 export type ItemFormValues = {
@@ -41,4 +42,6 @@ export type ItemFilters = {
   hasNumber: boolean;
   isOneWord: boolean;
   indexAt: string;
+  dueDate: string;
+  hasDue: boolean;
 };

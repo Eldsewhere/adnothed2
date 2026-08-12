@@ -15,6 +15,8 @@ export const emptyItemFilters: ItemFilters = {
   hasNumber: false,
   isOneWord: false,
   indexAt: "",
+  dueDate: "",
+  hasDue: false,
 };
 
 export type ParsedTextFilters = {

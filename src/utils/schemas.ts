@@ -15,6 +15,7 @@ export const PersistedNoteSchema = z.object({
   icon: z.string().nullable().optional(),
   text: z.string(),
   time: z.number(),
+  due: z.number().nullable().optional(),
 });
 
 export const PersistedStateSchema = z.object({

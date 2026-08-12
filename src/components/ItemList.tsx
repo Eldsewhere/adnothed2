@@ -6,9 +6,12 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
+  FormControl,
   IconButton,
+  InputLabel,
   Menu,
   MenuItem,
+  Select,
   Tooltip,
   Typography,
   colors,
@@ -20,6 +23,7 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiBell,
+  mdiCalendarClock,
   mdiClose,
   mdiContentCopy,
   mdiDotsVertical,
@@ -34,6 +38,7 @@ import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   dateRegex,
   formatDate,
+  formatDueDate,
   formatTimestamp,
   isToday,
 } from "../utils/formatTimestamp";
@@ -43,6 +48,8 @@ import {
   parseTextFilters,
 } from "../utils/itemFilters";
 import { splitTextByUrls } from "../utils/textPatterns";
+import dayjs, { type Dayjs } from "dayjs";
+import { DateCalendar } from "@mui/x-date-pickers";
 
 type ItemListProps = {
   items: Item[];
@@ -54,6 +61,7 @@ type ItemListProps = {
   onToggleBullet: (item: Item) => void;
   onNotify: (item: Item) => void;
   onCategoryChange: (item: Item, categoryId: string | null) => void;
+  onDueChange: (item: Item, due: number | null) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -82,6 +90,7 @@ const ItemList = ({
   onToggleBullet,
   onNotify,
   onCategoryChange,
+  onDueChange,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -101,6 +110,16 @@ const ItemList = ({
     el: HTMLElement;
     item: Item;
   } | null>(null);
+  const [dueDateDialogItem, setDueDateDialogItem] = useState<Item | null>(null);
+  const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
+  const [dueHour12, setDueHour12] = useState<number>(12);
+  const [dueAmPm, setDueAmPm] = useState<"AM" | "PM">("AM");
+  const [dueMinute, setDueMinute] = useState<0 | 15 | 30 | 45>(0);
+  const today = useMemo(() => dayjs().startOf("day"), []);
+  const endOfNextMonth = useMemo(
+    () => dayjs().add(1, "month").endOf("month").startOf("day"),
+    [],
+  );
   const containerRef = useRef<HTMLDivElement>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
@@ -198,6 +217,53 @@ const ItemList = ({
 
   const closeCategoryMenu = () => setCategoryMenuAnchor(null);
 
+  const openDueDateDialog = (item: Item) => {
+    setDueDateDialogItem(item);
+    if (item.due) {
+      const d = dayjs.unix(item.due);
+      setDueDateValue(d.startOf("day"));
+      const h24 = d.hour();
+      const rawMinute = d.minute();
+      const roundedMinute = ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+        Math.abs(curr - rawMinute) < Math.abs(prev - rawMinute) ? curr : prev,
+      );
+      setDueMinute(roundedMinute);
+      if (h24 === 0) {
+        setDueHour12(12);
+        setDueAmPm("AM");
+      } else if (h24 < 12) {
+        setDueHour12(h24);
+        setDueAmPm("AM");
+      } else if (h24 === 12) {
+        setDueHour12(12);
+        setDueAmPm("PM");
+      } else {
+        setDueHour12(h24 - 12);
+        setDueAmPm("PM");
+      }
+    } else {
+      setDueDateValue(today);
+      setDueHour12(12);
+      setDueAmPm("AM");
+      setDueMinute(0);
+    }
+  };
+
+  const handleSaveDueDate = () => {
+    if (!dueDateDialogItem || !dueDateValue) return;
+    const h24 =
+      dueAmPm === "AM"
+        ? dueHour12 === 12
+          ? 0
+          : dueHour12
+        : dueHour12 === 12
+          ? 12
+          : dueHour12 + 12;
+    const combined = dueDateValue.hour(h24).minute(dueMinute).second(0);
+    onDueChange(dueDateDialogItem, combined.unix());
+    setDueDateDialogItem(null);
+  };
+
   const handleCategorySelect = (categoryId: string | null) => {
     if (!categoryMenuAnchor) {
       return;
@@ -211,6 +277,8 @@ const ItemList = ({
     filters.text !== "",
     filters.date !== "",
     filters.endDate !== "",
+    filters.dueDate !== "",
+    filters.hasDue,
   ].filter(Boolean).length;
 
   const parsedTextFilters = useMemo(
@@ -253,6 +321,17 @@ const ItemList = ({
         }
         if (hasEndDate && itemDate > filters.endDate.trim()) {
           return false;
+        }
+        if (filters.dueDate) {
+          if (!item.due || formatDate(item.due) !== filters.dueDate) {
+            return false;
+          }
+        }
+        if (filters.hasDue) {
+          const todayUnix = dayjs().startOf("day").unix();
+          if (item.due === undefined || item.due < todayUnix) {
+            return false;
+          }
         }
         return true;
       }),
@@ -475,7 +554,18 @@ const ItemList = ({
                             </Box>
                           </Tooltip>
                         </Typography>
-                        {(selectMode || activeFilterCount > 0) && (
+                        {item.due !== undefined && item.due >= today.unix() ? (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              textAlign: "right",
+                              display: "block",
+                              color: colors.orange[300],
+                            }}
+                          >
+                            {formatDueDate(item.due)}
+                          </Typography>
+                        ) : (selectMode || activeFilterCount > 0) ? (
                           <Typography
                             variant="caption"
                             color="text.secondary"
@@ -491,7 +581,7 @@ const ItemList = ({
                                 (currenItem) => currenItem.id === item.id,
                               )}
                           </Typography>
-                        )}
+                        ) : null}
                       </Stack>
                     </Box>
                   </Box>
@@ -536,6 +626,28 @@ const ItemList = ({
             <Icon path={mdiBell} size={0.7} />
           </Box>
           Notify
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuAnchor) {
+              openDueDateDialog(menuAnchor.item);
+              closeMenu();
+            }
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiCalendarClock} size={0.7} />
+          </Box>
+          Schedule
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>
@@ -750,6 +862,129 @@ const ItemList = ({
           </MenuItem>
         ))}
       </Menu>
+      {dueDateDialogItem && (
+        <Dialog
+          open
+          onClose={() => setDueDateDialogItem(null)}
+          maxWidth="xs"
+          fullWidth
+        >
+          <DialogTitle sx={{ bgcolor: colors.blueGrey[900], p: 1.5 }}>
+            Set due date
+          </DialogTitle>
+          <DialogContent
+            sx={{ bgcolor: colors.blueGrey[800], p: 0, pb: 1 }}
+          >
+            <DateCalendar
+              value={dueDateValue}
+              onChange={(value: Dayjs | null) => setDueDateValue(value)}
+              minDate={today}
+              maxDate={endOfNextMonth}
+              sx={{
+                width: "100%",
+                "& .MuiPickersCalendarHeader-label": {
+                  color: colors.blueGrey[100],
+                },
+                "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                  {
+                    color: colors.blueGrey[200],
+                  },
+                "& .MuiDayCalendar-weekDayLabel": {
+                  color: colors.blueGrey[400],
+                },
+                "& .MuiPickersDay-root": {
+                  color: colors.blueGrey[100],
+                },
+                "& .MuiPickersDay-root.Mui-selected": {
+                  backgroundColor: colors.blue[700],
+                },
+                "& .MuiPickersDay-root:not(.Mui-selected):hover": {
+                  backgroundColor: "rgba(96,125,139,0.28)",
+                },
+                "& .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected)":
+                  {
+                    borderColor: colors.blueGrey[400],
+                  },
+              }}
+            />
+            <Stack
+              direction="row"
+              spacing={1}
+              sx={{ px: 2, pb: 1, alignItems: "center" }}
+            >
+              <FormControl size="small" sx={{ width: 72 }}>
+                <InputLabel>Hour</InputLabel>
+                <Select
+                  label="Hour"
+                  value={dueHour12}
+                  onChange={(e) => setDueHour12(Number(e.target.value) as number)}
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => (
+                    <MenuItem key={h} value={h}>
+                      {h}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ width: 80 }}>
+                <InputLabel>AM/PM</InputLabel>
+                <Select
+                  label="AM/PM"
+                  value={dueAmPm}
+                  onChange={(e) => setDueAmPm(e.target.value as "AM" | "PM")}
+                >
+                  <MenuItem value="AM">AM</MenuItem>
+                  <MenuItem value="PM">PM</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl size="small" sx={{ width: 80 }}>
+                <InputLabel>Min</InputLabel>
+                <Select
+                  label="Min"
+                  value={dueMinute}
+                  onChange={(e) =>
+                    setDueMinute(Number(e.target.value) as 0 | 15 | 30 | 45)
+                  }
+                >
+                  {([0, 15, 30, 45] as const).map((m) => (
+                    <MenuItem key={m} value={m}>
+                      {String(m).padStart(2, "0")}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Stack>
+          </DialogContent>
+          <DialogActions sx={{ bgcolor: colors.blueGrey[900], p: 1 }}>
+            {dueDateDialogItem.due !== undefined && (
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => {
+                  onDueChange(dueDateDialogItem, null);
+                  setDueDateDialogItem(null);
+                }}
+              >
+                Remove
+              </Button>
+            )}
+            <Box sx={{ flex: 1 }} />
+            <Button
+              variant="outlined"
+              onClick={() => setDueDateDialogItem(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={handleSaveDueDate}
+              disabled={!dueDateValue}
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </Box>
   );
 };

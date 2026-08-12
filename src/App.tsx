@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Alert,
   Badge,
@@ -44,6 +44,11 @@ import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import {
+  PickersLayout,
+  usePickerLayout,
+  type PickersLayoutProps,
+} from "@mui/x-date-pickers/PickersLayout";
+import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
   loadPersistedState,
@@ -70,17 +75,20 @@ const BULLET_PREFIX = "• ";
 
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
+  dueDaysByDate: Set<string>;
 };
 
 const NoteDay = ({
   day,
   noteCountsByDay,
+  dueDaysByDate,
   outsideCurrentMonth,
   ...other
 }: NoteDayProps) => {
   const key = dayjs(day).format("YYYY-MM-DD");
   const noteCount = noteCountsByDay.get(key) ?? 0;
   const hasNotes = noteCount > 0;
+  const hasDue = dueDaysByDate.has(key);
   const isOutside = Boolean(outsideCurrentMonth);
 
   return (
@@ -137,6 +145,17 @@ const NoteDay = ({
                 },
               }
             : {}),
+          ...(hasDue && !hasNotes
+            ? {
+                border: `2px solid ${colors.blue[400]}`,
+                color: colors.blue[200],
+              }
+            : {}),
+          ...(hasDue && hasNotes
+            ? {
+                border: `2px solid ${colors.blue[400]}`,
+              }
+            : {}),
         }}
       />
     </Badge>
@@ -176,6 +195,46 @@ function toggleBulletRows(text: string): string {
       return `${leadingWhitespace}${BULLET_PREFIX}${trimmedStartLine}`;
     })
     .join("\n");
+}
+
+type StartDateLayoutExtraProps = {
+  onFutureClick: () => void;
+  hasDue: boolean;
+};
+
+function StartDateLayout(
+  props: PickersLayoutProps<Dayjs | null> & StartDateLayoutExtraProps,
+) {
+  const { onFutureClick, hasDue, ...layoutProps } = props;
+  const { content, actionBar } = usePickerLayout(layoutProps);
+  return (
+    <PickersLayout
+      {...layoutProps}
+      slots={{ ...layoutProps.slots, actionBar: () => null }}
+    >
+      {content}
+      <Box
+        sx={{
+          gridColumn: "1 / 4",
+          display: "flex",
+          alignItems: "center",
+          px: 1,
+          pb: 0.5,
+        }}
+      >
+        <Button
+          variant={"outlined"}
+          color="error"
+          onClick={onFutureClick}
+          sx={{ textTransform: "none", fontSize: "0.75rem" }}
+        >
+          {hasDue ? "All Dates" : "Due Dates"}
+        </Button>
+        <Box sx={{ flex: 1 }} />
+        {actionBar}
+      </Box>
+    </PickersLayout>
+  );
 }
 
 function App() {
@@ -561,12 +620,24 @@ function App() {
     setEditingItem(item);
   };
 
+  const handleItemDueChange = (item: Item, due: number | null) => {
+    setItems((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id
+          ? { ...existingItem, due: due ?? undefined }
+          : existingItem,
+      ),
+    );
+  };
+
   const startDateValue =
-    itemFilters.date &&
-    dateRegex.test(itemFilters.date) &&
-    itemFilters.date.length === 10
-      ? dayjs(itemFilters.date)
-      : null;
+    itemFilters.dueDate
+      ? dayjs(itemFilters.dueDate)
+      : itemFilters.date &&
+          dateRegex.test(itemFilters.date) &&
+          itemFilters.date.length === 10
+        ? dayjs(itemFilters.date)
+        : null;
 
   const endDateValue =
     itemFilters.endDate &&
@@ -615,6 +686,17 @@ function App() {
       }
       if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
         return false;
+      }
+      if (itemFilters.dueDate) {
+        if (!item.due || formatDate(item.due) !== itemFilters.dueDate) {
+          return false;
+        }
+      }
+      if (itemFilters.hasDue) {
+        const todayUnix = dayjs().startOf("day").unix();
+        if (item.due === undefined || item.due < todayUnix) {
+          return false;
+        }
       }
 
       return true;
@@ -696,8 +778,27 @@ function App() {
     return latestFiltered.isAfter(today) ? today : latestFiltered;
   }, [calendarFilteredItems, today]);
 
+  const dueDaysByDate = useMemo(() => {
+    const set = new Set<string>();
+    for (const item of items) {
+      if (item.due !== undefined) {
+        const dueDay = dayjs.unix(item.due).startOf("day");
+        if (!dueDay.isBefore(today)) {
+          set.add(dueDay.format("YYYY-MM-DD"));
+        }
+      }
+    }
+    return set;
+  }, [items, today]);
+
+  const calendarMaxDate = useMemo(() => {
+    if (dueDaysByDate.size === 0) return filteredMaxDate;
+    const endOfNextMonth = today.add(1, "month").endOf("month").startOf("day");
+    return endOfNextMonth.isAfter(filteredMaxDate) ? endOfNextMonth : filteredMaxDate;
+  }, [dueDaysByDate, filteredMaxDate, today]);
+
   const CalendarDay = (props: PickerDayProps) => (
-    <NoteDay {...props} noteCountsByDay={noteCountsByDay} />
+    <NoteDay {...props} noteCountsByDay={noteCountsByDay} dueDaysByDate={dueDaysByDate} />
   );
 
   const dateFieldLocaleText = {
@@ -774,7 +875,7 @@ function App() {
                 >
                   <Badge
                     variant="dot"
-                    invisible={!itemFilters.date && !itemFilters.endDate}
+                    invisible={!itemFilters.date && !itemFilters.endDate && !itemFilters.dueDate && !itemFilters.hasDue}
                     sx={{
                       "& .MuiBadge-badge": {
                         backgroundColor: colors.lightGreen[400],
@@ -855,9 +956,24 @@ function App() {
                     onClose={() => setStartDatePickerOpen(false)}
                     showDaysOutsideCurrentMonth
                     minDate={filteredMinDate}
-                    maxDate={filteredMaxDate}
+                    maxDate={calendarMaxDate}
                     onChange={(value: Dayjs | null) => {
-                      const nextStart = value ? value.format("YYYY-MM-DD") : "";
+                      if (!value) return;
+                      const dateStr = value.format("YYYY-MM-DD");
+                      const todayStr = today.format("YYYY-MM-DD");
+
+                      if (dateStr > todayStr && dueDaysByDate.has(dateStr)) {
+                        setItemFilters((prev) => ({
+                          ...prev,
+                          dueDate: dateStr,
+                          date: "",
+                          endDate: "",
+                        }));
+                        setStartDatePickerOpen(false);
+                        return;
+                      }
+
+                      const nextStart = dateStr;
                       setItemFilters((prev) => ({
                         ...prev,
                         date: nextStart,
@@ -865,6 +981,7 @@ function App() {
                           prev.endDate && prev.endDate < nextStart
                             ? nextStart
                             : prev.endDate || nextStart,
+                        dueDate: "",
                       }));
                       setStartDatePickerOpen(false);
                       window.requestAnimationFrame(() => {
@@ -914,8 +1031,20 @@ function App() {
                           },
                         },
                       },
+                      layout: {
+                        onFutureClick: () => {
+                          setItemFilters((prev) => ({
+                            ...prev,
+                            hasDue: !prev.hasDue,
+                          }));
+                          setStartDatePickerOpen(false);
+                        },
+                        hasDue: itemFilters.hasDue,
+                      } as Parameters<typeof StartDateLayout>[0],
+                      actionBar: { actions: ["cancel", "accept"] as const },
                     }}
-                    slots={{ day: CalendarDay }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    slots={{ day: CalendarDay, layout: StartDateLayout as any }}
                     format="YYYY-MM-DD"
                   />
                   <DatePicker
@@ -923,6 +1052,7 @@ function App() {
                     value={endDateValue}
                     localeText={dateFieldLocaleText}
                     showDaysOutsideCurrentMonth
+                    disabled={!!itemFilters.dueDate}
                     minDate={startDateValue ?? filteredMinDate}
                     maxDate={filteredMaxDate}
                     onChange={(value: Dayjs | null) =>
@@ -975,6 +1105,7 @@ function App() {
                           },
                         },
                       },
+                      actionBar: { actions: ["cancel", "accept"] as const },
                     }}
                     slots={{ day: CalendarDay }}
                     format="YYYY-MM-DD"
@@ -989,6 +1120,8 @@ function App() {
                           ...prev,
                           date: "",
                           endDate: "",
+                          dueDate: "",
+                          hasDue: false,
                         }));
                       }}
                     >
@@ -1132,6 +1265,7 @@ function App() {
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
                 onToggleBullet={handleItemToggleBullet}
+                onDueChange={handleItemDueChange}
                 onNotify={(item) => {
                   const categoryName =
                     categories.find((c) => c.id === item.categoryId)?.name ??
