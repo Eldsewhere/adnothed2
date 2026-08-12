@@ -36,7 +36,14 @@ export function formatTimestamp(timestamp: number): string {
     return `Yesterday, ${time}`;
   }
 
-  return `${formatDate(timestamp)} ${time}`;
+  const dow = DAY_ABBREVS[date.getDay()];
+  const month = MONTH_ABBREVS[date.getMonth()];
+  const day = pad(date.getDate());
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${dow}, ${month} ${day}, ${time}`;
+  }
+  return `${dow}, ${month} ${day}, ${date.getFullYear()}, ${time}`;
 }
 
 export function isToday(timestamp: number): boolean {
@@ -48,6 +55,8 @@ export function isYesterday(timestamp: number): boolean {
   yesterday.setDate(yesterday.getDate() - 1);
   return isSameDay(new Date(timestamp * 1000), yesterday);
 }
+
+const DAY_ABBREVS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const MONTH_ABBREVS = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -70,7 +79,8 @@ export function formatDueDate(timestamp: number): string {
   if (isMidnight) {
     if (isSameDay(date, now)) return "Today";
     if (isSameDay(date, tomorrow)) return "Tomorrow";
-    return `${month} ${day}`;
+    const dow = DAY_ABBREVS[date.getDay()];
+    return `${dow}, ${month} ${day}`;
   }
 
   const hours = pad(date.getHours());
@@ -79,7 +89,8 @@ export function formatDueDate(timestamp: number): string {
 
   if (isSameDay(date, now)) return `Today ${time}`;
   if (isSameDay(date, tomorrow)) return `Tomorrow ${time}`;
-  return `${month} ${day} ${time}`;
+  const dow = DAY_ABBREVS[date.getDay()];
+  return `${dow}, ${month} ${day}, ${time}`;
 }
 
 export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
