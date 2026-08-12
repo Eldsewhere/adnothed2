@@ -31,6 +31,8 @@ import {
   mdiMagnify,
   mdiNoteText,
   mdiPencil,
+  mdiPin,
+  mdiPinOff,
   mdiShareVariant,
   mdiTrashCan,
 } from "@mdi/js";
@@ -62,6 +64,7 @@ type ItemListProps = {
   onNotify: (item: Item) => void;
   onCategoryChange: (item: Item, categoryId: string | null) => void;
   onDueChange: (item: Item, due: number | null) => void;
+  onPin: (item: Item) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -91,6 +94,7 @@ const ItemList = ({
   onNotify,
   onCategoryChange,
   onDueChange,
+  onPin,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -129,10 +133,28 @@ const ItemList = ({
     [categories],
   );
 
-  const sortedItems = useMemo(
-    () => [...items].sort((a, b) => b.createdAt - a.createdAt),
-    [items],
-  );
+  const sortedItems = useMemo(() => {
+    const todayUnix = today.unix();
+    const dayAfterTomorrowUnix = today.add(2, "day").unix();
+    return [...items].sort((a, b) => {
+      const aPinned = a.pinned ? 1 : 0;
+      const bPinned = b.pinned ? 1 : 0;
+      if (aPinned !== bPinned) return bPinned - aPinned;
+
+      const aIsDueSoon =
+        a.due !== undefined &&
+        a.due >= todayUnix &&
+        a.due < dayAfterTomorrowUnix;
+      const bIsDueSoon =
+        b.due !== undefined &&
+        b.due >= todayUnix &&
+        b.due < dayAfterTomorrowUnix;
+      if (aIsDueSoon !== bIsDueSoon) return aIsDueSoon ? -1 : 1;
+      if (aIsDueSoon && bIsDueSoon) return (a.due ?? 0) - (b.due ?? 0);
+
+      return b.createdAt - a.createdAt;
+    });
+  }, [items, today]);
   const overflowModalItem = useMemo(
     () => items.find((item) => item.id === overflowModalItemId) ?? null,
     [items, overflowModalItemId],
@@ -538,21 +560,34 @@ const ItemList = ({
                           }}
                         >
                           {formatTimestamp(item.createdAt)}
-                          <Tooltip title="Notified" arrow>
-                            <Box
-                              component="span"
-                              sx={{
-                                ml: 0.5,
-                                display: "inline-flex",
-                                visibility: item.hasNotification
-                                  ? "visible"
-                                  : "hidden",
-                                color: colors.lightGreen[400],
-                              }}
-                            >
-                              <Icon path={mdiBell} size={0.5} />
-                            </Box>
-                          </Tooltip>
+                          {item.hasNotification && (
+                            <Tooltip title="Notified" arrow>
+                              <Box
+                                component="span"
+                                sx={{
+                                  ml: 0.5,
+                                  display: "inline-flex",
+                                  color: colors.lightGreen[400],
+                                }}
+                              >
+                                <Icon path={mdiBell} size={0.5} />
+                              </Box>
+                            </Tooltip>
+                          )}
+                          {item.pinned && (
+                            <Tooltip title="Pinned" arrow>
+                              <Box
+                                component="span"
+                                sx={{
+                                  ml: 0.5,
+                                  display: "inline-flex",
+                                  color: colors.lightGreen[400],
+                                }}
+                              >
+                                <Icon path={mdiPin} size={0.5} />
+                              </Box>
+                            </Tooltip>
+                          )}
                         </Typography>
                         {item.due !== undefined && item.due >= today.unix() ? (
                           <Typography
@@ -626,6 +661,31 @@ const ItemList = ({
             <Icon path={mdiBell} size={0.7} />
           </Box>
           Notify
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            if (menuAnchor) {
+              onPin(menuAnchor.item);
+              closeMenu();
+            }
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon
+              path={menuAnchor?.item.pinned ? mdiPinOff : mdiPin}
+              size={0.7}
+            />
+          </Box>
+          {menuAnchor?.item.pinned ? "Unpin" : "Pin"}
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>

@@ -642,6 +642,16 @@ function App() {
     );
   };
 
+  const handleItemPin = (item: Item) => {
+    setItems((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id
+          ? { ...existingItem, pinned: !existingItem.pinned }
+          : existingItem,
+      ),
+    );
+  };
+
   const startDateValue = itemFilters.dueDate
     ? dayjs(itemFilters.dueDate)
     : itemFilters.date &&
@@ -1313,6 +1323,7 @@ function App() {
                 onCopy={handleItemCopy}
                 onToggleBullet={handleItemToggleBullet}
                 onDueChange={handleItemDueChange}
+                onPin={handleItemPin}
                 onNotify={(item) => {
                   const categoryName =
                     categories.find((c) => c.id === item.categoryId)?.name ??

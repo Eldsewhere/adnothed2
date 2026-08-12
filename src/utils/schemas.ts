@@ -16,6 +16,7 @@ export const PersistedNoteSchema = z.object({
   text: z.string(),
   time: z.number(),
   due: z.number().nullable().optional(),
+  pinned: z.boolean().optional(),
 });
 
 export const PersistedStateSchema = z.object({

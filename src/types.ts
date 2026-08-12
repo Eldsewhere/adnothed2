@@ -22,6 +22,7 @@ export type Item = {
   createdAt: number;
   hasNotification?: boolean;
   due?: number;
+  pinned?: boolean;
 };
 
 export type ItemFormValues = {
