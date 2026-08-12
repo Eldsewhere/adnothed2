@@ -565,7 +565,7 @@ const ItemList = ({
                           >
                             {formatDueDate(item.due)}
                           </Typography>
-                        ) : (selectMode || activeFilterCount > 0) ? (
+                        ) : selectMode || activeFilterCount > 0 ? (
                           <Typography
                             variant="caption"
                             color="text.secondary"
@@ -612,7 +612,7 @@ const ItemList = ({
         </Box>
       )}
       <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
-                <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
+        <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.item)}>
           <Box
             component="span"
             sx={{
@@ -626,28 +626,6 @@ const ItemList = ({
             <Icon path={mdiBell} size={0.7} />
           </Box>
           Notify
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (menuAnchor) {
-              openDueDateDialog(menuAnchor.item);
-              closeMenu();
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiCalendarClock} size={0.7} />
-          </Box>
-          Schedule
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.item)}>
@@ -698,6 +676,28 @@ const ItemList = ({
           Share
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
+        <MenuItem
+          onClick={() => {
+            if (menuAnchor) {
+              openDueDateDialog(menuAnchor.item);
+              closeMenu();
+            }
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiCalendarClock} size={0.7} />
+          </Box>
+          Schedule
+        </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
@@ -872,9 +872,7 @@ const ItemList = ({
           <DialogTitle sx={{ bgcolor: colors.blueGrey[900], p: 1.5 }}>
             Set due date
           </DialogTitle>
-          <DialogContent
-            sx={{ bgcolor: colors.blueGrey[800], p: 0, pb: 1 }}
-          >
+          <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 0, pb: 1 }}>
             <DateCalendar
               value={dueDateValue}
               onChange={(value: Dayjs | null) => setDueDateValue(value)}
@@ -917,7 +915,9 @@ const ItemList = ({
                 <Select
                   label="Hour"
                   value={dueHour12}
-                  onChange={(e) => setDueHour12(Number(e.target.value) as number)}
+                  onChange={(e) =>
+                    setDueHour12(Number(e.target.value) as number)
+                  }
                 >
                   {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => (
                     <MenuItem key={h} value={h}>
