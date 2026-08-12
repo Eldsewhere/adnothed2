@@ -75,7 +75,7 @@ const BULLET_PREFIX = "• ";
 
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
-  dueDaysByDate: Set<string>;
+  dueDaysByDate: Map<string, number>;
 };
 
 const NoteDay = ({
@@ -88,14 +88,30 @@ const NoteDay = ({
   const key = dayjs(day).format("YYYY-MM-DD");
   const noteCount = noteCountsByDay.get(key) ?? 0;
   const hasNotes = noteCount > 0;
-  const hasDue = dueDaysByDate.has(key);
+  const dueCount = dueDaysByDate.get(key) ?? 0;
+  const hasDue = dueCount > 0;
   const isOutside = Boolean(outsideCurrentMonth);
+
+  /*
+     <Badge
+        overlap="circular"
+        badgeContent={dueCount}
+        invisible={!hasDue}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        sx={{
+          "& .MuiBadge-badge": {
+            backgroundColor: colors.blue[400],
+            color: colors.grey[900],
+          },
+        }}
+      >
+        */
 
   return (
     <Badge
       overlap="circular"
-      badgeContent={noteCount}
-      color="success"
+      badgeContent={noteCount || dueCount}
+      color={noteCount ? "success" : hasDue ? "warning" : "default"}
       sx={{
         "& .MuiBadge-badge": {
           minWidth: 14,
@@ -147,13 +163,11 @@ const NoteDay = ({
             : {}),
           ...(hasDue && !hasNotes
             ? {
-                border: `2px solid ${colors.blue[400]}`,
-                color: colors.blue[200],
-              }
-            : {}),
-          ...(hasDue && hasNotes
-            ? {
-                border: `2px solid ${colors.blue[400]}`,
+                border: `2px solid ${colors.orange[400]}`,
+                color: colors.orange[200],
+                backgroundColor: isOutside
+                  ? "rgba(255, 152, 0, 0.12)"
+                  : "rgba(255, 152, 0, 0.2)",
               }
             : {}),
         }}
@@ -224,7 +238,7 @@ function StartDateLayout(
       >
         <Button
           variant={"outlined"}
-          color="error"
+          color="warning"
           onClick={onFutureClick}
           sx={{ textTransform: "none", fontSize: "0.75rem" }}
         >
@@ -776,16 +790,17 @@ function App() {
   }, [calendarFilteredItems, today]);
 
   const dueDaysByDate = useMemo(() => {
-    const set = new Set<string>();
+    const map = new Map<string, number>();
     for (const item of items) {
       if (item.due !== undefined) {
         const dueDay = dayjs.unix(item.due).startOf("day");
         if (!dueDay.isBefore(today)) {
-          set.add(dueDay.format("YYYY-MM-DD"));
+          const key = dueDay.format("YYYY-MM-DD");
+          map.set(key, (map.get(key) ?? 0) + 1);
         }
       }
     }
-    return set;
+    return map;
   }, [items, today]);
 
   const calendarMaxDate = useMemo(() => {
