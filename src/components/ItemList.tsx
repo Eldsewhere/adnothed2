@@ -24,6 +24,8 @@ import { Icon } from "@mdi/react";
 import {
   mdiBell,
   mdiCalendarClock,
+  mdiCheckAll,
+  mdiCheckboxMarked,
   mdiChevronDown,
   mdiClose,
   mdiContentCopy,
@@ -62,6 +64,8 @@ type ItemListProps = {
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
   onToggleBullet: (item: Item) => void;
+  onAddCheckboxes: (item: Item) => void;
+  onToggleCheckbox: (item: Item, rowIndex: number) => void;
   onNotify: (item: Item) => void;
   onCategoryChange: (item: Item, categoryId: string | null) => void;
   onDueChange: (item: Item, due: number | null) => void;
@@ -75,12 +79,21 @@ type ItemListProps = {
 const ROW_HEIGHT = 80;
 const OVERSCAN = 6;
 const BULLET_PREFIX = "• ";
+const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
 const allNonEmptyRowsBulleted = (text: string): boolean => {
   const rows = text.split("\n").filter((row) => row.trim().length > 0);
   return (
     rows.length > 0 &&
     rows.every((row) => row.trimStart().startsWith(BULLET_PREFIX))
+  );
+};
+
+const allNonEmptyRowsCheckboxes = (text: string): boolean => {
+  const rows = text.split("\n").filter((row) => row.trim().length > 0);
+  return (
+    rows.length > 0 &&
+    rows.every((row) => CHECKBOX_ROW_PATTERN.test(row.trimStart()))
   );
 };
 
@@ -92,6 +105,8 @@ const ItemList = ({
   onDelete,
   onCopy,
   onToggleBullet,
+  onAddCheckboxes,
+  onToggleCheckbox,
   onNotify,
   onCategoryChange,
   onDueChange,
@@ -106,6 +121,9 @@ const ItemList = ({
     item: Item;
   } | null>(null);
   const [overflowModalItemId, setOverflowModalItemId] = useState<string | null>(
+    null,
+  );
+  const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
   const [overflowingItemIds, setOverflowingItemIds] = useState<Set<string>>(
@@ -522,26 +540,54 @@ const ItemList = ({
                           WebkitBoxOrient: "vertical",
                         }}
                       >
-                        {splitTextByUrls(item.text).map((part, partIndex) =>
-                          part.isUrl ? (
+                        {item.text.split("\n").map((row, rowIndex) => {
+                          const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
+                          const isChecked =
+                            checkboxMatch?.[2]?.toLowerCase() === "x";
+                          const rowText = checkboxMatch?.[3] ?? row;
+                          return (
                             <Box
-                              key={partIndex}
-                              component="a"
-                              href={part.value}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              sx={{
-                                color: "info.main",
-                                textDecoration: "underline",
-                                wordBreak: "break-word",
-                              }}
+                              key={`${rowIndex}-${row}`}
+                              component="span"
+                              sx={{ display: "inline" }}
                             >
-                              {part.value}
+                              {checkboxMatch && (
+                                <Checkbox
+                                  checked={isChecked}
+                                  onChange={() => onToggleCheckbox(item, rowIndex)}
+                                  size="small"
+                                  sx={{ p: 0, mr: 0.25, verticalAlign: "text-bottom" }}
+                                />
+                              )}
+                              <Box
+                                component="span"
+                                sx={{ textDecoration: isChecked ? "line-through" : "none" }}
+                              >
+                                {splitTextByUrls(rowText).map((part, partIndex) =>
+                                  part.isUrl ? (
+                                    <Box
+                                      key={partIndex}
+                                      component="a"
+                                      href={part.value}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      sx={{
+                                        color: "info.main",
+                                        textDecoration: "underline",
+                                        wordBreak: "break-word",
+                                      }}
+                                    >
+                                      {part.value}
+                                    </Box>
+                                  ) : (
+                                    <span key={partIndex}>{part.value}</span>
+                                  ),
+                                )}
+                              </Box>
+                              {rowIndex < item.text.split("\n").length - 1 && <br />}
                             </Box>
-                          ) : (
-                            <span key={partIndex}>{part.value}</span>
-                          ),
-                        )}
+                          );
+                        })}
                       </Typography>
                       {overflowingItemIds.has(item.id) && (
                         <Tooltip title="Expand note" arrow>
@@ -859,35 +905,61 @@ const ItemList = ({
             </Box>
           </DialogTitle>
           <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
-            <Typography
-              variant="body1"
+            <Box
               sx={{
-                whiteSpace: "pre-wrap",
                 overflowWrap: "anywhere",
                 mt: 2,
                 maxHeight: "calc(10 * 1.5em)",
                 overflowY: "auto",
               }}
             >
-              {overflowModalItem?.text}
-            </Typography>
+              {overflowModalItem.text.split("\n").map((row, rowIndex) => {
+                const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
+                const isChecked = checkboxMatch?.[2]?.toLowerCase() === "x";
+                const rowText = checkboxMatch?.[3] ?? row;
+                return (
+                  <Box
+                    key={`${rowIndex}-${row}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "flex-start",
+                      minHeight: "1.5em",
+                      whiteSpace: "pre-wrap",
+                    }}
+                  >
+                    {checkboxMatch && (
+                      <Checkbox
+                        checked={isChecked}
+                        onChange={() => onToggleCheckbox(overflowModalItem, rowIndex)}
+                        size="small"
+                        sx={{ p: 0.25, mr: 0.5, mt: 0.1 }}
+                      />
+                    )}
+                    <Typography
+                      component="span"
+                      variant="body1"
+                      sx={{ textDecoration: isChecked ? "line-through" : "none" }}
+                    >
+                      {rowText}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
           </DialogContent>
           <DialogActions
             sx={{
               bgcolor: colors.blueGrey[900],
               p: 1,
               gap: 1,
-              flexWrap: "wrap",
             }}
           >
             <Button
               variant="contained"
-              startIcon={<Icon path={mdiFormatListBulleted} size={0.7} />}
-              onClick={() => handleToggleBullet(overflowModalItem)}
+              startIcon={<Icon path={mdiCheckAll} size={0.7} />}
+              onClick={(event) => setFormatMenuAnchor(event.currentTarget)}
             >
-              {allNonEmptyRowsBulleted(overflowModalItem.text)
-                ? "Del bullets"
-                : "Add bullets"}
+              Format
             </Button>
             <Button
               variant="contained"
@@ -899,6 +971,48 @@ const ItemList = ({
           </DialogActions>
         </Dialog>
       )}
+      <Menu
+        anchorEl={formatMenuAnchor}
+        open={Boolean(formatMenuAnchor && overflowModalItem)}
+        onClose={() => setFormatMenuAnchor(null)}
+      >
+        {overflowModalItem && (
+          <>
+            <MenuItem
+              onClick={() => {
+                handleToggleBullet(overflowModalItem);
+                setFormatMenuAnchor(null);
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+              >
+                <Icon path={mdiFormatListBulleted} size={0.7} />
+              </Box>
+              {allNonEmptyRowsBulleted(overflowModalItem.text)
+                ? "Del bullets"
+                : "Add bullets"}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onAddCheckboxes(overflowModalItem);
+                setFormatMenuAnchor(null);
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+              >
+                <Icon path={mdiCheckboxMarked} size={0.7} />
+              </Box>
+              {allNonEmptyRowsCheckboxes(overflowModalItem.text)
+                ? "Del checkboxes"
+                : "Add checkboxes"}
+            </MenuItem>
+          </>
+        )}
+      </Menu>
       <Menu
         anchorEl={categoryMenuAnchor?.el}
         open={!!categoryMenuAnchor}

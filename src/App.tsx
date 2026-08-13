@@ -72,6 +72,7 @@ import { getUniqueCreatedAt } from "./utils/itemTimestamps";
 type TabValue = "items" | "categories";
 
 const BULLET_PREFIX = "• ";
+const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
 
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
@@ -177,7 +178,11 @@ const NoteDay = ({
 };
 
 function toggleBulletRows(text: string): string {
-  const lines = text.split("\n");
+  const lines = text.split("\n").map((line) => {
+    const trimmedStartLine = line.trimStart();
+    const leadingWhitespace = line.slice(0, line.length - trimmedStartLine.length);
+    return `${leadingWhitespace}${trimmedStartLine.replace(CHECKBOX_PREFIX_PATTERN, "")}`;
+  });
   const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
   const hasNonEmptyLines = nonEmptyLines.length > 0;
   const allNonEmptyAreBulleted =
@@ -573,6 +578,68 @@ function App() {
 
   const handleItemToggleBullet = (item: Item) => {
     const nextText = toggleBulletRows(item.text);
+    setItems((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id
+          ? { ...existingItem, text: nextText }
+          : existingItem,
+      ),
+    );
+    if (editingItem?.id === item.id) {
+      setEditingItem({ ...editingItem, text: nextText });
+    }
+  };
+
+  const handleItemAddCheckboxes = (item: Item) => {
+    const rows = item.text.split("\n");
+    const nonEmptyRows = rows.filter((row) => row.trim().length > 0);
+    const allNonEmptyRowsAreCheckboxes =
+      nonEmptyRows.length > 0 &&
+      nonEmptyRows.every((row) =>
+        CHECKBOX_PREFIX_PATTERN.test(row.trimStart()),
+      );
+    const nextText = rows
+      .map((row) => {
+        const trimmedStartRow = row.trimStart();
+        const leadingWhitespace = row.slice(
+          0,
+          row.length - trimmedStartRow.length,
+        );
+        const rowWithoutBullet = trimmedStartRow.startsWith(BULLET_PREFIX)
+          ? trimmedStartRow.slice(BULLET_PREFIX.length)
+          : trimmedStartRow;
+        if (!rowWithoutBullet.trim()) return row;
+        if (allNonEmptyRowsAreCheckboxes) {
+          return `${leadingWhitespace}${rowWithoutBullet.replace(CHECKBOX_PREFIX_PATTERN, "")}`;
+        }
+        if (/^\[ ?[xX]? ?\]/.test(rowWithoutBullet)) {
+          return `${leadingWhitespace}${rowWithoutBullet}`;
+        }
+        return `${leadingWhitespace}[ ] ${rowWithoutBullet}`;
+      })
+      .join("\n");
+    setItems((prev) =>
+      prev.map((existingItem) =>
+        existingItem.id === item.id
+          ? { ...existingItem, text: nextText }
+          : existingItem,
+      ),
+    );
+    if (editingItem?.id === item.id) {
+      setEditingItem({ ...editingItem, text: nextText });
+    }
+  };
+
+  const handleItemToggleCheckbox = (item: Item, rowIndex: number) => {
+    const nextText = item.text
+      .split("\n")
+      .map((row, index) => {
+        if (index !== rowIndex) return row;
+        return row.replace(/^\[ ?([xX])? ?\]/, (_match, checked) =>
+          checked ? "[ ]" : "[x]",
+        );
+      })
+      .join("\n");
     setItems((prev) =>
       prev.map((existingItem) =>
         existingItem.id === item.id
@@ -1322,6 +1389,8 @@ function App() {
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
                 onToggleBullet={handleItemToggleBullet}
+                onAddCheckboxes={handleItemAddCheckboxes}
+                onToggleCheckbox={handleItemToggleCheckbox}
                 onDueChange={handleItemDueChange}
                 onPin={handleItemPin}
                 onNotify={(item) => {
