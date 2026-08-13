@@ -450,9 +450,12 @@ const ItemList = ({
                     borderColor: colors.blueGrey[700],
                     overflow: "hidden",
                     bgcolor:
-                      dayIndex % 2 === 0
-                        ? colors.blueGrey[800]
-                        : colors.blueGrey[900],
+                      item.pinned ||
+                      (item.due !== undefined && isToday(item.due)) || isToday(item.createdAt)
+                        ? '#123f15'
+                        : dayIndex % 2 === 0
+                          ? colors.blueGrey[800]
+                          : colors.blueGrey[900],
                   }}
                 >
                   {selectMode && (
@@ -495,56 +498,62 @@ const ItemList = ({
                     </Tooltip>
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", minWidth: 0 }}>
-                    <Typography
-                      component="div"
-                      ref={(element) => updateOverflowState(item.id, element)}
+                    <Box
                       sx={{
-                        flex: 1,
+                        display: "flex",
+                        alignItems: "center",
                         minWidth: 0,
-                        textAlign: "left",
-                        whiteSpace: "pre-wrap",
-                        overflow: "hidden",
-                        overflowWrap: "anywhere",
-                        wordBreak: "break-word",
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
                       }}
                     >
-                      {splitTextByUrls(item.text).map((part, partIndex) =>
-                        part.isUrl ? (
-                          <Box
-                            key={partIndex}
-                            component="a"
-                            href={part.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{
-                              color: "info.main",
-                              textDecoration: "underline",
-                              wordBreak: "break-word",
-                            }}
+                      <Typography
+                        component="div"
+                        ref={(element) => updateOverflowState(item.id, element)}
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          textAlign: "left",
+                          whiteSpace: "pre-wrap",
+                          overflow: "hidden",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                          display: "-webkit-box",
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {splitTextByUrls(item.text).map((part, partIndex) =>
+                          part.isUrl ? (
+                            <Box
+                              key={partIndex}
+                              component="a"
+                              href={part.value}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                color: "info.main",
+                                textDecoration: "underline",
+                                wordBreak: "break-word",
+                              }}
+                            >
+                              {part.value}
+                            </Box>
+                          ) : (
+                            <span key={partIndex}>{part.value}</span>
+                          ),
+                        )}
+                      </Typography>
+                      {overflowingItemIds.has(item.id) && (
+                        <Tooltip title="Expand note" arrow>
+                          <IconButton
+                            aria-label={`Expand ${item.text}`}
+                            size="small"
+                            onClick={() => setOverflowModalItemId(item.id)}
+                            sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
                           >
-                            {part.value}
-                          </Box>
-                        ) : (
-                          <span key={partIndex}>{part.value}</span>
-                        ),
+                            <Icon path={mdiChevronDown} size={0.7} />
+                          </IconButton>
+                        </Tooltip>
                       )}
-                    </Typography>
-                    {overflowingItemIds.has(item.id) && (
-                      <Tooltip title="Expand note" arrow>
-                        <IconButton
-                          aria-label={`Expand ${item.text}`}
-                          size="small"
-                          onClick={() => setOverflowModalItemId(item.id)}
-                          sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
-                        >
-                          <Icon path={mdiChevronDown} size={0.7} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Stack
@@ -591,7 +600,7 @@ const ItemList = ({
                                   color: colors.lightGreen[400],
                                 }}
                               >
-                                <Icon path={mdiPin} size={0.5} />
+                                <Icon path={mdiPin} size={0.6} />
                               </Box>
                             </Tooltip>
                           )}
