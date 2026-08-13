@@ -863,7 +863,7 @@ const ItemList = ({
           </Box>
           Date
         </MenuItem>
-        <MenuItem
+        {false && <MenuItem
           onClick={(event) => {
             if (menuAnchor) {
               setFormatMenuItem(menuAnchor.item);
@@ -885,7 +885,7 @@ const ItemList = ({
             <Icon path={mdiFormatListBulleted} size={0.7} />
           </Box>
           Format
-        </MenuItem>
+        </MenuItem>}
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
