@@ -30,6 +30,7 @@ import {
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
+  mdiLink,
   mdiMagnify,
   mdiNoteText,
   mdiPencil,
@@ -63,6 +64,7 @@ type ItemListProps = {
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
+  onShareLink: (item: Item) => void;
   onToggleBullet: (item: Item) => void;
   onAddCheckboxes: (item: Item) => void;
   onToggleCheckbox: (item: Item, rowIndex: number) => void;
@@ -104,6 +106,7 @@ const ItemList = ({
   onEdit,
   onDelete,
   onCopy,
+  onShareLink,
   onToggleBullet,
   onAddCheckboxes,
   onToggleCheckbox,
@@ -238,6 +241,11 @@ const ItemList = ({
     } else {
       await navigator.clipboard.writeText(item.text);
     }
+  };
+
+  const handleShareLink = (item: Item) => {
+    onShareLink(item);
+    closeMenu();
   };
 
   const updateOverflowState = (itemId: string, element: HTMLElement | null) => {
@@ -555,37 +563,50 @@ const ItemList = ({
                               {checkboxMatch && (
                                 <Checkbox
                                   checked={isChecked}
-                                  onChange={() => onToggleCheckbox(item, rowIndex)}
+                                  onChange={() =>
+                                    onToggleCheckbox(item, rowIndex)
+                                  }
                                   size="small"
-                                  sx={{ p: 0, mr: 0.25, verticalAlign: "text-bottom" }}
+                                  sx={{
+                                    p: 0,
+                                    mr: 0.25,
+                                    verticalAlign: "text-bottom",
+                                  }}
                                 />
                               )}
                               <Box
                                 component="span"
-                                sx={{ textDecoration: isChecked ? "line-through" : "none" }}
+                                sx={{
+                                  textDecoration: isChecked
+                                    ? "line-through"
+                                    : "none",
+                                }}
                               >
-                                {splitTextByUrls(rowText).map((part, partIndex) =>
-                                  part.isUrl ? (
-                                    <Box
-                                      key={partIndex}
-                                      component="a"
-                                      href={part.value}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      sx={{
-                                        color: "info.main",
-                                        textDecoration: "underline",
-                                        wordBreak: "break-word",
-                                      }}
-                                    >
-                                      {part.value}
-                                    </Box>
-                                  ) : (
-                                    <span key={partIndex}>{part.value}</span>
-                                  ),
+                                {splitTextByUrls(rowText).map(
+                                  (part, partIndex) =>
+                                    part.isUrl ? (
+                                      <Box
+                                        key={partIndex}
+                                        component="a"
+                                        href={part.value}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{
+                                          color: "info.main",
+                                          textDecoration: "underline",
+                                          wordBreak: "break-word",
+                                        }}
+                                      >
+                                        {part.value}
+                                      </Box>
+                                    ) : (
+                                      <span key={partIndex}>{part.value}</span>
+                                    ),
                                 )}
                               </Box>
-                              {rowIndex < item.text.split("\n").length - 1 && <br />}
+                              {rowIndex < item.text.split("\n").length - 1 && (
+                                <br />
+                              )}
                             </Box>
                           );
                         })}
@@ -768,6 +789,21 @@ const ItemList = ({
           </Box>
           Copy
         </MenuItem>
+        <MenuItem onClick={() => menuAnchor && handleShare(menuAnchor.item)}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiShareVariant} size={0.7} />
+          </Box>
+          Share
+        </MenuItem>
         <MenuItem
           onClick={() => menuAnchor && handleSearchGoogle(menuAnchor.item)}
         >
@@ -785,7 +821,9 @@ const ItemList = ({
           </Box>
           Google
         </MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleShare(menuAnchor.item)}>
+        <MenuItem
+          onClick={() => menuAnchor && handleShareLink(menuAnchor.item)}
+        >
           <Box
             component="span"
             sx={{
@@ -796,9 +834,9 @@ const ItemList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiShareVariant} size={0.7} />
+            <Icon path={mdiLink} size={0.7} />
           </Box>
-          Share
+          Link
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem
@@ -821,7 +859,7 @@ const ItemList = ({
           >
             <Icon path={mdiCalendarClock} size={0.7} />
           </Box>
-          Schedule
+          Date
         </MenuItem>
         <MenuItem
           onClick={(event) => {
@@ -954,7 +992,9 @@ const ItemList = ({
                     {checkboxMatch && (
                       <Checkbox
                         checked={isChecked}
-                        onChange={() => onToggleCheckbox(overflowModalItem, rowIndex)}
+                        onChange={() =>
+                          onToggleCheckbox(overflowModalItem, rowIndex)
+                        }
                         size="small"
                         sx={{ p: 0.25, mr: 0.5, mt: 0.1 }}
                       />
@@ -962,7 +1002,9 @@ const ItemList = ({
                     <Typography
                       component="span"
                       variant="body1"
-                      sx={{ textDecoration: isChecked ? "line-through" : "none" }}
+                      sx={{
+                        textDecoration: isChecked ? "line-through" : "none",
+                      }}
                     >
                       {rowText}
                     </Typography>

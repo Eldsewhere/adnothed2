@@ -181,7 +181,10 @@ const NoteDay = ({
 function toggleBulletRows(text: string): string {
   const lines = text.split("\n").map((line) => {
     const trimmedStartLine = line.trimStart();
-    const leadingWhitespace = line.slice(0, line.length - trimmedStartLine.length);
+    const leadingWhitespace = line.slice(
+      0,
+      line.length - trimmedStartLine.length,
+    );
     return `${leadingWhitespace}${trimmedStartLine.replace(CHECKBOX_PREFIX_PATTERN, "")}`;
   });
   const nonEmptyLines = lines.filter((line) => line.trim().length > 0);
@@ -568,6 +571,19 @@ function App() {
     navigator.clipboard.writeText(item.text);
     setNotificationSeverity("success");
     setNotification("Note Copied");
+  };
+
+  const handleItemShareLink = (item: Item) => {
+    const url = `${window.location.origin}${window.location.pathname}?text=${encodeURIComponent(
+      item.text,
+    )}`;
+    if (navigator.share) {
+      void navigator.share({ url });
+    } else {
+      void navigator.clipboard.writeText(url);
+      setNotificationSeverity("success");
+      setNotification("Link Copied");
+    }
   };
 
   const handleItemDelete = (item: Item) => {
@@ -1392,6 +1408,7 @@ function App() {
                 onEdit={handleEditItem}
                 onDelete={handleItemDelete}
                 onCopy={handleItemCopy}
+                onShareLink={handleItemShareLink}
                 onToggleBullet={handleItemToggleBullet}
                 onAddCheckboxes={handleItemAddCheckboxes}
                 onToggleCheckbox={handleItemToggleCheckbox}
