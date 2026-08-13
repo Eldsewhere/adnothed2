@@ -397,13 +397,9 @@ const ItemList = ({
 
   const dayIndexByDate = useMemo(() => {
     const map = new Map<string, number>();
-    let index = 0;
-    for (const item of filteredItems) {
-      const date = formatDate(item.createdAt);
-      if (!map.has(date)) {
-        map.set(date, index++);
-      }
-    }
+    const dates = [...new Set(filteredItems.map((item) => formatDate(item.createdAt)))];
+    dates.sort((a, b) => b.localeCompare(a));
+    dates.forEach((date, index) => map.set(date, index));
     return map;
   }, [filteredItems]);
 
@@ -484,8 +480,8 @@ const ItemList = ({
                       (item.due !== undefined && isToday(item.due))
                         ? "#2c3a37"
                         : dayIndex % 2 === 0
-                          ? colors.blueGrey[800]
-                          : colors.blueGrey[900],
+                          ? colors.blueGrey[900]
+                          : colors.blueGrey[800],
                   }}
                 >
                   {selectMode && (
