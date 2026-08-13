@@ -453,7 +453,7 @@ const ItemList = ({
                       item.pinned ||
                       (item.due !== undefined && isToday(item.due)) ||
                       isToday(item.createdAt)
-                        ? "#123f15"
+                        ? "#263532"
                         : dayIndex % 2 === 0
                           ? colors.blueGrey[800]
                           : colors.blueGrey[900],
