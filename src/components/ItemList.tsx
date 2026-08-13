@@ -24,7 +24,6 @@ import { Icon } from "@mdi/react";
 import {
   mdiBell,
   mdiCalendarClock,
-  mdiCheckAll,
   mdiCheckboxMarked,
   mdiChevronDown,
   mdiClose,
@@ -126,6 +125,7 @@ const ItemList = ({
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [formatMenuItem, setFormatMenuItem] = useState<Item | null>(null);
   const [overflowingItemIds, setOverflowingItemIds] = useState<Set<string>>(
     new Set(),
   );
@@ -822,6 +822,29 @@ const ItemList = ({
           </Box>
           Schedule
         </MenuItem>
+        <MenuItem
+          onClick={(event) => {
+            if (menuAnchor) {
+              setFormatMenuItem(menuAnchor.item);
+              setFormatMenuAnchor(event.currentTarget);
+              closeMenu();
+            }
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiFormatListBulleted} size={0.7} />
+          </Box>
+          Format
+        </MenuItem>
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
@@ -956,8 +979,11 @@ const ItemList = ({
           >
             <Button
               variant="contained"
-              startIcon={<Icon path={mdiCheckAll} size={0.7} />}
-              onClick={(event) => setFormatMenuAnchor(event.currentTarget)}
+              startIcon={<Icon path={mdiFormatListBulleted} size={0.7} />}
+              onClick={(event) => {
+                setFormatMenuItem(overflowModalItem);
+                setFormatMenuAnchor(event.currentTarget);
+              }}
             >
               Format
             </Button>
@@ -973,15 +999,19 @@ const ItemList = ({
       )}
       <Menu
         anchorEl={formatMenuAnchor}
-        open={Boolean(formatMenuAnchor && overflowModalItem)}
-        onClose={() => setFormatMenuAnchor(null)}
+        open={Boolean(formatMenuAnchor && formatMenuItem)}
+        onClose={() => {
+          setFormatMenuAnchor(null);
+          setFormatMenuItem(null);
+        }}
       >
-        {overflowModalItem && (
+        {formatMenuItem && (
           <>
             <MenuItem
               onClick={() => {
-                handleToggleBullet(overflowModalItem);
+                handleToggleBullet(formatMenuItem);
                 setFormatMenuAnchor(null);
+                setFormatMenuItem(null);
               }}
             >
               <Box
@@ -990,14 +1020,15 @@ const ItemList = ({
               >
                 <Icon path={mdiFormatListBulleted} size={0.7} />
               </Box>
-              {allNonEmptyRowsBulleted(overflowModalItem.text)
+              {allNonEmptyRowsBulleted(formatMenuItem.text)
                 ? "Del bullets"
                 : "Add bullets"}
             </MenuItem>
             <MenuItem
               onClick={() => {
-                onAddCheckboxes(overflowModalItem);
+                onAddCheckboxes(formatMenuItem);
                 setFormatMenuAnchor(null);
+                setFormatMenuItem(null);
               }}
             >
               <Box
@@ -1006,7 +1037,7 @@ const ItemList = ({
               >
                 <Icon path={mdiCheckboxMarked} size={0.7} />
               </Box>
-              {allNonEmptyRowsCheckboxes(overflowModalItem.text)
+              {allNonEmptyRowsCheckboxes(formatMenuItem.text)
                 ? "Del checkboxes"
                 : "Add checkboxes"}
             </MenuItem>
