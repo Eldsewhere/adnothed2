@@ -29,7 +29,6 @@ import {
   mdiCheckboxMarked,
   mdiCheckCircle,
   mdiChevronDown,
-  mdiClose,
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
