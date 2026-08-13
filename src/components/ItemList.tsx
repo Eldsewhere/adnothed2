@@ -451,8 +451,9 @@ const ItemList = ({
                     overflow: "hidden",
                     bgcolor:
                       item.pinned ||
-                      (item.due !== undefined && isToday(item.due)) || isToday(item.createdAt)
-                        ? '#123f15'
+                      (item.due !== undefined && isToday(item.due)) ||
+                      isToday(item.createdAt)
+                        ? "#123f15"
                         : dayIndex % 2 === 0
                           ? colors.blueGrey[800]
                           : colors.blueGrey[900],
@@ -605,18 +606,7 @@ const ItemList = ({
                             </Tooltip>
                           )}
                         </Typography>
-                        {item.due !== undefined && item.due >= today.unix() ? (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              textAlign: "right",
-                              display: "block",
-                              color: colors.orange[300],
-                            }}
-                          >
-                            {formatDueDate(item.due)}
-                          </Typography>
-                        ) : selectMode || activeFilterCount > 0 ? (
+                        {selectMode || activeFilterCount > 0 ? (
                           <Typography
                             variant="caption"
                             color="text.secondary"
@@ -631,6 +621,18 @@ const ItemList = ({
                               sortedItems.findIndex(
                                 (currenItem) => currenItem.id === item.id,
                               )}
+                          </Typography>
+                        ) : item.due !== undefined &&
+                          item.due >= today.unix() ? (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              textAlign: "right",
+                              display: "block",
+                              color: colors.orange[300],
+                            }}
+                          >
+                            {formatDueDate(item.due)}
                           </Typography>
                         ) : null}
                       </Stack>
