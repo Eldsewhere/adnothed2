@@ -5,7 +5,6 @@ export const LABEL_COLOR_OPTIONS = [
   "blue",
   "blueGrey",
   "brown",
-  "common",
   "cyan",
   "deepOrange",
   "deepPurple",
@@ -32,10 +31,6 @@ export function getLabelColorSwatch(name?: string): {
   background: string;
   text: string;
 } {
-  if (name === "common") {
-    return { background: colors.common.black, text: colors.common.white };
-  }
-
   const palette = (
     LABEL_COLOR_OPTIONS.includes(name as LabelColorName)
       ? colors[name as Exclude<LabelColorName, "common">]
