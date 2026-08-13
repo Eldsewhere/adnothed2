@@ -1,4 +1,4 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Box,
@@ -14,8 +14,10 @@ import { Icon } from "@mdi/react";
 import type { Category, Item, ItemFormValues } from "../types";
 import {
   mdiCancel,
+  mdiCheckboxBlankOutline,
   mdiCheckCircle,
   mdiChevronDown,
+  mdiCircleSmall,
   mdiContentPaste,
   mdiNoteText,
 } from "@mdi/js";
@@ -44,11 +46,14 @@ const ItemForm = ({
     reset,
     formState: { errors },
   } = useForm<ItemFormValues>({
-    defaultValues: initialText ? { categoryId: "", text: initialText } : emptyValues,
+    defaultValues: initialText
+      ? { categoryId: "", text: initialText }
+      : emptyValues,
   });
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
     reset(
@@ -73,6 +78,66 @@ const ItemForm = ({
     setLabelMenuAnchor(null);
   };
 
+  const insertMarker = (
+    marker: string,
+    currentValue: string,
+    onChange: (value: string) => void,
+  ) => {
+    const el = textAreaRef.current;
+    const start = el?.selectionStart ?? currentValue.length;
+    const end = el?.selectionEnd ?? currentValue.length;
+    const existingMarker = /^(•|\[\])\s*/;
+
+    if (start !== end) {
+      const lineStart = currentValue.lastIndexOf("\n", start - 1) + 1;
+      const lineEndIndex = currentValue.indexOf("\n", end);
+      const lineEnd = lineEndIndex === -1 ? currentValue.length : lineEndIndex;
+
+      const before = currentValue.slice(0, lineStart);
+      const after = currentValue.slice(lineEnd);
+      const selectedLines = currentValue.slice(lineStart, lineEnd).split("\n");
+      const alreadyApplied = selectedLines.every((line) =>
+        line.startsWith(`${marker} `),
+      );
+
+      const nextLines = selectedLines
+        .map((line) =>
+          alreadyApplied
+            ? line.replace(existingMarker, "")
+            : `${marker} ${line.replace(existingMarker, "")}`,
+        )
+        .join("\n");
+
+      const nextValue = before + nextLines + after;
+      onChange(nextValue);
+
+      requestAnimationFrame(() => {
+        if (!el) {
+          return;
+        }
+        el.focus();
+        el.setSelectionRange(before.length, before.length + nextLines.length);
+      });
+      return;
+    }
+
+    const isAtEnd = start === currentValue.length;
+    const needsNewline = isAtEnd && currentValue[start - 1] !== "\n" && currentValue.length > 0;
+    const snippet = `${needsNewline ? "\n" : ""}${marker} `;
+    const nextValue =
+      currentValue.slice(0, start) + snippet + currentValue.slice(start);
+    onChange(nextValue);
+
+    requestAnimationFrame(() => {
+      if (!el) {
+        return;
+      }
+      const cursor = start + snippet.length;
+      el.focus();
+      el.setSelectionRange(cursor, cursor);
+    });
+  };
+
   return (
     <Box component="form" onSubmit={submit} noValidate>
       <Stack
@@ -89,12 +154,13 @@ const ItemForm = ({
                 maxLength: { value: 500, message: "Max 500 characters" },
               }}
               render={({ field }) => {
-                const isEmpty = field.value.trim().length === 0;
-
                 return (
                   <Box sx={{ position: "relative" }}>
                     <TextField
                       {...field}
+                      inputRef={(el: HTMLTextAreaElement | null) => {
+                        textAreaRef.current = el;
+                      }}
                       label="Note"
                       size="small"
                       fullWidth
@@ -105,7 +171,7 @@ const ItemForm = ({
                       helperText={errors.text?.message}
                       sx={{
                         "& .MuiInputBase-inputMultiline": {
-                          pb: isEmpty ? 4 : undefined,
+                          pb: 4,
                         },
                         "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
                           {
@@ -121,26 +187,58 @@ const ItemForm = ({
                           },
                       }}
                     />
-                    {isEmpty && (
-                      <Tooltip title="Paste note">
-                        <IconButton
-                          aria-label="Paste note"
-                          size="small"
-                          onClick={async () => {
-                            const text = await navigator.clipboard.readText();
-                            field.onChange(text);
-                          }}
-                          sx={{
-                            position: "absolute",
-                            right: 6,
-                            bottom: errors.text ? 24 : 6,
-                            color: colors.blueGrey[400],
-                          }}
-                        >
-                          <Icon path={mdiContentPaste} size={0.75} />
-                        </IconButton>
-                      </Tooltip>
-                    )}
+                    <Tooltip title="Insert bullet">
+                      <IconButton
+                        aria-label="Insert bullet"
+                        size="small"
+                        onClick={() =>
+                          insertMarker("•", field.value, field.onChange)
+                        }
+                        sx={{
+                          position: "absolute",
+                          right: 70,
+                          bottom: errors.text ? 24 : 6,
+                          color: colors.blueGrey[400],
+                        }}
+                      >
+                        <Icon path={mdiCircleSmall} size={0.9} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Insert checkbox">
+                      <IconButton
+                        aria-label="Insert checkbox"
+                        size="small"
+                        onClick={() =>
+                          insertMarker("[]", field.value, field.onChange)
+                        }
+                        sx={{
+                          position: "absolute",
+                          right: 38,
+                          bottom: errors.text ? 24 : 6,
+                          color: colors.blueGrey[400],
+                        }}
+                      >
+                        <Icon path={mdiCheckboxBlankOutline} size={0.75} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Paste note">
+                      <IconButton
+                        aria-label="Paste note"
+                        size="small"
+                        onClick={async () => {
+                          const text = await navigator.clipboard.readText();
+                          field.onChange(field.value + text);
+                        }}
+                        sx={{
+                          position: "absolute",
+                          right: 6,
+                          bottom: errors.text ? 24 : 6,
+                          color: colors.blueGrey[400],
+                        }}
+                      >
+                        <Icon path={mdiContentPaste} size={0.75} />
+                      </IconButton>
+                    </Tooltip>
                   </Box>
                 );
               }}
