@@ -672,9 +672,12 @@ const ItemList = ({
                             textAlign: "left",
                             display: "flex",
                             alignItems: "center",
-                            color: isToday(item.createdAt)
-                              ? colors.lightGreen[400]
-                              : colors.blueGrey[300],
+                            color:
+                              isToday(item.createdAt) ||
+                              item.pinned ||
+                              (item.due !== undefined && isToday(item.due)) || item.hasNotification
+                                ? colors.lightGreen[400]
+                                : colors.blueGrey[300],
                           }}
                         >
                           {formatTimestamp(item.createdAt)}
