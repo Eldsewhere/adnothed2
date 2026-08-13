@@ -39,6 +39,7 @@ import CategoryList from "./components/CategoryList";
 import ItemForm from "./components/ItemForm";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
+import LabelIcon from "./components/LabelIcon";
 import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import { DatePicker } from "@mui/x-date-pickers";
@@ -1026,13 +1027,16 @@ function App() {
                       },
                     }}
                   >
-                    <Icon
-                      path={
-                        categories.find((c) => c.id === itemFilters.categoryId)
-                          ?.icon.path ?? mdiNoteText
-                      }
-                      size={0.9}
-                    />
+                    {(() => {
+                      const selectedCategory = categories.find(
+                        (c) => c.id === itemFilters.categoryId,
+                      );
+                      return selectedCategory ? (
+                        <LabelIcon icon={selectedCategory.icon} size={0.9} />
+                      ) : (
+                        <Icon path={mdiNoteText} size={0.9} />
+                      );
+                    })()}
                   </Badge>
                 </IconButton>
               </Tooltip>
@@ -1641,7 +1645,7 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <Icon path={category.icon.path} size={0.8} />
+              <LabelIcon icon={category.icon} size={0.8} />
             </Box>
             {category.name}
           </MenuItem>
@@ -1664,7 +1668,7 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <Icon path={category.icon.path} size={0.8} />
+              <LabelIcon icon={category.icon} size={0.8} />
             </Box>
             {category.name}
           </MenuItem>

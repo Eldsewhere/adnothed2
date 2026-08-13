@@ -54,6 +54,7 @@ import {
 import { splitTextByUrls } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
 import { DateCalendar } from "@mui/x-date-pickers";
+import LabelIcon from "./LabelIcon";
 
 type ItemListProps = {
   items: Item[];
@@ -509,7 +510,7 @@ const ItemList = ({
                         }}
                       >
                         {category ? (
-                          <Icon path={category.icon.path} size={0.8} />
+                          <LabelIcon icon={category.icon} size={0.8} />
                         ) : (
                           <Icon path={mdiNoteText} size={0.8} />
                         )}
@@ -908,7 +909,7 @@ const ItemList = ({
                       }}
                     >
                       {category ? (
-                        <Icon path={category.icon.path} size={0.8} />
+                        <LabelIcon icon={category.icon} size={0.8} />
                       ) : (
                         <Icon path={mdiNoteText} size={0.8} />
                       )}
@@ -1079,7 +1080,7 @@ const ItemList = ({
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <Icon path={category.icon.path} size={0.7} />
+              <LabelIcon icon={category.icon} size={0.7} />
             </Box>
             {category.name}
           </MenuItem>

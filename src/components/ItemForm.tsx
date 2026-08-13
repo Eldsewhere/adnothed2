@@ -19,6 +19,7 @@ import {
   mdiContentPaste,
   mdiNoteText,
 } from "@mdi/js";
+import LabelIcon from "./LabelIcon";
 
 type ItemFormProps = {
   editingItem: Item | null;
@@ -184,7 +185,7 @@ const ItemForm = ({
                         }}
                       >
                         {selectedCategory ? (
-                          <Icon path={selectedCategory.icon.path} size={0.8} />
+                          <LabelIcon icon={selectedCategory.icon} size={0.8} />
                         ) : (
                           <Icon path={mdiNoteText} size={0.8} />
                         )}
@@ -251,7 +252,7 @@ const ItemForm = ({
                               gap: 1,
                             }}
                           >
-                            <Icon path={category.icon.path} size={0.7} />
+                            <LabelIcon icon={category.icon} size={0.7} />
                             <span>{category.name}</span>
                           </Box>
                         </MenuItem>

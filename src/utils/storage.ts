@@ -3,6 +3,7 @@ import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./itemTimestamps";
+import { createLetterIconOptionFromName } from "./letterIconOptions";
 
 type PersistedLabel = {
   name: string;
@@ -96,6 +97,11 @@ type FileSystemFileHandle = {
 };
 
 function resolveIconOption(name: string): Category["icon"] {
+  const letterOption = createLetterIconOptionFromName(name);
+  if (letterOption) {
+    return letterOption;
+  }
+
   const option = mdiIconOptions.find((item) => item.name === name);
   if (option) {
     return option;

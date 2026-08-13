@@ -10,10 +10,12 @@ import {
   colors,
   createFilterOptions,
 } from "@mui/material";
-import { Icon } from "@mdi/react";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Category, CategoryFormValues, IconOption } from "../types";
 import { mdiCancel, mdiCheckCircle } from "@mdi/js";
+import { Icon } from "@mdi/react";
+import LabelIcon from "./LabelIcon";
+import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
@@ -25,7 +27,7 @@ type CategoryFormProps = {
 
 // Limit the number of rendered options so the list stays responsive even
 // though the full @mdi/js icon set (thousands of icons) is searchable.
-const filterOptions = createFilterOptions<IconOption>({
+const baseFilterOptions = createFilterOptions<IconOption>({
   limit: 100,
   stringify: (option) => option.label,
 });
@@ -81,7 +83,23 @@ const CategoryForm = ({
                 setIconInputValue(newInputValue)
               }
               options={iconOptions}
-              filterOptions={iconInputValue ? filterOptions : (x) => x}
+              filterOptions={
+                iconInputValue
+                  ? (options, state) => {
+                      const filtered = baseFilterOptions(options, state);
+                      const letterOption = createLetterIconOptionFromInput(
+                        state.inputValue,
+                      );
+                      if (
+                        letterOption &&
+                        !filtered.some((option) => option.name === letterOption.name)
+                      ) {
+                        filtered.unshift(letterOption);
+                      }
+                      return filtered;
+                    }
+                  : (options) => options
+              }
               getOptionLabel={(option) => option.label}
               isOptionEqualToValue={(option, val) => option.name === val.name}
               sx={{ width: "100%" }}
@@ -110,7 +128,7 @@ const CategoryForm = ({
                         mr: 1,
                       }}
                     >
-                      <Icon path={option.path} size={0.9} />
+                      <LabelIcon icon={option} size={0.9} />
                     </Box>
                     {option.label}
                   </Box>
@@ -124,14 +142,14 @@ const CategoryForm = ({
                       px: "0.7rem !important",
                     }}
                   >
-                    <Icon path={option.path} size={0.9} />
+                    <LabelIcon icon={option} size={0.9} />
                   </Box>
                 )
               }
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search icon"
+                  label="Search icon or use: A, AB, 0-99, A0"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
@@ -139,8 +157,8 @@ const CategoryForm = ({
                     ...params.slotProps,
                     input: {
                       ...params.slotProps.input,
-                      startAdornment: value?.path ? (
-                        <Icon path={value.path} size={0.9} />
+                      startAdornment: value ? (
+                        <LabelIcon icon={value} size={0.9} />
                       ) : null,
                     },
                   }}

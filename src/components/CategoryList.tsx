@@ -17,6 +17,7 @@ import {
 import { Icon } from "@mdi/react";
 import { mdiDotsVertical, mdiPencil, mdiTrashCan } from "@mdi/js";
 import type { Category } from "../types";
+import LabelIcon from "./LabelIcon";
 
 type CategoryListProps = {
   categories: Category[];
@@ -81,6 +82,9 @@ const CategoryList = ({
               https://pictogrammers.com/library/mdi/
             </a>
           </Box>
+          <Box sx={{ mt: 0.5 }}>
+            Or use avatar text: A, AB, 0-99, or A0.
+          </Box>
         </Alert>
       ) : (
         <Box
@@ -109,10 +113,10 @@ const CategoryList = ({
                       }}
                     >
                       <Tooltip
-                        title={category.icon.name}
+                        title={category.icon.label}
                         aria-label={`Icon for ${category.name}`}
                       >
-                        <Icon path={category.icon.path} size={1} />
+                        <LabelIcon icon={category.icon} size={1} />
                       </Tooltip>
                     </TableCell>
                     <TableCell
