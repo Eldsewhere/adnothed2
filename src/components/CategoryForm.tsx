@@ -4,6 +4,8 @@ import {
   Autocomplete,
   Box,
   IconButton,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Tooltip,
@@ -16,6 +18,7 @@ import { mdiCancel, mdiCheckCircle } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import LabelIcon from "./LabelIcon";
 import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
+import { LABEL_COLOR_OPTIONS, getLabelColorSwatch } from "../utils/labelColors";
 
 type CategoryFormProps = {
   editingCategory: Category | null;
@@ -32,7 +35,24 @@ const baseFilterOptions = createFilterOptions<IconOption>({
   stringify: (option) => option.label,
 });
 
-const emptyValues: CategoryFormValues = { name: "", icon: null };
+const emptyValues: CategoryFormValues = { name: "", icon: null, color: "" };
+
+const ColorDot = ({ colorName }: { colorName?: string }) => (
+  <Box
+    component="span"
+    sx={{
+      width: 15,
+      height: 15,
+      borderRadius: "50%",
+      flexShrink: 0,
+      bgcolor: colorName
+        ? getLabelColorSwatch(colorName).background
+        : "transparent",
+      border: !colorName ? `1px solid ${colors.blueGrey[500]}` : undefined,
+    }}
+  />
+);
+
 
 const CategoryForm = ({
   editingCategory,
@@ -51,7 +71,11 @@ const CategoryForm = ({
   useEffect(() => {
     reset(
       editingCategory
-        ? { name: editingCategory.name, icon: editingCategory.icon }
+        ? {
+            name: editingCategory.name,
+            icon: editingCategory.icon,
+            color: editingCategory.color ?? "",
+          }
         : emptyValues,
     );
   }, [editingCategory, reset]);
@@ -60,7 +84,11 @@ const CategoryForm = ({
     if (!values.icon) {
       return;
     }
-    const result = onSubmit({ ...values, icon: values.icon });
+    const result = onSubmit({
+      ...values,
+      icon: values.icon,
+      color: values.color || undefined,
+    });
     if (result !== false) {
       reset(emptyValues);
     }
@@ -180,6 +208,51 @@ const CategoryForm = ({
                 />
               )}
             />
+          )}
+        />
+        <Controller
+          name="color"
+          control={control}
+          render={({ field }) => (
+            <Select
+              {...field}
+              value={field.value ?? ""}
+              displayEmpty
+              size="small"
+              fullWidth
+              renderValue={(selected) => (
+                <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+                  <ColorDot colorName={selected || undefined} />
+                  {selected || "No color"}
+                </Stack>
+              )}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+              }}
+            >
+              <MenuItem value="">
+                <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+                  <ColorDot />
+                  No color
+                </Stack>
+              </MenuItem>
+              {LABEL_COLOR_OPTIONS.map((colorName) => (
+                <MenuItem key={colorName} value={colorName}>
+                  <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+                    <ColorDot colorName={colorName} />
+                    {colorName}
+                  </Stack>
+                </MenuItem>
+              ))}
+            </Select>
           )}
         />
         <Stack

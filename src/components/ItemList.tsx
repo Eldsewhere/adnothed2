@@ -520,7 +520,7 @@ const ItemList = ({
                         }}
                       >
                         {category ? (
-                          <LabelIcon icon={category.icon} size={0.8} />
+                          <LabelIcon icon={category.icon} color={category.color} size={0.8} />
                         ) : (
                           <Icon path={mdiNoteText} size={0.8} />
                         )}
@@ -949,7 +949,7 @@ const ItemList = ({
                       }}
                     >
                       {category ? (
-                        <LabelIcon icon={category.icon} size={0.8} />
+                        <LabelIcon icon={category.icon} color={category.color} size={0.8} />
                       ) : (
                         <Icon path={mdiNoteText} size={0.8} />
                       )}
@@ -1119,7 +1119,7 @@ const ItemList = ({
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} size={0.7} />
+              <LabelIcon icon={category.icon} color={category.color} size={0.7} />
             </Box>
             {category.name}
           </MenuItem>

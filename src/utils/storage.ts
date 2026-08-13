@@ -8,6 +8,7 @@ import { createLetterIconOptionFromName } from "./letterIconOptions";
 type PersistedLabel = {
   name: string;
   icon: string;
+  color?: string;
 };
 
 type PersistedNote = {
@@ -167,6 +168,7 @@ function normalizePersistedState(
       labels: state.labels.map((label) => ({
         name: label.name,
         icon: label.icon,
+        ...(label.color ? { color: label.color } : {}),
       })),
       notes: state.notes.map(toPersistedNote),
     };
@@ -197,6 +199,7 @@ export function serializeState(state: {
     labels: state.categories.map((category) => ({
       name: category.name,
       icon: category.icon.name,
+      ...(category.color ? { color: category.color } : {}),
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
     notes: state.items.map(({ categoryId, text, createdAt, due, pinned }) =>
@@ -221,6 +224,7 @@ function deserializeState(state: PersistedState): {
       id: label.icon,
       name: label.name,
       icon: resolveIconOption(label.icon),
+      ...(label.color ? { color: label.color } : {}),
     })),
     items: normalizeItems(state.notes),
   };

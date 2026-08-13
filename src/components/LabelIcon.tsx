@@ -2,14 +2,17 @@ import { Avatar, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import type { IconOption } from "../types";
 import { getLetterAvatarText } from "../utils/letterIconOptions";
+import { getLabelColorSwatch } from "../utils/labelColors";
 
 type LabelIconProps = {
   icon: IconOption;
   size?: number;
+  color?: string;
 };
 
-const LabelIcon = ({ icon, size = 0.8 }: LabelIconProps) => {
+const LabelIcon = ({ icon, size = 0.8, color }: LabelIconProps) => {
   const letters = getLetterAvatarText(icon.name);
+  const swatch = color ? getLabelColorSwatch(color) : null;
 
   if (letters) {
     const avatarSize = Math.max(16, Math.round(size * 24));
@@ -18,8 +21,8 @@ const LabelIcon = ({ icon, size = 0.8 }: LabelIconProps) => {
         sx={{
           width: avatarSize,
           height: avatarSize,
-          bgcolor: colors.blueGrey[700],
-          color: colors.blueGrey[50],
+          bgcolor: swatch ? swatch.background : colors.blueGrey[700],
+          color: swatch ? swatch.text : colors.blueGrey[50],
           fontWeight: 700,
           fontSize: `${Math.max(9, Math.round(avatarSize * 0.52))}px`,
           letterSpacing: "0.02em",
@@ -30,7 +33,7 @@ const LabelIcon = ({ icon, size = 0.8 }: LabelIconProps) => {
     );
   }
 
-  return <Icon path={icon.path} size={size} />;
+  return <Icon path={icon.path} size={size} color={swatch?.background} />;
 };
 
 export default LabelIcon;

@@ -8,11 +8,13 @@ export type Category = {
   id: string;
   name: string;
   icon: IconOption;
+  color?: string;
 };
 
 export type CategoryFormValues = {
   name: string;
   icon: IconOption | null;
+  color?: string;
 };
 
 export type Item = {

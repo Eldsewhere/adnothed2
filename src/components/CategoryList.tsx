@@ -116,7 +116,11 @@ const CategoryList = ({
                         title={category.icon.label}
                         aria-label={`Icon for ${category.name}`}
                       >
-                        <LabelIcon icon={category.icon} size={1} />
+                        <LabelIcon
+                          icon={category.icon}
+                          color={category.color}
+                          size={1}
+                        />
                       </Tooltip>
                     </TableCell>
                     <TableCell

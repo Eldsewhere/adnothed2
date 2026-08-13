@@ -488,6 +488,7 @@ function App() {
               ...prevCategory,
               name: values.name,
               icon: values.icon,
+              color: values.color,
               id: iconName,
             };
           }
@@ -503,7 +504,7 @@ function App() {
 
     setCategories((prev) => [
       ...prev,
-      { id: iconName, name: values.name, icon: values.icon },
+      { id: iconName, name: values.name, icon: values.icon, color: values.color },
     ]);
     setLatestCategoryId(iconName);
     setNotificationSeverity("success");
@@ -1048,7 +1049,11 @@ function App() {
                         (c) => c.id === itemFilters.categoryId,
                       );
                       return selectedCategory ? (
-                        <LabelIcon icon={selectedCategory.icon} size={0.9} />
+                        <LabelIcon
+                          icon={selectedCategory.icon}
+                          color={selectedCategory.color}
+                          size={0.9}
+                        />
                       ) : (
                         <Icon path={mdiNoteText} size={0.9} />
                       );
@@ -1662,7 +1667,7 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} size={0.8} />
+              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
             </Box>
             {category.name}
           </MenuItem>
@@ -1685,7 +1690,7 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} size={0.8} />
+              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
             </Box>
             {category.name}
           </MenuItem>

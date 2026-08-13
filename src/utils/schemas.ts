@@ -9,6 +9,7 @@ export const IconOptionSchema = z.object({
 export const PersistedLabelSchema = z.object({
   name: z.string(),
   icon: z.string(),
+  color: z.string().optional(),
 });
 
 export const PersistedNoteSchema = z.object({
