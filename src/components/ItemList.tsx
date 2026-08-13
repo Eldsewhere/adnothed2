@@ -24,6 +24,7 @@ import { Icon } from "@mdi/react";
 import {
   mdiBell,
   mdiCalendarClock,
+  mdiChevronDown,
   mdiClose,
   mdiContentCopy,
   mdiDotsVertical,
@@ -107,9 +108,9 @@ const ItemList = ({
   const [overflowModalItemId, setOverflowModalItemId] = useState<string | null>(
     null,
   );
-  const [hoveredOverflowItemId, setHoveredOverflowItemId] = useState<
-    string | null
-  >(null);
+  const [overflowingItemIds, setOverflowingItemIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [categoryMenuAnchor, setCategoryMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
@@ -220,17 +221,21 @@ const ItemList = ({
     }
   };
 
-  const handleTextClick = (event: MouseEvent<HTMLElement>, item: Item) => {
-    const target = event.currentTarget as HTMLElement;
+  const updateOverflowState = (itemId: string, element: HTMLElement | null) => {
+    if (!element) return;
     const isOverflowing =
-      target.scrollWidth > target.clientWidth ||
-      target.scrollHeight > target.clientHeight;
-
-    if (!isOverflowing) {
-      return;
-    }
-
-    setOverflowModalItemId(item.id);
+      element.scrollWidth > element.clientWidth ||
+      element.scrollHeight > element.clientHeight;
+    setOverflowingItemIds((currentIds) => {
+      if (currentIds.has(itemId) === isOverflowing) return currentIds;
+      const nextIds = new Set(currentIds);
+      if (isOverflowing) {
+        nextIds.add(itemId);
+      } else {
+        nextIds.delete(itemId);
+      }
+      return nextIds;
+    });
   };
 
   const openCategoryMenu = (event: MouseEvent<HTMLElement>, item: Item) => {
@@ -490,20 +495,13 @@ const ItemList = ({
                     </Tooltip>
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+                    <Box sx={{ display: "flex", alignItems: "center", minWidth: 0 }}>
                     <Typography
                       component="div"
-                      onClick={(event) => handleTextClick(event, item)}
-                      onMouseEnter={(event) => {
-                        const target = event.currentTarget as HTMLElement;
-                        const isOverflowing =
-                          target.scrollWidth > target.clientWidth ||
-                          target.scrollHeight > target.clientHeight;
-                        setHoveredOverflowItemId(
-                          isOverflowing ? item.id : null,
-                        );
-                      }}
-                      onMouseLeave={() => setHoveredOverflowItemId(null)}
+                      ref={(element) => updateOverflowState(item.id, element)}
                       sx={{
+                        flex: 1,
+                        minWidth: 0,
                         textAlign: "left",
                         whiteSpace: "pre-wrap",
                         overflow: "hidden",
@@ -512,10 +510,6 @@ const ItemList = ({
                         display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",
-                        cursor:
-                          hoveredOverflowItemId === item.id
-                            ? "pointer"
-                            : "default",
                       }}
                     >
                       {splitTextByUrls(item.text).map((part, partIndex) =>
@@ -539,6 +533,19 @@ const ItemList = ({
                         ),
                       )}
                     </Typography>
+                    {overflowingItemIds.has(item.id) && (
+                      <Tooltip title="Expand note" arrow>
+                        <IconButton
+                          aria-label={`Expand ${item.text}`}
+                          size="small"
+                          onClick={() => setOverflowModalItemId(item.id)}
+                          sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
+                        >
+                          <Icon path={mdiChevronDown} size={0.7} />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+                    </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Stack
                         sx={{
