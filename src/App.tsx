@@ -996,6 +996,7 @@ function App() {
         >
           <Tabs
             value={activeTab}
+            sx={{ "& .MuiTab-root": { minWidth: 0, px: 1.5 } }}
             onChange={(_event, newValue) => {
               const normalized =
                 newValue === "items" || newValue === "categories"
