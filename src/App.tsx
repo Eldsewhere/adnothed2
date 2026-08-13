@@ -33,6 +33,7 @@ import {
   mdiDownload,
   mdiCalendar,
   mdiNoteText,
+  mdiCheckCircle,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -49,6 +50,7 @@ import {
   usePickerLayout,
   type PickersLayoutProps,
 } from "@mui/x-date-pickers/PickersLayout";
+import { usePickerContext } from "@mui/x-date-pickers/hooks";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
@@ -225,11 +227,42 @@ type StartDateLayoutExtraProps = {
   hasDue: boolean;
 };
 
+function IconActionBar() {
+  const { acceptValueChanges, cancelValueChanges } = usePickerContext();
+
+  return (
+    <>
+      <Tooltip title="Cancel due date">
+        <IconButton
+          aria-label="Cancel due date"
+          color="primary"
+          onClick={cancelValueChanges}
+        >
+          <Icon path={mdiCancel} size={0.9} />
+        </IconButton>
+      </Tooltip>
+      <Tooltip title="Save due date">
+        <IconButton
+          aria-label="Save due date"
+          color="primary"
+          onClick={acceptValueChanges}
+          sx={{ color: colors.lightGreen[400] }}
+        >
+          <Icon path={mdiCheckCircle} size={0.9} />
+        </IconButton>
+      </Tooltip>
+    </>
+  );
+}
+
 function StartDateLayout(
   props: PickersLayoutProps<Dayjs | null> & StartDateLayoutExtraProps,
 ) {
   const { onFutureClick, hasDue, ...layoutProps } = props;
-  const { content, actionBar } = usePickerLayout(layoutProps);
+  const { content, actionBar } = usePickerLayout({
+    ...layoutProps,
+    slots: { ...layoutProps.slots, actionBar: IconActionBar },
+  });
   return (
     <PickersLayout
       {...layoutProps}

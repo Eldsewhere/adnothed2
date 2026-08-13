@@ -24,7 +24,10 @@ import { Icon } from "@mdi/react";
 import {
   mdiBell,
   mdiCalendarClock,
+  mdiCalendarPlus,
+  mdiCancel,
   mdiCheckboxMarked,
+  mdiCheckCircle,
   mdiChevronDown,
   mdiClose,
   mdiContentCopy,
@@ -321,6 +324,32 @@ const ItemList = ({
     setDueDateDialogItem(null);
   };
 
+  const handleAddToGoogleCalendar = () => {
+    if (!dueDateDialogItem || !dueDateValue) return;
+    const h24 =
+      dueAmPm === "AM"
+        ? dueHour12 === 12
+          ? 0
+          : dueHour12
+        : dueHour12 === 12
+          ? 12
+          : dueHour12 + 12;
+    const start = dueDateValue.hour(h24).minute(dueMinute).second(0);
+    const end = start.add(1, "hour");
+    const formatGoogleDate = (date: Dayjs) => date.format("YYYYMMDDTHHmmss");
+    const params = new URLSearchParams({
+      action: "TEMPLATE",
+      text: dueDateDialogItem.text,
+      dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
+      ctz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    });
+    window.open(
+      `https://calendar.google.com/calendar/render?${params.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
+
   const handleCategorySelect = (categoryId: string | null) => {
     if (!categoryMenuAnchor) {
       return;
@@ -397,7 +426,9 @@ const ItemList = ({
 
   const dayIndexByDate = useMemo(() => {
     const map = new Map<string, number>();
-    const dates = [...new Set(filteredItems.map((item) => formatDate(item.createdAt)))];
+    const dates = [
+      ...new Set(filteredItems.map((item) => formatDate(item.createdAt))),
+    ];
     dates.sort((a, b) => b.localeCompare(a));
     dates.forEach((date, index) => map.set(date, index));
     return map;
@@ -478,7 +509,7 @@ const ItemList = ({
                     bgcolor:
                       item.pinned ||
                       (item.due !== undefined && isToday(item.due))
-                        ? "#2c3a37"
+                        ? "#414d4b"
                         : dayIndex % 2 === 0
                           ? colors.blueGrey[900]
                           : colors.blueGrey[800],
@@ -516,7 +547,11 @@ const ItemList = ({
                         }}
                       >
                         {category ? (
-                          <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+                          <LabelIcon
+                            icon={category.icon}
+                            color={category.color}
+                            size={0.8}
+                          />
                         ) : (
                           <Icon path={mdiNoteText} size={0.8} />
                         )}
@@ -859,29 +894,31 @@ const ItemList = ({
           </Box>
           Date
         </MenuItem>
-        {false && <MenuItem
-          onClick={(event) => {
-            if (menuAnchor) {
-              setFormatMenuItem(menuAnchor.item);
-              setFormatMenuAnchor(event.currentTarget);
-              closeMenu();
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
+        {false && (
+          <MenuItem
+            onClick={(event) => {
+              if (menuAnchor) {
+                setFormatMenuItem(menuAnchor.item);
+                setFormatMenuAnchor(event.currentTarget);
+                closeMenu();
+              }
             }}
           >
-            <Icon path={mdiFormatListBulleted} size={0.7} />
-          </Box>
-          Format
-        </MenuItem>}
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mr: 1,
+                py: 1,
+                px: 0.5,
+              }}
+            >
+              <Icon path={mdiFormatListBulleted} size={0.7} />
+            </Box>
+            Format
+          </MenuItem>
+        )}
         <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.item)}>
           <Box
             component="span"
@@ -945,7 +982,11 @@ const ItemList = ({
                       }}
                     >
                       {category ? (
-                        <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+                        <LabelIcon
+                          icon={category.icon}
+                          color={category.color}
+                          size={0.8}
+                        />
                       ) : (
                         <Icon path={mdiNoteText} size={0.8} />
                       )}
@@ -1115,7 +1156,11 @@ const ItemList = ({
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} color={category.color} size={0.7} />
+              <LabelIcon
+                icon={category.icon}
+                color={category.color}
+                size={0.7}
+              />
             </Box>
             {category.name}
           </MenuItem>
@@ -1219,6 +1264,7 @@ const ItemList = ({
               <Button
                 variant="outlined"
                 color="error"
+                startIcon={<Icon path={mdiTrashCan} size={0.75} />}
                 onClick={() => {
                   onDueChange(dueDateDialogItem, null);
                   setDueDateDialogItem(null);
@@ -1227,20 +1273,31 @@ const ItemList = ({
                 Remove
               </Button>
             )}
-            <Box sx={{ flex: 1 }} />
             <Button
               variant="outlined"
-              onClick={() => setDueDateDialogItem(null)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleSaveDueDate}
+              color="warning"
+              startIcon={<Icon path={mdiCalendarPlus} size={0.75} />}
+              onClick={handleAddToGoogleCalendar}
               disabled={!dueDateValue}
             >
-              Save
+              +Google
             </Button>
+            <Box sx={{ flex: 1 }} />
+            <IconButton
+              aria-label="Cancel due date"
+              color={"primary"}
+              onClick={() => setDueDateDialogItem(null)}
+            >
+              <Icon path={mdiCancel} size={0.9} />
+            </IconButton>
+            <IconButton
+              aria-label="Save due date"
+              onClick={handleSaveDueDate}
+              color={"primary"}
+              sx={{ color: colors.lightGreen[400] }}
+            >
+              <Icon path={mdiCheckCircle} size={0.9} />
+            </IconButton>
           </DialogActions>
         </Dialog>
       )}
