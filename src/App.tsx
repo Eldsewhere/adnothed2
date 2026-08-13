@@ -232,18 +232,18 @@ function IconActionBar() {
 
   return (
     <>
-      <Tooltip title="Cancel due date">
+      <Tooltip title="Cancel date">
         <IconButton
-          aria-label="Cancel due date"
+          aria-label="Cancel date"
           color="primary"
           onClick={cancelValueChanges}
         >
           <Icon path={mdiCancel} size={0.9} />
         </IconButton>
       </Tooltip>
-      <Tooltip title="Save due date">
+      <Tooltip title="Save date">
         <IconButton
-          aria-label="Save due date"
+          aria-label="Save date"
           color="primary"
           onClick={acceptValueChanges}
           sx={{ color: colors.lightGreen[400] }}
@@ -287,6 +287,33 @@ function StartDateLayout(
           {hasDue ? "All Dates" : "Due Dates"}
         </Button>
         <Box sx={{ flex: 1 }} />
+        {actionBar}
+      </Box>
+    </PickersLayout>
+  );
+}
+
+function EndDateLayout(props: PickersLayoutProps<Dayjs | null>) {
+  const { content, actionBar } = usePickerLayout({
+    ...props,
+    slots: { ...props.slots, actionBar: IconActionBar },
+  });
+  return (
+    <PickersLayout
+      {...props}
+      slots={{ ...props.slots, actionBar: () => null }}
+    >
+      {content}
+      <Box
+        sx={{
+          gridColumn: "1 / 4",
+          display: "flex",
+          justifyContent: "flex-end",
+          alignItems: "center",
+          px: 1,
+          pb: 0.5,
+        }}
+      >
         {actionBar}
       </Box>
     </PickersLayout>
@@ -1012,6 +1039,39 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
+                            <Tooltip title="Filter by label">
+                <IconButton
+                  aria-label="Filter by label"
+                  color={itemFilters.categoryId ? "primary" : "default"}
+                  onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
+                  disabled={items.length === 0 || selectMode}
+                >
+                  <Badge
+                    variant="dot"
+                    invisible={!itemFilters.categoryId}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: colors.lightGreen[400],
+                      },
+                    }}
+                  >
+                    {(() => {
+                      const selectedCategory = categories.find(
+                        (c) => c.id === itemFilters.categoryId,
+                      );
+                      return selectedCategory ? (
+                        <LabelIcon
+                          icon={selectedCategory.icon}
+                          color={selectedCategory.color}
+                          size={0.9}
+                        />
+                      ) : (
+                        <Icon path={mdiNoteText} size={0.9} />
+                      );
+                    })()}
+                  </Badge>
+                </IconButton>
+              </Tooltip>
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
@@ -1058,39 +1118,6 @@ function App() {
                     >
                       <Icon path={mdiCalendar} size={0.9} />
                     </Badge>
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Filter by label">
-                <IconButton
-                  aria-label="Filter by label"
-                  color={itemFilters.categoryId ? "primary" : "default"}
-                  onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
-                  disabled={items.length === 0 || selectMode}
-                >
-                  <Badge
-                    variant="dot"
-                    invisible={!itemFilters.categoryId}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
-                      },
-                    }}
-                  >
-                    {(() => {
-                      const selectedCategory = categories.find(
-                        (c) => c.id === itemFilters.categoryId,
-                      );
-                      return selectedCategory ? (
-                        <LabelIcon
-                          icon={selectedCategory.icon}
-                          color={selectedCategory.color}
-                          size={0.9}
-                        />
-                      ) : (
-                        <Icon path={mdiNoteText} size={0.9} />
-                      );
-                    })()}
                   </Badge>
                 </IconButton>
               </Tooltip>
@@ -1289,7 +1316,8 @@ function App() {
                       },
                       actionBar: { actions: ["cancel", "accept"] as const },
                     }}
-                    slots={{ day: CalendarDay }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    slots={{ day: CalendarDay, layout: EndDateLayout as any }}
                     format="YYYY-MM-DD"
                   />
                   <Tooltip title="Cancel date filter">
