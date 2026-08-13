@@ -221,9 +221,9 @@ const ItemForm = ({
                         <Icon path={mdiCheckboxBlankOutline} size={0.75} />
                       </IconButton>
                     </Tooltip>
-                    <Tooltip title="Paste note">
+                    <Tooltip title="Paste text">
                       <IconButton
-                        aria-label="Paste note"
+                        aria-label="Paste text"
                         size="small"
                         onClick={async () => {
                           const text = await navigator.clipboard.readText();

@@ -1321,9 +1321,10 @@ function App() {
                     slots={{ day: CalendarDay, layout: EndDateLayout as any }}
                     format="YYYY-MM-DD"
                   />
-                  <Tooltip title="Cancel date filter">
+                  <Tooltip title="Remove date filter">
                     <IconButton
-                      aria-label="Cancel date filter"
+                      aria-label="Remove date filter"
+                      color="error"
                       onClick={() => {
                         setShowDateFilterInput(false);
                         setStartDatePickerOpen(false);
@@ -1336,7 +1337,7 @@ function App() {
                         }));
                       }}
                     >
-                      <Icon path={mdiCancel} size={0.9} />
+                      <Icon path={mdiTrashCan} size={0.9} />
                     </IconButton>
                   </Tooltip>
                 </Stack>
@@ -1383,16 +1384,17 @@ function App() {
                       </Box>
                     </Box>
                   </Box>
-                  <Tooltip title="Cancel filter text">
+                  <Tooltip title="Remove filter text">
                     <IconButton
-                      aria-label="Cancel filter text"
+                      aria-label="Remove filter text"
+                      color="error"
                       onClick={() => {
                         setShowTextFilterInput(false);
                         setItemFilters((prev) => ({ ...prev, text: "" }));
                       }}
                       sx={{ mt: -2.75 }}
                     >
-                      <Icon path={mdiCancel} size={0.9} />
+                      <Icon path={mdiTrashCan} size={0.9} />
                     </IconButton>
                   </Tooltip>
                 </Stack>

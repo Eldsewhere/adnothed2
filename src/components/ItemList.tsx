@@ -675,7 +675,8 @@ const ItemList = ({
                             color:
                               isToday(item.createdAt) ||
                               item.pinned ||
-                              (item.due !== undefined && isToday(item.due)) || item.hasNotification
+                              (item.due !== undefined && isToday(item.due)) ||
+                              item.hasNotification
                                 ? colors.lightGreen[400]
                                 : colors.blueGrey[300],
                           }}
@@ -998,14 +999,6 @@ const ItemList = ({
                   );
                 })()}
               </Typography>
-              <IconButton
-                aria-label="Close note dialog"
-                size="small"
-                onClick={() => setOverflowModalItemId(null)}
-                sx={{ color: colors.blueGrey[100] }}
-              >
-                <Icon path={mdiClose} size={0.8} />
-              </IconButton>
             </Box>
           </DialogTitle>
           <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
@@ -1062,18 +1055,28 @@ const ItemList = ({
               gap: 1,
             }}
           >
-            <Button
-              variant="contained"
-              startIcon={<Icon path={mdiDotsVertical} size={0.7} />}
-              onClick={(event) =>
-                setMenuAnchor({
-                  el: event.currentTarget,
-                  item: overflowModalItem,
-                })
-              }
-            >
-              Options
-            </Button>
+            <Tooltip title="Cancel">
+              <IconButton
+                size="small"
+                onClick={() => setOverflowModalItemId(null)}
+                sx={{ color: colors.blueGrey[100] }}
+              >
+                <Icon path={mdiCancel} size={0.8} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Actions">
+              <IconButton
+                size="small"
+                onClick={(event: MouseEvent<HTMLElement>) =>
+                  setMenuAnchor({
+                    el: event.currentTarget,
+                    item: overflowModalItem,
+                  })
+                }
+              >
+                <Icon path={mdiDotsVertical} size={0.8} />
+              </IconButton>
+            </Tooltip>
           </DialogActions>
         </Dialog>
       )}
@@ -1215,7 +1218,12 @@ const ItemList = ({
             <Stack
               direction="row"
               spacing={1}
-              sx={{ px: 2, pb: 1, alignItems: "center" }}
+              sx={{
+                px: 2,
+                py: 1,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <FormControl size="small" sx={{ width: 72 }}>
                 <InputLabel>Hour</InputLabel>
@@ -1263,19 +1271,6 @@ const ItemList = ({
             </Stack>
           </DialogContent>
           <DialogActions sx={{ bgcolor: colors.blueGrey[900], p: 1 }}>
-            {dueDateDialogItem.due !== undefined && (
-              <Button
-                variant="outlined"
-                color="error"
-                startIcon={<Icon path={mdiTrashCan} size={0.75} />}
-                onClick={() => {
-                  onDueChange(dueDateDialogItem, null);
-                  setDueDateDialogItem(null);
-                }}
-              >
-                Remove
-              </Button>
-            )}
             <Button
               variant="outlined"
               color="warning"
@@ -1286,21 +1281,39 @@ const ItemList = ({
               +Google
             </Button>
             <Box sx={{ flex: 1 }} />
-            <IconButton
-              aria-label="Cancel due date"
-              color={"primary"}
-              onClick={() => setDueDateDialogItem(null)}
-            >
-              <Icon path={mdiCancel} size={0.9} />
-            </IconButton>
-            <IconButton
-              aria-label="Save due date"
-              onClick={handleSaveDueDate}
-              color={"primary"}
-              sx={{ color: colors.lightGreen[400] }}
-            >
-              <Icon path={mdiCheckCircle} size={0.9} />
-            </IconButton>
+            {dueDateDialogItem.due !== undefined && (
+              <Tooltip title="Remove due date">
+                <IconButton
+                  aria-label="Remove due date"
+                  color={"error"}
+                  onClick={() => {
+                    onDueChange(dueDateDialogItem, null);
+                    setDueDateDialogItem(null);
+                  }}
+                >
+                  <Icon path={mdiTrashCan} size={0.9} />
+                </IconButton>
+              </Tooltip>
+            )}
+            <Tooltip title="Cancel due date">
+              <IconButton
+                aria-label="Cancel due date"
+                color={"primary"}
+                onClick={() => setDueDateDialogItem(null)}
+              >
+                <Icon path={mdiCancel} size={0.9} />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Save due date">
+              <IconButton
+                aria-label="Save due date"
+                onClick={handleSaveDueDate}
+                color={"primary"}
+                sx={{ color: colors.lightGreen[400] }}
+              >
+                <Icon path={mdiCheckCircle} size={0.9} />
+              </IconButton>
+            </Tooltip>
           </DialogActions>
         </Dialog>
       )}
