@@ -198,7 +198,10 @@ const ItemList = ({
     return () => observer.disconnect();
   }, []);
 
-  const closeMenu = () => setMenuAnchor(null);
+  const closeMenu = () => {
+    setMenuAnchor(null);
+    setOverflowModalItemId(null);
+  };
 
   const handleEdit = (item: Item) => {
     onEdit(item);
@@ -478,9 +481,8 @@ const ItemList = ({
                     overflow: "hidden",
                     bgcolor:
                       item.pinned ||
-                      (item.due !== undefined && isToday(item.due)) ||
-                      isToday(item.createdAt)
-                        ? "#263532"
+                      (item.due !== undefined && isToday(item.due))
+                        ? "#2c3a37"
                         : dayIndex % 2 === 0
                           ? colors.blueGrey[800]
                           : colors.blueGrey[900],
@@ -1022,20 +1024,15 @@ const ItemList = ({
           >
             <Button
               variant="contained"
-              startIcon={<Icon path={mdiFormatListBulleted} size={0.7} />}
-              onClick={(event) => {
-                setFormatMenuItem(overflowModalItem);
-                setFormatMenuAnchor(event.currentTarget);
-              }}
+              startIcon={<Icon path={mdiDotsVertical} size={0.7} />}
+              onClick={(event) =>
+                setMenuAnchor({
+                  el: event.currentTarget,
+                  item: overflowModalItem,
+                })
+              }
             >
-              Format
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<Icon path={mdiContentCopy} size={0.7} />}
-              onClick={() => onCopy(overflowModalItem)}
-            >
-              Copy
+              Options
             </Button>
           </DialogActions>
         </Dialog>
