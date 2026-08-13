@@ -36,9 +36,11 @@ export function getLabelColorSwatch(name?: string): {
     return { background: colors.common.black, text: colors.common.white };
   }
 
-  const palette = LABEL_COLOR_OPTIONS.includes(name as LabelColorName)
-    ? colors[name as Exclude<LabelColorName, "common">]
-    : colors[DEFAULT_LABEL_COLOR];
+  const palette = (
+    LABEL_COLOR_OPTIONS.includes(name as LabelColorName)
+      ? colors[name as Exclude<LabelColorName, "common">]
+      : colors[DEFAULT_LABEL_COLOR]
+  ) as Record<700 | 50, string>;
 
   return { background: palette[700], text: palette[50] };
 }
