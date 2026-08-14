@@ -81,6 +81,7 @@ type ItemListProps = {
 };
 
 const ROW_HEIGHT = 80;
+const EXPANDED_ROW_HEIGHT = 128;
 const OVERSCAN = 6;
 const BULLET_PREFIX = "• ";
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
@@ -259,13 +260,9 @@ const ItemList = ({
       element.scrollWidth > element.clientWidth ||
       element.scrollHeight > element.clientHeight;
     setOverflowingItemIds((currentIds) => {
-      if (currentIds.has(itemId) === isOverflowing) return currentIds;
+      if (!isOverflowing || currentIds.has(itemId)) return currentIds;
       const nextIds = new Set(currentIds);
-      if (isOverflowing) {
-        nextIds.add(itemId);
-      } else {
-        nextIds.delete(itemId);
-      }
+      nextIds.add(itemId);
       return nextIds;
     });
   };
@@ -433,11 +430,29 @@ const ItemList = ({
     return map;
   }, [filteredItems]);
 
-  const totalHeight = filteredItems.length * ROW_HEIGHT;
-  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN);
+  const rowHeights = filteredItems.map((item) =>
+    overflowingItemIds.has(item.id) ? EXPANDED_ROW_HEIGHT : ROW_HEIGHT,
+  );
+  const rowOffsets = rowHeights.reduce<number[]>((offsets, height) => {
+    offsets.push((offsets.at(-1) ?? 0) + height);
+    return offsets;
+  }, []);
+  const totalHeight = rowOffsets.at(-1) ?? 0;
+  const firstVisibleIndex = rowHeights.findIndex(
+    (height, index) => rowOffsets[index] - height > scrollTop,
+  );
+  const lastVisibleIndex = rowOffsets.findIndex(
+    (offset) => offset >= scrollTop + viewportHeight,
+  );
+  const startIndex = Math.max(
+    0,
+    (firstVisibleIndex === -1 ? filteredItems.length : firstVisibleIndex) -
+      OVERSCAN,
+  );
   const endIndex = Math.min(
     filteredItems.length,
-    Math.ceil((scrollTop + viewportHeight) / ROW_HEIGHT) + OVERSCAN,
+    (lastVisibleIndex === -1 ? filteredItems.length : lastVisibleIndex + 1) +
+      OVERSCAN,
   );
   const visibleItems = filteredItems.slice(startIndex, endIndex);
 
@@ -495,10 +510,10 @@ const ItemList = ({
                   key={item.id}
                   sx={{
                     position: "absolute",
-                    top: index * ROW_HEIGHT,
+                    top: rowOffsets[index] - rowHeights[index],
                     left: 0,
                     right: 0,
-                    height: ROW_HEIGHT,
+                    height: rowHeights[index],
                     display: "flex",
                     alignItems: "center",
                     borderBottom: "1px solid",
@@ -577,7 +592,9 @@ const ItemList = ({
                           overflowWrap: "anywhere",
                           wordBreak: "break-word",
                           display: "-webkit-box",
-                          WebkitLineClamp: 2,
+                          WebkitLineClamp: overflowingItemIds.has(item.id)
+                            ? 4
+                            : 2,
                           WebkitBoxOrient: "vertical",
                         }}
                       >
