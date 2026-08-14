@@ -19,7 +19,6 @@ import {
   mdiChevronDown,
   mdiCircleSmall,
   mdiContentPaste,
-  mdiDotsVertical,
   mdiFormatListBulleted,
   mdiNoteText,
 } from "@mdi/js";
@@ -60,8 +59,9 @@ const ItemForm = ({
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [formatMenuAnchor, setFormatMenuAnchor] =
-    useState<HTMLElement | null>(null);
+  const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
+    null,
+  );
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
