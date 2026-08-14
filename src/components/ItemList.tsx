@@ -1166,6 +1166,18 @@ const ItemList = ({
           <SearchSiteIcon domain="spotify.com" />
           Spotify
         </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://www.amazon.es/s?k=${query}`,
+            )
+          }
+        >
+          <SearchSiteIcon domain="amazon.es" />
+          Amazon.es
+        </MenuItem>
       </Menu>
       {overflowModalItem && (
         <Dialog
