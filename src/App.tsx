@@ -41,7 +41,6 @@ import {
   mdiCalendar,
   mdiCheckCircle,
   mdiCalendarClock,
-  mdiLabel,
   mdiNoteText,
   mdiLabelMultiple,
 } from "@mdi/js";
