@@ -1094,7 +1094,7 @@ function App() {
                       textAlign: "center",
                       fontSize: "0.8rem",
                       p: 0,
-                      m: 0
+                      m: 0,
                     }}
                   >
                     {titleRangeSuffix}
@@ -1302,7 +1302,9 @@ function App() {
                     <span>
                       <Button
                         variant="text"
-                        startIcon={<Icon path={mdiTrashCanOutline} size={0.9} />}
+                        startIcon={
+                          <Icon path={mdiTrashCanOutline} size={0.9} />
+                        }
                         disabled={selectedItemIds.size === 0}
                         onClick={() => setConfirmBulkDeleteOpen(true)}
                         sx={{ textTransform: "none" }}
@@ -1405,7 +1407,7 @@ function App() {
                 onDelete={requestDeleteCategory}
                 newCategoryId={latestCategoryId}
               />
-              <Divider sx={{ pt: 1 }} />
+              <Divider />
               <Stack
                 direction="row"
                 spacing={1}
