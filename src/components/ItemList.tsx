@@ -39,7 +39,7 @@ import {
   mdiPin,
   mdiPinOff,
   mdiShareVariant,
-  mdiTrashCan,
+  mdiTrashCanOutline,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
@@ -981,7 +981,7 @@ const ItemList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiTrashCan} size={0.7} />
+            <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
           Delete
         </MenuItem>
@@ -1361,7 +1361,7 @@ const ItemList = ({
                     setDueDateDialogItem(null);
                   }}
                 >
-                  <Icon path={mdiTrashCan} size={0.9} />
+                  <Icon path={mdiTrashCanOutline} size={0.9} />
                 </IconButton>
               </Tooltip>
             )}

@@ -35,7 +35,7 @@ import {
   mdiClose,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
-  mdiTrashCan,
+  mdiTrashCanOutline,
   mdiUpload,
   mdiDownload,
   mdiCalendar,
@@ -911,7 +911,7 @@ function App() {
     : "?";
   const showRangeInTitle = Boolean(activeStartDate || activeEndDate);
   const titleRangeSuffix = showRangeInTitle
-    ? ` (${startRangeLabel} - ${endRangeLabel})`
+    ? `${startRangeLabel} - ${endRangeLabel}`
     : "";
 
   return (
@@ -1069,7 +1069,6 @@ function App() {
                     }}
                   >
                     {datePickerMode === "start" ? "Start Date" : "End Date"}
-                    {titleRangeSuffix}
                   </Typography>
                   <Tooltip title="Close">
                     <IconButton
@@ -1088,6 +1087,18 @@ function App() {
                   </Tooltip>
                 </Box>
                 <Box sx={{ px: 1, py: 0.75 }}>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      color: colors.blueGrey[100],
+                      textAlign: "center",
+                      fontSize: "0.8rem",
+                      p: 0,
+                      m: 0
+                    }}
+                  >
+                    {titleRangeSuffix}
+                  </Typography>
                   <DateCalendar
                     value={
                       datePickerMode === "start"
@@ -1215,7 +1226,7 @@ function App() {
                         setDatePopoverAnchor(null);
                       }}
                     >
-                      <Icon path={mdiTrashCan} size={0.9} />
+                      <Icon path={mdiTrashCanOutline} size={0.9} />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Save date">
@@ -1291,7 +1302,7 @@ function App() {
                     <span>
                       <Button
                         variant="text"
-                        startIcon={<Icon path={mdiTrashCan} size={0.9} />}
+                        startIcon={<Icon path={mdiTrashCanOutline} size={0.9} />}
                         disabled={selectedItemIds.size === 0}
                         onClick={() => setConfirmBulkDeleteOpen(true)}
                         sx={{ textTransform: "none" }}

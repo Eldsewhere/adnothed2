@@ -15,7 +15,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiDotsVertical, mdiPencil, mdiTrashCan } from "@mdi/js";
+import { mdiDotsVertical, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
 import type { Category } from "../types";
 import LabelIcon from "./LabelIcon";
 
@@ -208,7 +208,7 @@ const CategoryList = ({
               px: 0.5,
             }}
           >
-            <Icon path={mdiTrashCan} size={0.7} />
+            <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
           Delete
         </MenuItem>
