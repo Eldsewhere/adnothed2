@@ -85,13 +85,6 @@ const OVERSCAN = 6;
 const BULLET_PREFIX = "• ";
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
-type FilterNarrowingCache = {
-  sortedItemsRef: Item[];
-  signature: string;
-  queryLower: string;
-  result: Item[];
-};
-
 const allNonEmptyRowsBulleted = (text: string): boolean => {
   const rows = text.split("\n").filter((row) => row.trim().length > 0);
   return (
@@ -157,7 +150,6 @@ const ItemList = ({
     [],
   );
   const containerRef = useRef<HTMLDivElement>(null);
-  const narrowingCacheRef = useRef<FilterNarrowingCache | null>(null);
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
 
@@ -379,88 +371,57 @@ const ItemList = ({
     [filters.text],
   );
 
-  const filterSignature = useMemo(() => {
-    const { query: _query, ...textFilterOptions } = parsedTextFilters;
-    return JSON.stringify({
-      categoryId: filters.categoryId,
-      date: filters.date,
-      endDate: filters.endDate,
-      dueDate: filters.dueDate,
-      hasDue: filters.hasDue,
-      textFilterOptions,
-    });
-  }, [filters, parsedTextFilters]);
-
-  const filteredItems = useMemo(() => {
-    const itemIndexById = new Map(
-      sortedItems.map((item, index) => [item.id, index]),
-    );
-    const queryLower = parsedTextFilters.query.trim().toLowerCase();
-    const previous = narrowingCacheRef.current;
-    const canReusePrevious =
-      previous !== null &&
-      previous.sortedItemsRef === sortedItems &&
-      previous.signature === filterSignature &&
-      queryLower.startsWith(previous.queryLower);
-    const sourceItems = canReusePrevious ? previous.result : sortedItems;
-
-    const nextResult = sourceItems.filter((item) => {
-      const index = itemIndexById.get(item.id);
-      if (index === undefined) {
-        return false;
-      }
-      if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-        if (item.categoryId !== null) {
+  const filteredItems = useMemo(
+    () =>
+      sortedItems.filter((item, index) => {
+        if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          filters.categoryId &&
+          item.categoryId !== filters.categoryId
+        ) {
           return false;
         }
-      } else if (filters.categoryId && item.categoryId !== filters.categoryId) {
-        return false;
-      }
-      if (
-        !matchesTextFilters(
-          item.text,
-          item.createdAt,
-          index,
-          sortedItems.length,
-          parsedTextFilters,
-        )
-      ) {
-        return false;
-      }
-      const itemDate = formatDate(item.createdAt);
-      const hasStartDate =
-        filters.date.length === 10 && dateRegex.test(filters.date);
-      const hasEndDate =
-        filters.endDate.length === 10 && dateRegex.test(filters.endDate);
-
-      if (hasStartDate && itemDate < filters.date.trim()) {
-        return false;
-      }
-      if (hasEndDate && itemDate > filters.endDate.trim()) {
-        return false;
-      }
-      if (filters.dueDate) {
-        if (!item.due || formatDate(item.due) !== filters.dueDate) {
+        if (
+          !matchesTextFilters(
+            item.text,
+            item.createdAt,
+            index,
+            sortedItems.length,
+            parsedTextFilters,
+          )
+        ) {
           return false;
         }
-      }
-      if (filters.hasDue) {
-        const todayUnix = dayjs().startOf("day").unix();
-        if (item.due === undefined || item.due < todayUnix) {
+        const itemDate = formatDate(item.createdAt);
+        const hasStartDate =
+          filters.date.length === 10 && dateRegex.test(filters.date);
+        const hasEndDate =
+          filters.endDate.length === 10 && dateRegex.test(filters.endDate);
+
+        if (hasStartDate && itemDate < filters.date.trim()) {
           return false;
         }
-      }
-      return true;
-    });
-
-    narrowingCacheRef.current = {
-      sortedItemsRef: sortedItems,
-      signature: filterSignature,
-      queryLower,
-      result: nextResult,
-    };
-    return nextResult;
-  }, [sortedItems, filters, parsedTextFilters, filterSignature]);
+        if (hasEndDate && itemDate > filters.endDate.trim()) {
+          return false;
+        }
+        if (filters.dueDate) {
+          if (!item.due || formatDate(item.due) !== filters.dueDate) {
+            return false;
+          }
+        }
+        if (filters.hasDue) {
+          const todayUnix = dayjs().startOf("day").unix();
+          if (item.due === undefined || item.due < todayUnix) {
+            return false;
+          }
+        }
+        return true;
+      }),
+    [sortedItems, filters, parsedTextFilters],
+  );
 
   const dayIndexByDate = useMemo(() => {
     const map = new Map<string, number>();
@@ -507,7 +468,7 @@ const ItemList = ({
               )}
             </>
           ) : (
-            "No notes match the current filters. Add a new note"
+            "No notes match the current filters"
           )}
         </Alert>
       ) : (
@@ -1217,10 +1178,18 @@ const ItemList = ({
           maxWidth="xs"
           fullWidth
         >
-          <DialogTitle sx={{ bgcolor: colors.blueGrey[900], p: 1.5 }}>
+          <DialogTitle
+            sx={{
+              bgcolor: colors.blueGrey[800],
+              color: colors.blueGrey[100],
+              p: 1,
+              borderBottom: `1px solid ${colors.blueGrey[700]}`,
+              textAlign: "center",
+            }}
+          >
             Set due date
           </DialogTitle>
-          <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 0, pb: 1 }}>
+          <DialogContent sx={{ bgcolor: colors.blueGrey[900], p: 0, pb: 1 }}>
             <DateCalendar
               value={dueDateValue}
               onChange={(value: Dayjs | null) => setDueDateValue(value)}
@@ -1308,7 +1277,13 @@ const ItemList = ({
               </FormControl>
             </Stack>
           </DialogContent>
-          <DialogActions sx={{ bgcolor: colors.blueGrey[900], p: 1 }}>
+          <DialogActions
+            sx={{
+              bgcolor: colors.blueGrey[800],
+              p: 1,
+              borderTop: `1px solid ${colors.blueGrey[700]}`,
+            }}
+          >
             <Button
               variant="outlined"
               color="warning"

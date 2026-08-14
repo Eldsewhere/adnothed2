@@ -116,21 +116,6 @@ const NoteDay = ({
   const hasDue = dueCount > 0;
   const isOutside = Boolean(outsideCurrentMonth);
 
-  /*
-     <Badge
-        overlap="circular"
-        badgeContent={dueCount}
-        invisible={!hasDue}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        sx={{
-          "& .MuiBadge-badge": {
-            backgroundColor: colors.blue[400],
-            color: colors.grey[900],
-          },
-        }}
-      >
-        */
-
   return (
     <Badge
       overlap="circular"
@@ -960,7 +945,22 @@ function App() {
                   onClick={toggleSelectMode}
                   disabled={items.length === 0}
                 >
-                  <Badge badgeContent={selectedItemIds.size} color="primary">
+                  <Badge
+                    badgeContent={selectedItemIds.size}
+                    color="primary"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: colors.orange[400],
+                        color: colors.grey[900],
+                        minWidth: 14,
+                        height: 14,
+                        fontSize: "0.6rem",
+                        lineHeight: 1,
+                        p: 0,
+                      },
+                    }}
+                  >
                     <Icon path={mdiCheckboxMultipleMarked} size={0.9} />
                   </Badge>
                 </IconButton>
@@ -968,7 +968,15 @@ function App() {
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
-                  color={isDatePopoverOpen ? "primary" : "default"}
+                  color={
+                    isDatePopoverOpen ||
+                    itemFilters.date ||
+                    itemFilters.endDate ||
+                    itemFilters.dueDate ||
+                    itemFilters.hasDue
+                      ? "primary"
+                      : "default"
+                  }
                   onClick={(event) => {
                     if (isDatePopoverOpen) {
                       setDatePopoverAnchor(null);
@@ -986,37 +994,22 @@ function App() {
                   disabled={items.length === 0 || selectMode}
                 >
                   <Badge
-                    variant="dot"
-                    invisible={
-                      !itemFilters.date &&
-                      !itemFilters.endDate &&
-                      !itemFilters.dueDate &&
-                      !itemFilters.hasDue
-                    }
+                    badgeContent={dueFutureCount}
+                    invisible={dueFutureCount === 0}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     sx={{
                       "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
+                        backgroundColor: colors.orange[400],
+                        color: colors.grey[900],
+                        minWidth: 14,
+                        height: 14,
+                        fontSize: "0.6rem",
+                        lineHeight: 1,
+                        p: 0,
                       },
                     }}
                   >
-                    <Badge
-                      badgeContent={dueFutureCount}
-                      invisible={dueFutureCount === 0}
-                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                      sx={{
-                        "& .MuiBadge-badge": {
-                          backgroundColor: colors.orange[400],
-                          color: colors.grey[900],
-                          minWidth: 14,
-                          height: 14,
-                          fontSize: "0.6rem",
-                          lineHeight: 1,
-                          p: 0,
-                        },
-                      }}
-                    >
-                      <Icon path={mdiCalendar} size={0.9} />
-                    </Badge>
+                    <Icon path={mdiCalendar} size={0.9} />
                   </Badge>
                 </IconButton>
               </Tooltip>
