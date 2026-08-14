@@ -88,6 +88,18 @@ const OVERSCAN = 6;
 const BULLET_PREFIX = "• ";
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
+const getSearchQuery = (text: string): string =>
+  text
+    .split("\n")
+    .map((row) =>
+      row
+        .trimStart()
+        .replace(CHECKBOX_ROW_PATTERN, "$3")
+        .replace(/^•\s?/, ""),
+    )
+    .join("\n")
+    .trim();
+
 const SearchSiteIcon = ({ domain }: { domain: string }) => (
   <Box
     component="img"
@@ -260,7 +272,7 @@ const ItemList = ({
     searchUrl: (query: string) => string,
   ) => {
     window.open(
-      searchUrl(encodeURIComponent(item.text)),
+      searchUrl(encodeURIComponent(getSearchQuery(item.text))),
       "_blank",
       "noopener,noreferrer",
     );
@@ -911,30 +923,48 @@ const ItemList = ({
           </Box>
           Share
         </MenuItem>
-        <MenuItem
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            if (menuAnchor) {
-              setSearchMenuAnchor({
-                el: event.currentTarget,
-                item: menuAnchor.item,
-              });
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
+        {menuAnchor && getFirstUrl(menuAnchor.item.text) ? (
+          <MenuItem onClick={() => handleOpen(menuAnchor.item)}>
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mr: 1,
+                py: 1,
+                px: 0.5,
+              }}
+            >
+              <Icon path={mdiOpenInNew} size={0.7} />
+            </Box>
+            Open
+          </MenuItem>
+        ) : (
+          <MenuItem
+            onClick={(event: MouseEvent<HTMLElement>) => {
+              if (menuAnchor) {
+                setSearchMenuAnchor({
+                  el: event.currentTarget,
+                  item: menuAnchor.item,
+                });
+              }
             }}
           >
-            <Icon path={mdiMagnify} size={0.7} />
-          </Box>
-          Search
-        </MenuItem>
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mr: 1,
+                py: 1,
+                px: 0.5,
+              }}
+            >
+              <Icon path={mdiMagnify} size={0.7} />
+            </Box>
+            Search
+          </MenuItem>
+        )}
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem
           onClick={() => {
@@ -1065,21 +1095,6 @@ const ItemList = ({
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         transformOrigin={{ horizontal: "right", vertical: "center" }}
       >
-        {searchMenuAnchor && getFirstUrl(searchMenuAnchor.item.text) && (
-          <MenuItem onClick={() => handleOpen(searchMenuAnchor.item)}>
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                pr: 0.5,
-              }}
-            >
-              <Icon path={mdiOpenInNew} size={0.7} />
-            </Box>
-            Open
-          </MenuItem>
-        )}
         <MenuItem
           onClick={() =>
             searchMenuAnchor &&
