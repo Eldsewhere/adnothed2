@@ -104,12 +104,16 @@ const formatShortRangeDate = (value: Dayjs): string => {
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
   dueDaysByDate: Map<string, number>;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 const NoteDay = ({
   day,
   noteCountsByDay,
   dueDaysByDate,
+  startDate,
+  endDate,
   outsideCurrentMonth,
   ...other
 }: NoteDayProps) => {
@@ -119,6 +123,8 @@ const NoteDay = ({
   const dueCount = dueDaysByDate.get(key) ?? 0;
   const hasDue = dueCount > 0;
   const isOutside = Boolean(outsideCurrentMonth);
+  const isRangeBoundary =
+    startDate?.isSame(day, "day") || endDate?.isSame(day, "day");
 
   return (
     <Badge
@@ -150,14 +156,8 @@ const NoteDay = ({
               : "rgba(96, 125, 139, 0.28)",
             textTransform: "lowercase",
           },
-          "&.Mui-selected": {
-            backgroundColor: colors.blueGrey[500],
-            color: colors.blueGrey[900],
-            borderColor: colors.blueGrey[300],
-            opacity: 1,
-          },
           "&.Mui-selected:hover, &.Mui-selected:focus": {
-            backgroundColor: colors.blueGrey[400],
+            backgroundColor: colors.lightBlue[600],
           },
           ...(hasNotes
             ? {
@@ -181,6 +181,17 @@ const NoteDay = ({
                 backgroundColor: isOutside
                   ? "rgba(255, 152, 0, 0.12)"
                   : "rgba(255, 152, 0, 0.2)",
+              }
+            : {}),
+          ...(isRangeBoundary
+            ? {
+                backgroundColor: "rgba(33, 150, 243, 0.12)",
+                color: colors.common.white,
+                border: `1px solid ${colors.blue[600]}`,
+                opacity: 1,
+                "&:hover, &:focus": {
+                  backgroundColor: "rgba(33, 150, 243, 0.2)",
+                },
               }
             : {}),
         }}
@@ -874,6 +885,8 @@ function App() {
       {...props}
       noteCountsByDay={noteCountsByDay}
       dueDaysByDate={dueDaysByDate}
+      startDate={activeStartDate}
+      endDate={activeEndDate}
     />
   );
 
