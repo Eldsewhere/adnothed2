@@ -20,6 +20,7 @@ import {
   mdiCircleSmall,
   mdiContentPaste,
   mdiDotsVertical,
+  mdiFormatListBulleted,
   mdiNoteText,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
@@ -229,7 +230,7 @@ const ItemForm = ({
                           color: colors.blueGrey[400],
                         }}
                       >
-                        <Icon path={mdiDotsVertical} size={0.8} />
+                        <Icon path={mdiFormatListBulleted} size={0.8} />
                       </IconButton>
                     </Tooltip>
                     <Menu
