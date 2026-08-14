@@ -988,8 +988,9 @@ function App() {
                     sx: {
                       backgroundColor: colors.blueGrey[900],
                       border: `1px solid ${colors.blueGrey[700]}`,
-                      p: 1,
+                      p: 0,
                       minWidth: 320,
+                      overflow: "hidden",
                     },
                   },
                 }}
@@ -998,67 +999,74 @@ function App() {
                   variant="subtitle2"
                   sx={{
                     color: colors.blueGrey[100],
-                    px: 1,
-                    pb: 0.5,
+                    px: 1.25,
+                    py: 1,
                     textAlign: "center",
-                    backgroundColor: colors.blueGrey[700],
+                    backgroundColor: colors.blueGrey[800],
+                    borderBottom: `1px solid ${colors.blueGrey[700]}`,
                   }}
                 >
                   {datePickerMode === "start" ? "Start Date" : "End Date"}
                 </Typography>
-                <DateCalendar
-                  value={
-                    datePickerMode === "start" ? activeStartDate : activeEndDate
-                  }
-                  onChange={(value: Dayjs | null) => {
-                    if (!value) return;
-                    const next = value.format("YYYY-MM-DD");
-                    if (datePickerMode === "start") {
+                <Box sx={{ px: 1, py: 0.75 }}>
+                  <DateCalendar
+                    value={
+                      datePickerMode === "start"
+                        ? activeStartDate
+                        : activeEndDate
+                    }
+                    onChange={(value: Dayjs | null) => {
+                      if (!value) return;
+                      const next = value.format("YYYY-MM-DD");
+                      if (datePickerMode === "start") {
+                        setPendingDateFilter((prev) => ({
+                          ...prev,
+                          date: next,
+                          dueDate: "",
+                          endDate:
+                            prev.endDate && prev.endDate < next
+                              ? next
+                              : prev.endDate,
+                        }));
+                        return;
+                      }
                       setPendingDateFilter((prev) => ({
                         ...prev,
-                        date: next,
+                        endDate: next,
                         dueDate: "",
-                        endDate:
-                          prev.endDate && prev.endDate < next
-                            ? next
-                            : prev.endDate,
                       }));
-                      return;
+                    }}
+                    showDaysOutsideCurrentMonth
+                    minDate={
+                      datePickerMode === "start"
+                        ? filteredMinDate
+                        : (activeStartDate ?? filteredMinDate)
                     }
-                    setPendingDateFilter((prev) => ({
-                      ...prev,
-                      endDate: next,
-                      dueDate: "",
-                    }));
-                  }}
-                  showDaysOutsideCurrentMonth
-                  minDate={
-                    datePickerMode === "start"
-                      ? filteredMinDate
-                      : (activeStartDate ?? filteredMinDate)
-                  }
-                  maxDate={calendarMaxDate}
-                  slots={{ day: CalendarDay }}
-                  sx={{
-                    "& .MuiPickersCalendarHeader-label": {
-                      color: colors.blueGrey[100],
-                    },
-                    "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                      {
-                        color: colors.blueGrey[200],
+                    maxDate={calendarMaxDate}
+                    slots={{ day: CalendarDay }}
+                    sx={{
+                      "& .MuiPickersCalendarHeader-label": {
+                        color: colors.blueGrey[100],
                       },
-                    "& .MuiDayCalendar-weekDayLabel": {
-                      color: colors.blueGrey[400],
-                    },
-                  }}
-                />
+                      "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                        {
+                          color: colors.blueGrey[200],
+                        },
+                      "& .MuiDayCalendar-weekDayLabel": {
+                        color: colors.blueGrey[400],
+                      },
+                    }}
+                  />
+                </Box>
                 <Box
                   sx={{
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
                     px: 1,
-                    pt: 0.5,
+                    py: 0.75,
+                    backgroundColor: colors.blueGrey[800],
+                    borderTop: `1px solid ${colors.blueGrey[700]}`,
                   }}
                 >
                   {datePickerMode === "start" ? (
