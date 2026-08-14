@@ -20,7 +20,8 @@ import {
   mdiCircleSmall,
   mdiContentPaste,
   mdiFormatListBulleted,
-  mdiNoteText,
+  mdiLabelMultiple,
+  mdiLabelOff,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
@@ -345,7 +346,7 @@ const ItemForm = ({
                             size={0.8}
                           />
                         ) : (
-                          <Icon path={mdiNoteText} size={0.8} />
+                          <Icon path={mdiLabelMultiple} size={0.8} />
                         )}
                         <Box
                           component="span"
@@ -395,7 +396,7 @@ const ItemForm = ({
                             color: colors.blueGrey[300],
                           }}
                         >
-                          <Icon path={mdiNoteText} size={0.8} />
+                          <Icon path={mdiLabelOff} size={0.8} />
                           <span>No Label</span>
                         </Box>
                       </MenuItem>

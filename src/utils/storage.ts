@@ -1,4 +1,4 @@
-﻿import { mdiNoteText } from "@mdi/js";
+﻿import { mdiLabelOff } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
 import type { Category, Item } from "../types";
@@ -116,7 +116,7 @@ function resolveIconOption(name: string): Category["icon"] {
   return {
     name,
     label,
-    path: mdiNoteText,
+    path: mdiLabelOff,
   };
 }
 

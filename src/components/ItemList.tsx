@@ -34,7 +34,7 @@ import {
   mdiFormatListBulleted,
   mdiLink,
   mdiMagnify,
-  mdiNoteText,
+  mdiLabelOff,
   mdiPencil,
   mdiPin,
   mdiPinOff,
@@ -583,7 +583,7 @@ const ItemList = ({
                             size={0.8}
                           />
                         ) : (
-                          <Icon path={mdiNoteText} size={0.8} />
+                          <Icon path={mdiLabelOff} size={0.8} />
                         )}
                       </IconButton>
                     </Tooltip>
@@ -1026,7 +1026,7 @@ const ItemList = ({
                           size={0.8}
                         />
                       ) : (
-                        <Icon path={mdiNoteText} size={0.8} />
+                        <Icon path={mdiLabelOff} size={0.8} />
                       )}
                       {category ? category.name : "No label"}
                     </Box>
@@ -1187,7 +1187,7 @@ const ItemList = ({
               color: colors.blueGrey[300],
             }}
           >
-            <Icon path={mdiNoteText} size={0.7} />
+            <Icon path={mdiLabelOff} size={0.7} />
           </Box>
           {categories.length == 0 ? "No labels available" : "No label"}
         </MenuItem>
