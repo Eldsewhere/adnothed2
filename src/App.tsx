@@ -21,11 +21,13 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Popover,
   Snackbar,
   Stack,
   Tab,
   Tabs,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
@@ -46,14 +48,8 @@ import TabPanel from "./components/TabPanel";
 import LabelIcon from "./components/LabelIcon";
 import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DateCalendar } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
-import {
-  PickersLayout,
-  usePickerLayout,
-  type PickersLayoutProps,
-} from "@mui/x-date-pickers/PickersLayout";
-import { usePickerContext } from "@mui/x-date-pickers/hooks";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
@@ -225,101 +221,6 @@ function toggleBulletRows(text: string): string {
     .join("\n");
 }
 
-type StartDateLayoutExtraProps = {
-  onFutureClick: () => void;
-  hasDue: boolean;
-};
-
-function IconActionBar() {
-  const { acceptValueChanges, cancelValueChanges } = usePickerContext();
-
-  return (
-    <>
-      <Tooltip title="Cancel date">
-        <IconButton
-          aria-label="Cancel date"
-          color="primary"
-          onClick={cancelValueChanges}
-        >
-          <Icon path={mdiCancel} size={0.9} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Save date">
-        <IconButton
-          aria-label="Save date"
-          color="primary"
-          onClick={acceptValueChanges}
-          sx={{ color: colors.lightGreen[400] }}
-        >
-          <Icon path={mdiCheckCircle} size={0.9} />
-        </IconButton>
-      </Tooltip>
-    </>
-  );
-}
-
-function StartDateLayout(
-  props: PickersLayoutProps<Dayjs | null> & StartDateLayoutExtraProps,
-) {
-  const { onFutureClick, hasDue, ...layoutProps } = props;
-  const { content, actionBar } = usePickerLayout({
-    ...layoutProps,
-    slots: { ...layoutProps.slots, actionBar: IconActionBar },
-  });
-  return (
-    <PickersLayout
-      {...layoutProps}
-      slots={{ ...layoutProps.slots, actionBar: () => null }}
-    >
-      {content}
-      <Box
-        sx={{
-          gridColumn: "1 / 4",
-          display: "flex",
-          alignItems: "center",
-          px: 1,
-          pb: 0.5,
-        }}
-      >
-        <Button
-          variant={"outlined"}
-          color="warning"
-          onClick={onFutureClick}
-          sx={{ textTransform: "none", fontSize: "0.75rem" }}
-        >
-          {hasDue ? "All Dates" : "Due Dates"}
-        </Button>
-        <Box sx={{ flex: 1 }} />
-        {actionBar}
-      </Box>
-    </PickersLayout>
-  );
-}
-
-function EndDateLayout(props: PickersLayoutProps<Dayjs | null>) {
-  const { content, actionBar } = usePickerLayout({
-    ...props,
-    slots: { ...props.slots, actionBar: IconActionBar },
-  });
-  return (
-    <PickersLayout {...props} slots={{ ...props.slots, actionBar: () => null }}>
-      {content}
-      <Box
-        sx={{
-          gridColumn: "1 / 4",
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          px: 1,
-          pb: 0.5,
-        }}
-      >
-        {actionBar}
-      </Box>
-    </PickersLayout>
-  );
-}
-
 function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("items");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -352,10 +253,17 @@ function App() {
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
-  const startDateInputRef = useRef<HTMLInputElement | null>(null);
-  const endDateInputRef = useRef<HTMLInputElement | null>(null);
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [showDateFilterInput, setShowDateFilterInput] = useState(false);
+  const [datePopoverAnchor, setDatePopoverAnchor] =
+    useState<HTMLElement | null>(null);
+  const [datePickerMode, setDatePickerMode] = useState<"start" | "end">(
+    "start",
+  );
+  const [pendingDateFilter, setPendingDateFilter] = useState<{
+    date: string;
+    endDate: string;
+    dueDate: string;
+    hasDue: boolean;
+  }>(emptyItemFilters);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
@@ -774,7 +682,7 @@ function App() {
   };
 
   const handleEditItem = (item: Item) => {
-    setShowDateFilterInput(false);
+    setDatePopoverAnchor(null);
     setEditingItem(item);
   };
 
@@ -947,11 +855,19 @@ function App() {
     />
   );
 
-  const dateFieldLocaleText = {
-    fieldYearPlaceholder: () => "yyyy",
-    fieldMonthPlaceholder: () => "mm",
-    fieldDayPlaceholder: () => "dd",
-  };
+  const isDatePopoverOpen = Boolean(datePopoverAnchor);
+  const activeStartDate =
+    pendingDateFilter.date &&
+    dateRegex.test(pendingDateFilter.date) &&
+    pendingDateFilter.date.length === 10
+      ? dayjs(pendingDateFilter.date)
+      : startDateValue;
+  const activeEndDate =
+    pendingDateFilter.endDate &&
+    dateRegex.test(pendingDateFilter.endDate) &&
+    pendingDateFilter.endDate.length === 10
+      ? dayjs(pendingDateFilter.endDate)
+      : endDateValue;
 
   return (
     <Box>
@@ -1009,13 +925,20 @@ function App() {
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
-                  color={showDateFilterInput ? "primary" : "default"}
-                  onClick={() => {
-                    setShowDateFilterInput((prev) => {
-                      const next = !prev;
-                      setStartDatePickerOpen(next);
-                      return next;
+                  color={isDatePopoverOpen ? "primary" : "default"}
+                  onClick={(event) => {
+                    if (isDatePopoverOpen) {
+                      setDatePopoverAnchor(null);
+                      return;
+                    }
+                    setPendingDateFilter({
+                      date: itemFilters.date,
+                      endDate: itemFilters.endDate,
+                      dueDate: itemFilters.dueDate,
+                      hasDue: itemFilters.hasDue,
                     });
+                    setDatePickerMode("start");
+                    setDatePopoverAnchor(event.currentTarget);
                   }}
                   disabled={items.length === 0 || selectMode}
                 >
@@ -1054,189 +977,139 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-            </Stack>
-          )}
-        </Stack>
-        <Box sx={{ pt: 2 }}>
-          <TabPanel value={activeTab} index="items">
-            <Stack spacing={1}>
-              {showDateFilterInput ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center", flexWrap: "nowrap" }}
+              <Popover
+                open={isDatePopoverOpen}
+                anchorEl={datePopoverAnchor}
+                onClose={() => setDatePopoverAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      backgroundColor: colors.blueGrey[900],
+                      border: `1px solid ${colors.blueGrey[700]}`,
+                      p: 1,
+                      minWidth: 320,
+                    },
+                  },
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: colors.blueGrey[100],
+                    px: 1,
+                    pb: 0.5,
+                    textAlign: "center",
+                    backgroundColor: colors.blueGrey[700],
+                  }}
                 >
-                  <DatePicker
-                    label="Start date"
-                    value={startDateValue}
-                    localeText={dateFieldLocaleText}
-                    open={startDatePickerOpen}
-                    onOpen={() => setStartDatePickerOpen(true)}
-                    onClose={() => setStartDatePickerOpen(false)}
-                    showDaysOutsideCurrentMonth
-                    minDate={filteredMinDate}
-                    maxDate={calendarMaxDate}
-                    onChange={(value: Dayjs | null) => {
-                      if (!value) return;
-                      const dateStr = value.format("YYYY-MM-DD");
-                      const todayStr = today.format("YYYY-MM-DD");
-
-                      if (dateStr > todayStr && dueDaysByDate.has(dateStr)) {
-                        setItemFilters((prev) => ({
-                          ...prev,
-                          dueDate: dateStr,
-                          date: "",
-                          endDate: "",
-                        }));
-                        setStartDatePickerOpen(false);
-                        return;
-                      }
-
-                      const nextStart = dateStr;
-                      setItemFilters((prev) => ({
+                  {datePickerMode === "start" ? "Start Date" : "End Date"}
+                </Typography>
+                <DateCalendar
+                  value={
+                    datePickerMode === "start" ? activeStartDate : activeEndDate
+                  }
+                  onChange={(value: Dayjs | null) => {
+                    if (!value) return;
+                    const next = value.format("YYYY-MM-DD");
+                    if (datePickerMode === "start") {
+                      setPendingDateFilter((prev) => ({
                         ...prev,
-                        date: nextStart,
-                        endDate:
-                          prev.endDate && prev.endDate < nextStart
-                            ? nextStart
-                            : prev.endDate || nextStart,
+                        date: next,
                         dueDate: "",
+                        endDate:
+                          prev.endDate && prev.endDate < next
+                            ? next
+                            : prev.endDate,
                       }));
-                      setStartDatePickerOpen(false);
-                      window.requestAnimationFrame(() => {
-                        endDateInputRef.current?.focus();
-                      });
-                    }}
-                    slotProps={{
-                      textField: {
-                        size: "small",
-                        fullWidth: false,
-                        inputRef: startDateInputRef,
-                        sx: {
-                          minWidth: 0,
-                          flex: 1,
-                          "& .MuiInputBase-input": {
-                            pr: 0,
-                            textTransform: "lowercase",
-                          },
-                          "& .MuiInputBase-input::placeholder": {
-                            textTransform: "lowercase",
-                            opacity: 1,
-                          },
-                          "& .MuiInputAdornment-root": {
-                            ml: 0,
-                          },
-                          "& .MuiIconButton-root": {
-                            p: 0,
-                            m: 0,
-                          },
-                        },
+                      return;
+                    }
+                    setPendingDateFilter((prev) => ({
+                      ...prev,
+                      endDate: next,
+                      dueDate: "",
+                    }));
+                  }}
+                  showDaysOutsideCurrentMonth
+                  minDate={
+                    datePickerMode === "start"
+                      ? filteredMinDate
+                      : (activeStartDate ?? filteredMinDate)
+                  }
+                  maxDate={calendarMaxDate}
+                  slots={{ day: CalendarDay }}
+                  sx={{
+                    "& .MuiPickersCalendarHeader-label": {
+                      color: colors.blueGrey[100],
+                    },
+                    "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                      {
+                        color: colors.blueGrey[200],
                       },
-                      popper: {
-                        sx: {
-                          "& .MuiPaper-root": {
-                            backgroundColor: colors.blueGrey[900],
-                            border: `1px solid ${colors.blueGrey[700]}`,
-                          },
-                          "& .MuiPickersCalendarHeader-label": {
-                            color: colors.blueGrey[100],
-                          },
-                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                            {
-                              color: colors.blueGrey[200],
-                            },
-                          "& .MuiDayCalendar-weekDayLabel": {
-                            color: colors.blueGrey[400],
-                          },
-                        },
-                      },
-                      layout: {
-                        onFutureClick: () => {
-                          setItemFilters((prev) => ({
+                    "& .MuiDayCalendar-weekDayLabel": {
+                      color: colors.blueGrey[400],
+                    },
+                  }}
+                />
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 1,
+                    pt: 0.5,
+                  }}
+                >
+                  {datePickerMode === "start" ? (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() =>
+                          setPendingDateFilter((prev) => ({
                             ...prev,
                             hasDue: !prev.hasDue,
+                          }))
+                        }
+                        sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                      >
+                        {pendingDateFilter.hasDue ? "All" : "Due"}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="info"
+                        onClick={() => {
+                          const fallbackStart = dayjs().format("YYYY-MM-DD");
+                          setPendingDateFilter((prev) => ({
+                            ...prev,
+                            date: prev.date || fallbackStart,
+                            endDate: prev.endDate || prev.date || fallbackStart,
+                            dueDate: "",
                           }));
-                          setStartDatePickerOpen(false);
-                        },
-                        hasDue: itemFilters.hasDue,
-                      } as Parameters<typeof StartDateLayout>[0],
-                      actionBar: { actions: ["cancel", "accept"] as const },
-                    }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    slots={{ day: CalendarDay, layout: StartDateLayout as any }}
-                    format="YYYY-MM-DD"
-                  />
-                  <DatePicker
-                    label="End date"
-                    value={endDateValue}
-                    localeText={dateFieldLocaleText}
-                    showDaysOutsideCurrentMonth
-                    disabled={!!itemFilters.dueDate}
-                    minDate={startDateValue ?? filteredMinDate}
-                    maxDate={filteredMaxDate}
-                    onChange={(value: Dayjs | null) =>
-                      setItemFilters((prev) => ({
-                        ...prev,
-                        endDate: value ? value.format("YYYY-MM-DD") : "",
-                      }))
-                    }
-                    slotProps={{
-                      textField: {
-                        size: "small",
-                        fullWidth: false,
-                        inputRef: endDateInputRef,
-
-                        sx: {
-                          minWidth: 0,
-                          flex: 1,
-                          "& .MuiInputBase-input": {
-                            pr: 0,
-                            textTransform: "lowercase",
-                          },
-                          "& .MuiInputBase-input::placeholder": {
-                            textTransform: "lowercase",
-                            opacity: 1,
-                          },
-                          "& .MuiInputAdornment-root": {
-                            ml: 0,
-                          },
-                          "& .MuiIconButton-root": {
-                            p: 0,
-                            m: 0,
-                          },
-                        },
-                      },
-                      popper: {
-                        sx: {
-                          "& .MuiPaper-root": {
-                            backgroundColor: colors.blueGrey[900],
-                            border: `1px solid ${colors.blueGrey[700]}`,
-                          },
-                          "& .MuiPickersCalendarHeader-label": {
-                            color: colors.blueGrey[100],
-                          },
-                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                            {
-                              color: colors.blueGrey[200],
-                            },
-                          "& .MuiDayCalendar-weekDayLabel": {
-                            color: colors.blueGrey[400],
-                          },
-                        },
-                      },
-                      actionBar: { actions: ["cancel", "accept"] as const },
-                    }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    slots={{ day: CalendarDay, layout: EndDateLayout as any }}
-                    format="YYYY-MM-DD"
-                  />
+                          setDatePickerMode("end");
+                        }}
+                        sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                      >
+                        End
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      color="info"
+                      onClick={() => setDatePickerMode("start")}
+                      sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                    >
+                      Start
+                    </Button>
+                  )}
+                  <Box sx={{ flex: 1 }} />
                   <Tooltip title="Remove date filter">
                     <IconButton
                       aria-label="Remove date filter"
                       color="error"
                       onClick={() => {
-                        setShowDateFilterInput(false);
-                        setStartDatePickerOpen(false);
                         setItemFilters((prev) => ({
                           ...prev,
                           date: "",
@@ -1244,23 +1117,57 @@ function App() {
                           dueDate: "",
                           hasDue: false,
                         }));
+                        setDatePopoverAnchor(null);
                       }}
                     >
                       <Icon path={mdiTrashCan} size={0.9} />
                     </IconButton>
                   </Tooltip>
-                </Stack>
-              ) : (
-                <ItemForm
-                  editingItem={editingItem}
-                  initialText={sharedText ?? undefined}
-                  categories={categories}
-                  onSubmit={handleItemSubmit}
-                  onCancelEdit={() => setEditingItem(null)}
-                  onFilterTextChange={handleFilterTextChange}
-                  onFilterCategoryChange={handleFilterCategoryChange}
-                />
-              )}
+                  <Tooltip title="Cancel date">
+                    <IconButton
+                      aria-label="Cancel date"
+                      color="primary"
+                      onClick={() => setDatePopoverAnchor(null)}
+                    >
+                      <Icon path={mdiCancel} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Save date">
+                    <IconButton
+                      aria-label="Save date"
+                      color="primary"
+                      onClick={() => {
+                        setItemFilters((prev) => ({
+                          ...prev,
+                          date: pendingDateFilter.date,
+                          endDate: pendingDateFilter.endDate,
+                          dueDate: pendingDateFilter.dueDate,
+                          hasDue: pendingDateFilter.hasDue,
+                        }));
+                        setDatePopoverAnchor(null);
+                      }}
+                      sx={{ color: colors.lightGreen[400] }}
+                    >
+                      <Icon path={mdiCheckCircle} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              </Popover>
+            </Stack>
+          )}
+        </Stack>
+        <Box sx={{ pt: 2 }}>
+          <TabPanel value={activeTab} index="items">
+            <Stack spacing={1}>
+              <ItemForm
+                editingItem={editingItem}
+                initialText={sharedText ?? undefined}
+                categories={categories}
+                onSubmit={handleItemSubmit}
+                onCancelEdit={() => setEditingItem(null)}
+                onFilterTextChange={handleFilterTextChange}
+                onFilterCategoryChange={handleFilterCategoryChange}
+              />
               {selectMode && (
                 <Stack
                   direction="row"
