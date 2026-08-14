@@ -47,12 +47,10 @@ const ColorDot = ({ colorName }: { colorName?: string }) => (
       flexShrink: 0,
       bgcolor: colorName
         ? getLabelColorSwatch(colorName).background
-        : "transparent",
-      border: !colorName ? `1px solid ${colors.blueGrey[500]}` : undefined,
+        : "white",
     }}
   />
 );
-
 
 const CategoryForm = ({
   editingCategory,
@@ -65,8 +63,10 @@ const CategoryForm = ({
     control,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<CategoryFormValues>({ defaultValues: emptyValues });
+  const selectedColor = watch("color");
 
   useEffect(() => {
     reset(
@@ -97,119 +97,6 @@ const CategoryForm = ({
   return (
     <Box component="form" onSubmit={submit} noValidate>
       <Stack direction="column" sx={{ gap: 1, width: "100%" }}>
-        <Controller
-          name="icon"
-          control={control}
-          rules={{ required: "Icon is required" }}
-          render={({ field: { onChange, value, ...field } }) => (
-            <Autocomplete
-              {...field}
-              value={value}
-              onChange={(_event, newValue) => onChange(newValue)}
-              inputValue={iconInputValue}
-              onInputChange={(_event, newInputValue) =>
-                setIconInputValue(newInputValue)
-              }
-              options={iconOptions}
-              filterOptions={
-                iconInputValue
-                  ? (options, state) => {
-                      const filtered = baseFilterOptions(options, state);
-                      const letterOption = createLetterIconOptionFromInput(
-                        state.inputValue,
-                      );
-                      if (
-                        letterOption &&
-                        !filtered.some((option) => option.name === letterOption.name)
-                      ) {
-                        filtered.unshift(letterOption);
-                      }
-                      return filtered;
-                    }
-                  : (options) => options
-              }
-              getOptionLabel={(option) => option.label}
-              isOptionEqualToValue={(option, val) => option.name === val.name}
-              sx={{ width: "100%" }}
-              slotProps={{
-                paper: {
-                  sx: !iconInputValue
-                    ? {
-                        "& .MuiAutocomplete-listbox": {
-                          display: "inline-flex",
-                          justifyContent: "center",
-                          flexWrap: "wrap",
-                          backgroundColor: colors.blueGrey[900],
-                        },
-                      }
-                    : undefined,
-                },
-              }}
-              renderOption={(props, option) =>
-                iconInputValue ? (
-                  <Box component="li" {...props} key={option.name}>
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        mr: 1,
-                      }}
-                    >
-                      <LabelIcon icon={option} size={0.9} />
-                    </Box>
-                    {option.label}
-                  </Box>
-                ) : (
-                  <Box
-                    component="li"
-                    {...props}
-                    key={option.name}
-                    sx={{
-                      display: "inline-flex !important",
-                      px: "0.7rem !important",
-                    }}
-                  >
-                    <LabelIcon icon={option} size={0.9} />
-                  </Box>
-                )
-              }
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search icon or use A, AB, 0-99, A0"
-                  size="small"
-                  error={!!errors.icon}
-                  helperText={errors.icon?.message}
-                  slotProps={{
-                    ...params.slotProps,
-                    input: {
-                      ...params.slotProps.input,
-                      startAdornment: value ? (
-                        <LabelIcon icon={value} size={0.9} />
-                      ) : null,
-                    },
-                  }}
-                  fullWidth
-                  sx={{
-                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                      {
-                        borderColor: colors.blueGrey[500],
-                      },
-                  }}
-                />
-              )}
-            />
-          )}
-        />
         <Controller
           name="color"
           control={control}
@@ -253,6 +140,133 @@ const CategoryForm = ({
                 </MenuItem>
               ))}
             </Select>
+          )}
+        />
+        <Controller
+          name="icon"
+          control={control}
+          rules={{ required: "Icon is required" }}
+          render={({ field: { onChange, value, ...field } }) => (
+            <Autocomplete
+              {...field}
+              value={value}
+              onChange={(_event, newValue) => onChange(newValue)}
+              inputValue={iconInputValue}
+              onInputChange={(_event, newInputValue) =>
+                setIconInputValue(newInputValue)
+              }
+              options={iconOptions}
+              filterOptions={
+                iconInputValue
+                  ? (options, state) => {
+                      const filtered = baseFilterOptions(options, state);
+                      const letterOption = createLetterIconOptionFromInput(
+                        state.inputValue,
+                      );
+                      if (
+                        letterOption &&
+                        !filtered.some(
+                          (option) => option.name === letterOption.name,
+                        )
+                      ) {
+                        filtered.unshift(letterOption);
+                      }
+                      return filtered;
+                    }
+                  : (options) => options
+              }
+              getOptionLabel={(option) => option.label}
+              isOptionEqualToValue={(option, val) => option.name === val.name}
+              sx={{ width: "100%" }}
+              slotProps={{
+                paper: {
+                  sx: !iconInputValue
+                    ? {
+                        "& .MuiAutocomplete-listbox": {
+                          display: "inline-flex",
+                          justifyContent: "center",
+                          flexWrap: "wrap",
+                          backgroundColor: colors.blueGrey[900],
+                        },
+                      }
+                    : undefined,
+                },
+              }}
+              renderOption={(props, option) =>
+                iconInputValue ? (
+                  <Box component="li" {...props} key={option.name}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        mr: 1,
+                      }}
+                    >
+                      <LabelIcon
+                        icon={option}
+                        size={0.9}
+                        color={selectedColor || undefined}
+                      />
+                    </Box>
+                    {option.label}
+                  </Box>
+                ) : (
+                  <Box
+                    component="li"
+                    {...props}
+                    key={option.name}
+                    sx={{
+                      display: "inline-flex !important",
+                      px: "0.7rem !important",
+                    }}
+                  >
+                    <LabelIcon
+                      icon={option}
+                      size={0.9}
+                      color={selectedColor || undefined}
+                    />
+                  </Box>
+                )
+              }
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Search icon or use A, AB, 0-99, A0"
+                  size="small"
+                  error={!!errors.icon}
+                  helperText={errors.icon?.message}
+                  slotProps={{
+                    ...params.slotProps,
+                    input: {
+                      ...params.slotProps.input,
+                      startAdornment: value ? (
+                        <LabelIcon
+                          icon={value}
+                          size={0.9}
+                          color={selectedColor || undefined}
+                        />
+                      ) : null,
+                    },
+                  }}
+                  fullWidth
+                  sx={{
+                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                  }}
+                />
+              )}
+            />
           )}
         />
         <Stack
