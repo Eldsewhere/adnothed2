@@ -167,6 +167,7 @@ const ItemList = ({
   const [searchMenuAnchor, setSearchMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
+    selectedText?: string;
   } | null>(null);
   const [overflowModalItemId, setOverflowModalItemId] = useState<string | null>(
     null,
@@ -278,12 +279,34 @@ const ItemList = ({
     closeMenu();
   };
 
+  const getSelectedTextForItem = (itemId: string): string | undefined => {
+    const selection = window.getSelection();
+    const selectedText = selection?.toString().trim();
+    if (!selectedText || !selection?.anchorNode || !selection.focusNode) {
+      return undefined;
+    }
+
+    const itemText = Array.from(
+      document.querySelectorAll<HTMLElement>("[data-item-text-id]"),
+    ).find((element) => element.dataset.itemTextId === itemId);
+    if (
+      !itemText ||
+      !itemText.contains(selection.anchorNode) ||
+      !itemText.contains(selection.focusNode)
+    ) {
+      return undefined;
+    }
+
+    return selectedText;
+  };
+
   const handleSearch = (
     item: Item,
     searchUrl: (query: string) => string,
+    selectedText?: string,
   ) => {
     window.open(
-      searchUrl(encodeURIComponent(getSearchQuery(item.text))),
+      searchUrl(encodeURIComponent(getSearchQuery(selectedText ?? item.text))),
       "_blank",
       "noopener,noreferrer",
     );
@@ -654,6 +677,7 @@ const ItemList = ({
                       <Typography
                         component="div"
                         ref={(element) => updateOverflowState(item.id, element)}
+                        data-item-text-id={item.id}
                         sx={{
                           flex: 1,
                           minWidth: 0,
@@ -957,6 +981,7 @@ const ItemList = ({
                 setSearchMenuAnchor({
                   el: event.currentTarget,
                   item: menuAnchor.item,
+                  selectedText: getSelectedTextForItem(menuAnchor.item.id),
                 });
               }
             }}
@@ -1112,6 +1137,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://www.google.com/search?q=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1124,6 +1150,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://chatgpt.com/?q=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1136,6 +1163,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://www.reddit.com/search/?q=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1148,6 +1176,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://www.youtube.com/results?search_query=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1161,6 +1190,7 @@ const ItemList = ({
               searchMenuAnchor.item,
               (query) =>
                 `https://www.google.com/maps/search/?api=1&query=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1174,6 +1204,7 @@ const ItemList = ({
               searchMenuAnchor.item,
               (query) =>
                 `https://www.instagram.com/explore/search/keyword/?q=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1186,6 +1217,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://open.spotify.com/search/${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
@@ -1198,6 +1230,7 @@ const ItemList = ({
             handleSearch(
               searchMenuAnchor.item,
               (query) => `https://www.amazon.es/s?k=${query}`,
+              searchMenuAnchor.selectedText,
             )
           }
         >
