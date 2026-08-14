@@ -82,14 +82,12 @@ const CategoryList = ({
               https://pictogrammers.com/library/mdi/
             </a>
           </Box>
-          <Box sx={{ mt: 0.5 }}>
-            Or use avatar text: A, AB, 0-99, or A0.
-          </Box>
+          <Box sx={{ mt: 0.5 }}>Or use avatar text: A, AB, 0-99, or A0.</Box>
         </Alert>
       ) : (
         <Box
           sx={{
-            maxHeight: "calc(100vh - 260px)",
+            maxHeight: "calc(100vh - 232px)",
             overflowY: "auto",
             minHeight: 0,
             bgcolor: colors.blueGrey[900],

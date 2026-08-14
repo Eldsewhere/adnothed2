@@ -582,7 +582,7 @@ const ItemList = ({
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: "calc(100vh - 180px)",
+            height: "calc(100vh - 160px)",
             minHeight: 200,
             overflowY: "auto",
             position: "relative",
