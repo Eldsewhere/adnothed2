@@ -75,6 +75,27 @@ type TabValue = "items" | "categories";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
+const SHORT_MONTHS = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+
+const formatShortRangeDate = (value: Dayjs): string => {
+  const day = value.date().toString().padStart(2, "0");
+  const month = SHORT_MONTHS[value.month()] ?? value.format("MMM");
+  const year = value.format("YY");
+  return `${day} ${month} ${year}`;
+};
 
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
@@ -868,6 +889,16 @@ function App() {
     pendingDateFilter.endDate.length === 10
       ? dayjs(pendingDateFilter.endDate)
       : endDateValue;
+  const startRangeLabel = activeStartDate
+    ? formatShortRangeDate(activeStartDate)
+    : "?";
+  const endRangeLabel = activeEndDate
+    ? formatShortRangeDate(activeEndDate)
+    : "?";
+  const showRangeInTitle = Boolean(activeStartDate || activeEndDate);
+  const titleRangeSuffix = showRangeInTitle
+    ? ` (${startRangeLabel} - ${endRangeLabel})`
+    : "";
 
   return (
     <Box>
@@ -1007,6 +1038,7 @@ function App() {
                   }}
                 >
                   {datePickerMode === "start" ? "Start Date" : "End Date"}
+                  {titleRangeSuffix}
                 </Typography>
                 <Box sx={{ px: 1, py: 0.75 }}>
                   <DateCalendar
