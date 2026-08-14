@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Badge,
@@ -15,24 +21,23 @@ import {
   Menu,
   MenuItem,
   Paper,
+  Popover,
   Snackbar,
   Stack,
   Tab,
   Tabs,
-  TextField,
   Tooltip,
+  Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
-  mdiFilter,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
   mdiTrashCan,
   mdiUpload,
   mdiDownload,
   mdiCalendar,
-  mdiNoteText,
   mdiCheckCircle,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
@@ -43,14 +48,8 @@ import TabPanel from "./components/TabPanel";
 import LabelIcon from "./components/LabelIcon";
 import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
-import { DatePicker } from "@mui/x-date-pickers";
+import { DateCalendar } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
-import {
-  PickersLayout,
-  usePickerLayout,
-  type PickersLayoutProps,
-} from "@mui/x-date-pickers/PickersLayout";
-import { usePickerContext } from "@mui/x-date-pickers/hooks";
 import {
   DEFAULT_FILE_NAME,
   getPersistedFileName,
@@ -76,6 +75,27 @@ type TabValue = "items" | "categories";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
+const SHORT_MONTHS = [
+  "Ene",
+  "Feb",
+  "Mar",
+  "Abr",
+  "May",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dic",
+];
+
+const formatShortRangeDate = (value: Dayjs): string => {
+  const day = value.date().toString().padStart(2, "0");
+  const month = SHORT_MONTHS[value.month()] ?? value.format("MMM");
+  const year = value.format("YY");
+  return `${day} ${month} ${year}`;
+};
 
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
@@ -222,104 +242,6 @@ function toggleBulletRows(text: string): string {
     .join("\n");
 }
 
-type StartDateLayoutExtraProps = {
-  onFutureClick: () => void;
-  hasDue: boolean;
-};
-
-function IconActionBar() {
-  const { acceptValueChanges, cancelValueChanges } = usePickerContext();
-
-  return (
-    <>
-      <Tooltip title="Cancel date">
-        <IconButton
-          aria-label="Cancel date"
-          color="primary"
-          onClick={cancelValueChanges}
-        >
-          <Icon path={mdiCancel} size={0.9} />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title="Save date">
-        <IconButton
-          aria-label="Save date"
-          color="primary"
-          onClick={acceptValueChanges}
-          sx={{ color: colors.lightGreen[400] }}
-        >
-          <Icon path={mdiCheckCircle} size={0.9} />
-        </IconButton>
-      </Tooltip>
-    </>
-  );
-}
-
-function StartDateLayout(
-  props: PickersLayoutProps<Dayjs | null> & StartDateLayoutExtraProps,
-) {
-  const { onFutureClick, hasDue, ...layoutProps } = props;
-  const { content, actionBar } = usePickerLayout({
-    ...layoutProps,
-    slots: { ...layoutProps.slots, actionBar: IconActionBar },
-  });
-  return (
-    <PickersLayout
-      {...layoutProps}
-      slots={{ ...layoutProps.slots, actionBar: () => null }}
-    >
-      {content}
-      <Box
-        sx={{
-          gridColumn: "1 / 4",
-          display: "flex",
-          alignItems: "center",
-          px: 1,
-          pb: 0.5,
-        }}
-      >
-        <Button
-          variant={"outlined"}
-          color="warning"
-          onClick={onFutureClick}
-          sx={{ textTransform: "none", fontSize: "0.75rem" }}
-        >
-          {hasDue ? "All Dates" : "Due Dates"}
-        </Button>
-        <Box sx={{ flex: 1 }} />
-        {actionBar}
-      </Box>
-    </PickersLayout>
-  );
-}
-
-function EndDateLayout(props: PickersLayoutProps<Dayjs | null>) {
-  const { content, actionBar } = usePickerLayout({
-    ...props,
-    slots: { ...props.slots, actionBar: IconActionBar },
-  });
-  return (
-    <PickersLayout
-      {...props}
-      slots={{ ...props.slots, actionBar: () => null }}
-    >
-      {content}
-      <Box
-        sx={{
-          gridColumn: "1 / 4",
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          px: 1,
-          pb: 0.5,
-        }}
-      >
-        {actionBar}
-      </Box>
-    </PickersLayout>
-  );
-}
-
 function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("items");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -352,13 +274,17 @@ function App() {
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
   const isInitializingRef = useRef(true);
-  const startDateInputRef = useRef<HTMLInputElement | null>(null);
-  const endDateInputRef = useRef<HTMLInputElement | null>(null);
-  const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [showTextFilterInput, setShowTextFilterInput] = useState(false);
-  const [showDateFilterInput, setShowDateFilterInput] = useState(false);
-  const [labelFilterAnchor, setLabelFilterAnchor] =
+  const [datePopoverAnchor, setDatePopoverAnchor] =
     useState<HTMLElement | null>(null);
+  const [datePickerMode, setDatePickerMode] = useState<"start" | "end">(
+    "start",
+  );
+  const [pendingDateFilter, setPendingDateFilter] = useState<{
+    date: string;
+    endDate: string;
+    dueDate: string;
+    hasDue: boolean;
+  }>(emptyItemFilters);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
@@ -564,7 +490,12 @@ function App() {
 
     setCategories((prev) => [
       ...prev,
-      { id: iconName, name: values.name, icon: values.icon, color: values.color },
+      {
+        id: iconName,
+        name: values.name,
+        icon: values.icon,
+        color: values.color,
+      },
     ]);
     setLatestCategoryId(iconName);
     setNotificationSeverity("success");
@@ -772,8 +703,7 @@ function App() {
   };
 
   const handleEditItem = (item: Item) => {
-    setShowTextFilterInput(false);
-    setShowDateFilterInput(false);
+    setDatePopoverAnchor(null);
     setEditingItem(item);
   };
 
@@ -797,6 +727,28 @@ function App() {
     );
   };
 
+  const handleFilterTextChange = useCallback((value: string) => {
+    setItemFilters((prev) =>
+      prev.text === value
+        ? prev
+        : {
+            ...prev,
+            text: value,
+          },
+    );
+  }, []);
+
+  const handleFilterCategoryChange = useCallback((value: string) => {
+    setItemFilters((prev) =>
+      prev.categoryId === value
+        ? prev
+        : {
+            ...prev,
+            categoryId: value,
+          },
+    );
+  }, []);
+
   const startDateValue = itemFilters.dueDate
     ? dayjs(itemFilters.dueDate)
     : itemFilters.date &&
@@ -812,63 +764,6 @@ function App() {
       ? dayjs(itemFilters.endDate)
       : null;
 
-  const filteredItemsCount = useMemo(() => {
-    const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
-    const parsedTextFilters = parseTextFilters(itemFilters.text);
-
-    return sortedItems.filter((item, index) => {
-      if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-        if (item.categoryId !== null) {
-          return false;
-        }
-      } else if (
-        itemFilters.categoryId &&
-        item.categoryId !== itemFilters.categoryId
-      ) {
-        return false;
-      }
-
-      if (
-        !matchesTextFilters(
-          item.text,
-          item.createdAt,
-          index,
-          sortedItems.length,
-          parsedTextFilters,
-        )
-      ) {
-        return false;
-      }
-
-      const itemDate = formatDate(item.createdAt);
-      const hasStartDate =
-        itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
-      const hasEndDate =
-        itemFilters.endDate.length === 10 &&
-        dateRegex.test(itemFilters.endDate);
-
-      if (hasStartDate && itemDate < itemFilters.date.trim()) {
-        return false;
-      }
-      if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
-        return false;
-      }
-      if (itemFilters.dueDate) {
-        if (!item.due || formatDate(item.due) !== itemFilters.dueDate) {
-          return false;
-        }
-      }
-      if (itemFilters.hasDue) {
-        const todayUnix = dayjs().startOf("day").unix();
-        if (item.due === undefined || item.due < todayUnix) {
-          return false;
-        }
-      }
-
-      return true;
-    }).length;
-  }, [items, itemFilters]);
-
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.createdAt - a.createdAt),
     [items],
@@ -882,6 +777,13 @@ function App() {
   const calendarFilteredItems = useMemo(
     () =>
       sortedItems.filter((item, index) => {
+        if (itemFilters.hasDue) {
+          const todayUnix = dayjs().startOf("day").unix();
+          if (item.due === undefined || item.due < todayUnix) {
+            return false;
+          }
+        }
+
         if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
           if (item.categoryId !== null) {
             return false;
@@ -901,7 +803,12 @@ function App() {
           parsedTextFilters,
         );
       }),
-    [itemFilters.categoryId, parsedTextFilters, sortedItems],
+    [
+      itemFilters.categoryId,
+      itemFilters.hasDue,
+      parsedTextFilters,
+      sortedItems,
+    ],
   );
 
   const noteCountsByDay = useMemo(() => {
@@ -981,11 +888,29 @@ function App() {
     />
   );
 
-  const dateFieldLocaleText = {
-    fieldYearPlaceholder: () => "yyyy",
-    fieldMonthPlaceholder: () => "mm",
-    fieldDayPlaceholder: () => "dd",
-  };
+  const isDatePopoverOpen = Boolean(datePopoverAnchor);
+  const activeStartDate =
+    pendingDateFilter.date &&
+    dateRegex.test(pendingDateFilter.date) &&
+    pendingDateFilter.date.length === 10
+      ? dayjs(pendingDateFilter.date)
+      : startDateValue;
+  const activeEndDate =
+    pendingDateFilter.endDate &&
+    dateRegex.test(pendingDateFilter.endDate) &&
+    pendingDateFilter.endDate.length === 10
+      ? dayjs(pendingDateFilter.endDate)
+      : endDateValue;
+  const startRangeLabel = activeStartDate
+    ? formatShortRangeDate(activeStartDate)
+    : "?";
+  const endRangeLabel = activeEndDate
+    ? formatShortRangeDate(activeEndDate)
+    : "?";
+  const showRangeInTitle = Boolean(activeStartDate || activeEndDate);
+  const titleRangeSuffix = showRangeInTitle
+    ? ` (${startRangeLabel} - ${endRangeLabel})`
+    : "";
 
   return (
     <Box>
@@ -1040,50 +965,23 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-                            <Tooltip title="Filter by label">
-                <IconButton
-                  aria-label="Filter by label"
-                  color={itemFilters.categoryId ? "primary" : "default"}
-                  onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
-                  disabled={items.length === 0 || selectMode}
-                >
-                  <Badge
-                    variant="dot"
-                    invisible={!itemFilters.categoryId}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
-                      },
-                    }}
-                  >
-                    {(() => {
-                      const selectedCategory = categories.find(
-                        (c) => c.id === itemFilters.categoryId,
-                      );
-                      return selectedCategory ? (
-                        <LabelIcon
-                          icon={selectedCategory.icon}
-                          color={selectedCategory.color}
-                          size={0.9}
-                        />
-                      ) : (
-                        <Icon path={mdiNoteText} size={0.9} />
-                      );
-                    })()}
-                  </Badge>
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
-                  color={showDateFilterInput ? "primary" : "default"}
-                  onClick={() => {
-                    setShowTextFilterInput(false);
-                    setShowDateFilterInput((prev) => {
-                      const next = !prev;
-                      setStartDatePickerOpen(next);
-                      return next;
+                  color={isDatePopoverOpen ? "primary" : "default"}
+                  onClick={(event) => {
+                    if (isDatePopoverOpen) {
+                      setDatePopoverAnchor(null);
+                      return;
+                    }
+                    setPendingDateFilter({
+                      date: itemFilters.date,
+                      endDate: itemFilters.endDate,
+                      dueDate: itemFilters.dueDate,
+                      hasDue: itemFilters.hasDue,
                     });
+                    setDatePickerMode("start");
+                    setDatePopoverAnchor(event.currentTarget);
                   }}
                   disabled={items.length === 0 || selectMode}
                 >
@@ -1122,212 +1020,153 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Filter note text">
-                <IconButton
-                  aria-label="Filter notes"
-                  onClick={() => {
-                    setShowDateFilterInput(false);
-                    setShowTextFilterInput((prev) => !prev);
+              <Popover
+                open={isDatePopoverOpen}
+                anchorEl={datePopoverAnchor}
+                onClose={() => setDatePopoverAnchor(null)}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                transformOrigin={{ vertical: "top", horizontal: "right" }}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      backgroundColor: colors.blueGrey[900],
+                      border: `1px solid ${colors.blueGrey[700]}`,
+                      p: 0,
+                      minWidth: 320,
+                      overflow: "hidden",
+                    },
+                  },
+                }}
+              >
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    color: colors.blueGrey[100],
+                    px: 1.25,
+                    py: 1,
+                    textAlign: "center",
+                    backgroundColor: colors.blueGrey[800],
+                    borderBottom: `1px solid ${colors.blueGrey[700]}`,
                   }}
-                  color={showTextFilterInput ? "primary" : "default"}
-                  disabled={items.length === 0 || selectMode}
                 >
-                  <Badge
-                    variant="dot"
-                    invisible={itemFilters.text.trim() === ""}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
-                      },
-                    }}
-                  >
-                    <Icon path={mdiFilter} size={0.9} />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          )}
-        </Stack>
-        <Box sx={{ pt: 2 }}>
-          <TabPanel value={activeTab} index="items">
-            <Stack spacing={1}>
-              {showDateFilterInput ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center", flexWrap: "nowrap" }}
-                >
-                  <DatePicker
-                    label="Start date"
-                    value={startDateValue}
-                    localeText={dateFieldLocaleText}
-                    open={startDatePickerOpen}
-                    onOpen={() => setStartDatePickerOpen(true)}
-                    onClose={() => setStartDatePickerOpen(false)}
-                    showDaysOutsideCurrentMonth
-                    minDate={filteredMinDate}
-                    maxDate={calendarMaxDate}
+                  {datePickerMode === "start" ? "Start Date" : "End Date"}
+                  {titleRangeSuffix}
+                </Typography>
+                <Box sx={{ px: 1, py: 0.75 }}>
+                  <DateCalendar
+                    value={
+                      datePickerMode === "start"
+                        ? activeStartDate
+                        : activeEndDate
+                    }
                     onChange={(value: Dayjs | null) => {
                       if (!value) return;
-                      const dateStr = value.format("YYYY-MM-DD");
-                      const todayStr = today.format("YYYY-MM-DD");
-
-                      if (dateStr > todayStr && dueDaysByDate.has(dateStr)) {
-                        setItemFilters((prev) => ({
+                      const next = value.format("YYYY-MM-DD");
+                      if (datePickerMode === "start") {
+                        setPendingDateFilter((prev) => ({
                           ...prev,
-                          dueDate: dateStr,
-                          date: "",
-                          endDate: "",
+                          date: next,
+                          dueDate: "",
+                          endDate:
+                            prev.endDate && prev.endDate < next
+                              ? next
+                              : prev.endDate,
                         }));
-                        setStartDatePickerOpen(false);
                         return;
                       }
-
-                      const nextStart = dateStr;
-                      setItemFilters((prev) => ({
+                      setPendingDateFilter((prev) => ({
                         ...prev,
-                        date: nextStart,
-                        endDate:
-                          prev.endDate && prev.endDate < nextStart
-                            ? nextStart
-                            : prev.endDate || nextStart,
+                        endDate: next,
                         dueDate: "",
                       }));
-                      setStartDatePickerOpen(false);
-                      window.requestAnimationFrame(() => {
-                        endDateInputRef.current?.focus();
-                      });
                     }}
-                    slotProps={{
-                      textField: {
-                        size: "small",
-                        fullWidth: false,
-                        inputRef: startDateInputRef,
-                        sx: {
-                          minWidth: 0,
-                          flex: 1,
-                          "& .MuiInputBase-input": {
-                            pr: 0,
-                            textTransform: "lowercase",
-                          },
-                          "& .MuiInputBase-input::placeholder": {
-                            textTransform: "lowercase",
-                            opacity: 1,
-                          },
-                          "& .MuiInputAdornment-root": {
-                            ml: 0,
-                          },
-                          "& .MuiIconButton-root": {
-                            p: 0,
-                            m: 0,
-                          },
-                        },
+                    showDaysOutsideCurrentMonth
+                    minDate={
+                      datePickerMode === "start"
+                        ? filteredMinDate
+                        : (activeStartDate ?? filteredMinDate)
+                    }
+                    maxDate={calendarMaxDate}
+                    slots={{ day: CalendarDay }}
+                    sx={{
+                      "& .MuiPickersCalendarHeader-label": {
+                        color: colors.blueGrey[100],
                       },
-                      popper: {
-                        sx: {
-                          "& .MuiPaper-root": {
-                            backgroundColor: colors.blueGrey[900],
-                            border: `1px solid ${colors.blueGrey[700]}`,
-                          },
-                          "& .MuiPickersCalendarHeader-label": {
-                            color: colors.blueGrey[100],
-                          },
-                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                            {
-                              color: colors.blueGrey[200],
-                            },
-                          "& .MuiDayCalendar-weekDayLabel": {
-                            color: colors.blueGrey[400],
-                          },
+                      "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                        {
+                          color: colors.blueGrey[200],
                         },
+                      "& .MuiDayCalendar-weekDayLabel": {
+                        color: colors.blueGrey[400],
                       },
-                      layout: {
-                        onFutureClick: () => {
+                    }}
+                  />
+                </Box>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 1,
+                    px: 1,
+                    py: 0.75,
+                    backgroundColor: colors.blueGrey[800],
+                    borderTop: `1px solid ${colors.blueGrey[700]}`,
+                  }}
+                >
+                  {datePickerMode === "start" ? (
+                    <>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => {
+                          const nextHasDue = !pendingDateFilter.hasDue;
+                          setPendingDateFilter((prev) => ({
+                            ...prev,
+                            hasDue: nextHasDue,
+                          }));
                           setItemFilters((prev) => ({
                             ...prev,
-                            hasDue: !prev.hasDue,
+                            hasDue: nextHasDue,
                           }));
-                          setStartDatePickerOpen(false);
-                        },
-                        hasDue: itemFilters.hasDue,
-                      } as Parameters<typeof StartDateLayout>[0],
-                      actionBar: { actions: ["cancel", "accept"] as const },
-                    }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    slots={{ day: CalendarDay, layout: StartDateLayout as any }}
-                    format="YYYY-MM-DD"
-                  />
-                  <DatePicker
-                    label="End date"
-                    value={endDateValue}
-                    localeText={dateFieldLocaleText}
-                    showDaysOutsideCurrentMonth
-                    disabled={!!itemFilters.dueDate}
-                    minDate={startDateValue ?? filteredMinDate}
-                    maxDate={filteredMaxDate}
-                    onChange={(value: Dayjs | null) =>
-                      setItemFilters((prev) => ({
-                        ...prev,
-                        endDate: value ? value.format("YYYY-MM-DD") : "",
-                      }))
-                    }
-                    slotProps={{
-                      textField: {
-                        size: "small",
-                        fullWidth: false,
-                        inputRef: endDateInputRef,
-
-                        sx: {
-                          minWidth: 0,
-                          flex: 1,
-                          "& .MuiInputBase-input": {
-                            pr: 0,
-                            textTransform: "lowercase",
-                          },
-                          "& .MuiInputBase-input::placeholder": {
-                            textTransform: "lowercase",
-                            opacity: 1,
-                          },
-                          "& .MuiInputAdornment-root": {
-                            ml: 0,
-                          },
-                          "& .MuiIconButton-root": {
-                            p: 0,
-                            m: 0,
-                          },
-                        },
-                      },
-                      popper: {
-                        sx: {
-                          "& .MuiPaper-root": {
-                            backgroundColor: colors.blueGrey[900],
-                            border: `1px solid ${colors.blueGrey[700]}`,
-                          },
-                          "& .MuiPickersCalendarHeader-label": {
-                            color: colors.blueGrey[100],
-                          },
-                          "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                            {
-                              color: colors.blueGrey[200],
-                            },
-                          "& .MuiDayCalendar-weekDayLabel": {
-                            color: colors.blueGrey[400],
-                          },
-                        },
-                      },
-                      actionBar: { actions: ["cancel", "accept"] as const },
-                    }}
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    slots={{ day: CalendarDay, layout: EndDateLayout as any }}
-                    format="YYYY-MM-DD"
-                  />
+                        }}
+                        sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                      >
+                        {pendingDateFilter.hasDue ? "All" : "Due"}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        color="info"
+                        onClick={() => {
+                          const fallbackStart = dayjs().format("YYYY-MM-DD");
+                          setPendingDateFilter((prev) => ({
+                            ...prev,
+                            date: prev.date || fallbackStart,
+                            endDate: prev.endDate || prev.date || fallbackStart,
+                            dueDate: "",
+                          }));
+                          setDatePickerMode("end");
+                        }}
+                        sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                      >
+                        End
+                      </Button>
+                    </>
+                  ) : (
+                    <Button
+                      variant="outlined"
+                      color="info"
+                      onClick={() => setDatePickerMode("start")}
+                      sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                    >
+                      Start
+                    </Button>
+                  )}
+                  <Box sx={{ flex: 1 }} />
                   <Tooltip title="Remove date filter">
                     <IconButton
                       aria-label="Remove date filter"
                       color="error"
                       onClick={() => {
-                        setShowDateFilterInput(false);
-                        setStartDatePickerOpen(false);
                         setItemFilters((prev) => ({
                           ...prev,
                           date: "",
@@ -1335,78 +1174,57 @@ function App() {
                           dueDate: "",
                           hasDue: false,
                         }));
+                        setDatePopoverAnchor(null);
                       }}
                     >
                       <Icon path={mdiTrashCan} size={0.9} />
                     </IconButton>
                   </Tooltip>
-                </Stack>
-              ) : showTextFilterInput ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center" }}
-                >
-                  <Box sx={{ position: "relative", flex: 1, minWidth: 0 }}>
-                    <TextField
-                      label="Note contains text"
-                      size="small"
-                      fullWidth
-                      autoFocus
-                      value={itemFilters.text}
-                      onChange={(event) =>
+                  <Tooltip title="Cancel date">
+                    <IconButton
+                      aria-label="Cancel date"
+                      color="primary"
+                      onClick={() => setDatePopoverAnchor(null)}
+                    >
+                      <Icon path={mdiCancel} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                  <Tooltip title="Save date">
+                    <IconButton
+                      aria-label="Save date"
+                      color="primary"
+                      onClick={() => {
                         setItemFilters((prev) => ({
                           ...prev,
-                          text: event.target.value,
-                        }))
-                      }
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          pr: 7,
-                        },
+                          date: pendingDateFilter.date,
+                          endDate: pendingDateFilter.endDate,
+                          dueDate: pendingDateFilter.dueDate,
+                          hasDue: pendingDateFilter.hasDue,
+                        }));
+                        setDatePopoverAnchor(null);
                       }}
-                    />
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        right: 10,
-                        bottom: 9,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        pointerEvents: "none",
-                        color: "text.secondary",
-                      }}
+                      sx={{ color: colors.lightGreen[400] }}
                     >
-                      <Icon path={mdiFilter} size={0.6} />
-                      <Box component="span" sx={{ fontSize: "0.72rem" }}>
-                        {filteredItemsCount}
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Tooltip title="Remove filter text">
-                    <IconButton
-                      aria-label="Remove filter text"
-                      color="error"
-                      onClick={() => {
-                        setShowTextFilterInput(false);
-                        setItemFilters((prev) => ({ ...prev, text: "" }));
-                      }}
-                      sx={{ mt: -2.75 }}
-                    >
-                      <Icon path={mdiTrashCan} size={0.9} />
+                      <Icon path={mdiCheckCircle} size={0.9} />
                     </IconButton>
                   </Tooltip>
-                </Stack>
-              ) : (
-                <ItemForm
-                  editingItem={editingItem}
-                  initialText={sharedText ?? undefined}
-                  categories={categories}
-                  onSubmit={handleItemSubmit}
-                  onCancelEdit={() => setEditingItem(null)}
-                />
-              )}
+                </Box>
+              </Popover>
+            </Stack>
+          )}
+        </Stack>
+        <Box sx={{ pt: 2 }}>
+          <TabPanel value={activeTab} index="items">
+            <Stack spacing={1}>
+              <ItemForm
+                editingItem={editingItem}
+                initialText={sharedText ?? undefined}
+                categories={categories}
+                onSubmit={handleItemSubmit}
+                onCancelEdit={() => setEditingItem(null)}
+                onFilterTextChange={handleFilterTextChange}
+                onFilterCategoryChange={handleFilterCategoryChange}
+              />
               {selectMode && (
                 <Stack
                   direction="row"
@@ -1690,54 +1508,6 @@ function App() {
         </DialogActions>
       </Dialog>
       <Menu
-        anchorEl={labelFilterAnchor}
-        open={!!labelFilterAnchor}
-        onClose={() => setLabelFilterAnchor(null)}
-      >
-        <MenuItem
-          onClick={() => {
-            setItemFilters((f) => ({ ...f, categoryId: "" }));
-            setLabelFilterAnchor(null);
-          }}
-        >
-          Show all
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setItemFilters((f) => ({
-              ...f,
-              categoryId: NO_CATEGORY_FILTER_VALUE,
-            }));
-            setLabelFilterAnchor(null);
-          }}
-        >
-          <Box
-            component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-          >
-            <Icon path={mdiNoteText} size={0.8} />
-          </Box>
-          No label
-        </MenuItem>
-        {categories.map((category) => (
-          <MenuItem
-            key={category.id}
-            onClick={() => {
-              setItemFilters((f) => ({ ...f, categoryId: category.id }));
-              setLabelFilterAnchor(null);
-            }}
-          >
-            <Box
-              component="span"
-              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-            >
-              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
-            </Box>
-            {category.name}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Menu
         anchorEl={bulkCategoryAnchor}
         open={!!bulkCategoryAnchor}
         onClose={() => setBulkCategoryAnchor(null)}
@@ -1754,7 +1524,11 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+              <LabelIcon
+                icon={category.icon}
+                color={category.color}
+                size={0.8}
+              />
             </Box>
             {category.name}
           </MenuItem>
