@@ -16,7 +16,6 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -43,6 +42,7 @@ import {
   mdiCalendarClock,
   mdiNoteText,
   mdiLabelMultiple,
+  mdiFileImport,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -259,6 +259,8 @@ function App() {
   );
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
   const [bulkCategoryAnchor, setBulkCategoryAnchor] =
+    useState<HTMLElement | null>(null);
+  const [labelsActionsAnchor, setLabelsActionsAnchor] =
     useState<HTMLElement | null>(null);
   const [confirmDeleteCategory, setConfirmDeleteCategory] =
     useState<Category | null>(null);
@@ -1252,6 +1254,54 @@ function App() {
               </Popover>
             </Stack>
           )}
+          {activeTab === "categories" && (
+            <>
+              <Tooltip title="Import/Export">
+                <IconButton
+                  aria-label="Import/Export"
+                  aria-controls={
+                    labelsActionsAnchor ? "labels-actions-menu" : undefined
+                  }
+                  aria-haspopup="true"
+                  aria-expanded={labelsActionsAnchor ? "true" : undefined}
+                  onClick={(event) =>
+                    setLabelsActionsAnchor(event.currentTarget)
+                  }
+                >
+                  <Icon path={mdiFileImport} size={0.9} />
+                </IconButton>
+              </Tooltip>
+              <Menu
+                id="labels-actions-menu"
+                anchorEl={labelsActionsAnchor}
+                open={Boolean(labelsActionsAnchor)}
+                onClose={() => setLabelsActionsAnchor(null)}
+              >
+                <MenuItem
+                  onClick={() => {
+                    setLabelsActionsAnchor(null);
+                    void selectImportFile();
+                  }}
+                >
+                  <Icon path={mdiUpload} size={0.8} />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    Import JSON
+                  </Box>
+                </MenuItem>
+                <MenuItem
+                  onClick={() => {
+                    setLabelsActionsAnchor(null);
+                    handleExportJson();
+                  }}
+                >
+                  <Icon path={mdiDownload} size={0.8} />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    Save as JSON
+                  </Box>
+                </MenuItem>
+              </Menu>
+            </>
+          )}
         </Stack>
         <Box sx={{ pt: 2 }}>
           <TabPanel value={activeTab} index="items">
@@ -1407,42 +1457,6 @@ function App() {
                 onDelete={requestDeleteCategory}
                 newCategoryId={latestCategoryId}
               />
-              <Divider />
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{
-                  width: "100%",
-                  justifyContent: "flex-end",
-                  flexWrap: "wrap",
-                  rowGap: 1,
-                }}
-              >
-                <Tooltip title="Import data from JSON file">
-                  <span>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={selectImportFile}
-                      startIcon={<Icon path={mdiUpload} size={0.9} />}
-                    >
-                      Import JSON
-                    </Button>
-                  </span>
-                </Tooltip>
-                <Tooltip title="Save current data to JSON file">
-                  <span>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={handleExportJson}
-                      startIcon={<Icon path={mdiDownload} size={0.9} />}
-                    >
-                      Save as JSON
-                    </Button>
-                  </span>
-                </Tooltip>
-              </Stack>
             </Stack>
           </TabPanel>
         </Box>
