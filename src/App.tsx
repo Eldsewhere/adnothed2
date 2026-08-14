@@ -777,6 +777,13 @@ function App() {
   const calendarFilteredItems = useMemo(
     () =>
       sortedItems.filter((item, index) => {
+        if (itemFilters.hasDue) {
+          const todayUnix = dayjs().startOf("day").unix();
+          if (item.due === undefined || item.due < todayUnix) {
+            return false;
+          }
+        }
+
         if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
           if (item.categoryId !== null) {
             return false;
@@ -796,7 +803,12 @@ function App() {
           parsedTextFilters,
         );
       }),
-    [itemFilters.categoryId, parsedTextFilters, sortedItems],
+    [
+      itemFilters.categoryId,
+      itemFilters.hasDue,
+      parsedTextFilters,
+      sortedItems,
+    ],
   );
 
   const noteCountsByDay = useMemo(() => {
@@ -1106,12 +1118,17 @@ function App() {
                       <Button
                         variant="outlined"
                         color="warning"
-                        onClick={() =>
+                        onClick={() => {
+                          const nextHasDue = !pendingDateFilter.hasDue;
                           setPendingDateFilter((prev) => ({
                             ...prev,
-                            hasDue: !prev.hasDue,
-                          }))
-                        }
+                            hasDue: nextHasDue,
+                          }));
+                          setItemFilters((prev) => ({
+                            ...prev,
+                            hasDue: nextHasDue,
+                          }));
+                        }}
                         sx={{ textTransform: "none", fontSize: "0.75rem" }}
                       >
                         {pendingDateFilter.hasDue ? "All" : "Due"}
