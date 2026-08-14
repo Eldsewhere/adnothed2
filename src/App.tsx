@@ -32,6 +32,7 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
+  mdiClose,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
   mdiTrashCan,
@@ -39,6 +40,7 @@ import {
   mdiDownload,
   mdiCalendar,
   mdiCheckCircle,
+  mdiCalendarClock,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -1031,20 +1033,41 @@ function App() {
                   },
                 }}
               >
-                <Typography
-                  variant="subtitle2"
+                <Box
                   sx={{
-                    color: colors.blueGrey[100],
-                    px: 1.25,
-                    py: 1,
-                    textAlign: "center",
+                    position: "relative",
                     backgroundColor: colors.blueGrey[800],
                     borderBottom: `1px solid ${colors.blueGrey[700]}`,
                   }}
                 >
-                  {datePickerMode === "start" ? "Start Date" : "End Date"}
-                  {titleRangeSuffix}
-                </Typography>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{
+                      color: colors.blueGrey[100],
+                      px: 1.25,
+                      py: 1,
+                      textAlign: "center",
+                    }}
+                  >
+                    {datePickerMode === "start" ? "Start Date" : "End Date"}
+                    {titleRangeSuffix}
+                  </Typography>
+                  <Tooltip title="Close">
+                    <IconButton
+                      aria-label="Close"
+                      size="small"
+                      onClick={() => setDatePopoverAnchor(null)}
+                      sx={{
+                        position: "absolute",
+                        top: 4,
+                        right: 4,
+                        color: colors.blueGrey[100],
+                      }}
+                    >
+                      <Icon path={mdiClose} size={0.8} />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
                 <Box sx={{ px: 1, py: 0.75 }}>
                   <DateCalendar
                     value={
@@ -1111,6 +1134,7 @@ function App() {
                       <Button
                         variant="outlined"
                         color="warning"
+                        startIcon={<Icon path={mdiCalendarClock} size={0.9} />}
                         onClick={() => {
                           const nextHasDue = !pendingDateFilter.hasDue;
                           setPendingDateFilter((prev) => ({
@@ -1129,6 +1153,7 @@ function App() {
                       <Button
                         variant="outlined"
                         color="info"
+                        startIcon={<Icon path={mdiCalendar} size={0.9} />}
                         onClick={() => {
                           const fallbackStart = dayjs().format("YYYY-MM-DD");
                           setPendingDateFilter((prev) => ({
@@ -1148,6 +1173,7 @@ function App() {
                     <Button
                       variant="outlined"
                       color="info"
+                      startIcon={<Icon path={mdiCalendar} size={0.9} />}
                       onClick={() => setDatePickerMode("start")}
                       sx={{ textTransform: "none", fontSize: "0.75rem" }}
                     >
@@ -1171,15 +1197,6 @@ function App() {
                       }}
                     >
                       <Icon path={mdiTrashCan} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Cancel date">
-                    <IconButton
-                      aria-label="Cancel date"
-                      color="primary"
-                      onClick={() => setDatePopoverAnchor(null)}
-                    >
-                      <Icon path={mdiCancel} size={0.9} />
                     </IconButton>
                   </Tooltip>
                   <Tooltip title="Save date">

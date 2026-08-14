@@ -25,7 +25,7 @@ import {
   mdiBell,
   mdiCalendarClock,
   mdiCalendarPlus,
-  mdiCancel,
+  mdiClose,
   mdiCheckboxMarked,
   mdiCheckCircle,
   mdiChevronDown,
@@ -993,7 +993,9 @@ const ItemList = ({
           fullWidth
           maxWidth="sm"
         >
-          <DialogTitle sx={{ bgcolor: colors.blueGrey[900], p: 1 }}>
+          <DialogTitle
+            sx={{ position: "relative", bgcolor: colors.blueGrey[900], p: 1.5 }}
+          >
             <Box
               sx={{
                 display: "flex",
@@ -1032,6 +1034,21 @@ const ItemList = ({
                 })()}
               </Typography>
             </Box>
+            <Tooltip title="Close">
+              <IconButton
+                aria-label="Close"
+                size="small"
+                onClick={() => setOverflowModalItemId(null)}
+                sx={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  color: colors.blueGrey[100],
+                }}
+              >
+                <Icon path={mdiClose} size={0.8} />
+              </IconButton>
+            </Tooltip>
           </DialogTitle>
           <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
             <Box
@@ -1087,15 +1104,6 @@ const ItemList = ({
               gap: 1,
             }}
           >
-            <Tooltip title="Cancel">
-              <IconButton
-                size="small"
-                onClick={() => setOverflowModalItemId(null)}
-                sx={{ color: colors.blueGrey[100] }}
-              >
-                <Icon path={mdiCancel} size={0.8} />
-              </IconButton>
-            </Tooltip>
             <Tooltip title="Actions">
               <IconButton
                 size="small"
@@ -1213,6 +1221,7 @@ const ItemList = ({
         >
           <DialogTitle
             sx={{
+              position: "relative",
               bgcolor: colors.blueGrey[800],
               color: colors.blueGrey[100],
               p: 1,
@@ -1221,6 +1230,21 @@ const ItemList = ({
             }}
           >
             Set due date
+            <Tooltip title="Close">
+              <IconButton
+                aria-label="Close"
+                size="small"
+                onClick={() => setDueDateDialogItem(null)}
+                sx={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  color: colors.blueGrey[100],
+                }}
+              >
+                <Icon path={mdiClose} size={0.8} />
+              </IconButton>
+            </Tooltip>
           </DialogTitle>
           <DialogContent sx={{ bgcolor: colors.blueGrey[900], p: 0, pb: 1 }}>
             <DateCalendar
@@ -1341,15 +1365,6 @@ const ItemList = ({
                 </IconButton>
               </Tooltip>
             )}
-            <Tooltip title="Cancel due date">
-              <IconButton
-                aria-label="Cancel due date"
-                color={"primary"}
-                onClick={() => setDueDateDialogItem(null)}
-              >
-                <Icon path={mdiCancel} size={0.9} />
-              </IconButton>
-            </Tooltip>
             <Tooltip title="Save due date">
               <IconButton
                 aria-label="Save due date"
