@@ -19,6 +19,7 @@ import {
   mdiChevronDown,
   mdiCircleSmall,
   mdiContentPaste,
+  mdiDotsVertical,
   mdiNoteText,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
@@ -58,6 +59,8 @@ const ItemForm = ({
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [formatMenuAnchor, setFormatMenuAnchor] =
+    useState<HTMLElement | null>(null);
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
@@ -212,48 +215,13 @@ const ItemForm = ({
                           },
                       }}
                     />
-                    <Tooltip title="Insert bullet">
+                    <Tooltip title="Actions">
                       <IconButton
-                        aria-label="Insert bullet"
+                        aria-label="Open text actions"
                         size="small"
-                        onClick={() =>
-                          insertMarker("•", field.value, handleTextChange)
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          setFormatMenuAnchor(event.currentTarget)
                         }
-                        sx={{
-                          position: "absolute",
-                          right: 70,
-                          bottom: errors.text ? 24 : 6,
-                          color: colors.blueGrey[400],
-                        }}
-                      >
-                        <Icon path={mdiCircleSmall} size={0.9} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Insert checkbox">
-                      <IconButton
-                        aria-label="Insert checkbox"
-                        size="small"
-                        onClick={() =>
-                          insertMarker("[]", field.value, handleTextChange)
-                        }
-                        sx={{
-                          position: "absolute",
-                          right: 38,
-                          bottom: errors.text ? 24 : 6,
-                          color: colors.blueGrey[400],
-                        }}
-                      >
-                        <Icon path={mdiCheckboxBlankOutline} size={0.75} />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Paste text">
-                      <IconButton
-                        aria-label="Paste text"
-                        size="small"
-                        onClick={async () => {
-                          const text = await navigator.clipboard.readText();
-                          handleTextChange(field.value + text);
-                        }}
                         sx={{
                           position: "absolute",
                           right: 6,
@@ -261,9 +229,70 @@ const ItemForm = ({
                           color: colors.blueGrey[400],
                         }}
                       >
-                        <Icon path={mdiContentPaste} size={0.75} />
+                        <Icon path={mdiDotsVertical} size={0.8} />
                       </IconButton>
                     </Tooltip>
+                    <Menu
+                      anchorEl={formatMenuAnchor}
+                      open={Boolean(formatMenuAnchor)}
+                      onClose={() => setFormatMenuAnchor(null)}
+                    >
+                      <MenuItem
+                        onClick={() => {
+                          insertMarker("•", field.value, handleTextChange);
+                          setFormatMenuAnchor(null);
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                          }}
+                        >
+                          <Icon path={mdiCircleSmall} size={0.9} />
+                        </Box>
+                        Bullet
+                      </MenuItem>
+                      <MenuItem
+                        onClick={() => {
+                          insertMarker("[]", field.value, handleTextChange);
+                          setFormatMenuAnchor(null);
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                          }}
+                        >
+                          <Icon path={mdiCheckboxBlankOutline} size={0.75} />
+                        </Box>
+                        Checkbox
+                      </MenuItem>
+                      <MenuItem
+                        onClick={async () => {
+                          const text = await navigator.clipboard.readText();
+                          handleTextChange(field.value + text);
+                          setFormatMenuAnchor(null);
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                          }}
+                        >
+                          <Icon path={mdiContentPaste} size={0.75} />
+                        </Box>
+                        Paste
+                      </MenuItem>
+                    </Menu>
                   </Box>
                 );
               }}
