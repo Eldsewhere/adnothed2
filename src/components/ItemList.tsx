@@ -136,6 +136,9 @@ const ItemList = ({
   const [overflowingItemIds, setOverflowingItemIds] = useState<Set<string>>(
     new Set(),
   );
+  const [expandableItemIds, setExpandableItemIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [categoryMenuAnchor, setCategoryMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
@@ -263,6 +266,19 @@ const ItemList = ({
       if (!isOverflowing || currentIds.has(itemId)) return currentIds;
       const nextIds = new Set(currentIds);
       nextIds.add(itemId);
+      return nextIds;
+    });
+    if (!overflowingItemIds.has(itemId)) return;
+    setExpandableItemIds((currentIds) => {
+      const isVerticallyOverflowing =
+        element.scrollHeight > element.clientHeight;
+      if (isVerticallyOverflowing === currentIds.has(itemId)) return currentIds;
+      const nextIds = new Set(currentIds);
+      if (isVerticallyOverflowing) {
+        nextIds.add(itemId);
+      } else {
+        nextIds.delete(itemId);
+      }
       return nextIds;
     });
   };
@@ -660,7 +676,7 @@ const ItemList = ({
                           );
                         })}
                       </Typography>
-                      {overflowingItemIds.has(item.id) && (
+                      {expandableItemIds.has(item.id) && (
                         <Tooltip title="Expand note" arrow>
                           <IconButton
                             aria-label={`Expand ${item.text}`}
