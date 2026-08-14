@@ -40,6 +40,7 @@ import {
   mdiPinOff,
   mdiShareVariant,
   mdiTrashCanOutline,
+  mdiNoteText,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
@@ -126,6 +127,10 @@ const ItemList = ({
     el: HTMLElement;
     item: Item;
   } | null>(null);
+  const [shareMenuAnchor, setShareMenuAnchor] = useState<{
+    el: HTMLElement;
+    item: Item;
+  } | null>(null);
   const [overflowModalItemId, setOverflowModalItemId] = useState<string | null>(
     null,
   );
@@ -206,6 +211,7 @@ const ItemList = ({
 
   const closeMenu = () => {
     setMenuAnchor(null);
+    setShareMenuAnchor(null);
     setOverflowModalItemId(null);
   };
 
@@ -858,7 +864,13 @@ const ItemList = ({
           </Box>
           Copy
         </MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleShare(menuAnchor.item)}>
+        <MenuItem
+          onClick={(event: MouseEvent<HTMLElement>) => {
+            if (menuAnchor) {
+              setShareMenuAnchor({ el: event.currentTarget, item: menuAnchor.item });
+            }
+          }}
+        >
           <Box
             component="span"
             sx={{
@@ -889,23 +901,6 @@ const ItemList = ({
             <Icon path={mdiMagnify} size={0.7} />
           </Box>
           Google
-        </MenuItem>
-        <MenuItem
-          onClick={() => menuAnchor && handleShareLink(menuAnchor.item)}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiLink} size={0.7} />
-          </Box>
-          Link
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem
@@ -984,6 +979,50 @@ const ItemList = ({
             <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
           Delete
+        </MenuItem>
+      </Menu>
+      <Menu
+        anchorEl={shareMenuAnchor?.el}
+        open={!!shareMenuAnchor}
+        onClose={() => setShareMenuAnchor(null)}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+        transformOrigin={{ horizontal: "right", vertical: "center" }}
+      >
+        <MenuItem
+          onClick={() => shareMenuAnchor && handleShare(shareMenuAnchor.item)}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiNoteText} size={0.7} />
+          </Box>
+          Text
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            shareMenuAnchor && handleShareLink(shareMenuAnchor.item)
+          }
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiLink} size={0.7} />
+          </Box>
+          Link
         </MenuItem>
       </Menu>
       {overflowModalItem && (
