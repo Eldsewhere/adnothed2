@@ -1067,7 +1067,7 @@ const ItemList = ({
                       ) : (
                         <Icon path={mdiLabelOff} size={0.8} />
                       )}
-                      {category ? category.name : "No label"}
+                      {category ? category.name : "no label"}
                     </Box>
                   );
                 })()}
@@ -1228,7 +1228,7 @@ const ItemList = ({
           >
             <Icon path={mdiLabelOff} size={0.7} />
           </Box>
-          {categories.length == 0 ? "No labels available" : "No label"}
+          {categories.length == 0 ? "no labels available" : "no label"}
         </MenuItem>
         {categories.map((category) => (
           <MenuItem

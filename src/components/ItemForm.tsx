@@ -370,16 +370,18 @@ const ItemForm = ({
                       open={Boolean(labelMenuAnchor)}
                       onClose={closeLabelMenu}
                     >
-                      <MenuItem
-                        autoFocus
-                        onClick={() => {
-                          field.onChange("");
-                          onFilterCategoryChange("");
-                          closeLabelMenu();
-                        }}
-                      >
-                        <span>Show All</span>
-                      </MenuItem>
+                      {categories.length > 0 && (
+                        <MenuItem
+                          autoFocus
+                          onClick={() => {
+                            field.onChange("");
+                            onFilterCategoryChange("");
+                            closeLabelMenu();
+                          }}
+                        >
+                          <span>Show All</span>
+                        </MenuItem>
+                      )}
                       <MenuItem
                         selected={activeCategoryId === ""}
                         onClick={() => {
@@ -397,7 +399,11 @@ const ItemForm = ({
                           }}
                         >
                           <Icon path={mdiLabelOff} size={0.8} />
-                          <span>No Label</span>
+                          <span>
+                            {categories.length == 0
+                              ? "no labels available"
+                              : "no label"}
+                          </span>
                         </Box>
                       </MenuItem>
                       {categories.map((category) => (

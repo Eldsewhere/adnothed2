@@ -1553,7 +1553,7 @@ function App() {
         onClose={() => setBulkCategoryAnchor(null)}
       >
         <MenuItem onClick={() => handleBulkCategoryChange(null)}>
-          No label
+          no label
         </MenuItem>
         {categories.map((category) => (
           <MenuItem
