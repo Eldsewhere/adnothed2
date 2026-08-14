@@ -917,680 +917,685 @@ function App() {
     : "";
 
   return (
-    <Box>
-      <Paper sx={{ p: 1 }}>
-        <Stack
-          direction="row"
-          sx={{ alignItems: "center", justifyContent: "space-between" }}
-        >
-          <Tabs
-            value={activeTab}
-            sx={{ "& .MuiTab-root": { minWidth: 0, px: 1.5 } }}
-            onChange={(_event, newValue) => {
-              const normalized =
-                newValue === "items" || newValue === "categories"
-                  ? newValue
-                  : (String(newValue) as TabValue);
-              if (normalized === "categories") {
-                setItemFilters(emptyItemFilters);
-                setSelectMode(false);
-              }
-              setActiveTab(normalized);
-            }}
+    <main>
+      <Box>
+        <Paper sx={{ p: 1 }}>
+          <Stack
+            direction="row"
+            sx={{ alignItems: "center", justifyContent: "space-between" }}
           >
-            <Tab
-              value="items"
-              label="Notes"
-              icon={<Icon path={mdiNoteText} size={0.75} />}
-              iconPosition="start"
-              id="tab-items"
-              aria-controls="tabpanel-items"
-            />
-            <Tab
-              value="categories"
-              label="Labels"
-              icon={<Icon path={mdiLabelMultiple} size={0.75} />}
-              iconPosition="start"
-              id="tab-categories"
-              aria-controls="tabpanel-categories"
-            />
-          </Tabs>
-          {activeTab === "items" && (
-            <Stack direction="row" sx={{ alignItems: "center" }}>
-              <Tooltip
-                title={
-                  selectMode ? "Cancel select mode" : "Select multiple notes"
+            <Tabs
+              value={activeTab}
+              sx={{ "& .MuiTab-root": { minWidth: 0, px: 1.5 } }}
+              onChange={(_event, newValue) => {
+                const normalized =
+                  newValue === "items" || newValue === "categories"
+                    ? newValue
+                    : (String(newValue) as TabValue);
+                if (normalized === "categories") {
+                  setItemFilters(emptyItemFilters);
+                  setSelectMode(false);
                 }
-              >
-                <IconButton
-                  aria-label="Toggle select mode"
-                  color={selectMode ? "primary" : "default"}
-                  onClick={toggleSelectMode}
-                  disabled={items.length === 0}
-                >
-                  <Badge
-                    badgeContent={selectedItemIds.size}
-                    color="primary"
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.orange[400],
-                        color: colors.grey[900],
-                        minWidth: 14,
-                        height: 14,
-                        fontSize: "0.6rem",
-                        lineHeight: 1,
-                        p: 0,
-                      },
-                    }}
-                  >
-                    <Icon path={mdiCheckboxMultipleMarked} size={0.9} />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Filter by date">
-                <IconButton
-                  aria-label="Filter by date"
-                  color={
-                    isDatePopoverOpen ||
-                    itemFilters.date ||
-                    itemFilters.endDate ||
-                    itemFilters.dueDate ||
-                    itemFilters.hasDue
-                      ? "primary"
-                      : "default"
+                setActiveTab(normalized);
+              }}
+            >
+              <Tab
+                value="items"
+                label="Notes"
+                icon={<Icon path={mdiNoteText} size={0.75} />}
+                iconPosition="start"
+                id="tab-items"
+                aria-controls="tabpanel-items"
+              />
+              <Tab
+                value="categories"
+                label="Labels"
+                icon={<Icon path={mdiLabelMultiple} size={0.75} />}
+                iconPosition="start"
+                id="tab-categories"
+                aria-controls="tabpanel-categories"
+              />
+            </Tabs>
+            {activeTab === "items" && (
+              <Stack direction="row" sx={{ alignItems: "center" }}>
+                <Tooltip
+                  title={
+                    selectMode ? "Cancel select mode" : "Select multiple notes"
                   }
-                  onClick={(event) => {
-                    if (isDatePopoverOpen) {
-                      setDatePopoverAnchor(null);
-                      return;
-                    }
-                    setPendingDateFilter({
-                      date: itemFilters.date,
-                      endDate: itemFilters.endDate,
-                      dueDate: itemFilters.dueDate,
-                      hasDue: itemFilters.hasDue,
-                    });
-                    setDatePickerMode("start");
-                    setDatePopoverAnchor(event.currentTarget);
-                  }}
-                  disabled={items.length === 0 || selectMode}
                 >
-                  <Badge
-                    badgeContent={dueFutureCount}
-                    invisible={dueFutureCount === 0}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.orange[400],
-                        color: colors.grey[900],
-                        minWidth: 14,
-                        height: 14,
-                        fontSize: "0.6rem",
-                        lineHeight: 1,
-                        p: 0,
-                      },
-                    }}
+                  <IconButton
+                    aria-label="Toggle select mode"
+                    color={selectMode ? "primary" : "default"}
+                    onClick={toggleSelectMode}
+                    disabled={items.length === 0}
                   >
-                    <Icon path={mdiCalendar} size={0.9} />
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Popover
-                open={isDatePopoverOpen}
-                anchorEl={datePopoverAnchor}
-                onClose={() => setDatePopoverAnchor(null)}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                transformOrigin={{ vertical: "top", horizontal: "right" }}
-                slotProps={{
-                  paper: {
-                    sx: {
-                      backgroundColor: colors.blueGrey[900],
-                      border: `1px solid ${colors.blueGrey[700]}`,
-                      p: 0,
-                      minWidth: 320,
-                      overflow: "hidden",
-                    },
-                  },
-                }}
-              >
-                <Box
-                  sx={{
-                    position: "relative",
-                    backgroundColor: colors.blueGrey[800],
-                    borderBottom: `1px solid ${colors.blueGrey[700]}`,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      color: colors.blueGrey[100],
-                      px: 1.25,
-                      py: 1,
-                      textAlign: "center",
-                    }}
-                  >
-                    {datePickerMode === "start" ? "Start Date" : "End Date"}
-                  </Typography>
-                  <Tooltip title="Close">
-                    <IconButton
-                      aria-label="Close"
-                      size="small"
-                      onClick={() => setDatePopoverAnchor(null)}
+                    <Badge
+                      badgeContent={selectedItemIds.size}
+                      color="primary"
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                       sx={{
-                        position: "absolute",
-                        top: 4,
-                        right: 4,
-                        color: colors.blueGrey[100],
+                        "& .MuiBadge-badge": {
+                          backgroundColor: colors.orange[400],
+                          color: colors.grey[900],
+                          minWidth: 14,
+                          height: 14,
+                          fontSize: "0.6rem",
+                          lineHeight: 1,
+                          p: 0,
+                        },
                       }}
                     >
-                      <Icon path={mdiClose} size={0.8} />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Box sx={{ px: 1, py: 0.75 }}>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      color: colors.blueGrey[100],
-                      textAlign: "center",
-                      fontSize: "0.8rem",
-                      p: 0,
-                      m: 0,
-                    }}
-                  >
-                    {titleRangeSuffix}
-                  </Typography>
-                  <DateCalendar
-                    value={
-                      datePickerMode === "start"
-                        ? activeStartDate
-                        : activeEndDate
+                      <Icon path={mdiCheckboxMultipleMarked} size={0.9} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Filter by date">
+                  <IconButton
+                    aria-label="Filter by date"
+                    color={
+                      isDatePopoverOpen ||
+                      itemFilters.date ||
+                      itemFilters.endDate ||
+                      itemFilters.dueDate ||
+                      itemFilters.hasDue
+                        ? "primary"
+                        : "default"
                     }
-                    onChange={(value: Dayjs | null) => {
-                      if (!value) return;
-                      const next = value.format("YYYY-MM-DD");
-                      if (datePickerMode === "start") {
-                        setPendingDateFilter((prev) => ({
-                          ...prev,
-                          date: next,
-                          dueDate: "",
-                          endDate:
-                            prev.endDate && prev.endDate < next
-                              ? next
-                              : prev.endDate,
-                        }));
+                    onClick={(event) => {
+                      if (isDatePopoverOpen) {
+                        setDatePopoverAnchor(null);
                         return;
                       }
-                      setPendingDateFilter((prev) => ({
-                        ...prev,
-                        endDate: next,
-                        dueDate: "",
-                      }));
+                      setPendingDateFilter({
+                        date: itemFilters.date,
+                        endDate: itemFilters.endDate,
+                        dueDate: itemFilters.dueDate,
+                        hasDue: itemFilters.hasDue,
+                      });
+                      setDatePickerMode("start");
+                      setDatePopoverAnchor(event.currentTarget);
                     }}
-                    showDaysOutsideCurrentMonth
-                    minDate={
-                      datePickerMode === "start"
-                        ? filteredMinDate
-                        : (activeStartDate ?? filteredMinDate)
-                    }
-                    maxDate={calendarMaxDate}
-                    slots={{ day: CalendarDay }}
-                    sx={{
-                      "& .MuiPickersCalendarHeader-label": {
-                        color: colors.blueGrey[100],
-                      },
-                      "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                        {
-                          color: colors.blueGrey[200],
+                    disabled={items.length === 0 || selectMode}
+                  >
+                    <Badge
+                      badgeContent={dueFutureCount}
+                      invisible={dueFutureCount === 0}
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                      sx={{
+                        "& .MuiBadge-badge": {
+                          backgroundColor: colors.orange[400],
+                          color: colors.grey[900],
+                          minWidth: 14,
+                          height: 14,
+                          fontSize: "0.6rem",
+                          lineHeight: 1,
+                          p: 0,
                         },
-                      "& .MuiDayCalendar-weekDayLabel": {
-                        color: colors.blueGrey[400],
+                      }}
+                    >
+                      <Icon path={mdiCalendar} size={0.9} />
+                    </Badge>
+                  </IconButton>
+                </Tooltip>
+                <Popover
+                  open={isDatePopoverOpen}
+                  anchorEl={datePopoverAnchor}
+                  onClose={() => setDatePopoverAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  transformOrigin={{ vertical: "top", horizontal: "right" }}
+                  slotProps={{
+                    paper: {
+                      sx: {
+                        backgroundColor: colors.blueGrey[900],
+                        border: `1px solid ${colors.blueGrey[700]}`,
+                        p: 0,
+                        minWidth: 320,
+                        overflow: "hidden",
                       },
-                    }}
-                  />
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 1,
-                    px: 1,
-                    py: 0.75,
-                    backgroundColor: colors.blueGrey[800],
-                    borderTop: `1px solid ${colors.blueGrey[700]}`,
+                    },
                   }}
                 >
-                  {datePickerMode === "start" ? (
-                    <>
-                      <Button
-                        variant="outlined"
-                        color="warning"
-                        startIcon={<Icon path={mdiCalendarClock} size={0.9} />}
-                        onClick={() => {
-                          const nextHasDue = !pendingDateFilter.hasDue;
+                  <Box
+                    sx={{
+                      position: "relative",
+                      backgroundColor: colors.blueGrey[800],
+                      borderBottom: `1px solid ${colors.blueGrey[700]}`,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        color: colors.blueGrey[100],
+                        px: 1.25,
+                        py: 1,
+                        textAlign: "center",
+                      }}
+                    >
+                      {datePickerMode === "start" ? "Start Date" : "End Date"}
+                    </Typography>
+                    <Tooltip title="Close">
+                      <IconButton
+                        aria-label="Close"
+                        size="small"
+                        onClick={() => setDatePopoverAnchor(null)}
+                        sx={{
+                          position: "absolute",
+                          top: 4,
+                          right: 4,
+                          color: colors.blueGrey[100],
+                        }}
+                      >
+                        <Icon path={mdiClose} size={0.8} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ px: 1, py: 0.75 }}>
+                    <Typography
+                      variant="subtitle2"
+                      sx={{
+                        color: colors.blueGrey[100],
+                        textAlign: "center",
+                        fontSize: "0.8rem",
+                        p: 0,
+                        m: 0,
+                      }}
+                    >
+                      {titleRangeSuffix}
+                    </Typography>
+                    <DateCalendar
+                      value={
+                        datePickerMode === "start"
+                          ? activeStartDate
+                          : activeEndDate
+                      }
+                      onChange={(value: Dayjs | null) => {
+                        if (!value) return;
+                        const next = value.format("YYYY-MM-DD");
+                        if (datePickerMode === "start") {
                           setPendingDateFilter((prev) => ({
                             ...prev,
-                            hasDue: nextHasDue,
+                            date: next,
+                            dueDate: "",
+                            endDate:
+                              prev.endDate && prev.endDate < next
+                                ? next
+                                : prev.endDate,
                           }));
-                          setItemFilters((prev) => ({
-                            ...prev,
-                            hasDue: nextHasDue,
-                          }));
-                        }}
-                        sx={{ textTransform: "none", fontSize: "0.75rem" }}
-                      >
-                        {pendingDateFilter.hasDue ? "All" : "Due"}
-                      </Button>
+                          return;
+                        }
+                        setPendingDateFilter((prev) => ({
+                          ...prev,
+                          endDate: next,
+                          dueDate: "",
+                        }));
+                      }}
+                      showDaysOutsideCurrentMonth
+                      minDate={
+                        datePickerMode === "start"
+                          ? filteredMinDate
+                          : (activeStartDate ?? filteredMinDate)
+                      }
+                      maxDate={calendarMaxDate}
+                      slots={{ day: CalendarDay }}
+                      sx={{
+                        "& .MuiPickersCalendarHeader-label": {
+                          color: colors.blueGrey[100],
+                        },
+                        "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
+                          {
+                            color: colors.blueGrey[200],
+                          },
+                        "& .MuiDayCalendar-weekDayLabel": {
+                          color: colors.blueGrey[400],
+                        },
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      px: 1,
+                      py: 0.75,
+                      backgroundColor: colors.blueGrey[800],
+                      borderTop: `1px solid ${colors.blueGrey[700]}`,
+                    }}
+                  >
+                    {datePickerMode === "start" ? (
+                      <>
+                        <Button
+                          variant="outlined"
+                          color="warning"
+                          startIcon={
+                            <Icon path={mdiCalendarClock} size={0.9} />
+                          }
+                          onClick={() => {
+                            const nextHasDue = !pendingDateFilter.hasDue;
+                            setPendingDateFilter((prev) => ({
+                              ...prev,
+                              hasDue: nextHasDue,
+                            }));
+                            setItemFilters((prev) => ({
+                              ...prev,
+                              hasDue: nextHasDue,
+                            }));
+                          }}
+                          sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                        >
+                          {pendingDateFilter.hasDue ? "All" : "Due"}
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="info"
+                          startIcon={<Icon path={mdiCalendar} size={0.9} />}
+                          onClick={() => {
+                            const fallbackStart = dayjs().format("YYYY-MM-DD");
+                            setPendingDateFilter((prev) => ({
+                              ...prev,
+                              date: prev.date || fallbackStart,
+                              endDate:
+                                prev.endDate || prev.date || fallbackStart,
+                              dueDate: "",
+                            }));
+                            setDatePickerMode("end");
+                          }}
+                          sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                        >
+                          End
+                        </Button>
+                      </>
+                    ) : (
                       <Button
                         variant="outlined"
                         color="info"
                         startIcon={<Icon path={mdiCalendar} size={0.9} />}
-                        onClick={() => {
-                          const fallbackStart = dayjs().format("YYYY-MM-DD");
-                          setPendingDateFilter((prev) => ({
-                            ...prev,
-                            date: prev.date || fallbackStart,
-                            endDate: prev.endDate || prev.date || fallbackStart,
-                            dueDate: "",
-                          }));
-                          setDatePickerMode("end");
-                        }}
+                        onClick={() => setDatePickerMode("start")}
                         sx={{ textTransform: "none", fontSize: "0.75rem" }}
                       >
-                        End
+                        Start
                       </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outlined"
-                      color="info"
-                      startIcon={<Icon path={mdiCalendar} size={0.9} />}
-                      onClick={() => setDatePickerMode("start")}
-                      sx={{ textTransform: "none", fontSize: "0.75rem" }}
-                    >
-                      Start
-                    </Button>
-                  )}
-                  <Box sx={{ flex: 1 }} />
-                  <Tooltip title="Remove date filter">
-                    <IconButton
-                      aria-label="Remove date filter"
-                      color="error"
-                      onClick={() => {
-                        setItemFilters((prev) => ({
-                          ...prev,
-                          date: "",
-                          endDate: "",
-                          dueDate: "",
-                          hasDue: false,
-                        }));
-                        setDatePopoverAnchor(null);
-                      }}
-                    >
-                      <Icon path={mdiTrashCanOutline} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Save date">
-                    <IconButton
-                      aria-label="Save date"
-                      color="primary"
-                      onClick={() => {
-                        setItemFilters((prev) => ({
-                          ...prev,
-                          date: pendingDateFilter.date,
-                          endDate: pendingDateFilter.endDate,
-                          dueDate: pendingDateFilter.dueDate,
-                          hasDue: pendingDateFilter.hasDue,
-                        }));
-                        setDatePopoverAnchor(null);
-                      }}
-                      sx={{ color: colors.lightGreen[400] }}
-                    >
-                      <Icon path={mdiCheckCircle} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              </Popover>
-            </Stack>
-          )}
-          {activeTab === "categories" && (
-            <>
-              <Tooltip title="Import/Export">
-                <IconButton
-                  aria-label="Import/Export"
-                  aria-controls={
-                    labelsActionsAnchor ? "labels-actions-menu" : undefined
-                  }
-                  aria-haspopup="true"
-                  aria-expanded={labelsActionsAnchor ? "true" : undefined}
-                  onClick={(event) =>
-                    setLabelsActionsAnchor(event.currentTarget)
-                  }
-                >
-                  <Icon path={mdiFileImport} size={0.9} />
-                </IconButton>
-              </Tooltip>
-              <Menu
-                id="labels-actions-menu"
-                anchorEl={labelsActionsAnchor}
-                open={Boolean(labelsActionsAnchor)}
-                onClose={() => setLabelsActionsAnchor(null)}
-              >
-                <MenuItem
-                  onClick={() => {
-                    setLabelsActionsAnchor(null);
-                    void selectImportFile();
-                  }}
-                >
-                  <Icon path={mdiUpload} size={0.8} />
-                  <Box component="span" sx={{ ml: 1 }}>
-                    Import JSON
-                  </Box>
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    setLabelsActionsAnchor(null);
-                    handleExportJson();
-                  }}
-                >
-                  <Icon path={mdiDownload} size={0.8} />
-                  <Box component="span" sx={{ ml: 1 }}>
-                    Save as JSON
-                  </Box>
-                </MenuItem>
-              </Menu>
-            </>
-          )}
-        </Stack>
-        <Box sx={{ pt: 2 }}>
-          <TabPanel value={activeTab} index="items">
-            <Stack spacing={1}>
-              <ItemForm
-                editingItem={editingItem}
-                initialText={sharedText ?? undefined}
-                categories={categories}
-                onSubmit={handleItemSubmit}
-                onCancelEdit={() => setEditingItem(null)}
-                onFilterTextChange={handleFilterTextChange}
-                onFilterCategoryChange={handleFilterCategoryChange}
-              />
-              {selectMode && (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center" }}
-                >
-                  <Tooltip
-                    title={
-                      selectedItemIds.size > 0
-                        ? "Change label"
-                        : "Select notes to enable"
-                    }
-                  >
-                    <span>
-                      <Button
-                        variant="text"
-                        startIcon={<Icon path={mdiFolderMove} size={0.9} />}
-                        disabled={selectedItemIds.size === 0}
-                        onClick={(event) =>
-                          setBulkCategoryAnchor(event.currentTarget)
-                        }
-                        sx={{ textTransform: "none" }}
-                      >
-                        Label
-                      </Button>
-                    </span>
-                  </Tooltip>
-                  <Tooltip
-                    title={
-                      selectedItemIds.size > 0
-                        ? "Delete selected"
-                        : "Select notes to enable"
-                    }
-                  >
-                    <span>
-                      <Button
-                        variant="text"
-                        startIcon={
-                          <Icon path={mdiTrashCanOutline} size={0.9} />
-                        }
-                        disabled={selectedItemIds.size === 0}
-                        onClick={() => setConfirmBulkDeleteOpen(true)}
-                        sx={{ textTransform: "none" }}
-                      >
-                        Delete
-                      </Button>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title="Exit select mode">
-                    <span>
-                      <Button
-                        variant="text"
-                        startIcon={<Icon path={mdiCancel} size={0.9} />}
+                    )}
+                    <Box sx={{ flex: 1 }} />
+                    <Tooltip title="Remove date filter">
+                      <IconButton
+                        aria-label="Remove date filter"
+                        color="error"
                         onClick={() => {
-                          setSelectedItemIds(new Set());
-                          setSelectMode(false);
+                          setItemFilters((prev) => ({
+                            ...prev,
+                            date: "",
+                            endDate: "",
+                            dueDate: "",
+                            hasDue: false,
+                          }));
+                          setDatePopoverAnchor(null);
                         }}
-                        sx={{ textTransform: "none" }}
                       >
-                        Cancel
-                      </Button>
-                    </span>
-                  </Tooltip>
-                </Stack>
-              )}
-              <ItemList
-                items={items}
-                categories={categories}
-                filters={itemFilters}
-                onEdit={handleEditItem}
-                onDelete={handleItemDelete}
-                onCopy={handleItemCopy}
-                onShareLink={handleItemShareLink}
-                onToggleBullet={handleItemToggleBullet}
-                onAddCheckboxes={handleItemAddCheckboxes}
-                onToggleCheckbox={handleItemToggleCheckbox}
-                onDueChange={handleItemDueChange}
-                onPin={handleItemPin}
-                onNotify={(item) => {
-                  const categoryName =
-                    categories.find((c) => c.id === item.categoryId)?.name ??
-                    "Reminder";
-                  const now = Math.floor(Date.now() / 1000);
-                  // mark item as having an active notification
-                  setItems((prev) =>
-                    prev.map((existingItem) =>
-                      existingItem.id === item.id
-                        ? (() => {
-                            const shouldRefreshTimestamp = isToday(
-                              existingItem.createdAt,
-                            );
-                            const nextCreatedAt = shouldRefreshTimestamp
-                              ? getUniqueCreatedAt(prev, now, existingItem.id)
-                              : existingItem.createdAt;
+                        <Icon path={mdiTrashCanOutline} size={0.9} />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Save date">
+                      <IconButton
+                        aria-label="Save date"
+                        color="primary"
+                        onClick={() => {
+                          setItemFilters((prev) => ({
+                            ...prev,
+                            date: pendingDateFilter.date,
+                            endDate: pendingDateFilter.endDate,
+                            dueDate: pendingDateFilter.dueDate,
+                            hasDue: pendingDateFilter.hasDue,
+                          }));
+                          setDatePopoverAnchor(null);
+                        }}
+                        sx={{ color: colors.lightGreen[400] }}
+                      >
+                        <Icon path={mdiCheckCircle} size={0.9} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Popover>
+              </Stack>
+            )}
+            {activeTab === "categories" && (
+              <>
+                <Tooltip title="Import/Export">
+                  <IconButton
+                    aria-label="Import/Export"
+                    aria-controls={
+                      labelsActionsAnchor ? "labels-actions-menu" : undefined
+                    }
+                    aria-haspopup="true"
+                    aria-expanded={labelsActionsAnchor ? "true" : undefined}
+                    onClick={(event) =>
+                      setLabelsActionsAnchor(event.currentTarget)
+                    }
+                  >
+                    <Icon path={mdiFileImport} size={0.9} />
+                  </IconButton>
+                </Tooltip>
+                <Menu
+                  id="labels-actions-menu"
+                  anchorEl={labelsActionsAnchor}
+                  open={Boolean(labelsActionsAnchor)}
+                  onClose={() => setLabelsActionsAnchor(null)}
+                >
+                  <MenuItem
+                    onClick={() => {
+                      setLabelsActionsAnchor(null);
+                      void selectImportFile();
+                    }}
+                  >
+                    <Icon path={mdiUpload} size={0.8} />
+                    <Box component="span" sx={{ ml: 1 }}>
+                      Import JSON
+                    </Box>
+                  </MenuItem>
+                  <MenuItem
+                    onClick={() => {
+                      setLabelsActionsAnchor(null);
+                      handleExportJson();
+                    }}
+                  >
+                    <Icon path={mdiDownload} size={0.8} />
+                    <Box component="span" sx={{ ml: 1 }}>
+                      Save as JSON
+                    </Box>
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
+          </Stack>
+          <Box sx={{ pt: 2 }}>
+            <TabPanel value={activeTab} index="items">
+              <Stack spacing={1}>
+                <ItemForm
+                  editingItem={editingItem}
+                  initialText={sharedText ?? undefined}
+                  categories={categories}
+                  onSubmit={handleItemSubmit}
+                  onCancelEdit={() => setEditingItem(null)}
+                  onFilterTextChange={handleFilterTextChange}
+                  onFilterCategoryChange={handleFilterCategoryChange}
+                />
+                {selectMode && (
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ alignItems: "center" }}
+                  >
+                    <Tooltip
+                      title={
+                        selectedItemIds.size > 0
+                          ? "Change label"
+                          : "Select notes to enable"
+                      }
+                    >
+                      <span>
+                        <Button
+                          variant="text"
+                          startIcon={<Icon path={mdiFolderMove} size={0.9} />}
+                          disabled={selectedItemIds.size === 0}
+                          onClick={(event) =>
+                            setBulkCategoryAnchor(event.currentTarget)
+                          }
+                          sx={{ textTransform: "none" }}
+                        >
+                          Label
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip
+                      title={
+                        selectedItemIds.size > 0
+                          ? "Delete selected"
+                          : "Select notes to enable"
+                      }
+                    >
+                      <span>
+                        <Button
+                          variant="text"
+                          startIcon={
+                            <Icon path={mdiTrashCanOutline} size={0.9} />
+                          }
+                          disabled={selectedItemIds.size === 0}
+                          onClick={() => setConfirmBulkDeleteOpen(true)}
+                          sx={{ textTransform: "none" }}
+                        >
+                          Delete
+                        </Button>
+                      </span>
+                    </Tooltip>
+                    <Tooltip title="Exit select mode">
+                      <span>
+                        <Button
+                          variant="text"
+                          startIcon={<Icon path={mdiCancel} size={0.9} />}
+                          onClick={() => {
+                            setSelectedItemIds(new Set());
+                            setSelectMode(false);
+                          }}
+                          sx={{ textTransform: "none" }}
+                        >
+                          Cancel
+                        </Button>
+                      </span>
+                    </Tooltip>
+                  </Stack>
+                )}
+                <ItemList
+                  items={items}
+                  categories={categories}
+                  filters={itemFilters}
+                  onEdit={handleEditItem}
+                  onDelete={handleItemDelete}
+                  onCopy={handleItemCopy}
+                  onShareLink={handleItemShareLink}
+                  onToggleBullet={handleItemToggleBullet}
+                  onAddCheckboxes={handleItemAddCheckboxes}
+                  onToggleCheckbox={handleItemToggleCheckbox}
+                  onDueChange={handleItemDueChange}
+                  onPin={handleItemPin}
+                  onNotify={(item) => {
+                    const categoryName =
+                      categories.find((c) => c.id === item.categoryId)?.name ??
+                      "Reminder";
+                    const now = Math.floor(Date.now() / 1000);
+                    // mark item as having an active notification
+                    setItems((prev) =>
+                      prev.map((existingItem) =>
+                        existingItem.id === item.id
+                          ? (() => {
+                              const shouldRefreshTimestamp = isToday(
+                                existingItem.createdAt,
+                              );
+                              const nextCreatedAt = shouldRefreshTimestamp
+                                ? getUniqueCreatedAt(prev, now, existingItem.id)
+                                : existingItem.createdAt;
 
-                            return {
-                              ...existingItem,
-                              hasNotification: true,
-                              id: String(nextCreatedAt),
-                              createdAt: nextCreatedAt,
-                            };
-                          })()
-                        : existingItem,
-                    ),
-                  );
-                  setNotification(`${categoryName}: ${item.text}`);
-                  void showAppNotification(categoryName, item.text).then(
-                    handleNotificationResult,
-                  );
-                }}
-                onCategoryChange={(item, categoryId) => {
-                  setItems((prev) =>
-                    prev.map((existingItem) =>
-                      existingItem.id === item.id
-                        ? { ...existingItem, categoryId }
-                        : existingItem,
-                    ),
-                  );
-                  if (editingItem?.id === item.id) {
-                    setEditingItem({ ...editingItem, categoryId });
-                  }
-                }}
-                selectMode={selectMode}
-                selectedIds={selectedItemIds}
-                onToggleSelect={toggleItemSelected}
-                onInstall={installPrompt ? handleInstall : undefined}
-              />
-            </Stack>
-          </TabPanel>
-          <TabPanel value={activeTab} index="categories">
-            <Stack spacing={2}>
-              <CategoryForm
-                editingCategory={editingCategory}
-                onSubmit={handleSubmit}
-                onCancelEdit={() => setEditingCategory(null)}
-              />
-              <CategoryList
-                categories={categories}
-                onEdit={setEditingCategory}
-                onDelete={requestDeleteCategory}
-                newCategoryId={latestCategoryId}
-              />
-            </Stack>
-          </TabPanel>
-        </Box>
-      </Paper>
-      <Snackbar
-        open={!!notification}
-        autoHideDuration={3000}
-        onClose={() => setNotification(null)}
-      >
-        <Alert
+                              return {
+                                ...existingItem,
+                                hasNotification: true,
+                                id: String(nextCreatedAt),
+                                createdAt: nextCreatedAt,
+                              };
+                            })()
+                          : existingItem,
+                      ),
+                    );
+                    setNotification(`${categoryName}: ${item.text}`);
+                    void showAppNotification(categoryName, item.text).then(
+                      handleNotificationResult,
+                    );
+                  }}
+                  onCategoryChange={(item, categoryId) => {
+                    setItems((prev) =>
+                      prev.map((existingItem) =>
+                        existingItem.id === item.id
+                          ? { ...existingItem, categoryId }
+                          : existingItem,
+                      ),
+                    );
+                    if (editingItem?.id === item.id) {
+                      setEditingItem({ ...editingItem, categoryId });
+                    }
+                  }}
+                  selectMode={selectMode}
+                  selectedIds={selectedItemIds}
+                  onToggleSelect={toggleItemSelected}
+                  onInstall={installPrompt ? handleInstall : undefined}
+                />
+              </Stack>
+            </TabPanel>
+            <TabPanel value={activeTab} index="categories">
+              <Stack spacing={2}>
+                <CategoryForm
+                  editingCategory={editingCategory}
+                  onSubmit={handleSubmit}
+                  onCancelEdit={() => setEditingCategory(null)}
+                />
+                <CategoryList
+                  categories={categories}
+                  onEdit={setEditingCategory}
+                  onDelete={requestDeleteCategory}
+                  newCategoryId={latestCategoryId}
+                />
+              </Stack>
+            </TabPanel>
+          </Box>
+        </Paper>
+        <Snackbar
+          open={!!notification}
+          autoHideDuration={3000}
           onClose={() => setNotification(null)}
-          severity={notificationSeverity}
-          sx={{ width: "100%" }}
         >
-          {notification}
-        </Alert>
-      </Snackbar>
-      <Dialog
-        open={confirmBulkDeleteOpen}
-        onClose={() => setConfirmBulkDeleteOpen(false)}
-      >
-        <DialogTitle>Delete {selectedItemIds.size} Note(s)?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            This will permanently delete the selected notes
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="outlined"
-            onClick={() => setConfirmBulkDeleteOpen(false)}
+          <Alert
+            onClose={() => setNotification(null)}
+            severity={notificationSeverity}
+            sx={{ width: "100%" }}
           >
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={handleBulkDelete}>
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={!!confirmDeleteCategory}
-        onClose={() => setConfirmDeleteCategory(null)}
-      >
-        <DialogTitle>
-          {`Delete label "${confirmDeleteCategory?.name ?? ""}"?`}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Deleting this label will remove it and set any notes in this label
-            to have no label
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            variant="outlined"
-            onClick={() => setConfirmDeleteCategory(null)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={() => {
-              if (confirmDeleteCategory) {
-                handleDelete(confirmDeleteCategory);
-                setNotificationSeverity("success");
-                setNotification(
-                  `Deleted label "${confirmDeleteCategory.name}"`,
-                );
-              }
-              setConfirmDeleteCategory(null);
-            }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Dialog
-        open={confirmImportOpen}
-        onClose={() => {
-          setConfirmImportOpen(false);
-          setPendingImport(null);
-        }}
-      >
-        <DialogTitle>Import JSON file</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            {pendingImport?.fileName
-              ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app`
-              : "Importing a JSON file will replace all current labels and notes in the app"}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={() => {
-              setConfirmImportOpen(false);
-              setPendingImport(null);
-            }}
-            variant="outlined"
-          >
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={confirmImport}>
-            Import
-          </Button>
-        </DialogActions>
-      </Dialog>
-      <Menu
-        anchorEl={bulkCategoryAnchor}
-        open={!!bulkCategoryAnchor}
-        onClose={() => setBulkCategoryAnchor(null)}
-      >
-        <MenuItem onClick={() => handleBulkCategoryChange(null)}>
-          no label
-        </MenuItem>
-        {categories.map((category) => (
-          <MenuItem
-            key={category.id}
-            onClick={() => handleBulkCategoryChange(category.id)}
-          >
-            <Box
-              component="span"
-              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            {notification}
+          </Alert>
+        </Snackbar>
+        <Dialog
+          open={confirmBulkDeleteOpen}
+          onClose={() => setConfirmBulkDeleteOpen(false)}
+        >
+          <DialogTitle>Delete {selectedItemIds.size} Note(s)?</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              This will permanently delete the selected notes
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
+              onClick={() => setConfirmBulkDeleteOpen(false)}
             >
-              <LabelIcon
-                icon={category.icon}
-                color={category.color}
-                size={0.8}
-              />
-            </Box>
-            {category.name}
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={handleBulkDelete}>
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={!!confirmDeleteCategory}
+          onClose={() => setConfirmDeleteCategory(null)}
+        >
+          <DialogTitle>
+            {`Delete label "${confirmDeleteCategory?.name ?? ""}"?`}
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Deleting this label will remove it and set any notes in this label
+              to have no label
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              variant="outlined"
+              onClick={() => setConfirmDeleteCategory(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => {
+                if (confirmDeleteCategory) {
+                  handleDelete(confirmDeleteCategory);
+                  setNotificationSeverity("success");
+                  setNotification(
+                    `Deleted label "${confirmDeleteCategory.name}"`,
+                  );
+                }
+                setConfirmDeleteCategory(null);
+              }}
+            >
+              Delete
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={confirmImportOpen}
+          onClose={() => {
+            setConfirmImportOpen(false);
+            setPendingImport(null);
+          }}
+        >
+          <DialogTitle>Import JSON file</DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              {pendingImport?.fileName
+                ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app`
+                : "Importing a JSON file will replace all current labels and notes in the app"}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => {
+                setConfirmImportOpen(false);
+                setPendingImport(null);
+              }}
+              variant="outlined"
+            >
+              Cancel
+            </Button>
+            <Button variant="contained" onClick={confirmImport}>
+              Import
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Menu
+          anchorEl={bulkCategoryAnchor}
+          open={!!bulkCategoryAnchor}
+          onClose={() => setBulkCategoryAnchor(null)}
+        >
+          <MenuItem onClick={() => handleBulkCategoryChange(null)}>
+            no label
           </MenuItem>
-        ))}
-      </Menu>
-    </Box>
+          {categories.map((category) => (
+            <MenuItem
+              key={category.id}
+              onClick={() => handleBulkCategoryChange(category.id)}
+            >
+              <Box
+                component="span"
+                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+              >
+                <LabelIcon
+                  icon={category.icon}
+                  color={category.color}
+                  size={0.8}
+                />
+              </Box>
+              {category.name}
+            </MenuItem>
+          ))}
+        </Menu>
+      </Box>
+    </main>
   );
 }
 

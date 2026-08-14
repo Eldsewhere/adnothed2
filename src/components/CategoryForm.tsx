@@ -107,6 +107,7 @@ const CategoryForm = ({
               displayEmpty
               size="small"
               fullWidth
+              aria-label="Label color"
               renderValue={(selected) => (
                 <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
                   <ColorDot colorName={selected || undefined} />

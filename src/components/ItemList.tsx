@@ -92,10 +92,7 @@ const getSearchQuery = (text: string): string =>
   text
     .split("\n")
     .map((row) =>
-      row
-        .trimStart()
-        .replace(CHECKBOX_ROW_PATTERN, "$3")
-        .replace(/^•\s?/, ""),
+      row.trimStart().replace(CHECKBOX_ROW_PATTERN, "$3").replace(/^•\s?/, ""),
     )
     .join("\n")
     .trim();
@@ -706,6 +703,11 @@ const ItemList = ({
                             >
                               {checkboxMatch && (
                                 <Checkbox
+                                  slotProps={{
+                                    input: {
+                                      "aria-labelledby": `item-text-${item.id}-row-${rowIndex}`,
+                                    },
+                                  }}
                                   checked={isChecked}
                                   onChange={() =>
                                     onToggleCheckbox(item, rowIndex)
@@ -719,6 +721,11 @@ const ItemList = ({
                                 />
                               )}
                               <Box
+                                id={
+                                  checkboxMatch
+                                    ? `item-text-${item.id}-row-${rowIndex}`
+                                    : undefined
+                                }
                                 component="span"
                                 sx={{
                                   textDecoration: isChecked
@@ -794,7 +801,11 @@ const ItemList = ({
                         >
                           {formatTimestamp(item.createdAt)}
                           {item.hasNotification && (
-                            <Tooltip title="Notified" arrow>
+                            <Tooltip
+                              title="Notified"
+                              aria-label={undefined}
+                              arrow
+                            >
                               <Box
                                 component="span"
                                 sx={{
@@ -808,7 +819,11 @@ const ItemList = ({
                             </Tooltip>
                           )}
                           {item.pinned && (
-                            <Tooltip title="Pinned" arrow>
+                            <Tooltip
+                              title="Pinned"
+                              aria-label={undefined}
+                              arrow
+                            >
                               <Box
                                 component="span"
                                 sx={{
@@ -940,7 +955,10 @@ const ItemList = ({
         <MenuItem
           onClick={(event: MouseEvent<HTMLElement>) => {
             if (menuAnchor) {
-              setShareMenuAnchor({ el: event.currentTarget, item: menuAnchor.item });
+              setShareMenuAnchor({
+                el: event.currentTarget,
+                item: menuAnchor.item,
+              });
             }
           }}
         >
@@ -1175,7 +1193,8 @@ const ItemList = ({
             searchMenuAnchor &&
             handleSearch(
               searchMenuAnchor.item,
-              (query) => `https://www.youtube.com/results?search_query=${query}`,
+              (query) =>
+                `https://www.youtube.com/results?search_query=${query}`,
               searchMenuAnchor.selectedText,
             )
           }
@@ -1327,6 +1346,11 @@ const ItemList = ({
                   >
                     {checkboxMatch && (
                       <Checkbox
+                        slotProps={{
+                          input: {
+                            "aria-labelledby": `item-text-${overflowModalItem.id}-row-${rowIndex}`,
+                          },
+                        }}
                         checked={isChecked}
                         onChange={() =>
                           onToggleCheckbox(overflowModalItem, rowIndex)
@@ -1336,6 +1360,11 @@ const ItemList = ({
                       />
                     )}
                     <Typography
+                      id={
+                        checkboxMatch
+                          ? `item-text-${overflowModalItem.id}-row-${rowIndex}`
+                          : undefined
+                      }
                       component="span"
                       variant="body1"
                       sx={{
@@ -1542,9 +1571,10 @@ const ItemList = ({
               }}
             >
               <FormControl size="small" sx={{ width: 72 }}>
-                <InputLabel>Hour</InputLabel>
+                <InputLabel id="hour">Hour</InputLabel>
                 <Select
                   label="Hour"
+                  labelId="hour"
                   value={dueHour12}
                   onChange={(e) =>
                     setDueHour12(Number(e.target.value) as number)
@@ -1558,9 +1588,10 @@ const ItemList = ({
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ width: 80 }}>
-                <InputLabel>AM/PM</InputLabel>
+                <InputLabel id="am-pm">AM/PM</InputLabel>
                 <Select
                   label="AM/PM"
+                  labelId="am-pm"
                   value={dueAmPm}
                   onChange={(e) => setDueAmPm(e.target.value as "AM" | "PM")}
                 >
@@ -1569,9 +1600,10 @@ const ItemList = ({
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ width: 80 }}>
-                <InputLabel>Min</InputLabel>
+                <InputLabel id="min">Min</InputLabel>
                 <Select
                   label="Min"
+                  labelId="min"
                   value={dueMinute}
                   onChange={(e) =>
                     setDueMinute(Number(e.target.value) as 0 | 15 | 30 | 45)
