@@ -3,6 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
   Box,
   colors,
+  Divider,
   IconButton,
   Menu,
   MenuItem,
@@ -22,6 +23,7 @@ import {
   mdiFormatListBulleted,
   mdiLabelMultiple,
   mdiLabelOff,
+  mdiSelectAll,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
@@ -274,6 +276,32 @@ const ItemForm = ({
                           <Icon path={mdiCheckboxBlankOutline} size={0.75} />
                         </Box>
                         Checkbox
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem
+                        onClick={() => {
+                          setFormatMenuAnchor(null);
+                          requestAnimationFrame(() => {
+                            const el = textAreaRef.current;
+                            if (!el) {
+                              return;
+                            }
+                            el.focus();
+                            el.setSelectionRange(0, field.value.length);
+                          });
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                          }}
+                        >
+                          <Icon path={mdiSelectAll} size={0.75} />
+                        </Box>
+                        Select
                       </MenuItem>
                       <MenuItem
                         onClick={async () => {
