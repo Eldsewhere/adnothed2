@@ -88,6 +88,15 @@ const OVERSCAN = 6;
 const BULLET_PREFIX = "• ";
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
+const SearchSiteIcon = ({ domain }: { domain: string }) => (
+  <Box
+    component="img"
+    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+    alt=""
+    sx={{ width: 16, height: 16, mr: 1, flexShrink: 0 }}
+  />
+);
+
 const allNonEmptyRowsBulleted = (text: string): boolean => {
   const rows = text.split("\n").filter((row) => row.trim().length > 0);
   return (
@@ -1058,7 +1067,17 @@ const ItemList = ({
       >
         {searchMenuAnchor && getFirstUrl(searchMenuAnchor.item.text) && (
           <MenuItem onClick={() => handleOpen(searchMenuAnchor.item)}>
-            Open Link
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                pr: 0.5,
+              }}
+            >
+              <Icon path={mdiOpenInNew} size={0.7} />
+            </Box>
+            Open
           </MenuItem>
         )}
         <MenuItem
@@ -1070,6 +1089,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="google.com" />
           Google
         </MenuItem>
         <MenuItem
@@ -1081,6 +1101,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="chatgpt.com" />
           ChatGPT
         </MenuItem>
         <MenuItem
@@ -1092,6 +1113,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="reddit.com" />
           Reddit
         </MenuItem>
         <MenuItem
@@ -1103,6 +1125,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="youtube.com" />
           YouTube
         </MenuItem>
         <MenuItem
@@ -1115,6 +1138,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="maps.google.com" />
           Maps
         </MenuItem>
         <MenuItem
@@ -1127,6 +1151,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="instagram.com" />
           Instagram
         </MenuItem>
         <MenuItem
@@ -1138,6 +1163,7 @@ const ItemList = ({
             )
           }
         >
+          <SearchSiteIcon domain="spotify.com" />
           Spotify
         </MenuItem>
       </Menu>
