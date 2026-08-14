@@ -1,4 +1,10 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Alert,
   Badge,
@@ -19,20 +25,17 @@ import {
   Stack,
   Tab,
   Tabs,
-  TextField,
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiCancel,
-  mdiFilter,
   mdiCheckboxMultipleMarked,
   mdiFolderMove,
   mdiTrashCan,
   mdiUpload,
   mdiDownload,
   mdiCalendar,
-  mdiNoteText,
   mdiCheckCircle,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
@@ -299,10 +302,7 @@ function EndDateLayout(props: PickersLayoutProps<Dayjs | null>) {
     slots: { ...props.slots, actionBar: IconActionBar },
   });
   return (
-    <PickersLayout
-      {...props}
-      slots={{ ...props.slots, actionBar: () => null }}
-    >
+    <PickersLayout {...props} slots={{ ...props.slots, actionBar: () => null }}>
       {content}
       <Box
         sx={{
@@ -355,10 +355,7 @@ function App() {
   const startDateInputRef = useRef<HTMLInputElement | null>(null);
   const endDateInputRef = useRef<HTMLInputElement | null>(null);
   const [startDatePickerOpen, setStartDatePickerOpen] = useState(false);
-  const [showTextFilterInput, setShowTextFilterInput] = useState(false);
   const [showDateFilterInput, setShowDateFilterInput] = useState(false);
-  const [labelFilterAnchor, setLabelFilterAnchor] =
-    useState<HTMLElement | null>(null);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
@@ -564,7 +561,12 @@ function App() {
 
     setCategories((prev) => [
       ...prev,
-      { id: iconName, name: values.name, icon: values.icon, color: values.color },
+      {
+        id: iconName,
+        name: values.name,
+        icon: values.icon,
+        color: values.color,
+      },
     ]);
     setLatestCategoryId(iconName);
     setNotificationSeverity("success");
@@ -772,7 +774,6 @@ function App() {
   };
 
   const handleEditItem = (item: Item) => {
-    setShowTextFilterInput(false);
     setShowDateFilterInput(false);
     setEditingItem(item);
   };
@@ -797,6 +798,28 @@ function App() {
     );
   };
 
+  const handleFilterTextChange = useCallback((value: string) => {
+    setItemFilters((prev) =>
+      prev.text === value
+        ? prev
+        : {
+            ...prev,
+            text: value,
+          },
+    );
+  }, []);
+
+  const handleFilterCategoryChange = useCallback((value: string) => {
+    setItemFilters((prev) =>
+      prev.categoryId === value
+        ? prev
+        : {
+            ...prev,
+            categoryId: value,
+          },
+    );
+  }, []);
+
   const startDateValue = itemFilters.dueDate
     ? dayjs(itemFilters.dueDate)
     : itemFilters.date &&
@@ -811,63 +834,6 @@ function App() {
     itemFilters.endDate.length === 10
       ? dayjs(itemFilters.endDate)
       : null;
-
-  const filteredItemsCount = useMemo(() => {
-    const sortedItems = [...items].sort((a, b) => b.createdAt - a.createdAt);
-    const parsedTextFilters = parseTextFilters(itemFilters.text);
-
-    return sortedItems.filter((item, index) => {
-      if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-        if (item.categoryId !== null) {
-          return false;
-        }
-      } else if (
-        itemFilters.categoryId &&
-        item.categoryId !== itemFilters.categoryId
-      ) {
-        return false;
-      }
-
-      if (
-        !matchesTextFilters(
-          item.text,
-          item.createdAt,
-          index,
-          sortedItems.length,
-          parsedTextFilters,
-        )
-      ) {
-        return false;
-      }
-
-      const itemDate = formatDate(item.createdAt);
-      const hasStartDate =
-        itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
-      const hasEndDate =
-        itemFilters.endDate.length === 10 &&
-        dateRegex.test(itemFilters.endDate);
-
-      if (hasStartDate && itemDate < itemFilters.date.trim()) {
-        return false;
-      }
-      if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
-        return false;
-      }
-      if (itemFilters.dueDate) {
-        if (!item.due || formatDate(item.due) !== itemFilters.dueDate) {
-          return false;
-        }
-      }
-      if (itemFilters.hasDue) {
-        const todayUnix = dayjs().startOf("day").unix();
-        if (item.due === undefined || item.due < todayUnix) {
-          return false;
-        }
-      }
-
-      return true;
-    }).length;
-  }, [items, itemFilters]);
 
   const sortedItems = useMemo(
     () => [...items].sort((a, b) => b.createdAt - a.createdAt),
@@ -1040,45 +1006,11 @@ function App() {
                   </Badge>
                 </IconButton>
               </Tooltip>
-                            <Tooltip title="Filter by label">
-                <IconButton
-                  aria-label="Filter by label"
-                  color={itemFilters.categoryId ? "primary" : "default"}
-                  onClick={(e) => setLabelFilterAnchor(e.currentTarget)}
-                  disabled={items.length === 0 || selectMode}
-                >
-                  <Badge
-                    variant="dot"
-                    invisible={!itemFilters.categoryId}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
-                      },
-                    }}
-                  >
-                    {(() => {
-                      const selectedCategory = categories.find(
-                        (c) => c.id === itemFilters.categoryId,
-                      );
-                      return selectedCategory ? (
-                        <LabelIcon
-                          icon={selectedCategory.icon}
-                          color={selectedCategory.color}
-                          size={0.9}
-                        />
-                      ) : (
-                        <Icon path={mdiNoteText} size={0.9} />
-                      );
-                    })()}
-                  </Badge>
-                </IconButton>
-              </Tooltip>
               <Tooltip title="Filter by date">
                 <IconButton
                   aria-label="Filter by date"
                   color={showDateFilterInput ? "primary" : "default"}
                   onClick={() => {
-                    setShowTextFilterInput(false);
                     setShowDateFilterInput((prev) => {
                       const next = !prev;
                       setStartDatePickerOpen(next);
@@ -1119,29 +1051,6 @@ function App() {
                     >
                       <Icon path={mdiCalendar} size={0.9} />
                     </Badge>
-                  </Badge>
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Filter note text">
-                <IconButton
-                  aria-label="Filter notes"
-                  onClick={() => {
-                    setShowDateFilterInput(false);
-                    setShowTextFilterInput((prev) => !prev);
-                  }}
-                  color={showTextFilterInput ? "primary" : "default"}
-                  disabled={items.length === 0 || selectMode}
-                >
-                  <Badge
-                    variant="dot"
-                    invisible={itemFilters.text.trim() === ""}
-                    sx={{
-                      "& .MuiBadge-badge": {
-                        backgroundColor: colors.lightGreen[400],
-                      },
-                    }}
-                  >
-                    <Icon path={mdiFilter} size={0.9} />
                   </Badge>
                 </IconButton>
               </Tooltip>
@@ -1341,63 +1250,6 @@ function App() {
                     </IconButton>
                   </Tooltip>
                 </Stack>
-              ) : showTextFilterInput ? (
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{ alignItems: "center" }}
-                >
-                  <Box sx={{ position: "relative", flex: 1, minWidth: 0 }}>
-                    <TextField
-                      label="Note contains text"
-                      size="small"
-                      fullWidth
-                      autoFocus
-                      value={itemFilters.text}
-                      onChange={(event) =>
-                        setItemFilters((prev) => ({
-                          ...prev,
-                          text: event.target.value,
-                        }))
-                      }
-                      sx={{
-                        "& .MuiInputBase-input": {
-                          pr: 7,
-                        },
-                      }}
-                    />
-                    <Box
-                      sx={{
-                        position: "absolute",
-                        right: 10,
-                        bottom: 9,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        pointerEvents: "none",
-                        color: "text.secondary",
-                      }}
-                    >
-                      <Icon path={mdiFilter} size={0.6} />
-                      <Box component="span" sx={{ fontSize: "0.72rem" }}>
-                        {filteredItemsCount}
-                      </Box>
-                    </Box>
-                  </Box>
-                  <Tooltip title="Remove filter text">
-                    <IconButton
-                      aria-label="Remove filter text"
-                      color="error"
-                      onClick={() => {
-                        setShowTextFilterInput(false);
-                        setItemFilters((prev) => ({ ...prev, text: "" }));
-                      }}
-                      sx={{ mt: -2.75 }}
-                    >
-                      <Icon path={mdiTrashCan} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
               ) : (
                 <ItemForm
                   editingItem={editingItem}
@@ -1405,6 +1257,8 @@ function App() {
                   categories={categories}
                   onSubmit={handleItemSubmit}
                   onCancelEdit={() => setEditingItem(null)}
+                  onFilterTextChange={handleFilterTextChange}
+                  onFilterCategoryChange={handleFilterCategoryChange}
                 />
               )}
               {selectMode && (
@@ -1690,54 +1544,6 @@ function App() {
         </DialogActions>
       </Dialog>
       <Menu
-        anchorEl={labelFilterAnchor}
-        open={!!labelFilterAnchor}
-        onClose={() => setLabelFilterAnchor(null)}
-      >
-        <MenuItem
-          onClick={() => {
-            setItemFilters((f) => ({ ...f, categoryId: "" }));
-            setLabelFilterAnchor(null);
-          }}
-        >
-          Show all
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            setItemFilters((f) => ({
-              ...f,
-              categoryId: NO_CATEGORY_FILTER_VALUE,
-            }));
-            setLabelFilterAnchor(null);
-          }}
-        >
-          <Box
-            component="span"
-            sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-          >
-            <Icon path={mdiNoteText} size={0.8} />
-          </Box>
-          No label
-        </MenuItem>
-        {categories.map((category) => (
-          <MenuItem
-            key={category.id}
-            onClick={() => {
-              setItemFilters((f) => ({ ...f, categoryId: category.id }));
-              setLabelFilterAnchor(null);
-            }}
-          >
-            <Box
-              component="span"
-              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-            >
-              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
-            </Box>
-            {category.name}
-          </MenuItem>
-        ))}
-      </Menu>
-      <Menu
         anchorEl={bulkCategoryAnchor}
         open={!!bulkCategoryAnchor}
         onClose={() => setBulkCategoryAnchor(null)}
@@ -1754,7 +1560,11 @@ function App() {
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+              <LabelIcon
+                icon={category.icon}
+                color={category.color}
+                size={0.8}
+              />
             </Box>
             {category.name}
           </MenuItem>

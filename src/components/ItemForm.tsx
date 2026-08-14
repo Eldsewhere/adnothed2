@@ -22,6 +22,7 @@ import {
   mdiNoteText,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
+import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 
 type ItemFormProps = {
   editingItem: Item | null;
@@ -29,6 +30,8 @@ type ItemFormProps = {
   categories: Category[];
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
+  onFilterTextChange: (value: string) => void;
+  onFilterCategoryChange: (value: string) => void;
 };
 
 const emptyValues: ItemFormValues = { categoryId: "", text: "" };
@@ -39,6 +42,8 @@ const ItemForm = ({
   categories,
   onSubmit,
   onCancelEdit,
+  onFilterTextChange,
+  onFilterCategoryChange,
 }: ItemFormProps) => {
   const {
     control,
@@ -56,18 +61,28 @@ const ItemForm = ({
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   useEffect(() => {
-    reset(
-      editingItem
-        ? { categoryId: editingItem.categoryId ?? "", text: editingItem.text }
-        : initialText
-          ? { categoryId: "", text: initialText }
-          : emptyValues,
-    );
-  }, [editingItem, initialText, reset]);
+    const nextValues = editingItem
+      ? { categoryId: editingItem.categoryId ?? "", text: editingItem.text }
+      : initialText
+        ? { categoryId: "", text: initialText }
+        : emptyValues;
+
+    reset(nextValues);
+    onFilterTextChange(nextValues.text);
+    onFilterCategoryChange(nextValues.categoryId ? nextValues.categoryId : "");
+  }, [
+    editingItem,
+    initialText,
+    onFilterCategoryChange,
+    onFilterTextChange,
+    reset,
+  ]);
 
   const submit = handleSubmit((values) => {
     onSubmit(values);
     reset(emptyValues);
+    onFilterTextChange("");
+    onFilterCategoryChange("");
   });
 
   const openLabelMenu = (event: MouseEvent<HTMLElement>) => {
@@ -122,7 +137,8 @@ const ItemForm = ({
     }
 
     const isAtEnd = start === currentValue.length;
-    const needsNewline = isAtEnd && currentValue[start - 1] !== "\n" && currentValue.length > 0;
+    const needsNewline =
+      isAtEnd && currentValue[start - 1] !== "\n" && currentValue.length > 0;
     const snippet = `${needsNewline ? "\n" : ""}${marker} `;
     const nextValue =
       currentValue.slice(0, start) + snippet + currentValue.slice(start);
@@ -154,10 +170,19 @@ const ItemForm = ({
                 maxLength: { value: 500, message: "Max 500 characters" },
               }}
               render={({ field }) => {
+                const handleTextChange = (value: string) => {
+                  field.onChange(value);
+                  onFilterTextChange(value);
+                };
+
                 return (
                   <Box sx={{ position: "relative" }}>
                     <TextField
                       {...field}
+                      value={field.value}
+                      onChange={(event) => {
+                        handleTextChange(event.target.value);
+                      }}
                       inputRef={(el: HTMLTextAreaElement | null) => {
                         textAreaRef.current = el;
                       }}
@@ -192,7 +217,7 @@ const ItemForm = ({
                         aria-label="Insert bullet"
                         size="small"
                         onClick={() =>
-                          insertMarker("•", field.value, field.onChange)
+                          insertMarker("•", field.value, handleTextChange)
                         }
                         sx={{
                           position: "absolute",
@@ -209,7 +234,7 @@ const ItemForm = ({
                         aria-label="Insert checkbox"
                         size="small"
                         onClick={() =>
-                          insertMarker("[]", field.value, field.onChange)
+                          insertMarker("[]", field.value, handleTextChange)
                         }
                         sx={{
                           position: "absolute",
@@ -227,7 +252,7 @@ const ItemForm = ({
                         size="small"
                         onClick={async () => {
                           const text = await navigator.clipboard.readText();
-                          field.onChange(field.value + text);
+                          handleTextChange(field.value + text);
                         }}
                         sx={{
                           position: "absolute",
@@ -256,8 +281,9 @@ const ItemForm = ({
               name="categoryId"
               control={control}
               render={({ field }) => {
+                const activeCategoryId = field.value;
                 const selectedCategory = categories.find(
-                  (category) => category.id === field.value,
+                  (category) => category.id === activeCategoryId,
                 );
 
                 return (
@@ -314,10 +340,20 @@ const ItemForm = ({
                       onClose={closeLabelMenu}
                     >
                       <MenuItem
-                        autoFocus={field.value === ""}
-                        selected={field.value === ""}
+                        autoFocus
                         onClick={() => {
                           field.onChange("");
+                          onFilterCategoryChange("");
+                          closeLabelMenu();
+                        }}
+                      >
+                        <span>Show All</span>
+                      </MenuItem>
+                      <MenuItem
+                        selected={activeCategoryId === ""}
+                        onClick={() => {
+                          field.onChange("");
+                          onFilterCategoryChange(NO_CATEGORY_FILTER_VALUE);
                           closeLabelMenu();
                         }}
                       >
@@ -330,20 +366,17 @@ const ItemForm = ({
                           }}
                         >
                           <Icon path={mdiNoteText} size={0.8} />
-                          <span>
-                            {categories.length === 0
-                              ? "No labels available"
-                              : "No label"}
-                          </span>
+                          <span>No Label</span>
                         </Box>
                       </MenuItem>
                       {categories.map((category) => (
                         <MenuItem
                           key={category.id}
-                          autoFocus={field.value === category.id}
-                          selected={field.value === category.id}
+                          autoFocus={activeCategoryId === category.id}
+                          selected={activeCategoryId === category.id}
                           onClick={() => {
                             field.onChange(category.id);
+                            onFilterCategoryChange(category.id);
                             closeLabelMenu();
                           }}
                         >
@@ -385,6 +418,8 @@ const ItemForm = ({
                     onClick={() => {
                       onCancelEdit();
                       reset(emptyValues);
+                      onFilterTextChange("");
+                      onFilterCategoryChange("");
                     }}
                     aria-label="Cancel"
                     color={"primary"}
