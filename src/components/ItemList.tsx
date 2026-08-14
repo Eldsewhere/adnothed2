@@ -100,10 +100,21 @@ const getSearchQuery = (text: string): string =>
     .join("\n")
     .trim();
 
+const SEARCH_ICON_FILENAMES: Record<string, string> = {
+  "google.com": "google.png",
+  "chatgpt.com": "chatgpt.png",
+  "reddit.com": "reddit.png",
+  "youtube.com": "youtube.png",
+  "maps.google.com": "maps.png",
+  "instagram.com": "instagram.png",
+  "spotify.com": "spotify.png",
+  "amazon.es": "amazon-es.png",
+};
+
 const SearchSiteIcon = ({ domain }: { domain: string }) => (
   <Box
     component="img"
-    src={`https://www.google.com/s2/favicons?domain=${domain}&sz=32`}
+    src={`${import.meta.env.BASE_URL}search-icons/${SEARCH_ICON_FILENAMES[domain]}`}
     alt=""
     sx={{ width: 16, height: 16, mr: 1, flexShrink: 0 }}
   />
