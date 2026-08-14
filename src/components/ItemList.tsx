@@ -41,6 +41,7 @@ import {
   mdiShareVariant,
   mdiTrashCanOutline,
   mdiNoteText,
+  mdiOpenInNew,
 } from "@mdi/js";
 import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
@@ -55,7 +56,7 @@ import {
   NO_CATEGORY_FILTER_VALUE,
   parseTextFilters,
 } from "../utils/itemFilters";
-import { splitTextByUrls } from "../utils/textPatterns";
+import { getFirstUrl, splitTextByUrls } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
 import { DateCalendar } from "@mui/x-date-pickers";
 import LabelIcon from "./LabelIcon";
@@ -128,6 +129,10 @@ const ItemList = ({
     item: Item;
   } | null>(null);
   const [shareMenuAnchor, setShareMenuAnchor] = useState<{
+    el: HTMLElement;
+    item: Item;
+  } | null>(null);
+  const [searchMenuAnchor, setSearchMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
   } | null>(null);
@@ -212,6 +217,7 @@ const ItemList = ({
   const closeMenu = () => {
     setMenuAnchor(null);
     setShareMenuAnchor(null);
+    setSearchMenuAnchor(null);
     setOverflowModalItemId(null);
   };
 
@@ -240,12 +246,23 @@ const ItemList = ({
     closeMenu();
   };
 
-  const handleSearchGoogle = (item: Item) => {
+  const handleSearch = (
+    item: Item,
+    searchUrl: (query: string) => string,
+  ) => {
     window.open(
-      `https://www.google.com/search?q=${encodeURIComponent(item.text)}`,
+      searchUrl(encodeURIComponent(item.text)),
       "_blank",
       "noopener,noreferrer",
     );
+    closeMenu();
+  };
+
+  const handleOpen = (item: Item) => {
+    const url = getFirstUrl(item.text);
+    if (url) {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
     closeMenu();
   };
 
@@ -886,7 +903,14 @@ const ItemList = ({
           Share
         </MenuItem>
         <MenuItem
-          onClick={() => menuAnchor && handleSearchGoogle(menuAnchor.item)}
+          onClick={(event: MouseEvent<HTMLElement>) => {
+            if (menuAnchor) {
+              setSearchMenuAnchor({
+                el: event.currentTarget,
+                item: menuAnchor.item,
+              });
+            }
+          }}
         >
           <Box
             component="span"
@@ -900,7 +924,7 @@ const ItemList = ({
           >
             <Icon path={mdiMagnify} size={0.7} />
           </Box>
-          Google
+          Search
         </MenuItem>
         <Divider sx={{ m: `0 !important` }} />
         <MenuItem
@@ -1023,6 +1047,98 @@ const ItemList = ({
             <Icon path={mdiLink} size={0.7} />
           </Box>
           Link
+        </MenuItem>
+      </Menu>
+      <Menu
+        anchorEl={searchMenuAnchor?.el}
+        open={!!searchMenuAnchor}
+        onClose={() => setSearchMenuAnchor(null)}
+        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
+        transformOrigin={{ horizontal: "right", vertical: "center" }}
+      >
+        {searchMenuAnchor && getFirstUrl(searchMenuAnchor.item.text) && (
+          <MenuItem onClick={() => handleOpen(searchMenuAnchor.item)}>
+            Open Link
+          </MenuItem>
+        )}
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://www.google.com/search?q=${query}`,
+            )
+          }
+        >
+          Google
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://chatgpt.com/?q=${query}`,
+            )
+          }
+        >
+          ChatGPT
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://www.reddit.com/search/?q=${query}`,
+            )
+          }
+        >
+          Reddit
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://www.youtube.com/results?search_query=${query}`,
+            )
+          }
+        >
+          YouTube
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) =>
+                `https://www.google.com/maps/search/?api=1&query=${query}`,
+            )
+          }
+        >
+          Maps
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) =>
+                `https://www.instagram.com/explore/search/keyword/?q=${query}`,
+            )
+          }
+        >
+          Instagram
+        </MenuItem>
+        <MenuItem
+          onClick={() =>
+            searchMenuAnchor &&
+            handleSearch(
+              searchMenuAnchor.item,
+              (query) => `https://open.spotify.com/search/${query}`,
+            )
+          }
+        >
+          Spotify
         </MenuItem>
       </Menu>
       {overflowModalItem && (

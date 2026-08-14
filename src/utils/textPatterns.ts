@@ -6,6 +6,14 @@ export function containsUrl(text: string): boolean {
   return URL_REGEX.test(text);
 }
 
+export function getFirstUrl(text: string): string | null {
+  const match = text.match(URL_REGEX);
+  if (!match) {
+    return null;
+  }
+  return /^https?:\/\//i.test(match[0]) ? match[0] : `https://${match[0]}`;
+}
+
 export function containsEmail(text: string): boolean {
   return EMAIL_REGEX.test(text);
 }
