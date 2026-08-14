@@ -41,6 +41,9 @@ import {
   mdiCalendar,
   mdiCheckCircle,
   mdiCalendarClock,
+  mdiLabel,
+  mdiNoteText,
+  mdiLabelMultiple,
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
@@ -924,12 +927,16 @@ function App() {
             <Tab
               value="items"
               label="Notes"
+              icon={<Icon path={mdiNoteText} size={0.75} />}
+              iconPosition="start"
               id="tab-items"
               aria-controls="tabpanel-items"
             />
             <Tab
               value="categories"
               label="Labels"
+              icon={<Icon path={mdiLabelMultiple} size={0.75} />}
+              iconPosition="start"
               id="tab-categories"
               aria-controls="tabpanel-categories"
             />
