@@ -85,6 +85,7 @@ const queryTemplates: QueryTemplate[] = [
   { label: "withUrl", command: "/with: url;" },
   { label: "withEmail", command: "/with: email;" },
   { label: "withBullets", command: "/with: bullets;" },
+  { label: "withCheckboxes", command: "/with: checkboxes;" },
 ];
 
 const ItemForm = ({

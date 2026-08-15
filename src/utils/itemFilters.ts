@@ -34,6 +34,7 @@ export type ParsedTextFilters = {
   withUrl: boolean;
   withEmail: boolean;
   withBullets: boolean;
+  withCheckboxes: boolean;
 };
 
 const defaultParsedTextFilters: ParsedTextFilters = {
@@ -51,6 +52,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withUrl: false,
   withEmail: false,
   withBullets: false,
+  withCheckboxes: false,
 };
 
 function toPositiveInt(value: string): number | null {
@@ -151,6 +153,10 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
         parsed.withBullets = true;
         continue;
       }
+      if (token === "checkboxes") {
+        parsed.withCheckboxes = true;
+        continue;
+      }
     }
 
     // Unknown slash commands are ignored so mistyped command drafts do not filter.
@@ -247,6 +253,10 @@ export function matchesTextFilters(
   }
 
   if (parsed.withBullets && !text.includes("•")) {
+    return false;
+  }
+
+  if (parsed.withCheckboxes && !text.includes("[]") && !text.includes("[x]")) {
     return false;
   }
 
