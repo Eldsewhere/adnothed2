@@ -918,11 +918,15 @@ function App() {
       if (item.due === undefined) {
         continue;
       }
-      const key = dayjs.unix(item.due).format("YYYY-MM-DD");
+      const dueDay = dayjs.unix(item.due).startOf("day");
+      if (dueDay.isBefore(today, "day")) {
+        continue;
+      }
+      const key = dueDay.format("YYYY-MM-DD");
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return counts;
-  }, [items]);
+  }, [items, today]);
 
   const handleWeekdayToggle = (dayKey: string) => {
     setDatePopoverAnchor(null);
@@ -1436,62 +1440,63 @@ function App() {
                         : (noteCountByDay.get(dayKey) ?? 0);
 
                       return (
-                        <Badge
-                          key={dayKey}
-                          badgeContent={badgeValue > 1 ? badgeValue : 0}
-                          color={hasDue ? "warning" : "success"}
-                          overlap="rectangular"
-                          anchorOrigin={{
-                            vertical: "top",
-                            horizontal: "right",
-                          }}
-                          sx={{
-                            "& .MuiBadge-badge": {
-                              minWidth: 16,
-                              height: 16,
-                              fontSize: "0.65rem",
-                            },
-                          }}
-                        >
-                          <Button
-                            variant={isSelected ? "contained" : "outlined"}
-                            onClick={() => handleWeekdayToggle(dayKey)}
+                        <Tooltip key={dayKey} title={day.format("ddd, MMM D")}>
+                          <Badge
+                            badgeContent={badgeValue > 1 ? badgeValue : 0}
+                            color={hasDue ? "warning" : "success"}
+                            overlap="rectangular"
+                            anchorOrigin={{
+                              vertical: "top",
+                              horizontal: "right",
+                            }}
                             sx={{
-                              minWidth: 32,
-                              width: 32,
-                              height: 32,
-                              p: 0,
-                              borderRadius: 1,
-                              fontWeight: 700,
-                              lineHeight: 1,
-                              color: colors.blueGrey[100],
-                              borderColor: colors.blueGrey[600],
-                              backgroundColor: isSelected
-                                ? colors.lightBlue[700]
-                                : hasDue
-                                  ? "rgba(255, 152, 0, 0.24)"
-                                  : isCurrentDay
-                                    ? "rgba(33, 150, 243, 0.32)"
-                                    : hasPreviousNotes
-                                      ? "rgba(76, 175, 80, 0.24)"
-                                      : "rgba(96, 125, 139, 0.16)",
-                              "&:hover": {
-                                backgroundColor: isSelected
-                                  ? colors.lightBlue[600]
-                                  : hasDue
-                                    ? "rgba(255, 152, 0, 0.32)"
-                                    : isCurrentDay
-                                      ? "rgba(33, 150, 243, 0.45)"
-                                      : hasPreviousNotes
-                                        ? "rgba(76, 175, 80, 0.32)"
-                                        : "rgba(96, 125, 139, 0.24)",
-                                borderColor: colors.blueGrey[500],
+                              "& .MuiBadge-badge": {
+                                minWidth: 16,
+                                height: 16,
+                                fontSize: "0.65rem",
                               },
                             }}
                           >
-                            {WEEKDAY_LETTERS[weekday]}
-                          </Button>
-                        </Badge>
+                            <Button
+                              variant={isSelected ? "contained" : "outlined"}
+                              onClick={() => handleWeekdayToggle(dayKey)}
+                              sx={{
+                                minWidth: 32,
+                                width: 32,
+                                height: 32,
+                                p: 0,
+                                borderRadius: 1,
+                                fontWeight: 700,
+                                lineHeight: 1,
+                                color: colors.blueGrey[100],
+                                borderColor: colors.blueGrey[600],
+                                backgroundColor: isSelected
+                                  ? colors.lightBlue[700]
+                                  : hasDue
+                                    ? "rgba(255, 152, 0, 0.24)"
+                                    : isCurrentDay
+                                      ? "rgba(33, 150, 243, 0.32)"
+                                      : hasPreviousNotes
+                                        ? "rgba(76, 175, 80, 0.24)"
+                                        : "rgba(96, 125, 139, 0.16)",
+                                "&:hover": {
+                                  backgroundColor: isSelected
+                                    ? colors.lightBlue[600]
+                                    : hasDue
+                                      ? "rgba(255, 152, 0, 0.32)"
+                                      : isCurrentDay
+                                        ? "rgba(33, 150, 243, 0.45)"
+                                        : hasPreviousNotes
+                                          ? "rgba(76, 175, 80, 0.32)"
+                                          : "rgba(96, 125, 139, 0.24)",
+                                  borderColor: colors.blueGrey[500],
+                                },
+                              }}
+                            >
+                              {WEEKDAY_LETTERS[weekday]}
+                            </Button>
+                          </Badge>
+                        </Tooltip>
                       );
                     })}
                   </Stack>
