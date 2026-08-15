@@ -502,7 +502,7 @@ const ItemList = ({
         }
         if (
           filters.weekday !== null &&
-          dayjs.unix(item.createdAt).day() !== filters.weekday
+          (!item.due || formatDate(item.due) !== filters.weekday)
         ) {
           return false;
         }

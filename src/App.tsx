@@ -545,6 +545,13 @@ function App() {
 
     setItems((prev) => {
       const createdAt = getUniqueCreatedAt(prev);
+      const selectedDay = itemFilters.weekday
+        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+        : null;
+      const hasFutureSelectedDay =
+        selectedDay !== null &&
+        selectedDay.isValid() &&
+        selectedDay.isAfter(today, "day");
 
       return [
         ...prev,
@@ -554,6 +561,9 @@ function App() {
           text: values.text,
           createdAt,
           hasNotification: true,
+          ...(hasFutureSelectedDay
+            ? { due: selectedDay.startOf("day").unix() }
+            : {}),
         },
       ];
     });
@@ -914,7 +924,7 @@ function App() {
     return counts;
   }, [items]);
 
-  const handleWeekdayToggle = (weekday: number) => {
+  const handleWeekdayToggle = (dayKey: string) => {
     setDatePopoverAnchor(null);
     setPendingDateFilter((prev) => ({
       ...prev,
@@ -925,7 +935,7 @@ function App() {
     }));
     setItemFilters((prev) => ({
       ...prev,
-      weekday: prev.weekday === weekday ? null : weekday,
+      weekday: prev.weekday === dayKey ? null : dayKey,
       date: "",
       endDate: "",
       dueDate: "",
@@ -1170,6 +1180,15 @@ function App() {
                       onChange={(value: Dayjs | null) => {
                         if (!value) return;
                         const next = value.format("YYYY-MM-DD");
+                        if (pendingDateFilter.hasDue) {
+                          setPendingDateFilter((prev) => ({
+                            ...prev,
+                            dueDate: next,
+                            date: "",
+                            endDate: "",
+                          }));
+                          return;
+                        }
                         if (datePickerMode === "start") {
                           setPendingDateFilter((prev) => ({
                             ...prev,
@@ -1406,7 +1425,7 @@ function App() {
                     {weekdayStripDays.map((day) => {
                       const dayKey = day.format("YYYY-MM-DD");
                       const weekday = day.day();
-                      const isSelected = itemFilters.weekday === weekday;
+                      const isSelected = itemFilters.weekday === dayKey;
                       const isCurrentDay = day.isSame(today, "day");
                       const hasPreviousNotes =
                         day.isBefore(today, "day") &&
@@ -1436,7 +1455,7 @@ function App() {
                         >
                           <Button
                             variant={isSelected ? "contained" : "outlined"}
-                            onClick={() => handleWeekdayToggle(weekday)}
+                            onClick={() => handleWeekdayToggle(dayKey)}
                             sx={{
                               minWidth: 32,
                               width: 32,
