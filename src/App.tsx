@@ -94,6 +94,8 @@ const SHORT_MONTHS = [
   "Dic",
 ];
 
+const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
+
 const formatShortRangeDate = (value: Dayjs): string => {
   const day = value.date().toString().padStart(2, "0");
   const month = SHORT_MONTHS[value.month()] ?? value.format("MMM");
@@ -882,6 +884,55 @@ function App() {
     ).length;
   }, [items, today]);
 
+  const weekdayStripDays = useMemo(
+    () =>
+      Array.from({ length: 13 }, (_unused, idx) => {
+        const offset = idx - 6;
+        return today.add(offset, "day");
+      }),
+    [today],
+  );
+
+  const noteCountByDay = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      const key = dayjs.unix(item.createdAt).format("YYYY-MM-DD");
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }, [items]);
+
+  const dueCountByDay = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of items) {
+      if (item.due === undefined) {
+        continue;
+      }
+      const key = dayjs.unix(item.due).format("YYYY-MM-DD");
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    return counts;
+  }, [items]);
+
+  const handleWeekdayToggle = (weekday: number) => {
+    setDatePopoverAnchor(null);
+    setPendingDateFilter((prev) => ({
+      ...prev,
+      date: "",
+      endDate: "",
+      dueDate: "",
+      hasDue: false,
+    }));
+    setItemFilters((prev) => ({
+      ...prev,
+      weekday: prev.weekday === weekday ? null : weekday,
+      date: "",
+      endDate: "",
+      dueDate: "",
+      hasDue: false,
+    }));
+  };
+
   const CalendarDay = (props: PickerDayProps) => (
     <NoteDay
       {...props}
@@ -1327,6 +1378,105 @@ function App() {
                   onFilterTextChange={handleFilterTextChange}
                   onFilterCategoryChange={handleFilterCategoryChange}
                 />
+                <Box
+                  sx={{
+                    width: "100%",
+                    overflowX: "auto",
+                    overflowY: "visible",
+                    display: "flex",
+                    justifyContent: "center",
+                    py: 0.5,
+                    scrollbarWidth: "none",
+                    msOverflowStyle: "none",
+                    "&::-webkit-scrollbar": {
+                      display: "none",
+                    },
+                  }}
+                >
+                  <Stack
+                    direction="row"
+                    spacing={0.75}
+                    sx={{
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: "max-content",
+                      pt: 0.5,
+                    }}
+                  >
+                    {weekdayStripDays.map((day) => {
+                      const dayKey = day.format("YYYY-MM-DD");
+                      const weekday = day.day();
+                      const isSelected = itemFilters.weekday === weekday;
+                      const isCurrentDay = day.isSame(today, "day");
+                      const hasPreviousNotes =
+                        day.isBefore(today, "day") &&
+                        (noteCountByDay.get(dayKey) ?? 0) > 0;
+                      const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
+                      const badgeValue = hasDue
+                        ? (dueCountByDay.get(dayKey) ?? 0)
+                        : (noteCountByDay.get(dayKey) ?? 0);
+
+                      return (
+                        <Badge
+                          key={dayKey}
+                          badgeContent={badgeValue > 1 ? badgeValue : 0}
+                          color={hasDue ? "warning" : "success"}
+                          overlap="rectangular"
+                          anchorOrigin={{
+                            vertical: "top",
+                            horizontal: "right",
+                          }}
+                          sx={{
+                            "& .MuiBadge-badge": {
+                              minWidth: 16,
+                              height: 16,
+                              fontSize: "0.65rem",
+                            },
+                          }}
+                        >
+                          <Button
+                            variant={isSelected ? "contained" : "outlined"}
+                            onClick={() => handleWeekdayToggle(weekday)}
+                            sx={{
+                              minWidth: 32,
+                              width: 32,
+                              height: 32,
+                              p: 0,
+                              borderRadius: 1,
+                              fontWeight: 700,
+                              lineHeight: 1,
+                              color: colors.blueGrey[100],
+                              borderColor: colors.blueGrey[600],
+                              backgroundColor: isSelected
+                                ? colors.lightBlue[700]
+                                : hasDue
+                                  ? "rgba(255, 152, 0, 0.24)"
+                                  : isCurrentDay
+                                    ? "rgba(33, 150, 243, 0.32)"
+                                    : hasPreviousNotes
+                                      ? "rgba(76, 175, 80, 0.24)"
+                                      : "rgba(96, 125, 139, 0.16)",
+                              "&:hover": {
+                                backgroundColor: isSelected
+                                  ? colors.lightBlue[600]
+                                  : hasDue
+                                    ? "rgba(255, 152, 0, 0.32)"
+                                    : isCurrentDay
+                                      ? "rgba(33, 150, 243, 0.45)"
+                                      : hasPreviousNotes
+                                        ? "rgba(76, 175, 80, 0.32)"
+                                        : "rgba(96, 125, 139, 0.24)",
+                                borderColor: colors.blueGrey[500],
+                              },
+                            }}
+                          >
+                            {WEEKDAY_LETTERS[weekday]}
+                          </Button>
+                        </Badge>
+                      );
+                    })}
+                  </Stack>
+                </Box>
                 {selectMode && (
                   <Stack
                     direction="row"

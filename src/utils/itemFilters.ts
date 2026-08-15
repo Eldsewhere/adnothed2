@@ -17,6 +17,7 @@ export const emptyItemFilters: ItemFilters = {
   indexAt: "",
   dueDate: "",
   hasDue: false,
+  weekday: null,
 };
 
 export type ParsedTextFilters = {

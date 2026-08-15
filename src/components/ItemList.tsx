@@ -500,6 +500,12 @@ const ItemList = ({
             return false;
           }
         }
+        if (
+          filters.weekday !== null &&
+          dayjs.unix(item.createdAt).day() !== filters.weekday
+        ) {
+          return false;
+        }
         if (filters.hasDue) {
           const todayUnix = dayjs().startOf("day").unix();
           if (item.due === undefined || item.due < todayUnix) {

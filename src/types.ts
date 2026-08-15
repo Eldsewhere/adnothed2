@@ -47,4 +47,5 @@ export type ItemFilters = {
   indexAt: string;
   dueDate: string;
   hasDue: boolean;
+  weekday: number | null;
 };
