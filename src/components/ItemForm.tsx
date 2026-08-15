@@ -117,6 +117,7 @@ const ItemForm = ({
     null,
   );
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
+  const isEditing = editingItem !== null;
 
   useEffect(() => {
     const nextValues = editingItem
@@ -126,10 +127,15 @@ const ItemForm = ({
         : emptyValues;
 
     reset(nextValues);
-    onFilterTextChange(nextValues.text);
-    onFilterCategoryChange(nextValues.categoryId ? nextValues.categoryId : "");
+    if (!isEditing) {
+      onFilterTextChange(nextValues.text);
+      onFilterCategoryChange(
+        nextValues.categoryId ? nextValues.categoryId : "",
+      );
+    }
   }, [
     editingItem,
+    isEditing,
     initialText,
     onFilterCategoryChange,
     onFilterTextChange,
@@ -139,8 +145,10 @@ const ItemForm = ({
   const submit = handleSubmit((values) => {
     onSubmit(values);
     reset(emptyValues);
-    onFilterTextChange("");
-    onFilterCategoryChange("");
+    if (!isEditing) {
+      onFilterTextChange("");
+      onFilterCategoryChange("");
+    }
   });
 
   const openLabelMenu = (event: MouseEvent<HTMLElement>) => {
@@ -269,7 +277,9 @@ const ItemForm = ({
               render={({ field }) => {
                 const handleTextChange = (value: string) => {
                   field.onChange(value);
-                  onFilterTextChange(value);
+                  if (!isEditing) {
+                    onFilterTextChange(value);
+                  }
                 };
 
                 return (
@@ -542,7 +552,9 @@ const ItemForm = ({
                           autoFocus
                           onClick={() => {
                             field.onChange("");
-                            onFilterCategoryChange("");
+                            if (!isEditing) {
+                              onFilterCategoryChange("");
+                            }
                             closeLabelMenu();
                           }}
                         >
@@ -553,7 +565,9 @@ const ItemForm = ({
                         selected={activeCategoryId === ""}
                         onClick={() => {
                           field.onChange("");
-                          onFilterCategoryChange(NO_CATEGORY_FILTER_VALUE);
+                          if (!isEditing) {
+                            onFilterCategoryChange(NO_CATEGORY_FILTER_VALUE);
+                          }
                           closeLabelMenu();
                         }}
                       >
@@ -580,7 +594,9 @@ const ItemForm = ({
                           selected={activeCategoryId === category.id}
                           onClick={() => {
                             field.onChange(category.id);
-                            onFilterCategoryChange(category.id);
+                            if (!isEditing) {
+                              onFilterCategoryChange(category.id);
+                            }
                             closeLabelMenu();
                           }}
                         >
@@ -622,8 +638,6 @@ const ItemForm = ({
                     onClick={() => {
                       onCancelEdit();
                       reset(emptyValues);
-                      onFilterTextChange("");
-                      onFilterCategoryChange("");
                     }}
                     aria-label="Cancel"
                     color={"primary"}
