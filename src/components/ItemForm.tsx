@@ -18,6 +18,7 @@ import {
   mdiCheckboxBlankOutline,
   mdiCheckCircle,
   mdiChevronDown,
+  mdiChevronRight,
   mdiCircleSmall,
   mdiContentPaste,
   mdiFormatListBulleted,
@@ -39,6 +40,52 @@ type ItemFormProps = {
 };
 
 const emptyValues: ItemFormValues = { categoryId: "", text: "" };
+
+type QueryTemplate = {
+  label: string;
+  command: string;
+  placeholder?: string;
+};
+
+const queryTemplates: QueryTemplate[] = [
+  { label: "indexAt", command: "/index: number;", placeholder: "number" },
+  { label: "wordCount", command: "/word: number;", placeholder: "number" },
+  { label: "lineCount", command: "/lines: number;", placeholder: "number" },
+  {
+    label: "exactLength",
+    command: "/length: number;",
+    placeholder: "number",
+  },
+  {
+    label: "minLength",
+    command: "/minlength: number;",
+    placeholder: "number",
+  },
+  {
+    label: "maxLength",
+    command: "/maxlength: number;",
+    placeholder: "number",
+  },
+  {
+    label: "exactDate",
+    command: "/date: YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+  },
+  {
+    label: "minDate",
+    command: "/mindate: YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+  },
+  {
+    label: "maxDate",
+    command: "/maxdate: YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+  },
+  { label: "withNumbers", command: "/with: numbers;" },
+  { label: "withUrl", command: "/with: url;" },
+  { label: "withEmail", command: "/with: email;" },
+  { label: "withBullets", command: "/with: bullets;" },
+];
 
 const ItemForm = ({
   editingItem,
@@ -63,6 +110,9 @@ const ItemForm = ({
     null,
   );
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
+    null,
+  );
+  const [queryMenuAnchor, setQueryMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -98,6 +148,10 @@ const ItemForm = ({
 
   const closeLabelMenu = () => {
     setLabelMenuAnchor(null);
+  };
+
+  const closeQueryMenu = () => {
+    setQueryMenuAnchor(null);
   };
 
   const insertMarker = (
@@ -158,6 +212,41 @@ const ItemForm = ({
       const cursor = start + snippet.length;
       el.focus();
       el.setSelectionRange(cursor, cursor);
+    });
+  };
+
+  const prependQueryTemplate = (
+    template: QueryTemplate,
+    currentValue: string,
+    onChange: (value: string) => void,
+  ) => {
+    const trimmedCurrent = currentValue.trimStart();
+    const separator = "";
+    const prefix = `${template.command}${separator}`;
+    const nextValue = prefix + trimmedCurrent;
+    onChange(nextValue);
+
+    requestAnimationFrame(() => {
+      const el = textAreaRef.current;
+      if (!el) {
+        return;
+      }
+
+      el.focus();
+      if (!template.placeholder) {
+        const cursor = template.command.length;
+        el.setSelectionRange(cursor, cursor);
+        return;
+      }
+
+      const placeholderStart = template.command.indexOf(template.placeholder);
+      if (placeholderStart === -1) {
+        const cursor = template.command.length;
+        el.setSelectionRange(cursor, cursor);
+        return;
+      }
+      const placeholderEnd = placeholderStart + template.placeholder.length;
+      el.setSelectionRange(placeholderStart, placeholderEnd);
     });
   };
 
@@ -239,7 +328,10 @@ const ItemForm = ({
                     <Menu
                       anchorEl={formatMenuAnchor}
                       open={Boolean(formatMenuAnchor)}
-                      onClose={() => setFormatMenuAnchor(null)}
+                      onClose={() => {
+                        setFormatMenuAnchor(null);
+                        closeQueryMenu();
+                      }}
                     >
                       <MenuItem
                         onClick={() => {
@@ -308,6 +400,7 @@ const ItemForm = ({
                           const text = await navigator.clipboard.readText();
                           handleTextChange(field.value + text);
                           setFormatMenuAnchor(null);
+                          closeQueryMenu();
                         }}
                       >
                         <Box
@@ -322,6 +415,51 @@ const ItemForm = ({
                         </Box>
                         Paste
                       </MenuItem>
+                      <Divider />
+                      <MenuItem
+                        onClick={(event: MouseEvent<HTMLElement>) => {
+                          setQueryMenuAnchor(event.currentTarget);
+                        }}
+                      >
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                          }}
+                        >
+                          <Icon path={mdiChevronRight} size={0.75} />
+                        </Box>
+                        Query
+                      </MenuItem>
+                    </Menu>
+                    <Menu
+                      anchorEl={queryMenuAnchor}
+                      open={Boolean(queryMenuAnchor)}
+                      onClose={closeQueryMenu}
+                      anchorOrigin={{ horizontal: "right", vertical: "top" }}
+                      transformOrigin={{
+                        horizontal: "left",
+                        vertical: "top",
+                      }}
+                    >
+                      {queryTemplates.map((template) => (
+                        <MenuItem
+                          key={template.label}
+                          onClick={() => {
+                            prependQueryTemplate(
+                              template,
+                              field.value,
+                              handleTextChange,
+                            );
+                            closeQueryMenu();
+                            setFormatMenuAnchor(null);
+                          }}
+                        >
+                          {template.label}
+                        </MenuItem>
+                      ))}
                     </Menu>
                   </Box>
                 );
