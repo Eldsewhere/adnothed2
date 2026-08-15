@@ -14,6 +14,9 @@ import {
 import { Icon } from "@mdi/react";
 import type { Category, Item, ItemFormValues } from "../types";
 import {
+  mdiCalendar,
+  mdiCalendarEnd,
+  mdiCalendarStart,
   mdiCancel,
   mdiCheckboxBlankOutline,
   mdiCheckCircle,
@@ -21,9 +24,18 @@ import {
   mdiChevronRight,
   mdiCircleSmall,
   mdiContentPaste,
+  mdiEmailOutline,
+  mdiFormatLineSpacing,
   mdiFormatListBulleted,
+  mdiFormatListNumbered,
+  mdiFormatText,
   mdiLabelMultiple,
   mdiLabelOff,
+  mdiLinkVariant,
+  mdiNumeric,
+  mdiRayEndArrow,
+  mdiRayStartArrow,
+  mdiRayStartEnd,
   mdiSelectAll,
 } from "@mdi/js";
 import LabelIcon from "./LabelIcon";
@@ -45,47 +57,81 @@ type QueryTemplate = {
   label: string;
   command: string;
   placeholder?: string;
+  iconPath: string;
 };
 
 const queryTemplates: QueryTemplate[] = [
-  { label: "indexAt", command: "/index: number;", placeholder: "number" },
-  { label: "wordCount", command: "/word: number;", placeholder: "number" },
-  { label: "lineCount", command: "/lines: number;", placeholder: "number" },
+  {
+    label: "indexAt",
+    command: "/index: number;",
+    placeholder: "number",
+    iconPath: mdiFormatListNumbered,
+  },
+  {
+    label: "wordCount",
+    command: "/word: number;",
+    placeholder: "number",
+    iconPath: mdiFormatText,
+  },
+  {
+    label: "lineCount",
+    command: "/lines: number;",
+    placeholder: "number",
+    iconPath: mdiFormatLineSpacing,
+  },
   {
     label: "exactLength",
     command: "/length: number;",
     placeholder: "number",
+    iconPath: mdiRayStartEnd,
   },
   {
     label: "minLength",
     command: "/minlength: number;",
     placeholder: "number",
+    iconPath: mdiRayStartArrow,
   },
   {
     label: "maxLength",
     command: "/maxlength: number;",
     placeholder: "number",
+    iconPath: mdiRayEndArrow,
   },
   {
     label: "exactDate",
     command: "/date: YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendar,
   },
   {
     label: "minDate",
     command: "/mindate: YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendarStart,
   },
   {
     label: "maxDate",
     command: "/maxdate: YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendarEnd,
   },
-  { label: "withNumbers", command: "/with: numbers;" },
-  { label: "withUrl", command: "/with: url;" },
-  { label: "withEmail", command: "/with: email;" },
-  { label: "withBullets", command: "/with: bullets;" },
-  { label: "withCheckboxes", command: "/with: checkboxes;" },
+  { label: "withNumbers", command: "/with: numbers;", iconPath: mdiNumeric },
+  { label: "withUrl", command: "/with: url;", iconPath: mdiLinkVariant },
+  {
+    label: "withEmail",
+    command: "/with: email;",
+    iconPath: mdiEmailOutline,
+  },
+  {
+    label: "withBullets",
+    command: "/with: bullets;",
+    iconPath: mdiCircleSmall,
+  },
+  {
+    label: "withCheckboxes",
+    command: "/with: checkboxes;",
+    iconPath: mdiCheckboxBlankOutline,
+  },
 ];
 
 const ItemForm = ({
@@ -468,6 +514,16 @@ const ItemForm = ({
                             setFormatMenuAnchor(null);
                           }}
                         >
+                          <Box
+                            component="span"
+                            sx={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              mr: 1,
+                            }}
+                          >
+                            <Icon path={template.iconPath} size={0.75} />
+                          </Box>
                           {template.label}
                         </MenuItem>
                       ))}
