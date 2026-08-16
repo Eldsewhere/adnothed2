@@ -1544,7 +1544,6 @@ function App() {
                       justifyContent: "flex-start",
                       minWidth: "max-content",
                       pt: 0.5,
-                      pb: 1.25,
                     }}
                   >
                     <Box
