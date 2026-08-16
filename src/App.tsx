@@ -883,7 +883,7 @@ function App() {
 
   const calendarMaxDate = useMemo(() => {
     if (dueDaysByDate.size === 0) return filteredMaxDate;
-    const endOfNextMonth = today.add(1, "month").endOf("month").startOf("day");
+    const endOfNextMonth = today.add(3, "month").endOf("month").startOf("day");
     return endOfNextMonth.isAfter(filteredMaxDate)
       ? endOfNextMonth
       : filteredMaxDate;
@@ -898,12 +898,39 @@ function App() {
 
   const weekdayStripDays = useMemo(
     () =>
-      Array.from({ length: 13 }, (_unused, idx) => {
-        const offset = idx - 6;
+      Array.from({ length: 17 }, (_unused, idx) => {
+        const offset = idx - 2;
         return today.add(offset, "day");
       }),
     [today],
   );
+
+  const weekdayStripWeekMarkers = useMemo(() => {
+    const buttonWidth = 32;
+    const buttonGap = 6;
+    const markers: Array<{ key: string; x: number }> = [];
+
+    for (let index = 0; index < weekdayStripDays.length - 1; index += 1) {
+      const currentDay = weekdayStripDays[index];
+      if (currentDay.day() !== 0) {
+        continue;
+      }
+
+      const nextDay = weekdayStripDays[index + 1];
+      if (!nextDay) {
+        continue;
+      }
+
+      const x = (index + 1) * (buttonWidth + buttonGap) - buttonGap / 2;
+
+      markers.push({
+        key: `${currentDay.format("YYYY-MM-DD")}-${nextDay.format("YYYY-MM-DD")}`,
+        x,
+      });
+    }
+
+    return markers;
+  }, [weekdayStripDays]);
 
   const noteCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
@@ -1420,7 +1447,7 @@ function App() {
                     overflowX: "auto",
                     overflowY: "visible",
                     display: "flex",
-                    justifyContent: "center",
+                    justifyContent: "flex-start",
                     py: 0.5,
                     scrollbarWidth: "none",
                     msOverflowStyle: "none",
@@ -1431,103 +1458,140 @@ function App() {
                 >
                   <Stack
                     direction="row"
-                    spacing={0.75}
                     sx={{
-                      alignItems: "center",
-                      justifyContent: "center",
+                      position: "relative",
+                      justifyContent: "flex-start",
                       minWidth: "max-content",
                       pt: 0.5,
+                      pb: 1.25,
                     }}
                   >
-                    {weekdayStripDays.map((day) => {
-                      const dayKey = day.format("YYYY-MM-DD");
-                      const weekday = day.day();
-                      const isSelected = itemFilters.weekday === dayKey;
-                      const isCurrentDay = day.isSame(today, "day");
-                      const hasPreviousNotes =
-                        day.isBefore(today, "day") &&
-                        (noteCountByDay.get(dayKey) ?? 0) > 0;
-                      const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
-                      const badgeValue = hasDue
-                        ? (dueCountByDay.get(dayKey) ?? 0)
-                        : (noteCountByDay.get(dayKey) ?? 0);
+                    <Box
+                      sx={{
+                        position: "relative",
+                        display: "flex",
+                        alignItems: "center",
+                        columnGap: 0.75,
+                        height: 32,
+                      }}
+                    >
+                      {weekdayStripWeekMarkers.map((marker) => (
+                        <Box
+                          key={marker.key}
+                          sx={{
+                            position: "absolute",
+                            left: `${marker.x}px`,
+                            transform: "translateX(-50%)",
+                            top: 0,
+                            height: "25%",
+                            width: 2,
+                            backgroundColor: colors.blueGrey[500],
+                            pointerEvents: "none",
+                          }}
+                        />
+                      ))}
+                      {weekdayStripDays.map((day) => {
+                        const dayKey = day.format("YYYY-MM-DD");
+                        const weekday = day.day();
+                        const isSelected = itemFilters.weekday === dayKey;
+                        const isCurrentDay = day.isSame(today, "day");
+                        const hasPreviousNotes =
+                          day.isBefore(today, "day") &&
+                          (noteCountByDay.get(dayKey) ?? 0) > 0;
+                        const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
+                        const badgeValue = hasDue
+                          ? (dueCountByDay.get(dayKey) ?? 0)
+                          : (noteCountByDay.get(dayKey) ?? 0);
 
-                      return (
-                        <Tooltip key={dayKey} title={day.format("ddd, MMM D")}>
-                          <Badge
-                            badgeContent={badgeValue > 1 ? badgeValue : 0}
-                            color={hasDue ? "warning" : "success"}
-                            overlap="rectangular"
-                            anchorOrigin={{
-                              vertical: "top",
-                              horizontal: "right",
-                            }}
-                            sx={{
-                              "& .MuiBadge-badge": {
-                                minWidth: 16,
-                                height: 16,
-                                fontSize: "0.65rem",
-                              },
-                            }}
+                        return (
+                          <Tooltip
+                            key={dayKey}
+                            title={day.format("ddd, MMM D")}
                           >
-                            <Button
-                              variant={isSelected ? "contained" : "outlined"}
-                              onClick={() => handleWeekdayToggle(dayKey)}
+                            <Badge
+                              badgeContent={badgeValue > 1 ? badgeValue : 0}
+                              color={hasDue ? "warning" : "success"}
+                              overlap="rectangular"
+                              anchorOrigin={{
+                                vertical: "top",
+                                horizontal: "right",
+                              }}
                               sx={{
-                                minWidth: 32,
-                                width: 32,
-                                height: 32,
-                                p: 0,
-                                borderRadius: 1,
-                                fontWeight: 700,
-                                lineHeight: 1,
-                                color: isSelected
-                                  ? colors.blueGrey[50]
-                                  : isCurrentDay
-                                    ? colors.lightBlue[100]
-                                    : hasDue
-                                      ? colors.orange[100]
-                                      : colors.blueGrey[100],
-                                borderColor: isSelected
-                                  ? colors.lightBlue[700]
-                                  : isCurrentDay
-                                    ? colors.lightBlue[400]
-                                    : hasDue
-                                      ? "rgba(255, 152, 0, 0.6)"
-                                      : colors.blueGrey[600],
-                                backgroundColor: isSelected
-                                  ? colors.lightBlue[700]
-                                  : isCurrentDay
-                                    ? "rgba(33, 150, 243, 0.32)"
-                                    : hasDue
-                                      ? "rgba(255, 152, 0, 0.24)"
-                                      : hasPreviousNotes
-                                        ? "rgba(76, 175, 80, 0.24)"
-                                        : "rgba(96, 125, 139, 0.16)",
-                                "&:hover": {
-                                  backgroundColor: isSelected
-                                    ? colors.lightBlue[600]
-                                    : hasDue
-                                      ? "rgba(255, 152, 0, 0.32)"
-                                      : isCurrentDay
-                                        ? "rgba(33, 150, 243, 0.45)"
-                                        : hasPreviousNotes
-                                          ? "rgba(76, 175, 80, 0.32)"
-                                          : "rgba(96, 125, 139, 0.24)",
-                                  borderColor: isSelected
-                                    ? colors.lightBlue[500]
-                                    : isCurrentDay
-                                      ? colors.lightBlue[300]
-                                      : colors.blueGrey[500],
+                                "& .MuiBadge-badge": {
+                                  minWidth: 16,
+                                  height: 16,
+                                  fontSize: "0.65rem",
                                 },
                               }}
                             >
-                              {WEEKDAY_LETTERS[weekday]}
-                            </Button>
-                          </Badge>
-                        </Tooltip>
-                      );
-                    })}
+                              <Button
+                                variant={isSelected ? "contained" : "outlined"}
+                                onClick={() => handleWeekdayToggle(dayKey)}
+                                sx={{
+                                  minWidth: 32,
+                                  width: 32,
+                                  height: 32,
+                                  p: 0,
+                                  borderRadius: 1,
+                                  fontWeight: 700,
+                                  lineHeight: 1,
+                                  color: isSelected
+                                    ? colors.blueGrey[50]
+                                    : isCurrentDay
+                                      ? colors.lightBlue[100]
+                                      : hasDue
+                                        ? colors.orange[100]
+                                        : colors.blueGrey[100],
+                                  borderColor: isSelected
+                                    ? colors.lightBlue[700]
+                                    : isCurrentDay
+                                      ? colors.lightBlue[400]
+                                      : hasDue
+                                        ? "rgba(255, 152, 0, 0.6)"
+                                        : colors.blueGrey[600],
+                                  backgroundColor: isSelected
+                                    ? colors.lightBlue[700]
+                                    : isCurrentDay
+                                      ? "rgba(33, 150, 243, 0.32)"
+                                      : hasDue
+                                        ? "rgba(255, 152, 0, 0.24)"
+                                        : hasPreviousNotes
+                                          ? "rgba(76, 175, 80, 0.24)"
+                                          : "rgba(96, 125, 139, 0.16)",
+                                  "&:hover": {
+                                    backgroundColor: isSelected
+                                      ? colors.lightBlue[600]
+                                      : hasDue
+                                        ? "rgba(255, 152, 0, 0.32)"
+                                        : isCurrentDay
+                                          ? "rgba(33, 150, 243, 0.45)"
+                                          : hasPreviousNotes
+                                            ? "rgba(76, 175, 80, 0.32)"
+                                            : "rgba(96, 125, 139, 0.24)",
+                                    borderColor: isSelected
+                                      ? colors.lightBlue[500]
+                                      : isCurrentDay
+                                        ? colors.lightBlue[300]
+                                        : colors.blueGrey[500],
+                                  },
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    textDecoration:
+                                      WEEKDAY_LETTERS[weekday] === "S"
+                                        ? "underline"
+                                        : "none",
+                                  }}
+                                >
+                                  {WEEKDAY_LETTERS[weekday]}
+                                </Box>
+                              </Button>
+                            </Badge>
+                          </Tooltip>
+                        );
+                      })}
+                    </Box>
                   </Stack>
                 </Box>
                 {selectMode && (
