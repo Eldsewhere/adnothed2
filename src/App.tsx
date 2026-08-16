@@ -95,7 +95,7 @@ const SHORT_MONTHS = [
   "Dic",
 ];
 
-const WEEKDAY_LETTERS = ["S", "M", "T", "W", "T", "F", "S"];
+const WEEKDAY_LETTERS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const formatShortRangeDate = (value: Dayjs): string => {
   const day = value.date().toString().padStart(2, "0");
@@ -1559,6 +1559,7 @@ function App() {
                       {weekdayStripDays.map((day) => {
                         const dayKey = day.format("YYYY-MM-DD");
                         const weekday = day.day();
+                        const isWeekend = weekday === 0 || weekday === 6;
                         const isSelected =
                           (draftDueDate
                             ? draftDueDate.format("YYYY-MM-DD")
@@ -1658,10 +1659,13 @@ function App() {
                                 >
                                   <Box
                                     sx={{
-                                      textDecoration:
-                                        WEEKDAY_LETTERS[weekday] === "S"
-                                          ? "underline"
-                                          : "none",
+                                      fontSize: "0.62rem",
+                                      lineHeight: 1,
+                                      letterSpacing: "-0.04em",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "center",
+                                      fontWeight: isWeekend ? 900 : 500,
                                     }}
                                   >
                                     {WEEKDAY_LETTERS[weekday]}
