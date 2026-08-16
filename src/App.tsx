@@ -567,6 +567,8 @@ function App() {
         },
       ];
     });
+    setItemFilters(emptyItemFilters);
+    setPendingDateFilter(emptyItemFilters);
     setNotification(`${categoryName}: ${values.text}`);
     void showAppNotification(categoryName, values.text).then(
       handleNotificationResult,
@@ -980,6 +982,16 @@ function App() {
   const titleRangeSuffix = showRangeInTitle
     ? `${startRangeLabel} - ${endRangeLabel}`
     : "";
+  const futureDueLabel = useMemo(() => {
+    if (!itemFilters.weekday) {
+      return undefined;
+    }
+    const selectedDay = dayjs(itemFilters.weekday, "YYYY-MM-DD", true);
+    if (!selectedDay.isValid() || !selectedDay.isAfter(today, "day")) {
+      return undefined;
+    }
+    return selectedDay.format("ddd, MMM D");
+  }, [itemFilters.weekday, today]);
 
   return (
     <main>
@@ -1396,6 +1408,7 @@ function App() {
                   editingItem={editingItem}
                   initialText={sharedText ?? undefined}
                   categories={categories}
+                  dueLabel={futureDueLabel}
                   onSubmit={handleItemSubmit}
                   onCancelEdit={() => setEditingItem(null)}
                   onFilterTextChange={handleFilterTextChange}

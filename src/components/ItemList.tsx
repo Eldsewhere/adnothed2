@@ -133,6 +133,13 @@ const allNonEmptyRowsCheckboxes = (text: string): boolean => {
   );
 };
 
+function isTomorrow(date: number): boolean {
+  const target = dayjs.unix(date).startOf("day");
+  const tomorrow = dayjs().add(1, "day").startOf("day");
+
+  return target.isSame(tomorrow, "day");
+}
+
 const ItemList = ({
   items,
   categories,
@@ -619,7 +626,8 @@ const ItemList = ({
                     overflow: "hidden",
                     bgcolor:
                       item.pinned ||
-                      (item.due !== undefined && isToday(item.due))
+                      (item.due !== undefined &&
+                        (isToday(item.due) || isTomorrow(item.due)))
                         ? "#414d4b"
                         : dayIndex % 2 === 0
                           ? colors.blueGrey[900]
@@ -799,7 +807,8 @@ const ItemList = ({
                             color:
                               isToday(item.createdAt) ||
                               item.pinned ||
-                              (item.due !== undefined && isToday(item.due)) ||
+                              (item.due !== undefined &&
+                                (isToday(item.due) || isTomorrow(item.due))) ||
                               item.hasNotification
                                 ? colors.lightGreen[400]
                                 : colors.blueGrey[300],

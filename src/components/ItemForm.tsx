@@ -45,6 +45,7 @@ type ItemFormProps = {
   editingItem: Item | null;
   initialText?: string;
   categories: Category[];
+  dueLabel?: string;
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
@@ -138,6 +139,7 @@ const ItemForm = ({
   editingItem,
   initialText,
   categories,
+  dueLabel,
   onSubmit,
   onCancelEdit,
   onFilterTextChange,
@@ -328,6 +330,10 @@ const ItemForm = ({
                   }
                 };
 
+                const noteFieldLabel = dueLabel
+                  ? `Note, due ${dueLabel}`
+                  : "Note";
+
                 return (
                   <Box sx={{ position: "relative" }}>
                     <TextField
@@ -339,7 +345,8 @@ const ItemForm = ({
                       inputRef={(el: HTMLTextAreaElement | null) => {
                         textAreaRef.current = el;
                       }}
-                      label="Note"
+                      label={noteFieldLabel}
+                      placeholder={noteFieldLabel}
                       size="small"
                       fullWidth
                       autoFocus
