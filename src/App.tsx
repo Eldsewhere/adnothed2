@@ -952,38 +952,11 @@ function App() {
   const weekdayStripDays = useMemo(
     () =>
       Array.from({ length: 9 }, (_unused, idx) => {
-        const offset = idx - 1;
+        const offset = idx - 0;
         return today.add(offset, "day");
       }),
     [today],
   );
-
-  const weekdayStripWeekMarkers = useMemo(() => {
-    const buttonWidth = 32;
-    const buttonGap = 4.7;
-    const markers: Array<{ key: string; x: number }> = [];
-
-    for (let index = 0; index < weekdayStripDays.length - 1; index += 1) {
-      const currentDay = weekdayStripDays[index];
-      if (currentDay.day() !== 0) {
-        continue;
-      }
-
-      const nextDay = weekdayStripDays[index + 1];
-      if (!nextDay) {
-        continue;
-      }
-
-      const x = (index + 1) * (buttonWidth + buttonGap) - buttonGap / 2;
-
-      markers.push({
-        key: `${currentDay.format("YYYY-MM-DD")}-${nextDay.format("YYYY-MM-DD")}`,
-        x,
-      });
-    }
-
-    return markers;
-  }, [weekdayStripDays]);
 
   const noteCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
@@ -1018,11 +991,7 @@ function App() {
       return;
     }
 
-    const targetIndex = 5;
-    const buttonWidth = 32;
-    const buttonGap = 8;
-    const scrollLeft = targetIndex * (buttonWidth + buttonGap);
-    container.scrollLeft = scrollLeft;
+    container.scrollLeft = 0;
   }, [today]);
 
   const handleWeekdayToggle = (dayKey: string) => {
@@ -1522,54 +1491,39 @@ function App() {
                   onFilterCategoryChange={handleFilterCategoryChange}
                 />
                 <Box
-                  ref={weekPickerRef}
                   sx={{
-                    width: "100%",
-                    overflowX: "auto",
-                    overflowY: "visible",
                     display: "flex",
-                    justifyContent: "flex-start",
-                    py: 0.5,
-                    scrollbarWidth: "none",
-                    msOverflowStyle: "none",
-                    "&::-webkit-scrollbar": {
-                      display: "none",
-                    },
+                    width: "100%",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 1,
                   }}
                 >
-                  <Stack
-                    direction="row"
+                  <Box
+                    ref={weekPickerRef}
                     sx={{
-                      position: "relative",
-                      justifyContent: "flex-start",
-                      minWidth: "max-content",
-                      pt: 0.5,
+                      flex: 1,
+                      minWidth: 0,
+                      overflowX: "auto",
+                      overflowY: "visible",
+                      py: 1,
+                      scrollbarWidth: "none",
+                      msOverflowStyle: "none",
+                      "&::-webkit-scrollbar": {
+                        display: "none",
+                      },
                     }}
                   >
                     <Box
                       sx={{
-                        position: "relative",
                         display: "flex",
                         alignItems: "center",
                         columnGap: 0.6,
+                        minWidth: "max-content",
                         height: 32,
+                        pt: 0.5,
                       }}
                     >
-                      {weekdayStripWeekMarkers.map((marker) => (
-                        <Box
-                          key={marker.key}
-                          sx={{
-                            position: "absolute",
-                            left: `${marker.x}px`,
-                            transform: "translateX(-50%)",
-                            bottom: 0,
-                            height: "25%",
-                            width: 2,
-                            backgroundColor: colors.blueGrey[500],
-                            pointerEvents: "none",
-                          }}
-                        />
-                      ))}
                       {weekdayStripDays.map((day) => {
                         const dayKey = day.format("YYYY-MM-DD");
                         const weekday = day.day();
@@ -1585,142 +1539,164 @@ function App() {
                         const badgeValue = hasDue
                           ? (dueCountByDay.get(dayKey) ?? 0)
                           : (noteCountByDay.get(dayKey) ?? 0);
-
                         return (
-                          <Tooltip
-                            key={dayKey}
-                            title={day.format("ddd, MMM D")}
-                          >
-                            <Badge
-                              badgeContent={badgeValue > 1 ? badgeValue : 0}
-                              color={hasDue ? "warning" : "success"}
-                              overlap="rectangular"
-                              anchorOrigin={{
-                                vertical: "top",
-                                horizontal: "right",
-                              }}
-                              sx={{
-                                "& .MuiBadge-badge": {
-                                  minWidth: 16,
-                                  height: 16,
-                                  fontSize: "0.65rem",
-                                },
-                              }}
-                            >
-                              <Button
-                                variant={isSelected ? "contained" : "outlined"}
-                                onClick={() => handleWeekdayToggle(dayKey)}
+                          <React.Fragment key={dayKey}>
+                            {false && (
+                              <Box
                                 sx={{
-                                  minWidth: 32,
-                                  width: 32,
-                                  height: 32,
-                                  p: 0,
-                                  borderRadius: 1,
-                                  fontWeight: 700,
-                                  lineHeight: 1,
-                                  color: isSelected
-                                    ? colors.blueGrey[50]
-                                    : isCurrentDay
-                                      ? colors.lightBlue[100]
-                                      : hasDue
-                                        ? colors.orange[100]
-                                        : colors.blueGrey[100],
-                                  borderColor: isSelected
-                                    ? colors.lightBlue[700]
-                                    : isCurrentDay
-                                      ? colors.lightBlue[400]
-                                      : hasDue
-                                        ? "rgba(255, 152, 0, 0.6)"
-                                        : colors.blueGrey[600],
-                                  backgroundColor: isSelected
-                                    ? colors.lightBlue[700]
-                                    : isCurrentDay
-                                      ? "rgba(33, 150, 243, 0.32)"
-                                      : hasDue
-                                        ? "rgba(255, 152, 0, 0.24)"
-                                        : hasPreviousNotes
-                                          ? "rgba(76, 175, 80, 0.24)"
-                                          : "rgba(96, 125, 139, 0.16)",
-                                  "&:hover": {
-                                    backgroundColor: isSelected
-                                      ? colors.lightBlue[600]
-                                      : hasDue
-                                        ? "rgba(255, 152, 0, 0.32)"
-                                        : isCurrentDay
-                                          ? "rgba(33, 150, 243, 0.45)"
-                                          : hasPreviousNotes
-                                            ? "rgba(76, 175, 80, 0.32)"
-                                            : "rgba(96, 125, 139, 0.24)",
-                                    borderColor: isSelected
-                                      ? colors.lightBlue[500]
-                                      : isCurrentDay
-                                        ? colors.lightBlue[300]
-                                        : colors.blueGrey[500],
+                                  height: "25%",
+                                  width: 2,
+                                  backgroundColor: colors.blueGrey[500],
+                                  alignSelf: "flex-end",
+                                  mb: 0.5,
+                                  pointerEvents: "none",
+                                }}
+                              />
+                            )}
+                            <Tooltip title={day.format("ddd, MMM D")}>
+                              <Badge
+                                badgeContent={badgeValue > 1 ? badgeValue : 0}
+                                color={hasDue ? "warning" : "success"}
+                                overlap="rectangular"
+                                anchorOrigin={{
+                                  vertical: "top",
+                                  horizontal: "right",
+                                }}
+                                sx={{
+                                  "& .MuiBadge-badge": {
+                                    minWidth: 16,
+                                    height: 16,
+                                    fontSize: "0.65rem",
                                   },
                                 }}
                               >
-                                <Box
+                                <Button
+                                  variant={
+                                    isSelected ? "contained" : "outlined"
+                                  }
+                                  onClick={() => handleWeekdayToggle(dayKey)}
                                   sx={{
-                                    textDecoration:
-                                      WEEKDAY_LETTERS[weekday] === "S"
-                                        ? "underline"
-                                        : "none",
+                                    minWidth: 32,
+                                    width: 32,
+                                    height: 32,
+                                    p: 0,
+                                    borderRadius: 1,
+                                    fontWeight: 700,
+                                    lineHeight: 1,
+                                    color: isSelected
+                                      ? colors.blueGrey[50]
+                                      : isCurrentDay
+                                        ? colors.lightBlue[100]
+                                        : hasDue
+                                          ? colors.orange[100]
+                                          : colors.blueGrey[100],
+                                    borderColor: isSelected
+                                      ? colors.lightBlue[700]
+                                      : isCurrentDay
+                                        ? colors.lightBlue[400]
+                                        : hasDue
+                                          ? "rgba(255, 152, 0, 0.6)"
+                                          : colors.blueGrey[600],
+                                    backgroundColor: isSelected
+                                      ? colors.lightBlue[700]
+                                      : isCurrentDay
+                                        ? "rgba(33, 150, 243, 0.32)"
+                                        : hasDue
+                                          ? "rgba(255, 152, 0, 0.24)"
+                                          : hasPreviousNotes
+                                            ? "rgba(76, 175, 80, 0.24)"
+                                            : "rgba(96, 125, 139, 0.16)",
+                                    "&:hover": {
+                                      backgroundColor: isSelected
+                                        ? colors.lightBlue[600]
+                                        : hasDue
+                                          ? "rgba(255, 152, 0, 0.32)"
+                                          : isCurrentDay
+                                            ? "rgba(33, 150, 243, 0.45)"
+                                            : hasPreviousNotes
+                                              ? "rgba(76, 175, 80, 0.32)"
+                                              : "rgba(96, 125, 139, 0.24)",
+                                      borderColor: isSelected
+                                        ? colors.lightBlue[500]
+                                        : isCurrentDay
+                                          ? colors.lightBlue[300]
+                                          : colors.blueGrey[500],
+                                    },
                                   }}
                                 >
-                                  {WEEKDAY_LETTERS[weekday]}
-                                </Box>
-                              </Button>
-                            </Badge>
-                          </Tooltip>
+                                  <Box
+                                    sx={{
+                                      textDecoration:
+                                        WEEKDAY_LETTERS[weekday] === "S"
+                                          ? "underline"
+                                          : "none",
+                                    }}
+                                  >
+                                    {WEEKDAY_LETTERS[weekday]}
+                                  </Box>
+                                </Button>
+                              </Badge>
+                            </Tooltip>
+                          </React.Fragment>
                         );
                       })}
                     </Box>
-                    <Tooltip title="Set due date">
-                      <IconButton
-                        size="small"
-                        aria-label="Set note due date"
-                        onClick={() => {
-                          const initialDate =
-                            draftDueDate ??
-                            (itemFilters.weekday
-                              ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
-                              : today);
-                          const baseDate = initialDate.isValid()
-                            ? initialDate
-                            : today;
-                          setWeekPickerDueDate(baseDate.startOf("day"));
-                          setWeekPickerDueHour12(
-                            baseDate.hour() > 12
-                              ? baseDate.hour() - 12
-                              : baseDate.hour() === 0
-                                ? 12
-                                : baseDate.hour(),
-                          );
-                          setWeekPickerDueAmPm(
-                            baseDate.hour() >= 12 ? "PM" : "AM",
-                          );
-                          setWeekPickerDueMinute(
-                            ([0, 15, 30, 45] as const).reduce((prev, curr) =>
-                              Math.abs(curr - baseDate.minute()) <
-                              Math.abs(prev - baseDate.minute())
-                                ? curr
-                                : prev,
-                            ),
-                          );
-                          setWeekPickerDueDialogOpen(true);
-                        }}
-                        sx={{
-                          ml: 0.75,
-                          border: `1px solid ${colors.blueGrey[600]}`,
-                          borderRadius: 1,
-                          color: colors.blueGrey[200],
-                          backgroundColor: "rgba(96, 125, 139, 0.16)",
-                        }}
-                      >
-                        <Icon path={mdiCalendarClock} size={0.8} />
-                      </IconButton>
-                    </Tooltip>
-                  </Stack>
+                  </Box>
+                  <Tooltip title="Set due date">
+                    <IconButton
+                      size="small"
+                      aria-label="Set note due date"
+                      onClick={() => {
+                        const initialDate =
+                          draftDueDate ??
+                          (itemFilters.weekday
+                            ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+                            : today);
+                        const baseDate = initialDate.isValid()
+                          ? initialDate
+                          : today;
+                        setWeekPickerDueDate(baseDate.startOf("day"));
+                        setWeekPickerDueHour12(
+                          baseDate.hour() > 12
+                            ? baseDate.hour() - 12
+                            : baseDate.hour() === 0
+                              ? 12
+                              : baseDate.hour(),
+                        );
+                        setWeekPickerDueAmPm(
+                          baseDate.hour() >= 12 ? "PM" : "AM",
+                        );
+                        setWeekPickerDueMinute(
+                          ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+                            Math.abs(curr - baseDate.minute()) <
+                            Math.abs(prev - baseDate.minute())
+                              ? curr
+                              : prev,
+                          ),
+                        );
+                        setWeekPickerDueDialogOpen(true);
+                      }}
+                      sx={{
+                        flexShrink: 0,
+                        width: 32,
+                        height: 32,
+                        minWidth: 32,
+                        border: `1px solid ${colors.blueGrey[600]}`,
+                        borderRadius: 1,
+                        color: colors.blueGrey[200],
+                        backgroundColor: "rgba(18, 24, 31, 0.92)",
+                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 0,
+                        mt: 0.5,
+                        ml: 0.5,
+                      }}
+                    >
+                      <Icon path={mdiCalendarClock} size={0.8} />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
                 {selectMode && (
                   <Stack
