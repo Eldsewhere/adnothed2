@@ -65,6 +65,8 @@ type ItemListProps = {
   items: Item[];
   categories: Category[];
   filters: ItemFiltersValue;
+  mostRecentAddedItemId: string | null;
+  mostRecentEditedItemId: string | null;
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
@@ -148,6 +150,8 @@ const ItemList = ({
   items,
   categories,
   filters,
+  mostRecentAddedItemId,
+  mostRecentEditedItemId,
   onEdit,
   onDelete,
   onCopy,
@@ -239,15 +243,6 @@ const ItemList = ({
     () => items.find((item) => item.id === overflowModalItemId) ?? null,
     [items, overflowModalItemId],
   );
-
-  const mostRecentAddedItemId = useMemo(() => {
-    if (items.length === 0) {
-      return null;
-    }
-    return items.reduce((mostRecent, item) =>
-      item.createdAt > mostRecent.createdAt ? item : mostRecent,
-    ).id;
-  }, [items]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -635,6 +630,11 @@ const ItemList = ({
               const isMostRecentAddedItem =
                 mostRecentAddedItemId !== null &&
                 item.id === mostRecentAddedItemId;
+              const isMostRecentlyEditedItem =
+                mostRecentEditedItemId !== null &&
+                item.id === mostRecentEditedItemId;
+              const shouldHighlightRecentEdit =
+                isMostRecentAddedItem || isMostRecentlyEditedItem;
 
               return (
                 <Box
@@ -650,10 +650,9 @@ const ItemList = ({
                     borderBottom: isPriorityBoundary
                       ? "4px solid "
                       : "1px solid",
-                    boxShadow:
-                      item.hasNotification && isMostRecentAddedItem
-                        ? `inset 4px 0 0 ${colors.lightGreen[700]}`
-                        : undefined,
+                    boxShadow: shouldHighlightRecentEdit
+                      ? `inset 4px 0 0 ${colors.lightGreen[700]}`
+                      : undefined,
                     paddingX: 1,
                     borderColor: isPriorityBoundary
                       ? colors.grey[900]

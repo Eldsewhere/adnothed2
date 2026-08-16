@@ -250,6 +250,12 @@ function App() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
+  const [recentlyAddedItemId, setRecentlyAddedItemId] = useState<string | null>(
+    null,
+  );
+  const [recentlyEditedItemId, setRecentlyEditedItemId] = useState<
+    string | null
+  >(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [notificationSeverity, setNotificationSeverity] = useState<
     "success" | "error" | "info" | "warning"
@@ -531,32 +537,46 @@ function App() {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
     const categoryName =
       categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
+    const selectedDay = itemFilters.weekday
+      ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+      : null;
+    const hasFutureSelectedDay =
+      selectedDay !== null &&
+      selectedDay.isValid() &&
+      selectedDay.isAfter(today, "day");
+
     if (editingItem) {
       setItems((prev) =>
         prev.map((item) =>
           item.id === editingItem.id
-            ? { ...item, categoryId, text: values.text }
+            ? {
+                ...item,
+                categoryId,
+                text: values.text,
+                ...(hasFutureSelectedDay
+                  ? { due: selectedDay.startOf("day").unix() }
+                  : {}),
+              }
             : item,
         ),
       );
+      setRecentlyAddedItemId(null);
+      setRecentlyEditedItemId(editingItem.id);
       setEditingItem(null);
       return;
     }
 
     setItems((prev) => {
       const createdAt = getUniqueCreatedAt(prev);
-      const selectedDay = itemFilters.weekday
-        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
-        : null;
-      const hasFutureSelectedDay =
-        selectedDay !== null &&
-        selectedDay.isValid() &&
-        selectedDay.isAfter(today, "day");
+      const id = String(createdAt);
+
+      setRecentlyAddedItemId(id);
+      setRecentlyEditedItemId(null);
 
       return [
         ...prev,
         {
-          id: String(createdAt),
+          id,
           categoryId,
           text: values.text,
           createdAt,
@@ -574,6 +594,18 @@ function App() {
       handleNotificationResult,
     );
   };
+
+  useEffect(() => {
+    if (!recentlyAddedItemId) {
+      return undefined;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setRecentlyAddedItemId(null);
+    }, 6000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [recentlyAddedItemId]);
 
   const handleItemCopy = (item: Item) => {
     navigator.clipboard.writeText(item.text);
@@ -610,6 +642,8 @@ function App() {
           : existingItem,
       ),
     );
+    setRecentlyAddedItemId(null);
+    setRecentlyEditedItemId(item.id);
     if (editingItem?.id === item.id) {
       setEditingItem({ ...editingItem, text: nextText });
     }
@@ -650,6 +684,8 @@ function App() {
           : existingItem,
       ),
     );
+    setRecentlyAddedItemId(null);
+    setRecentlyEditedItemId(item.id);
     if (editingItem?.id === item.id) {
       setEditingItem({ ...editingItem, text: nextText });
     }
@@ -672,6 +708,8 @@ function App() {
           : existingItem,
       ),
     );
+    setRecentlyAddedItemId(null);
+    setRecentlyEditedItemId(item.id);
     if (editingItem?.id === item.id) {
       setEditingItem({ ...editingItem, text: nextText });
     }
@@ -731,6 +769,8 @@ function App() {
           : existingItem,
       ),
     );
+    setRecentlyAddedItemId(null);
+    setRecentlyEditedItemId(item.id);
   };
 
   const handleItemPin = (item: Item) => {
@@ -741,6 +781,8 @@ function App() {
           : existingItem,
       ),
     );
+    setRecentlyAddedItemId(null);
+    setRecentlyEditedItemId(item.id);
   };
 
   const handleFilterTextChange = useCallback((value: string) => {
@@ -956,6 +998,21 @@ function App() {
     }
     return counts;
   }, [items, today]);
+
+  const weekPickerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const container = weekPickerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const targetIndex = 5;
+    const buttonWidth = 32;
+    const buttonGap = 8;
+    const scrollLeft = targetIndex * (buttonWidth + buttonGap);
+    container.scrollLeft = scrollLeft;
+  }, [today]);
 
   const handleWeekdayToggle = (dayKey: string) => {
     setDatePopoverAnchor(null);
@@ -1442,6 +1499,7 @@ function App() {
                   onFilterCategoryChange={handleFilterCategoryChange}
                 />
                 <Box
+                  ref={weekPickerRef}
                   sx={{
                     width: "100%",
                     overflowX: "auto",
@@ -1663,6 +1721,8 @@ function App() {
                   items={items}
                   categories={categories}
                   filters={itemFilters}
+                  mostRecentAddedItemId={recentlyAddedItemId}
+                  mostRecentEditedItemId={recentlyEditedItemId}
                   onEdit={handleEditItem}
                   onDelete={handleItemDelete}
                   onCopy={handleItemCopy}

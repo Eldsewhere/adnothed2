@@ -202,16 +202,23 @@ export function serializeState(state: {
       ...(category.color ? { color: category.color } : {}),
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
-    notes: state.items.map(({ categoryId, text, createdAt, due, pinned }) =>
-      toPersistedNote({
+    notes: state.items.map((item) => {
+      const { categoryId, text, createdAt, due, pinned } =
+        stripTransientItemFields(item);
+      return toPersistedNote({
         icon: categoryId,
         text,
         time: createdAt,
         due,
         pinned,
-      }),
-    ),
+      });
+    }),
   };
+}
+
+function stripTransientItemFields<T extends Item>(item: T): T {
+  const { updatedAt: _updatedAt, ...rest } = item;
+  return rest as T;
 }
 
 function deserializeState(state: PersistedState): {
