@@ -887,7 +887,7 @@ const ItemList = ({
                             </Tooltip>
                           )}
                         </Typography>
-                        {selectMode || activeFilterCount > 0 ? (
+                        {selectMode ? (
                           <Typography
                             variant="caption"
                             color="text.secondary"

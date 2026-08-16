@@ -1766,10 +1766,20 @@ function App() {
                         width: 32,
                         height: 32,
                         minWidth: 32,
-                        border: `1px solid ${colors.blueGrey[600]}`,
+                        border: `1px solid ${
+                          draftDueDate || itemFilters.weekday
+                            ? colors.orange[500]
+                            : colors.blueGrey[600]
+                        }`,
                         borderRadius: 1,
-                        color: colors.blueGrey[200],
-                        backgroundColor: "rgba(18, 24, 31, 0.92)",
+                        color:
+                          draftDueDate || itemFilters.weekday
+                            ? colors.orange[300]
+                            : colors.blueGrey[200],
+                        backgroundColor:
+                          draftDueDate || itemFilters.weekday
+                            ? "rgba(255, 152, 0, 0.14)"
+                            : "rgba(18, 24, 31, 0.92)",
                         boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
                         display: "flex",
                         alignItems: "center",
