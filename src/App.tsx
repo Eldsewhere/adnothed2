@@ -1666,6 +1666,9 @@ function App() {
                                       alignItems: "center",
                                       justifyContent: "center",
                                       fontWeight: isWeekend ? 900 : 500,
+                                      textDecoration: isWeekend
+                                        ? "underline"
+                                        : "none",
                                     }}
                                   >
                                     {WEEKDAY_LETTERS[weekday]}
