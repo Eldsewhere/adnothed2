@@ -240,6 +240,15 @@ const ItemList = ({
     [items, overflowModalItemId],
   );
 
+  const mostRecentAddedItemId = useMemo(() => {
+    if (items.length === 0) {
+      return null;
+    }
+    return items.reduce((mostRecent, item) =>
+      item.createdAt > mostRecent.createdAt ? item : mostRecent,
+    ).id;
+  }, [items]);
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) {
@@ -511,11 +520,16 @@ const ItemList = ({
             return false;
           }
         }
-        if (
-          filters.weekday !== null &&
-          (!item.due || formatDate(item.due) !== filters.weekday)
-        ) {
-          return false;
+        if (filters.weekday !== null) {
+          const itemCreatedDate = formatDate(item.createdAt);
+          const itemDueDate =
+            item.due !== undefined ? formatDate(item.due) : null;
+          if (
+            itemCreatedDate !== filters.weekday &&
+            itemDueDate !== filters.weekday
+          ) {
+            return false;
+          }
         }
         if (filters.hasDue) {
           const todayUnix = dayjs().startOf("day").unix();
@@ -618,6 +632,9 @@ const ItemList = ({
               const nextItem = filteredItems[index + 1];
               const isPriorityBoundary =
                 isPrioritary && (!nextItem || !isPriorityItem(nextItem));
+              const isMostRecentAddedItem =
+                mostRecentAddedItemId !== null &&
+                item.id === mostRecentAddedItemId;
 
               return (
                 <Box
@@ -633,6 +650,10 @@ const ItemList = ({
                     borderBottom: isPriorityBoundary
                       ? "4px solid "
                       : "1px solid",
+                    boxShadow:
+                      item.hasNotification && isMostRecentAddedItem
+                        ? `inset 4px 0 0 ${colors.lightGreen[700]}`
+                        : undefined,
                     paddingX: 1,
                     borderColor: isPriorityBoundary
                       ? colors.grey[900]

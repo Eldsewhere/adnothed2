@@ -1481,14 +1481,26 @@ function App() {
                                 borderRadius: 1,
                                 fontWeight: 700,
                                 lineHeight: 1,
-                                color: colors.blueGrey[100],
-                                borderColor: colors.blueGrey[600],
+                                color: isSelected
+                                  ? colors.blueGrey[50]
+                                  : isCurrentDay
+                                    ? colors.lightBlue[100]
+                                    : hasDue
+                                      ? colors.orange[100]
+                                      : colors.blueGrey[100],
+                                borderColor: isSelected
+                                  ? colors.lightBlue[700]
+                                  : isCurrentDay
+                                    ? colors.lightBlue[400]
+                                    : hasDue
+                                      ? "rgba(255, 152, 0, 0.6)"
+                                      : colors.blueGrey[600],
                                 backgroundColor: isSelected
                                   ? colors.lightBlue[700]
-                                  : hasDue
-                                    ? "rgba(255, 152, 0, 0.24)"
-                                    : isCurrentDay
-                                      ? "rgba(33, 150, 243, 0.32)"
+                                  : isCurrentDay
+                                    ? "rgba(33, 150, 243, 0.32)"
+                                    : hasDue
+                                      ? "rgba(255, 152, 0, 0.24)"
                                       : hasPreviousNotes
                                         ? "rgba(76, 175, 80, 0.24)"
                                         : "rgba(96, 125, 139, 0.16)",
@@ -1502,7 +1514,11 @@ function App() {
                                         : hasPreviousNotes
                                           ? "rgba(76, 175, 80, 0.32)"
                                           : "rgba(96, 125, 139, 0.24)",
-                                  borderColor: colors.blueGrey[500],
+                                  borderColor: isSelected
+                                    ? colors.lightBlue[500]
+                                    : isCurrentDay
+                                      ? colors.lightBlue[300]
+                                      : colors.blueGrey[500],
                                 },
                               }}
                             >
