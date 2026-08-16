@@ -459,15 +459,6 @@ const ItemList = ({
     closeCategoryMenu();
   };
 
-  const activeFilterCount = [
-    filters.categoryId !== "",
-    filters.text !== "",
-    filters.date !== "",
-    filters.endDate !== "",
-    filters.dueDate !== "",
-    filters.hasDue,
-  ].filter(Boolean).length;
-
   const parsedTextFilters = useMemo(
     () => parseTextFilters(filters.text),
     [filters.text],
