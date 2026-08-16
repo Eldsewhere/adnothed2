@@ -2002,9 +2002,7 @@ function App() {
                     labelId="week-picker-hour"
                     value={weekPickerDueHour12}
                     onChange={(event) =>
-                      setWeekPickerDueHour12(
-                        Number((event.target as HTMLSelectElement).value),
-                      )
+                      setWeekPickerDueHour12(Number(event.target.value))
                     }
                   >
                     {Array.from({ length: 12 }, (_, index) => index + 1).map(
@@ -2042,11 +2040,7 @@ function App() {
                     value={weekPickerDueMinute}
                     onChange={(event) =>
                       setWeekPickerDueMinute(
-                        Number((event.target as HTMLSelectElement).value) as
-                          | 0
-                          | 15
-                          | 30
-                          | 45,
+                        Number(event.target.value) as 0 | 15 | 30 | 45,
                       )
                     }
                   >
