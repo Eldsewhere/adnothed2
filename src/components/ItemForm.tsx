@@ -50,6 +50,7 @@ type ItemFormProps = {
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
   onFilterCategoryChange: (value: string) => void;
+  onNoteTextChange?: (value: string) => void;
 };
 
 const emptyValues: ItemFormValues = { categoryId: "", text: "" };
@@ -144,6 +145,7 @@ const ItemForm = ({
   onCancelEdit,
   onFilterTextChange,
   onFilterCategoryChange,
+  onNoteTextChange,
 }: ItemFormProps) => {
   const {
     control,
@@ -175,6 +177,7 @@ const ItemForm = ({
         : emptyValues;
 
     reset(nextValues);
+    onNoteTextChange?.(nextValues.text);
     if (!isEditing) {
       onFilterTextChange(nextValues.text);
       onFilterCategoryChange(
@@ -187,6 +190,7 @@ const ItemForm = ({
     initialText,
     onFilterCategoryChange,
     onFilterTextChange,
+    onNoteTextChange,
     reset,
   ]);
 
@@ -325,6 +329,7 @@ const ItemForm = ({
               render={({ field }) => {
                 const handleTextChange = (value: string) => {
                   field.onChange(value);
+                  onNoteTextChange?.(value);
                   if (!isEditing) {
                     onFilterTextChange(value);
                   }

@@ -300,6 +300,7 @@ function App() {
     hasDue: boolean;
   }>(emptyItemFilters);
   const [draftDueDate, setDraftDueDate] = useState<Dayjs | null>(null);
+  const [draftNoteText, setDraftNoteText] = useState("");
   const [weekPickerDueDialogOpen, setWeekPickerDueDialogOpen] = useState(false);
   const [weekPickerDueDate, setWeekPickerDueDate] = useState<Dayjs | null>(
     null,
@@ -576,6 +577,7 @@ function App() {
       );
       setRecentlyAddedItemId(null);
       setRecentlyEditedItemId(editingItem.id);
+      setDraftNoteText("");
       setDraftDueDate(null);
       setEditingItem(null);
       return;
@@ -602,6 +604,7 @@ function App() {
     });
     setItemFilters(emptyItemFilters);
     setPendingDateFilter(emptyItemFilters);
+    setDraftNoteText("");
     setDraftDueDate(null);
     setNotification(`${categoryName}: ${values.text}`);
     void showAppNotification(categoryName, values.text).then(
@@ -1017,6 +1020,8 @@ function App() {
     }));
   };
 
+  const noteTextForGoogleCalendar = editingItem?.text ?? draftNoteText;
+
   const handleWeekPickerSaveDueDate = () => {
     if (!weekPickerDueDate) return;
     const h24 =
@@ -1044,7 +1049,8 @@ function App() {
   };
 
   const handleWeekPickerAddToGoogleCalendar = () => {
-    if (!weekPickerDueDate) return;
+    const eventText = noteTextForGoogleCalendar.trim();
+    if (!weekPickerDueDate || !eventText) return;
     const h24 =
       weekPickerDueAmPm === "AM"
         ? weekPickerDueHour12 === 12
@@ -1061,7 +1067,7 @@ function App() {
     const formatGoogleDate = (date: Dayjs) => date.format("YYYYMMDDTHHmmss");
     const params = new URLSearchParams({
       action: "TEMPLATE",
-      text: "Due date",
+      text: eventText,
       dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
       ctz: Intl.DateTimeFormat().resolvedOptions().timeZone,
     });
@@ -1560,6 +1566,7 @@ function App() {
                   onCancelEdit={() => setEditingItem(null)}
                   onFilterTextChange={handleFilterTextChange}
                   onFilterCategoryChange={handleFilterCategoryChange}
+                  onNoteTextChange={setDraftNoteText}
                 />
                 <Box
                   sx={{
@@ -2065,7 +2072,9 @@ function App() {
                 color="warning"
                 startIcon={<Icon path={mdiCalendarPlus} size={0.75} />}
                 onClick={handleWeekPickerAddToGoogleCalendar}
-                disabled={!weekPickerDueDate}
+                disabled={
+                  !weekPickerDueDate || !noteTextForGoogleCalendar.trim()
+                }
               >
                 +Google
               </Button>
