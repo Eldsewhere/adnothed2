@@ -21,6 +21,7 @@ import {
   MenuItem,
   Paper,
   Popover,
+  Select,
   Snackbar,
   Stack,
   Tab,
@@ -295,6 +296,16 @@ function App() {
     dueDate: string;
     hasDue: boolean;
   }>(emptyItemFilters);
+  const [draftDueDate, setDraftDueDate] = useState<Dayjs | null>(null);
+  const [weekPickerDueDialogOpen, setWeekPickerDueDialogOpen] = useState(false);
+  const [weekPickerDueDate, setWeekPickerDueDate] = useState<Dayjs | null>(
+    null,
+  );
+  const [weekPickerDueHour12, setWeekPickerDueHour12] = useState<number>(12);
+  const [weekPickerDueAmPm, setWeekPickerDueAmPm] = useState<"AM" | "PM">("AM");
+  const [weekPickerDueMinute, setWeekPickerDueMinute] = useState<
+    0 | 15 | 30 | 45
+  >(0);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
 
@@ -537,9 +548,11 @@ function App() {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
     const categoryName =
       categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
-    const selectedDay = itemFilters.weekday
-      ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
-      : null;
+    const selectedDay =
+      draftDueDate ??
+      (itemFilters.weekday
+        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+        : null);
     const hasFutureSelectedDay =
       selectedDay !== null &&
       selectedDay.isValid() &&
@@ -553,15 +566,14 @@ function App() {
                 ...item,
                 categoryId,
                 text: values.text,
-                ...(hasFutureSelectedDay
-                  ? { due: selectedDay.startOf("day").unix() }
-                  : {}),
+                ...(hasFutureSelectedDay ? { due: selectedDay.unix() } : {}),
               }
             : item,
         ),
       );
       setRecentlyAddedItemId(null);
       setRecentlyEditedItemId(editingItem.id);
+      setDraftDueDate(null);
       setEditingItem(null);
       return;
     }
@@ -581,14 +593,13 @@ function App() {
           text: values.text,
           createdAt,
           hasNotification: true,
-          ...(hasFutureSelectedDay
-            ? { due: selectedDay.startOf("day").unix() }
-            : {}),
+          ...(hasFutureSelectedDay ? { due: selectedDay.unix() } : {}),
         },
       ];
     });
     setItemFilters(emptyItemFilters);
     setPendingDateFilter(emptyItemFilters);
+    setDraftDueDate(null);
     setNotification(`${categoryName}: ${values.text}`);
     void showAppNotification(categoryName, values.text).then(
       handleNotificationResult,
@@ -940,8 +951,8 @@ function App() {
 
   const weekdayStripDays = useMemo(
     () =>
-      Array.from({ length: 17 }, (_unused, idx) => {
-        const offset = idx - 2;
+      Array.from({ length: 9 }, (_unused, idx) => {
+        const offset = idx - 1;
         return today.add(offset, "day");
       }),
     [today],
@@ -1016,6 +1027,7 @@ function App() {
 
   const handleWeekdayToggle = (dayKey: string) => {
     setDatePopoverAnchor(null);
+    setDraftDueDate(null);
     setPendingDateFilter((prev) => ({
       ...prev,
       date: "",
@@ -1067,15 +1079,26 @@ function App() {
     ? `${startRangeLabel} - ${endRangeLabel}`
     : "";
   const futureDueLabel = useMemo(() => {
-    if (!itemFilters.weekday) {
+    const selectedDay =
+      draftDueDate ??
+      (itemFilters.weekday
+        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+        : null);
+    if (
+      !selectedDay ||
+      !selectedDay.isValid() ||
+      !selectedDay.isAfter(today, "day")
+    ) {
       return undefined;
     }
-    const selectedDay = dayjs(itemFilters.weekday, "YYYY-MM-DD", true);
-    if (!selectedDay.isValid() || !selectedDay.isAfter(today, "day")) {
-      return undefined;
-    }
-    return selectedDay.format("ddd, MMM D");
-  }, [itemFilters.weekday, today]);
+    const hasTime =
+      selectedDay.hour() !== 0 ||
+      selectedDay.minute() !== 0 ||
+      selectedDay.second() !== 0;
+    return hasTime
+      ? selectedDay.format("ddd, MMM D, HH:mm")
+      : selectedDay.format("ddd, MMM D");
+  }, [draftDueDate, itemFilters.weekday, today]);
 
   return (
     <main>
@@ -1551,7 +1574,10 @@ function App() {
                       {weekdayStripDays.map((day) => {
                         const dayKey = day.format("YYYY-MM-DD");
                         const weekday = day.day();
-                        const isSelected = itemFilters.weekday === dayKey;
+                        const isSelected =
+                          (draftDueDate
+                            ? draftDueDate.format("YYYY-MM-DD")
+                            : itemFilters.weekday) === dayKey;
                         const isCurrentDay = day.isSame(today, "day");
                         const hasPreviousNotes =
                           day.isBefore(today, "day") &&
@@ -1650,6 +1676,51 @@ function App() {
                         );
                       })}
                     </Box>
+                    <Tooltip title="Set due date">
+                      <IconButton
+                        size="small"
+                        aria-label="Set note due date"
+                        onClick={() => {
+                          const initialDate =
+                            draftDueDate ??
+                            (itemFilters.weekday
+                              ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+                              : today);
+                          const baseDate = initialDate.isValid()
+                            ? initialDate
+                            : today;
+                          setWeekPickerDueDate(baseDate.startOf("day"));
+                          setWeekPickerDueHour12(
+                            baseDate.hour() > 12
+                              ? baseDate.hour() - 12
+                              : baseDate.hour() === 0
+                                ? 12
+                                : baseDate.hour(),
+                          );
+                          setWeekPickerDueAmPm(
+                            baseDate.hour() >= 12 ? "PM" : "AM",
+                          );
+                          setWeekPickerDueMinute(
+                            ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+                              Math.abs(curr - baseDate.minute()) <
+                              Math.abs(prev - baseDate.minute())
+                                ? curr
+                                : prev,
+                            ),
+                          );
+                          setWeekPickerDueDialogOpen(true);
+                        }}
+                        sx={{
+                          ml: 0.75,
+                          border: `1px solid ${colors.blueGrey[600]}`,
+                          borderRadius: 1,
+                          color: colors.blueGrey[200],
+                          backgroundColor: "rgba(96, 125, 139, 0.16)",
+                        }}
+                      >
+                        <Icon path={mdiCalendarClock} size={0.8} />
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
                 </Box>
                 {selectMode && (
@@ -1800,6 +1871,136 @@ function App() {
             </TabPanel>
           </Box>
         </Paper>
+        {weekPickerDueDialogOpen && (
+          <Dialog
+            open
+            onClose={() => setWeekPickerDueDialogOpen(false)}
+            maxWidth="xs"
+            fullWidth
+          >
+            <DialogTitle
+              sx={{
+                bgcolor: colors.blueGrey[800],
+                color: colors.blueGrey[100],
+                p: 1.25,
+                borderBottom: `1px solid ${colors.blueGrey[700]}`,
+              }}
+            >
+              Set due date
+            </DialogTitle>
+            <DialogContent sx={{ bgcolor: colors.blueGrey[900], p: 2 }}>
+              <Box sx={{ display: "flex", justifyContent: "center" }}>
+                <DateCalendar
+                  value={weekPickerDueDate}
+                  onChange={(value) => {
+                    if (!value) return;
+                    setWeekPickerDueDate(value.startOf("day"));
+                  }}
+                />
+              </Box>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  mt: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Select
+                  size="small"
+                  value={weekPickerDueHour12}
+                  onChange={(event) =>
+                    setWeekPickerDueHour12(
+                      Number(
+                        (event.target as unknown as HTMLSelectElement).value,
+                      ),
+                    )
+                  }
+                  sx={{ minWidth: 72 }}
+                >
+                  {Array.from({ length: 12 }, (_, index) => index + 1).map(
+                    (hour) => (
+                      <MenuItem key={hour} value={hour}>
+                        {hour}
+                      </MenuItem>
+                    ),
+                  )}
+                </Select>
+                <Select
+                  size="small"
+                  value={weekPickerDueAmPm}
+                  onChange={(event) =>
+                    setWeekPickerDueAmPm(
+                      (event.target as HTMLSelectElement).value as "AM" | "PM",
+                    )
+                  }
+                  sx={{ minWidth: 72 }}
+                >
+                  <MenuItem value="AM">AM</MenuItem>
+                  <MenuItem value="PM">PM</MenuItem>
+                </Select>
+                <Select
+                  size="small"
+                  value={weekPickerDueMinute}
+                  onChange={(event) =>
+                    setWeekPickerDueMinute(
+                      Number(
+                        (event.target as unknown as HTMLSelectElement).value,
+                      ) as 0 | 15 | 30 | 45,
+                    )
+                  }
+                  sx={{ minWidth: 82 }}
+                >
+                  {[0, 15, 30, 45].map((minute) => (
+                    <MenuItem key={minute} value={minute}>
+                      {String(minute).padStart(2, "0")}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </Stack>
+            </DialogContent>
+            <DialogActions sx={{ bgcolor: colors.blueGrey[900], p: 1.5 }}>
+              <Button
+                color="inherit"
+                onClick={() => setWeekPickerDueDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  if (!weekPickerDueDate) return;
+                  const h24 =
+                    weekPickerDueAmPm === "AM"
+                      ? weekPickerDueHour12 === 12
+                        ? 0
+                        : weekPickerDueHour12
+                      : weekPickerDueHour12 === 12
+                        ? 12
+                        : weekPickerDueHour12 + 12;
+                  const nextDueDate = weekPickerDueDate
+                    .hour(h24)
+                    .minute(weekPickerDueMinute)
+                    .second(0);
+                  setDraftDueDate(nextDueDate);
+                  setItemFilters((prev) => ({
+                    ...prev,
+                    weekday: nextDueDate.format("YYYY-MM-DD"),
+                    date: "",
+                    endDate: "",
+                    dueDate: "",
+                    hasDue: false,
+                  }));
+                  setWeekPickerDueDialogOpen(false);
+                }}
+              >
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
         <Snackbar
           open={!!notification}
           autoHideDuration={3000}
