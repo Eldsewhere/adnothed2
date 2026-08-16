@@ -39,7 +39,6 @@ import {
   mdiDownload,
   mdiCalendar,
   mdiCheckCircle,
-  mdiCalendarClock,
   mdiNoteText,
   mdiLabelMultiple,
   mdiFileImport,
@@ -950,7 +949,7 @@ function App() {
 
   const weekdayStripDays = useMemo(
     () =>
-      Array.from({ length: 8 }, (_unused, idx) => {
+      Array.from({ length: 16 }, (_unused, idx) => {
         const offset = idx - 0;
         return today.add(offset, "day");
       }),
@@ -1147,6 +1146,36 @@ function App() {
       ? selectedDay.format("ddd, MMM D, HH:mm")
       : selectedDay.format("ddd, MMM D");
   }, [draftDueDate, itemFilters.weekday, today]);
+
+  const openWeekPickerDueDialog = () => {
+    const initialDate =
+      draftDueDate ??
+      (itemFilters.weekday
+        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+        : today);
+    const baseDate = initialDate.isValid()
+      ? initialDate.isBefore(today, "day")
+        ? today
+        : initialDate
+      : today;
+    setWeekPickerDueDate(baseDate.startOf("day"));
+    setWeekPickerDueHour12(
+      baseDate.hour() > 12
+        ? baseDate.hour() - 12
+        : baseDate.hour() === 0
+          ? 12
+          : baseDate.hour(),
+    );
+    setWeekPickerDueAmPm(baseDate.hour() >= 12 ? "PM" : "AM");
+    setWeekPickerDueMinute(
+      ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+        Math.abs(curr - baseDate.minute()) < Math.abs(prev - baseDate.minute())
+          ? curr
+          : prev,
+      ),
+    );
+    setWeekPickerDueDialogOpen(true);
+  };
 
   return (
     <main>
@@ -1516,6 +1545,8 @@ function App() {
                   initialText={sharedText ?? undefined}
                   categories={categories}
                   dueLabel={futureDueLabel}
+                  dueFutureCount={dueFutureCount}
+                  onDueDateClick={openWeekPickerDueDialog}
                   onSubmit={handleItemSubmit}
                   onCancelEdit={() => setEditingItem(null)}
                   onFilterTextChange={handleFilterTextChange}
@@ -1681,92 +1712,6 @@ function App() {
                       })}
                     </Box>
                   </Box>
-                  <Tooltip title="Set due date">
-                    <Badge
-                      badgeContent={dueFutureCount}
-                      invisible={dueFutureCount === 0}
-                      anchorOrigin={{ vertical: "top", horizontal: "right" }}
-                      sx={{
-                        "& .MuiBadge-badge": {
-                          backgroundColor: colors.orange[400],
-                          color: colors.grey[900],
-                          minWidth: 14,
-                          height: 14,
-                          fontSize: "0.6rem",
-                          lineHeight: 1,
-                          p: 0,
-                          top: 4,
-                          right: 4,
-                        },
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        aria-label="Set note due date"
-                        onClick={() => {
-                          const initialDate =
-                            draftDueDate ??
-                            (itemFilters.weekday
-                              ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
-                              : today);
-                          const baseDate = initialDate.isValid()
-                            ? initialDate.isBefore(today, "day")
-                              ? today
-                              : initialDate
-                            : today;
-                          setWeekPickerDueDate(baseDate.startOf("day"));
-                          setWeekPickerDueHour12(
-                            baseDate.hour() > 12
-                              ? baseDate.hour() - 12
-                              : baseDate.hour() === 0
-                                ? 12
-                                : baseDate.hour(),
-                          );
-                          setWeekPickerDueAmPm(
-                            baseDate.hour() >= 12 ? "PM" : "AM",
-                          );
-                          setWeekPickerDueMinute(
-                            ([0, 15, 30, 45] as const).reduce((prev, curr) =>
-                              Math.abs(curr - baseDate.minute()) <
-                              Math.abs(prev - baseDate.minute())
-                                ? curr
-                                : prev,
-                            ),
-                          );
-                          setWeekPickerDueDialogOpen(true);
-                        }}
-                        sx={{
-                          flexShrink: 0,
-                          width: 32,
-                          height: 32,
-                          minWidth: 32,
-                          border: `1px solid ${
-                            draftDueDate || itemFilters.weekday
-                              ? colors.orange[500]
-                              : colors.blueGrey[600]
-                          }`,
-                          borderRadius: 1,
-                          color:
-                            draftDueDate || itemFilters.weekday
-                              ? colors.orange[300]
-                              : colors.blueGrey[200],
-                          backgroundColor:
-                            draftDueDate || itemFilters.weekday
-                              ? "rgba(255, 152, 0, 0.14)"
-                              : "rgba(18, 24, 31, 0.92)",
-                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: 0,
-                          mt: 0.5,
-                          ml: 0.5,
-                        }}
-                      >
-                        <Icon path={mdiCalendarClock} size={0.8} />
-                      </IconButton>
-                    </Badge>
-                  </Tooltip>
                 </Box>
                 {selectMode && (
                   <Stack

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
+  Badge,
   Box,
   colors,
   Divider,
@@ -15,6 +16,7 @@ import { Icon } from "@mdi/react";
 import type { Category, Item, ItemFormValues } from "../types";
 import {
   mdiCalendar,
+  mdiCalendarClock,
   mdiCalendarEnd,
   mdiCalendarStart,
   mdiCancel,
@@ -46,6 +48,8 @@ type ItemFormProps = {
   initialText?: string;
   categories: Category[];
   dueLabel?: string;
+  dueFutureCount?: number;
+  onDueDateClick?: () => void;
   onSubmit: (values: ItemFormValues) => void;
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
@@ -163,6 +167,8 @@ const ItemForm = ({
   initialText,
   categories,
   dueLabel,
+  dueFutureCount = 0,
+  onDueDateClick,
   onSubmit,
   onCancelEdit,
   onFilterTextChange,
@@ -399,12 +405,17 @@ const ItemForm = ({
                       fullWidth
                       autoFocus
                       multiline
-                      minRows={2.2}
+                      minRows={2}
+                      maxRows={10}
                       error={!!errors.text}
                       helperText={errors.text?.message}
                       sx={{
+                        "& .MuiInputBase-root": {
+                          paddingBottom: "46px",
+                        },
                         "& .MuiInputBase-inputMultiline": {
-                          pb: 4,
+                          overflowY: "auto",
+                          paddingBottom: 0,
                         },
                         "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
                           {
@@ -420,23 +431,334 @@ const ItemForm = ({
                           },
                       }}
                     />
-                    <Tooltip title="Actions">
-                      <IconButton
-                        aria-label="Open text actions"
-                        size="small"
-                        onClick={(event: MouseEvent<HTMLElement>) =>
-                          setFormatMenuAnchor(event.currentTarget)
-                        }
-                        sx={{
-                          position: "absolute",
-                          right: 6,
-                          bottom: errors.text ? 24 : 6,
-                          color: colors.blueGrey[400],
-                        }}
-                      >
-                        <Icon path={mdiFormatListBulleted} size={0.8} />
-                      </IconButton>
-                    </Tooltip>
+                    <Controller
+                      name="categoryId"
+                      control={control}
+                      render={({ field }) => {
+                        const activeCategoryId = field.value;
+                        const selectedCategory = categories.find(
+                          (category) => category.id === activeCategoryId,
+                        );
+
+                        return (
+                          <>
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                left: 8,
+                                right: 8,
+                                bottom: 8,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: 1,
+                                pointerEvents: "none",
+                              }}
+                            >
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{
+                                  alignItems: "center",
+                                  pointerEvents: "auto",
+                                }}
+                              >
+                                <Tooltip
+                                  title={
+                                    selectedCategory
+                                      ? selectedCategory.name
+                                      : "Assign a label"
+                                  }
+                                  arrow
+                                >
+                                  <IconButton
+                                    aria-label="Choose label"
+                                    size="small"
+                                    onClick={openLabelMenu}
+                                    sx={{
+                                      color: selectedCategory
+                                        ? "inherit"
+                                        : colors.blueGrey[200],
+                                      border: "none",
+                                      backgroundColor: "transparent",
+                                      borderRadius: 1,
+                                      minWidth: 32,
+                                      width: 32,
+                                      height: 32,
+                                      p: 0,
+                                      boxShadow: "none",
+                                      "&:hover": {
+                                        backgroundColor:
+                                          "rgba(148, 163, 184, 0.12)",
+                                      },
+                                    }}
+                                  >
+                                    {selectedCategory ? (
+                                      <LabelIcon
+                                        icon={selectedCategory.icon}
+                                        color={selectedCategory.color}
+                                        size={0.8}
+                                      />
+                                    ) : (
+                                      <Icon
+                                        path={mdiLabelMultiple}
+                                        size={0.8}
+                                      />
+                                    )}
+                                    <Box
+                                      component="span"
+                                      sx={{
+                                        position: "absolute",
+                                        right: -2,
+                                        bottom: 2,
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: colors.blueGrey[200],
+                                        lineHeight: 1,
+                                      }}
+                                    >
+                                      <Icon path={mdiChevronDown} size={0.6} />
+                                    </Box>
+                                  </IconButton>
+                                </Tooltip>
+                                {onDueDateClick && (
+                                  <Tooltip title="Set due date" arrow>
+                                    <Badge
+                                      badgeContent={dueFutureCount}
+                                      invisible={dueFutureCount === 0}
+                                      anchorOrigin={{
+                                        vertical: "top",
+                                        horizontal: "right",
+                                      }}
+                                      sx={{
+                                        "& .MuiBadge-badge": {
+                                          backgroundColor: colors.orange[400],
+                                          color: colors.grey[900],
+                                          minWidth: 14,
+                                          height: 14,
+                                          fontSize: "0.6rem",
+                                          lineHeight: 1,
+                                          p: 0,
+                                          top: 4,
+                                          right: 4,
+                                        },
+                                      }}
+                                    >
+                                      <IconButton
+                                        aria-label="Set note due date"
+                                        size="small"
+                                        onClick={onDueDateClick}
+                                        sx={{
+                                          border: "none",
+                                          backgroundColor: dueLabel
+                                            ? "rgba(255, 152, 0, 0.14)"
+                                            : "transparent",
+                                          color: dueLabel
+                                            ? colors.orange[300]
+                                            : colors.blueGrey[200],
+                                          borderRadius: 1,
+                                          minWidth: 32,
+                                          width: 32,
+                                          height: 32,
+                                          p: 0,
+                                          boxShadow: "none",
+                                          "&:hover": {
+                                            backgroundColor: dueLabel
+                                              ? "rgba(255, 152, 0, 0.2)"
+                                              : "rgba(148, 163, 184, 0.12)",
+                                          },
+                                        }}
+                                      >
+                                        <Icon
+                                          path={mdiCalendarClock}
+                                          size={0.8}
+                                        />
+                                      </IconButton>
+                                    </Badge>
+                                  </Tooltip>
+                                )}
+                                <Tooltip title="Actions">
+                                  <IconButton
+                                    aria-label="Open text actions"
+                                    size="small"
+                                    onClick={(event: MouseEvent<HTMLElement>) =>
+                                      setFormatMenuAnchor(event.currentTarget)
+                                    }
+                                    sx={{
+                                      color: colors.blueGrey[200],
+                                      border: "none",
+                                      backgroundColor: "transparent",
+                                      borderRadius: 1,
+                                      minWidth: 32,
+                                      width: 32,
+                                      height: 32,
+                                      p: 0,
+                                      boxShadow: "none",
+                                      "&:hover": {
+                                        backgroundColor:
+                                          "rgba(148, 163, 184, 0.12)",
+                                      },
+                                    }}
+                                  >
+                                    <Icon
+                                      path={mdiFormatListBulleted}
+                                      size={0.8}
+                                    />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                              <Stack
+                                direction="row"
+                                spacing={0.5}
+                                sx={{
+                                  alignItems: "center",
+                                  pointerEvents: "auto",
+                                }}
+                              >
+                                {editingItem && (
+                                  <Tooltip title="Cancel edit">
+                                    <IconButton
+                                      onClick={() => {
+                                        onCancelEdit();
+                                        reset(emptyValues);
+                                      }}
+                                      aria-label="Cancel"
+                                      size="small"
+                                      sx={{
+                                        color: colors.red[400],
+                                        border: "none",
+                                        backgroundColor: "transparent",
+                                        borderRadius: 1,
+                                        minWidth: 32,
+                                        width: 32,
+                                        height: 32,
+                                        p: 0,
+                                        boxShadow: "none",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            "rgba(239, 68, 68, 0.1)",
+                                        },
+                                      }}
+                                    >
+                                      <Icon path={mdiCancel} size={0.8} />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
+                                <Tooltip
+                                  title={
+                                    editingItem ? "Update note" : "Add note"
+                                  }
+                                >
+                                  <IconButton
+                                    type="submit"
+                                    size="small"
+                                    aria-label={
+                                      editingItem ? "Update note" : "Add note"
+                                    }
+                                    sx={{
+                                      color: colors.lightGreen[400],
+                                      border: "none",
+                                      backgroundColor: "transparent",
+                                      borderRadius: 1,
+                                      minWidth: 32,
+                                      width: 32,
+                                      height: 32,
+                                      p: 0,
+                                      boxShadow: "none",
+                                      "&:hover": {
+                                        backgroundColor:
+                                          "rgba(74, 222, 128, 0.12)",
+                                      },
+                                    }}
+                                  >
+                                    <Icon path={mdiCheckCircle} size={0.8} />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </Box>
+                            <Menu
+                              anchorEl={labelMenuAnchor}
+                              open={Boolean(labelMenuAnchor)}
+                              onClose={closeLabelMenu}
+                            >
+                              {categories.length > 0 && (
+                                <MenuItem
+                                  autoFocus
+                                  onClick={() => {
+                                    field.onChange("");
+                                    if (!isEditing) {
+                                      onFilterCategoryChange("");
+                                    }
+                                    closeLabelMenu();
+                                  }}
+                                >
+                                  <span>Show All</span>
+                                </MenuItem>
+                              )}
+                              <MenuItem
+                                selected={activeCategoryId === ""}
+                                onClick={() => {
+                                  field.onChange("");
+                                  if (!isEditing) {
+                                    onFilterCategoryChange(
+                                      NO_CATEGORY_FILTER_VALUE,
+                                    );
+                                  }
+                                  closeLabelMenu();
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                    color: colors.blueGrey[300],
+                                  }}
+                                >
+                                  <Icon path={mdiLabelOff} size={0.8} />
+                                  <span>
+                                    {categories.length == 0
+                                      ? "no labels available"
+                                      : "no label"}
+                                  </span>
+                                </Box>
+                              </MenuItem>
+                              {categories.map((category) => (
+                                <MenuItem
+                                  key={category.id}
+                                  autoFocus={activeCategoryId === category.id}
+                                  selected={activeCategoryId === category.id}
+                                  onClick={() => {
+                                    field.onChange(category.id);
+                                    if (!isEditing) {
+                                      onFilterCategoryChange(category.id);
+                                    }
+                                    closeLabelMenu();
+                                  }}
+                                >
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1,
+                                    }}
+                                  >
+                                    <LabelIcon
+                                      icon={category.icon}
+                                      color={category.color}
+                                      size={0.7}
+                                    />
+                                    <span>{category.name}</span>
+                                  </Box>
+                                </MenuItem>
+                              ))}
+                            </Menu>
+                          </>
+                        );
+                      }}
+                    />
+
                     <Menu
                       anchorEl={formatMenuAnchor}
                       open={Boolean(formatMenuAnchor)}
@@ -695,170 +1017,7 @@ const ItemForm = ({
               ml: 1,
               gap: 1,
             }}
-          >
-            <Controller
-              name="categoryId"
-              control={control}
-              render={({ field }) => {
-                const activeCategoryId = field.value;
-                const selectedCategory = categories.find(
-                  (category) => category.id === activeCategoryId,
-                );
-
-                return (
-                  <>
-                    <Tooltip
-                      title={
-                        selectedCategory
-                          ? selectedCategory.name
-                          : "Assign a label"
-                      }
-                      arrow
-                    >
-                      <IconButton
-                        aria-label="Choose label"
-                        size="small"
-                        onClick={openLabelMenu}
-                        sx={{
-                          color: selectedCategory
-                            ? "inherit"
-                            : colors.blueGrey[500],
-                          position: "relative",
-                          pr: 1.25,
-                        }}
-                      >
-                        {selectedCategory ? (
-                          <LabelIcon
-                            icon={selectedCategory.icon}
-                            color={selectedCategory.color}
-                            size={0.8}
-                          />
-                        ) : (
-                          <Icon path={mdiLabelMultiple} size={0.8} />
-                        )}
-                        <Box
-                          component="span"
-                          sx={{
-                            position: "absolute",
-                            right: -2,
-                            bottom: 2,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: colors.blueGrey[500],
-                            lineHeight: 1,
-                          }}
-                        >
-                          <Icon path={mdiChevronDown} size={0.6} />
-                        </Box>
-                      </IconButton>
-                    </Tooltip>
-                    <Menu
-                      anchorEl={labelMenuAnchor}
-                      open={Boolean(labelMenuAnchor)}
-                      onClose={closeLabelMenu}
-                    >
-                      {categories.length > 0 && (
-                        <MenuItem
-                          autoFocus
-                          onClick={() => {
-                            field.onChange("");
-                            if (!isEditing) {
-                              onFilterCategoryChange("");
-                            }
-                            closeLabelMenu();
-                          }}
-                        >
-                          <span>Show All</span>
-                        </MenuItem>
-                      )}
-                      <MenuItem
-                        selected={activeCategoryId === ""}
-                        onClick={() => {
-                          field.onChange("");
-                          if (!isEditing) {
-                            onFilterCategoryChange(NO_CATEGORY_FILTER_VALUE);
-                          }
-                          closeLabelMenu();
-                        }}
-                      >
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            color: colors.blueGrey[300],
-                          }}
-                        >
-                          <Icon path={mdiLabelOff} size={0.8} />
-                          <span>
-                            {categories.length == 0
-                              ? "no labels available"
-                              : "no label"}
-                          </span>
-                        </Box>
-                      </MenuItem>
-                      {categories.map((category) => (
-                        <MenuItem
-                          key={category.id}
-                          autoFocus={activeCategoryId === category.id}
-                          selected={activeCategoryId === category.id}
-                          onClick={() => {
-                            field.onChange(category.id);
-                            if (!isEditing) {
-                              onFilterCategoryChange(category.id);
-                            }
-                            closeLabelMenu();
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 1,
-                            }}
-                          >
-                            <LabelIcon
-                              icon={category.icon}
-                              color={category.color}
-                              size={0.7}
-                            />
-                            <span>{category.name}</span>
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Menu>
-                  </>
-                );
-              }}
-            />
-            <Box sx={{ display: "flex", gap: 1 }}>
-              <Tooltip title={editingItem ? "Update note" : "Add note"}>
-                <IconButton
-                  type="submit"
-                  aria-label={editingItem ? "Update note" : "Add note"}
-                  color={"primary"}
-                  sx={{ color: colors.lightGreen[400] }}
-                >
-                  <Icon path={mdiCheckCircle} size={0.9} />
-                </IconButton>
-              </Tooltip>
-              {editingItem && (
-                <Tooltip title="Cancel edit">
-                  <IconButton
-                    onClick={() => {
-                      onCancelEdit();
-                      reset(emptyValues);
-                    }}
-                    aria-label="Cancel"
-                    color={"primary"}
-                  >
-                    <Icon path={mdiCancel} size={0.9} />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </Box>
-          </Stack>
+          ></Stack>
         </Stack>
       </Stack>
     </Box>
