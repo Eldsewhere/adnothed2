@@ -36,6 +36,7 @@ export type ParsedTextFilters = {
   withEmail: boolean;
   withBullets: boolean;
   withCheckboxes: boolean;
+  withDueDate: boolean;
 };
 
 const defaultParsedTextFilters: ParsedTextFilters = {
@@ -54,6 +55,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withEmail: false,
   withBullets: false,
   withCheckboxes: false,
+  withDueDate: false,
 };
 
 function toPositiveInt(value: string): number | null {
@@ -158,6 +160,10 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
         parsed.withCheckboxes = true;
         continue;
       }
+      if (token === "due") {
+        parsed.withDueDate = true;
+        continue;
+      }
     }
 
     // Unknown slash commands are ignored so mistyped command drafts do not filter.
@@ -185,6 +191,7 @@ export function matchesTextFilters(
   index: number,
   sortedItemsLength: number,
   parsed: ParsedTextFilters,
+  due?: number,
 ): boolean {
   if (
     parsed.query &&
@@ -258,6 +265,10 @@ export function matchesTextFilters(
   }
 
   if (parsed.withCheckboxes && !text.includes("[]") && !text.includes("[x]")) {
+    return false;
+  }
+
+  if (parsed.withDueDate && due === undefined) {
     return false;
   }
 

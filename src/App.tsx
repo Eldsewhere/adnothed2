@@ -873,6 +873,7 @@ function App() {
           index,
           sortedItems.length,
           parsedTextFilters,
+          item.due,
         );
       }),
     [
@@ -1412,27 +1413,29 @@ function App() {
                   >
                     {datePickerMode === "start" ? (
                       <>
-                        <Button
-                          variant="outlined"
-                          color="warning"
-                          startIcon={
-                            <Icon path={mdiCalendarClock} size={0.9} />
-                          }
-                          onClick={() => {
-                            const nextHasDue = !pendingDateFilter.hasDue;
-                            setPendingDateFilter((prev) => ({
-                              ...prev,
-                              hasDue: nextHasDue,
-                            }));
-                            setItemFilters((prev) => ({
-                              ...prev,
-                              hasDue: nextHasDue,
-                            }));
-                          }}
-                          sx={{ textTransform: "none", fontSize: "0.75rem" }}
-                        >
-                          {pendingDateFilter.hasDue ? "All" : "Due"}
-                        </Button>
+                        {false && (
+                          <Button
+                            variant="outlined"
+                            color="warning"
+                            startIcon={
+                              <Icon path={mdiCalendarClock} size={0.9} />
+                            }
+                            onClick={() => {
+                              const nextHasDue = !pendingDateFilter.hasDue;
+                              setPendingDateFilter((prev) => ({
+                                ...prev,
+                                hasDue: nextHasDue,
+                              }));
+                              setItemFilters((prev) => ({
+                                ...prev,
+                                hasDue: nextHasDue,
+                              }));
+                            }}
+                            sx={{ textTransform: "none", fontSize: "0.75rem" }}
+                          >
+                            {pendingDateFilter.hasDue ? "All" : "Due"}
+                          </Button>
+                        )}
                         <Button
                           variant="outlined"
                           color="info"

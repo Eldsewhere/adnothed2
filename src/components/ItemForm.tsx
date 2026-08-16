@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Box,
@@ -133,6 +133,11 @@ const queryTemplates: QueryTemplate[] = [
     label: "withCheckboxes",
     command: "/with: checkboxes;",
     iconPath: mdiCheckboxBlankOutline,
+  },
+  {
+    label: "withDueDate",
+    command: "/with: due;",
+    iconPath: mdiCalendar,
   },
 ];
 
@@ -513,31 +518,33 @@ const ItemForm = ({
                         vertical: "top",
                       }}
                     >
-                      {queryTemplates.map((template) => (
-                        <MenuItem
-                          key={template.label}
-                          onClick={() => {
-                            prependQueryTemplate(
-                              template,
-                              field.value,
-                              handleTextChange,
-                            );
-                            closeQueryMenu();
-                            setFormatMenuAnchor(null);
-                          }}
-                        >
-                          <Box
-                            component="span"
-                            sx={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              mr: 1,
+                      {queryTemplates.map((template, index) => (
+                        <Fragment key={template.label}>
+                          <MenuItem
+                            onClick={() => {
+                              prependQueryTemplate(
+                                template,
+                                field.value,
+                                handleTextChange,
+                              );
+                              closeQueryMenu();
+                              setFormatMenuAnchor(null);
                             }}
                           >
-                            <Icon path={template.iconPath} size={0.75} />
-                          </Box>
-                          {template.label}
-                        </MenuItem>
+                            <Box
+                              component="span"
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                mr: 1,
+                              }}
+                            >
+                              <Icon path={template.iconPath} size={0.75} />
+                            </Box>
+                            {template.label}
+                          </MenuItem>
+                          {index === 8 && <Divider />}
+                        </Fragment>
                       ))}
                     </Menu>
                   </Box>
