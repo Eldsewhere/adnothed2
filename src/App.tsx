@@ -940,8 +940,8 @@ function App() {
 
   const weekdayStripDays = useMemo(
     () =>
-      Array.from({ length: 27 }, (_unused, idx) => {
-        const offset = idx - 6;
+      Array.from({ length: 17 }, (_unused, idx) => {
+        const offset = idx - 2;
         return today.add(offset, "day");
       }),
     [today],
