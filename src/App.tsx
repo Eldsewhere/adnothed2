@@ -50,6 +50,7 @@ import {
 } from "@mdi/js";
 import CategoryForm from "./components/CategoryForm";
 import CategoryList from "./components/CategoryList";
+import DueDateDialog from "./components/DueDateDialog";
 import ItemForm from "./components/ItemForm";
 import ItemList from "./components/ItemList";
 import TabPanel from "./components/TabPanel";
@@ -1024,6 +1025,10 @@ function App() {
 
   const handleWeekPickerSaveDueDate = () => {
     if (!weekPickerDueDate) return;
+    if (weekPickerDueDate.isBefore(today, "day")) {
+      setWeekPickerDueDate(today);
+      return;
+    }
     const h24 =
       weekPickerDueAmPm === "AM"
         ? weekPickerDueHour12 === 12
@@ -1731,7 +1736,9 @@ function App() {
                             ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
                             : today);
                         const baseDate = initialDate.isValid()
-                          ? initialDate
+                          ? initialDate.isBefore(today, "day")
+                            ? today
+                            : initialDate
                           : today;
                         setWeekPickerDueDate(baseDate.startOf("day"));
                         setWeekPickerDueHour12(
@@ -1847,6 +1854,8 @@ function App() {
                   filters={itemFilters}
                   mostRecentAddedItemId={recentlyAddedItemId}
                   mostRecentEditedItemId={recentlyEditedItemId}
+                  dueDaysByDate={dueCountByDay}
+                  noteCountsByDay={noteCountByDay}
                   onEdit={handleEditItem}
                   onDelete={handleItemDelete}
                   onCopy={handleItemCopy}
@@ -1925,183 +1934,37 @@ function App() {
           </Box>
         </Paper>
         {weekPickerDueDialogOpen && (
-          <Dialog
+          <DueDateDialog
             open
             onClose={() => setWeekPickerDueDialogOpen(false)}
-            maxWidth="xs"
-            fullWidth
-          >
-            <DialogTitle
-              sx={{
-                position: "relative",
-                bgcolor: colors.blueGrey[800],
-                color: colors.blueGrey[100],
-                p: 1,
-                borderBottom: `1px solid ${colors.blueGrey[700]}`,
-                textAlign: "center",
-              }}
-            >
-              Set due date
-              <Tooltip title="Close">
-                <IconButton
-                  aria-label="Close"
-                  size="small"
-                  onClick={() => setWeekPickerDueDialogOpen(false)}
-                  sx={{
-                    position: "absolute",
-                    top: 4,
-                    right: 4,
-                    color: colors.blueGrey[100],
-                  }}
-                >
-                  <Icon path={mdiClose} size={0.8} />
-                </IconButton>
-              </Tooltip>
-            </DialogTitle>
-            <DialogContent sx={{ bgcolor: colors.blueGrey[900], p: 0, pb: 1 }}>
-              <DateCalendar
-                value={weekPickerDueDate}
-                onChange={(value) => {
-                  if (!value) return;
-                  setWeekPickerDueDate(value.startOf("day"));
-                }}
-                sx={{
-                  width: "100%",
-                  "& .MuiPickersCalendarHeader-label": {
-                    color: colors.blueGrey[100],
-                  },
-                  "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                    {
-                      color: colors.blueGrey[200],
-                    },
-                  "& .MuiDayCalendar-weekDayLabel": {
-                    color: colors.blueGrey[400],
-                  },
-                  "& .MuiPickersDay-root": {
-                    color: colors.blueGrey[100],
-                  },
-                  "& .MuiPickersDay-root.Mui-selected": {
-                    backgroundColor: colors.blue[700],
-                  },
-                  "& .MuiPickersDay-root:not(.Mui-selected):hover": {
-                    backgroundColor: "rgba(96,125,139,0.28)",
-                  },
-                  "& .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected)":
-                    {
-                      borderColor: colors.blueGrey[400],
-                    },
-                }}
-              />
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{
-                  px: 2,
-                  py: 1,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <FormControl size="small" sx={{ width: 72 }}>
-                  <InputLabel id="week-picker-hour">Hour</InputLabel>
-                  <Select
-                    label="Hour"
-                    labelId="week-picker-hour"
-                    value={weekPickerDueHour12}
-                    onChange={(event) =>
-                      setWeekPickerDueHour12(Number(event.target.value))
-                    }
-                  >
-                    {Array.from({ length: 12 }, (_, index) => index + 1).map(
-                      (hour) => (
-                        <MenuItem key={hour} value={hour}>
-                          {hour}
-                        </MenuItem>
-                      ),
-                    )}
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ width: 80 }}>
-                  <InputLabel id="week-picker-am-pm">AM/PM</InputLabel>
-                  <Select
-                    label="AM/PM"
-                    labelId="week-picker-am-pm"
-                    value={weekPickerDueAmPm}
-                    onChange={(event) =>
-                      setWeekPickerDueAmPm(
-                        (event.target as HTMLSelectElement).value as
-                          | "AM"
-                          | "PM",
-                      )
-                    }
-                  >
-                    <MenuItem value="AM">AM</MenuItem>
-                    <MenuItem value="PM">PM</MenuItem>
-                  </Select>
-                </FormControl>
-                <FormControl size="small" sx={{ width: 80 }}>
-                  <InputLabel id="week-picker-minute">Min</InputLabel>
-                  <Select
-                    label="Min"
-                    labelId="week-picker-minute"
-                    value={weekPickerDueMinute}
-                    onChange={(event) =>
-                      setWeekPickerDueMinute(
-                        Number(event.target.value) as 0 | 15 | 30 | 45,
-                      )
-                    }
-                  >
-                    {[0, 15, 30, 45].map((minute) => (
-                      <MenuItem key={minute} value={minute}>
-                        {String(minute).padStart(2, "0")}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Stack>
-            </DialogContent>
-            <DialogActions
-              sx={{
-                bgcolor: colors.blueGrey[800],
-                p: 1,
-                borderTop: `1px solid ${colors.blueGrey[700]}`,
-              }}
-            >
-              <Button
-                variant="outlined"
-                color="warning"
-                startIcon={<Icon path={mdiCalendarPlus} size={0.75} />}
-                onClick={handleWeekPickerAddToGoogleCalendar}
-                disabled={
-                  !weekPickerDueDate || !noteTextForGoogleCalendar.trim()
-                }
-              >
-                +Google
-              </Button>
-              <Box sx={{ flex: 1 }} />
-              {(draftDueDate || itemFilters.weekday) && (
-                <Tooltip title="Remove due date">
-                  <IconButton
-                    aria-label="Remove due date"
-                    color="error"
-                    onClick={handleWeekPickerClearDueDate}
-                  >
-                    <Icon path={mdiTrashCanOutline} size={0.9} />
-                  </IconButton>
-                </Tooltip>
-              )}
-              <Tooltip title="Save due date">
-                <IconButton
-                  aria-label="Save due date"
-                  onClick={handleWeekPickerSaveDueDate}
-                  color="primary"
-                  sx={{ color: colors.lightGreen[400] }}
-                >
-                  <Icon path={mdiCheckCircle} size={0.9} />
-                </IconButton>
-              </Tooltip>
-            </DialogActions>
-          </Dialog>
+            value={weekPickerDueDate}
+            onChange={(value) => {
+              if (!value) return;
+              const nextValue = value.startOf("day");
+              if (nextValue.isBefore(today, "day")) {
+                setWeekPickerDueDate(today);
+                return;
+              }
+              setWeekPickerDueDate(nextValue);
+            }}
+            minDate={today}
+            hour12={weekPickerDueHour12}
+            amPm={weekPickerDueAmPm}
+            minute={weekPickerDueMinute}
+            onHourChange={setWeekPickerDueHour12}
+            onAmPmChange={setWeekPickerDueAmPm}
+            onMinuteChange={setWeekPickerDueMinute}
+            onSave={handleWeekPickerSaveDueDate}
+            onGoogleCalendar={handleWeekPickerAddToGoogleCalendar}
+            googleCalendarDisabled={
+              !weekPickerDueDate || !noteTextForGoogleCalendar.trim()
+            }
+            onRemove={handleWeekPickerClearDueDate}
+            showRemoveButton={Boolean(draftDueDate || itemFilters.weekday)}
+            dueDaysByDate={dueCountByDay}
+            noteCountsByDay={noteCountByDay}
+            title="Set due date"
+          />
         )}
         <Snackbar
           open={!!notification}

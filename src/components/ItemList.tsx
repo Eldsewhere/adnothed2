@@ -58,7 +58,7 @@ import {
 } from "../utils/itemFilters";
 import { getFirstUrl, splitTextByUrls } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
-import { DateCalendar } from "@mui/x-date-pickers";
+import DueDateDialog from "./DueDateDialog";
 import LabelIcon from "./LabelIcon";
 
 type ItemListProps = {
@@ -67,6 +67,8 @@ type ItemListProps = {
   filters: ItemFiltersValue;
   mostRecentAddedItemId: string | null;
   mostRecentEditedItemId: string | null;
+  dueDaysByDate?: Map<string, number>;
+  noteCountsByDay?: Map<string, number>;
   onEdit: (item: Item) => void;
   onDelete: (item: Item) => void;
   onCopy: (item: Item) => void;
@@ -152,6 +154,8 @@ const ItemList = ({
   filters,
   mostRecentAddedItemId,
   mostRecentEditedItemId,
+  dueDaysByDate,
+  noteCountsByDay,
   onEdit,
   onDelete,
   onCopy,
@@ -1540,173 +1544,33 @@ const ItemList = ({
         ))}
       </Menu>
       {dueDateDialogItem && (
-        <Dialog
+        <DueDateDialog
           open
           onClose={() => setDueDateDialogItem(null)}
-          maxWidth="xs"
-          fullWidth
-        >
-          <DialogTitle
-            sx={{
-              position: "relative",
-              bgcolor: colors.blueGrey[800],
-              color: colors.blueGrey[100],
-              p: 1,
-              borderBottom: `1px solid ${colors.blueGrey[700]}`,
-              textAlign: "center",
-            }}
-          >
-            Set due date
-            <Tooltip title="Close">
-              <IconButton
-                aria-label="Close"
-                size="small"
-                onClick={() => setDueDateDialogItem(null)}
-                sx={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  color: colors.blueGrey[100],
-                }}
-              >
-                <Icon path={mdiClose} size={0.8} />
-              </IconButton>
-            </Tooltip>
-          </DialogTitle>
-          <DialogContent sx={{ bgcolor: colors.blueGrey[900], p: 0, pb: 1 }}>
-            <DateCalendar
-              value={dueDateValue}
-              onChange={(value: Dayjs | null) => setDueDateValue(value)}
-              minDate={today}
-              maxDate={endOfNextMonth}
-              sx={{
-                width: "100%",
-                "& .MuiPickersCalendarHeader-label": {
-                  color: colors.blueGrey[100],
-                },
-                "& .MuiPickersArrowSwitcher-button, & .MuiPickersCalendarHeader-switchViewButton":
-                  {
-                    color: colors.blueGrey[200],
-                  },
-                "& .MuiDayCalendar-weekDayLabel": {
-                  color: colors.blueGrey[400],
-                },
-                "& .MuiPickersDay-root": {
-                  color: colors.blueGrey[100],
-                },
-                "& .MuiPickersDay-root.Mui-selected": {
-                  backgroundColor: colors.blue[700],
-                },
-                "& .MuiPickersDay-root:not(.Mui-selected):hover": {
-                  backgroundColor: "rgba(96,125,139,0.28)",
-                },
-                "& .MuiPickersDay-root.MuiPickersDay-today:not(.Mui-selected)":
-                  {
-                    borderColor: colors.blueGrey[400],
-                  },
-              }}
-            />
-            <Stack
-              direction="row"
-              spacing={1}
-              sx={{
-                px: 2,
-                py: 1,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <FormControl size="small" sx={{ width: 72 }}>
-                <InputLabel id="hour">Hour</InputLabel>
-                <Select
-                  label="Hour"
-                  labelId="hour"
-                  value={dueHour12}
-                  onChange={(e) =>
-                    setDueHour12(Number(e.target.value) as number)
-                  }
-                >
-                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((h) => (
-                    <MenuItem key={h} value={h}>
-                      {h}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ width: 80 }}>
-                <InputLabel id="am-pm">AM/PM</InputLabel>
-                <Select
-                  label="AM/PM"
-                  labelId="am-pm"
-                  value={dueAmPm}
-                  onChange={(e) => setDueAmPm(e.target.value as "AM" | "PM")}
-                >
-                  <MenuItem value="AM">AM</MenuItem>
-                  <MenuItem value="PM">PM</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ width: 80 }}>
-                <InputLabel id="min">Min</InputLabel>
-                <Select
-                  label="Min"
-                  labelId="min"
-                  value={dueMinute}
-                  onChange={(e) =>
-                    setDueMinute(Number(e.target.value) as 0 | 15 | 30 | 45)
-                  }
-                >
-                  {([0, 15, 30, 45] as const).map((m) => (
-                    <MenuItem key={m} value={m}>
-                      {String(m).padStart(2, "0")}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Stack>
-          </DialogContent>
-          <DialogActions
-            sx={{
-              bgcolor: colors.blueGrey[800],
-              p: 1,
-              borderTop: `1px solid ${colors.blueGrey[700]}`,
-            }}
-          >
-            <Button
-              variant="outlined"
-              color="warning"
-              startIcon={<Icon path={mdiCalendarPlus} size={0.75} />}
-              onClick={handleAddToGoogleCalendar}
-              disabled={!dueDateValue}
-            >
-              +Google
-            </Button>
-            <Box sx={{ flex: 1 }} />
-            {dueDateDialogItem.due !== undefined && (
-              <Tooltip title="Remove due date">
-                <IconButton
-                  aria-label="Remove due date"
-                  color={"error"}
-                  onClick={() => {
-                    onDueChange(dueDateDialogItem, null);
-                    setDueDateDialogItem(null);
-                  }}
-                >
-                  <Icon path={mdiTrashCanOutline} size={0.9} />
-                </IconButton>
-              </Tooltip>
-            )}
-            <Tooltip title="Save due date">
-              <IconButton
-                aria-label="Save due date"
-                onClick={handleSaveDueDate}
-                color={"primary"}
-                sx={{ color: colors.lightGreen[400] }}
-              >
-                <Icon path={mdiCheckCircle} size={0.9} />
-              </IconButton>
-            </Tooltip>
-          </DialogActions>
-        </Dialog>
+          value={dueDateValue}
+          onChange={(value) => setDueDateValue(value)}
+          minDate={today}
+          maxDate={endOfNextMonth}
+          hour12={dueHour12}
+          amPm={dueAmPm}
+          minute={dueMinute}
+          onHourChange={setDueHour12}
+          onAmPmChange={setDueAmPm}
+          onMinuteChange={setDueMinute}
+          onSave={handleSaveDueDate}
+          onGoogleCalendar={handleAddToGoogleCalendar}
+          googleCalendarDisabled={
+            !dueDateValue || !dueDateDialogItem.text.trim()
+          }
+          onRemove={() => {
+            onDueChange(dueDateDialogItem, null);
+            setDueDateDialogItem(null);
+          }}
+          showRemoveButton={dueDateDialogItem.due !== undefined}
+          dueDaysByDate={dueDaysByDate ?? new Map()}
+          noteCountsByDay={noteCountsByDay ?? new Map()}
+          title="Set due date"
+        />
       )}
     </Box>
   );
