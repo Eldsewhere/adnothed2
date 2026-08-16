@@ -118,6 +118,7 @@ const NoteDay = ({
   startDate,
   endDate,
   outsideCurrentMonth,
+  disabled,
   ...other
 }: NoteDayProps) => {
   const key = dayjs(day).format("YYYY-MM-DD");
@@ -126,13 +127,15 @@ const NoteDay = ({
   const dueCount = dueDaysByDate.get(key) ?? 0;
   const hasDue = dueCount > 0;
   const isOutside = Boolean(outsideCurrentMonth);
+  const isDisabled = Boolean(disabled);
   const isRangeBoundary =
     startDate?.isSame(day, "day") || endDate?.isSame(day, "day");
+  const showBadge = !isDisabled && (noteCount > 0 || dueCount > 0);
 
   return (
     <Badge
       overlap="circular"
-      badgeContent={noteCount || dueCount}
+      badgeContent={showBadge ? noteCount || dueCount : 0}
       color={noteCount ? "success" : hasDue ? "warning" : "default"}
       sx={{
         "& .MuiBadge-badge": {
@@ -149,20 +152,45 @@ const NoteDay = ({
       <PickerDay
         day={day}
         outsideCurrentMonth={outsideCurrentMonth}
+        disabled={isDisabled}
         {...other}
         sx={{
-          color: isOutside ? colors.blueGrey[500] : colors.blueGrey[100],
-          opacity: isOutside ? 0.6 : 1,
+          color: isDisabled
+            ? colors.blueGrey[500]
+            : isOutside
+              ? colors.blueGrey[500]
+              : colors.blueGrey[100],
+          opacity: isDisabled ? 0.5 : isOutside ? 0.6 : 1,
+          backgroundColor: isDisabled
+            ? "transparent"
+            : isRangeBoundary
+              ? "rgba(33, 150, 243, 0.12)"
+              : hasNotes
+                ? "rgba(76, 175, 80, 0.2)"
+                : hasDue
+                  ? "rgba(255, 152, 0, 0.2)"
+                  : "transparent",
+          border: isDisabled
+            ? "1px solid transparent"
+            : hasNotes
+              ? `1px solid ${isOutside ? colors.blueGrey[600] : colors.blueGrey[400]}`
+              : hasDue
+                ? `2px solid ${colors.orange[400]}`
+                : isRangeBoundary
+                  ? `1px solid ${colors.blue[600]}`
+                  : "1px solid transparent",
           "&:hover, &:focus": {
-            backgroundColor: isOutside
-              ? "rgba(96, 125, 139, 0.18)"
-              : "rgba(96, 125, 139, 0.28)",
-            textTransform: "lowercase",
+            backgroundColor: isDisabled
+              ? "transparent"
+              : isOutside
+                ? "rgba(96, 125, 139, 0.18)"
+                : "rgba(96, 125, 139, 0.28)",
+            textTransform: isDisabled ? "none" : "lowercase",
           },
           "&.Mui-selected:hover, &.Mui-selected:focus": {
             backgroundColor: colors.lightBlue[600],
           },
-          ...(hasNotes
+          ...(hasNotes && !isDisabled
             ? {
                 textTransform: "lowercase",
                 backgroundColor: isOutside
@@ -177,7 +205,7 @@ const NoteDay = ({
                 },
               }
             : {}),
-          ...(hasDue && !hasNotes
+          ...(hasDue && !hasNotes && !isDisabled
             ? {
                 border: `2px solid ${colors.orange[400]}`,
                 color: colors.orange[200],
@@ -186,7 +214,7 @@ const NoteDay = ({
                   : "rgba(255, 152, 0, 0.2)",
               }
             : {}),
-          ...(isRangeBoundary
+          ...(isRangeBoundary && !isDisabled
             ? {
                 backgroundColor: "rgba(33, 150, 243, 0.12)",
                 color: colors.common.white,
@@ -913,39 +941,6 @@ function App() {
     return dayjs.unix(minTimestamp).startOf("day");
   }, [calendarFilteredItems, oldestNoteDate]);
 
-  const filteredMaxDate = useMemo(() => {
-    if (calendarFilteredItems.length === 0) {
-      return today;
-    }
-    const maxTimestamp = Math.max(
-      ...calendarFilteredItems.map((item) => item.createdAt),
-    );
-    const latestFiltered = dayjs.unix(maxTimestamp).startOf("day");
-    return latestFiltered.isAfter(today) ? today : latestFiltered;
-  }, [calendarFilteredItems, today]);
-
-  const dueDaysByDate = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const item of items) {
-      if (item.due !== undefined) {
-        const dueDay = dayjs.unix(item.due).startOf("day");
-        if (!dueDay.isBefore(today)) {
-          const key = dueDay.format("YYYY-MM-DD");
-          map.set(key, (map.get(key) ?? 0) + 1);
-        }
-      }
-    }
-    return map;
-  }, [items, today]);
-
-  const calendarMaxDate = useMemo(() => {
-    if (dueDaysByDate.size === 0) return filteredMaxDate;
-    const endOfNextMonth = today.add(3, "month").endOf("month").startOf("day");
-    return endOfNextMonth.isAfter(filteredMaxDate)
-      ? endOfNextMonth
-      : filteredMaxDate;
-  }, [dueDaysByDate, filteredMaxDate, today]);
-
   const dueFutureCount = useMemo(() => {
     const todayUnix = today.unix();
     return items.filter(
@@ -1092,16 +1087,6 @@ function App() {
     }));
     setWeekPickerDueDialogOpen(false);
   };
-
-  const CalendarDay = (props: PickerDayProps) => (
-    <NoteDay
-      {...props}
-      noteCountsByDay={noteCountsByDay}
-      dueDaysByDate={dueDaysByDate}
-      startDate={activeStartDate}
-      endDate={activeEndDate}
-    />
-  );
 
   const isDatePopoverOpen = Boolean(datePopoverAnchor);
   const activeStartDate =
@@ -1257,24 +1242,7 @@ function App() {
                     }}
                     disabled={items.length === 0 || selectMode}
                   >
-                    <Badge
-                      badgeContent={dueFutureCount}
-                      invisible={dueFutureCount === 0}
-                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                      sx={{
-                        "& .MuiBadge-badge": {
-                          backgroundColor: colors.orange[400],
-                          color: colors.grey[900],
-                          minWidth: 14,
-                          height: 14,
-                          fontSize: "0.6rem",
-                          lineHeight: 1,
-                          p: 0,
-                        },
-                      }}
-                    >
-                      <Icon path={mdiCalendar} size={0.9} />
-                    </Badge>
+                    <Icon path={mdiCalendar} size={0.9} />
                   </IconButton>
                 </Tooltip>
                 <Popover
@@ -1384,8 +1352,19 @@ function App() {
                           ? filteredMinDate
                           : (activeStartDate ?? filteredMinDate)
                       }
-                      maxDate={calendarMaxDate}
-                      slots={{ day: CalendarDay }}
+                      maxDate={today}
+                      shouldDisableDate={(day) => day.isAfter(today, "day")}
+                      slots={{
+                        day: (props: PickerDayProps) => (
+                          <NoteDay
+                            {...props}
+                            noteCountsByDay={noteCountsByDay}
+                            dueDaysByDate={new Map()}
+                            startDate={activeStartDate}
+                            endDate={activeEndDate}
+                          />
+                        ),
+                      }}
                       sx={{
                         "& .MuiPickersCalendarHeader-label": {
                           color: colors.blueGrey[100],
@@ -1453,7 +1432,7 @@ function App() {
                           }}
                           sx={{ textTransform: "none", fontSize: "0.75rem" }}
                         >
-                          End
+                          End Date
                         </Button>
                       </>
                     ) : (
@@ -1464,7 +1443,7 @@ function App() {
                         onClick={() => setDatePickerMode("start")}
                         sx={{ textTransform: "none", fontSize: "0.75rem" }}
                       >
-                        Start
+                        Start Date
                       </Button>
                     )}
                     <Box sx={{ flex: 1 }} />
@@ -1725,71 +1704,90 @@ function App() {
                     </Box>
                   </Box>
                   <Tooltip title="Set due date">
-                    <IconButton
-                      size="small"
-                      aria-label="Set note due date"
-                      onClick={() => {
-                        const initialDate =
-                          draftDueDate ??
-                          (itemFilters.weekday
-                            ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
-                            : today);
-                        const baseDate = initialDate.isValid()
-                          ? initialDate.isBefore(today, "day")
-                            ? today
-                            : initialDate
-                          : today;
-                        setWeekPickerDueDate(baseDate.startOf("day"));
-                        setWeekPickerDueHour12(
-                          baseDate.hour() > 12
-                            ? baseDate.hour() - 12
-                            : baseDate.hour() === 0
-                              ? 12
-                              : baseDate.hour(),
-                        );
-                        setWeekPickerDueAmPm(
-                          baseDate.hour() >= 12 ? "PM" : "AM",
-                        );
-                        setWeekPickerDueMinute(
-                          ([0, 15, 30, 45] as const).reduce((prev, curr) =>
-                            Math.abs(curr - baseDate.minute()) <
-                            Math.abs(prev - baseDate.minute())
-                              ? curr
-                              : prev,
-                          ),
-                        );
-                        setWeekPickerDueDialogOpen(true);
-                      }}
+                    <Badge
+                      badgeContent={dueFutureCount}
+                      invisible={dueFutureCount === 0}
+                      anchorOrigin={{ vertical: "top", horizontal: "right" }}
                       sx={{
-                        flexShrink: 0,
-                        width: 32,
-                        height: 32,
-                        minWidth: 32,
-                        border: `1px solid ${
-                          draftDueDate || itemFilters.weekday
-                            ? colors.orange[500]
-                            : colors.blueGrey[600]
-                        }`,
-                        borderRadius: 1,
-                        color:
-                          draftDueDate || itemFilters.weekday
-                            ? colors.orange[300]
-                            : colors.blueGrey[200],
-                        backgroundColor:
-                          draftDueDate || itemFilters.weekday
-                            ? "rgba(255, 152, 0, 0.14)"
-                            : "rgba(18, 24, 31, 0.92)",
-                        boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: 0,
-                        mt: 0.5,
-                        ml: 0.5,
+                        "& .MuiBadge-badge": {
+                          backgroundColor: colors.orange[400],
+                          color: colors.grey[900],
+                          minWidth: 14,
+                          height: 14,
+                          fontSize: "0.6rem",
+                          lineHeight: 1,
+                          p: 0,
+                          top: 4,
+                          right: 4,
+                        },
                       }}
                     >
-                      <Icon path={mdiCalendarClock} size={0.8} />
-                    </IconButton>
+                      <IconButton
+                        size="small"
+                        aria-label="Set note due date"
+                        onClick={() => {
+                          const initialDate =
+                            draftDueDate ??
+                            (itemFilters.weekday
+                              ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+                              : today);
+                          const baseDate = initialDate.isValid()
+                            ? initialDate.isBefore(today, "day")
+                              ? today
+                              : initialDate
+                            : today;
+                          setWeekPickerDueDate(baseDate.startOf("day"));
+                          setWeekPickerDueHour12(
+                            baseDate.hour() > 12
+                              ? baseDate.hour() - 12
+                              : baseDate.hour() === 0
+                                ? 12
+                                : baseDate.hour(),
+                          );
+                          setWeekPickerDueAmPm(
+                            baseDate.hour() >= 12 ? "PM" : "AM",
+                          );
+                          setWeekPickerDueMinute(
+                            ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+                              Math.abs(curr - baseDate.minute()) <
+                              Math.abs(prev - baseDate.minute())
+                                ? curr
+                                : prev,
+                            ),
+                          );
+                          setWeekPickerDueDialogOpen(true);
+                        }}
+                        sx={{
+                          flexShrink: 0,
+                          width: 32,
+                          height: 32,
+                          minWidth: 32,
+                          border: `1px solid ${
+                            draftDueDate || itemFilters.weekday
+                              ? colors.orange[500]
+                              : colors.blueGrey[600]
+                          }`,
+                          borderRadius: 1,
+                          color:
+                            draftDueDate || itemFilters.weekday
+                              ? colors.orange[300]
+                              : colors.blueGrey[200],
+                          backgroundColor:
+                            draftDueDate || itemFilters.weekday
+                              ? "rgba(255, 152, 0, 0.14)"
+                              : "rgba(18, 24, 31, 0.92)",
+                          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.04)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: 0,
+                          mt: 0.5,
+                          ml: 0.5,
+                        }}
+                      >
+                        <Icon path={mdiCalendarClock} size={0.8} />
+                      </IconButton>
+                    </Badge>
                   </Tooltip>
                 </Box>
                 {selectMode && (

@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import type { ItemFilters } from "../types";
 import { dateRegex, formatDate } from "./formatTimestamp";
 import { containsEmail, containsNumbers, containsUrl } from "./textPatterns";
@@ -268,8 +269,11 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.withDueDate && due === undefined) {
-    return false;
+  if (parsed.withDueDate) {
+    const todayUnix = dayjs().startOf("day").unix();
+    if (due === undefined || due < todayUnix) {
+      return false;
+    }
   }
 
   return true;
