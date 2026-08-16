@@ -321,8 +321,8 @@ function App() {
   const [pendingDateFilter, setPendingDateFilter] = useState<{
     date: string;
     endDate: string;
-    dueDate: string;
-    hasDue: boolean;
+    dueDate?: string;
+    hasDue?: boolean;
   }>(emptyItemFilters);
   const [draftDueDate, setDraftDueDate] = useState<Dayjs | null>(null);
   const [draftNoteText, setDraftNoteText] = useState("");
@@ -1000,8 +1000,6 @@ function App() {
       ...prev,
       date: "",
       endDate: "",
-      dueDate: "",
-      hasDue: false,
     }));
     setItemFilters((prev) => ({
       ...prev,
@@ -1111,6 +1109,23 @@ function App() {
   const titleRangeSuffix = showRangeInTitle
     ? `${startRangeLabel} - ${endRangeLabel}`
     : "";
+
+  const applyDateFilter = (nextFilter: {
+    date: string;
+    endDate: string;
+    dueDate?: string;
+    hasDue?: boolean;
+  }) => {
+    setPendingDateFilter(nextFilter);
+    setItemFilters((prev) => ({
+      ...prev,
+      date: nextFilter.date,
+      endDate: nextFilter.endDate,
+      dueDate: "",
+      hasDue: false,
+    }));
+  };
+
   const futureDueLabel = useMemo(() => {
     const selectedDay =
       draftDueDate ??
@@ -1234,8 +1249,6 @@ function App() {
                       setPendingDateFilter({
                         date: itemFilters.date,
                         endDate: itemFilters.endDate,
-                        dueDate: itemFilters.dueDate,
-                        hasDue: itemFilters.hasDue,
                       });
                       setDatePickerMode("start");
                       setDatePopoverAnchor(event.currentTarget);
@@ -1319,32 +1332,20 @@ function App() {
                       onChange={(value: Dayjs | null) => {
                         if (!value) return;
                         const next = value.format("YYYY-MM-DD");
-                        if (pendingDateFilter.hasDue) {
-                          setPendingDateFilter((prev) => ({
-                            ...prev,
-                            dueDate: next,
-                            date: "",
-                            endDate: "",
-                          }));
-                          return;
-                        }
                         if (datePickerMode === "start") {
-                          setPendingDateFilter((prev) => ({
-                            ...prev,
+                          const nextFilter = {
+                            ...pendingDateFilter,
                             date: next,
-                            dueDate: "",
-                            endDate:
-                              prev.endDate && prev.endDate < next
-                                ? next
-                                : prev.endDate,
-                          }));
+                            endDate: next,
+                          };
+                          setPendingDateFilter(nextFilter);
                           return;
                         }
-                        setPendingDateFilter((prev) => ({
-                          ...prev,
+                        const nextFilter = {
+                          ...pendingDateFilter,
                           endDate: next,
-                          dueDate: "",
-                        }));
+                        };
+                        setPendingDateFilter(nextFilter);
                       }}
                       showDaysOutsideCurrentMonth
                       minDate={
@@ -1392,29 +1393,6 @@ function App() {
                   >
                     {datePickerMode === "start" ? (
                       <>
-                        {false && (
-                          <Button
-                            variant="outlined"
-                            color="warning"
-                            startIcon={
-                              <Icon path={mdiCalendarClock} size={0.9} />
-                            }
-                            onClick={() => {
-                              const nextHasDue = !pendingDateFilter.hasDue;
-                              setPendingDateFilter((prev) => ({
-                                ...prev,
-                                hasDue: nextHasDue,
-                              }));
-                              setItemFilters((prev) => ({
-                                ...prev,
-                                hasDue: nextHasDue,
-                              }));
-                            }}
-                            sx={{ textTransform: "none", fontSize: "0.75rem" }}
-                          >
-                            {pendingDateFilter.hasDue ? "All" : "Due"}
-                          </Button>
-                        )}
                         <Button
                           variant="outlined"
                           color="info"
@@ -1426,7 +1404,6 @@ function App() {
                               date: prev.date || fallbackStart,
                               endDate:
                                 prev.endDate || prev.date || fallbackStart,
-                              dueDate: "",
                             }));
                             setDatePickerMode("end");
                           }}
@@ -1470,13 +1447,7 @@ function App() {
                         aria-label="Save date"
                         color="primary"
                         onClick={() => {
-                          setItemFilters((prev) => ({
-                            ...prev,
-                            date: pendingDateFilter.date,
-                            endDate: pendingDateFilter.endDate,
-                            dueDate: pendingDateFilter.dueDate,
-                            hasDue: pendingDateFilter.hasDue,
-                          }));
+                          applyDateFilter(pendingDateFilter);
                           setDatePopoverAnchor(null);
                         }}
                         sx={{ color: colors.lightGreen[400] }}
