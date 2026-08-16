@@ -940,8 +940,8 @@ function App() {
 
   const weekdayStripDays = useMemo(
     () =>
-      Array.from({ length: 17 }, (_unused, idx) => {
-        const offset = idx - 2;
+      Array.from({ length: 27 }, (_unused, idx) => {
+        const offset = idx - 6;
         return today.add(offset, "day");
       }),
     [today],
@@ -949,7 +949,7 @@ function App() {
 
   const weekdayStripWeekMarkers = useMemo(() => {
     const buttonWidth = 32;
-    const buttonGap = 6;
+    const buttonGap = 4.7;
     const markers: Array<{ key: string; x: number }> = [];
 
     for (let index = 0; index < weekdayStripDays.length - 1; index += 1) {
@@ -1529,7 +1529,7 @@ function App() {
                         position: "relative",
                         display: "flex",
                         alignItems: "center",
-                        columnGap: 0.75,
+                        columnGap: 0.6,
                         height: 32,
                       }}
                     >
@@ -1540,7 +1540,7 @@ function App() {
                             position: "absolute",
                             left: `${marker.x}px`,
                             transform: "translateX(-50%)",
-                            top: 0,
+                            bottom: 0,
                             height: "25%",
                             width: 2,
                             backgroundColor: colors.blueGrey[500],
