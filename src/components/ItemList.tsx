@@ -140,6 +140,10 @@ function isTomorrow(date: number): boolean {
   return target.isSame(tomorrow, "day");
 }
 
+const isPriorityItem = (item: Item): boolean =>
+  item.pinned ||
+  (item.due !== undefined && (isToday(item.due) || isTomorrow(item.due)));
+
 const ItemList = ({
   items,
   categories,
@@ -609,6 +613,12 @@ const ItemList = ({
                 : undefined;
               const dayIndex =
                 dayIndexByDate.get(formatDate(item.createdAt)) ?? 0;
+
+              const isPrioritary = isPriorityItem(item);
+              const nextItem = filteredItems[index + 1];
+              const isPriorityBoundary =
+                isPrioritary && (!nextItem || !isPriorityItem(nextItem));
+
               return (
                 <Box
                   key={item.id}
@@ -620,18 +630,19 @@ const ItemList = ({
                     height: rowHeights[index],
                     display: "flex",
                     alignItems: "center",
-                    borderBottom: "1px solid",
+                    borderBottom: isPriorityBoundary
+                      ? "4px solid "
+                      : "1px solid",
                     paddingX: 1,
-                    borderColor: colors.blueGrey[700],
+                    borderColor: isPriorityBoundary
+                      ? colors.grey[900]
+                      : colors.blueGrey[700],
                     overflow: "hidden",
-                    bgcolor:
-                      item.pinned ||
-                      (item.due !== undefined &&
-                        (isToday(item.due) || isTomorrow(item.due)))
-                        ? "#414d4b"
-                        : dayIndex % 2 === 0
-                          ? colors.blueGrey[900]
-                          : colors.blueGrey[800],
+                    bgcolor: isPrioritary
+                      ? "#414d4b"
+                      : dayIndex % 2 === 0
+                        ? colors.blueGrey[900]
+                        : colors.blueGrey[800],
                   }}
                 >
                   {selectMode && (
