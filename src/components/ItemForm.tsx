@@ -536,11 +536,9 @@ const ItemForm = ({
                                         "& .MuiBadge-badge": {
                                           backgroundColor: colors.orange[400],
                                           color: colors.grey[900],
-                                          minWidth: 14,
-                                          height: 14,
-                                          fontSize: "0.6rem",
-                                          lineHeight: 1,
-                                          p: 0,
+                                          minWidth: 12,
+                                          height: 12,
+                                          fontSize: "0.5rem",
                                           bottom: 4,
                                           right: 4,
                                         },
@@ -552,9 +550,6 @@ const ItemForm = ({
                                         onClick={onDueDateClick}
                                         sx={{
                                           border: "none",
-                                          backgroundColor: dueLabel
-                                            ? "rgba(255, 152, 0, 0.14)"
-                                            : "transparent",
                                           color: dueLabel
                                             ? colors.orange[300]
                                             : colors.blueGrey[200],
@@ -573,6 +568,11 @@ const ItemForm = ({
                                       >
                                         <Icon
                                           path={mdiCalendarClock}
+                                          style={{
+                                            fill: dueLabel
+                                              ? "rgba(255, 152, 0, 0.14)"
+                                              : "transparent",
+                                          }}
                                           size={0.8}
                                         />
                                       </IconButton>

@@ -87,7 +87,7 @@ const CategoryList = ({
       ) : (
         <Box
           sx={{
-            maxHeight: "calc(100vh - 232px)",
+            maxHeight: "100vh",
             overflowY: "auto",
             minHeight: 0,
             bgcolor: colors.blueGrey[900],

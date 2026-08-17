@@ -930,7 +930,8 @@ function App() {
         const hasStartDate =
           itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
         const hasEndDate =
-          itemFilters.endDate.length === 10 && dateRegex.test(itemFilters.endDate);
+          itemFilters.endDate.length === 10 &&
+          dateRegex.test(itemFilters.endDate);
 
         if (hasStartDate && itemDate < itemFilters.date.trim()) {
           return false;
@@ -1276,7 +1277,9 @@ function App() {
               <Tab
                 value="items"
                 label={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+                  >
                     <Box
                       component="span"
                       sx={{
@@ -1307,7 +1310,9 @@ function App() {
               <Tab
                 value="categories"
                 label={
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                  <Box
+                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+                  >
                     <Box
                       component="span"
                       sx={{
@@ -1355,13 +1360,11 @@ function App() {
                       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                       sx={{
                         "& .MuiBadge-badge": {
-                          backgroundColor: colors.orange[400],
+                          backgroundColor: "primary",
                           color: colors.grey[900],
-                          minWidth: 14,
-                          height: 14,
-                          fontSize: "0.6rem",
-                          lineHeight: 1,
-                          p: 0,
+                          minWidth: 12,
+                          height: 12,
+                          fontSize: "0.5rem",
                         },
                       }}
                     >
@@ -1731,7 +1734,7 @@ function App() {
                             <Tooltip title={day.format("ddd, MMM D")}>
                               <Badge
                                 badgeContent={badgeValue > 1 ? badgeValue : 0}
-                                color={hasDue ? "warning" : "success"}
+                                color={hasDue ? "warning" : "primary"}
                                 overlap="rectangular"
                                 anchorOrigin={{
                                   vertical: "top",
@@ -1739,9 +1742,9 @@ function App() {
                                 }}
                                 sx={{
                                   "& .MuiBadge-badge": {
-                                    minWidth: 16,
-                                    height: 16,
-                                    fontSize: "0.65rem",
+                                    minWidth: 12,
+                                    height: 12,
+                                    fontSize: "0.5rem",
                                   },
                                 }}
                               >
@@ -1753,7 +1756,7 @@ function App() {
                                   sx={{
                                     minWidth: 32,
                                     width: 32,
-                                    height: 36,
+                                    height: 34,
                                     p: 0,
                                     borderRadius: 2,
                                     fontWeight: 700,
@@ -1775,15 +1778,15 @@ function App() {
                                             ? "rgba(120, 144, 156, 0.95)"
                                             : colors.blueGrey[600],
                                     backgroundColor: isSelected
-                                      ? colors.lightBlue[700]
+                                      ? colors.lightBlue[900]
                                       : isCurrentDay
                                         ? "rgba(33, 150, 243, 0.32)"
-                                        : isWeekend
-                                          ? "rgba(120, 144, 156, 0.42)"
-                                          : hasDue
-                                            ? "rgba(255, 152, 0, 0.24)"
-                                            : hasPreviousNotes
-                                              ? "rgba(76, 175, 80, 0.24)"
+                                        : hasDue
+                                          ? "rgba(255, 152, 0, 0.24)"
+                                          : hasPreviousNotes
+                                            ? "rgba(76, 175, 80, 0.24)"
+                                            : isWeekend
+                                              ? "rgba(120, 144, 156, 0.42)"
                                               : "rgba(96, 125, 139, 0.16)",
                                     "&:hover": {
                                       backgroundColor: isSelected
