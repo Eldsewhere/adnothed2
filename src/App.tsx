@@ -570,6 +570,72 @@ function App() {
     setConfirmDeleteCategory(category);
   };
 
+  const parseDueTimeFromText = (
+    text: string,
+    selectedDay: Dayjs | null,
+  ): { cleanedText: string; dueTimestamp?: number } => {
+    const baseDate =
+      selectedDay && selectedDay.isValid() ? selectedDay : today;
+    const textWithToday = text.trim();
+    let effectiveDate = baseDate;
+    let workingText = textWithToday;
+
+    const todayMatch = /(^|[\s(])today(?=$|[\s)\],;.!?])/i.exec(workingText);
+    if (todayMatch) {
+      effectiveDate = today;
+      workingText = workingText
+        .replace(todayMatch[0], todayMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+    }
+
+    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(?=$|[\s)\],;.!?])/i.exec(
+      workingText,
+    );
+
+    if (!match) {
+      return { cleanedText: textWithToday };
+    }
+
+    const rawToken = match[2].toLowerCase();
+    const isHourSyntax = rawToken.includes("h");
+    const hour = isHourSyntax
+      ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
+      : Number.parseInt(rawToken.split(":")[0], 10);
+    const minute = isHourSyntax
+      ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
+      : Number.parseInt(rawToken.split(":")[1], 10);
+
+    if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
+      return { cleanedText: textWithToday };
+    }
+
+    if (!isHourSyntax && ![0, 15, 30, 45].includes(minute)) {
+      return { cleanedText: textWithToday };
+    }
+
+    if (isHourSyntax && ![0, 15, 30, 45].includes(minute) && rawToken !== `${hour}h`) {
+      return { cleanedText: textWithToday };
+    }
+
+    const nextDue = effectiveDate
+      .clone()
+      .hour(hour)
+      .minute(minute)
+      .second(0)
+      .millisecond(0);
+
+    const cleanedText = workingText
+      .replace(match[0], match[1] ?? "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    return {
+      cleanedText,
+      dueTimestamp: nextDue.unix(),
+    };
+  };
+
   const handleItemSubmit: React.ComponentProps<typeof ItemForm>["onSubmit"] = (
     values,
   ) => {
@@ -585,6 +651,11 @@ function App() {
       selectedDay !== null &&
       selectedDay.isValid() &&
       selectedDay.isAfter(today, "day");
+    const parsedSubmit = parseDueTimeFromText(values.text, selectedDay);
+    const finalText = parsedSubmit.cleanedText.trim();
+    const finalDueTimestamp =
+      parsedSubmit.dueTimestamp ??
+      (hasFutureSelectedDay ? selectedDay.unix() : undefined);
 
     if (editingItem) {
       setItems((prev) =>
@@ -593,8 +664,8 @@ function App() {
             ? {
                 ...item,
                 categoryId,
-                text: values.text,
-                ...(hasFutureSelectedDay ? { due: selectedDay.unix() } : {}),
+                text: finalText,
+                ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
               }
             : item,
         ),
@@ -619,10 +690,10 @@ function App() {
         {
           id,
           categoryId,
-          text: values.text,
+          text: finalText,
           createdAt,
           hasNotification: true,
-          ...(hasFutureSelectedDay ? { due: selectedDay.unix() } : {}),
+          ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
         },
       ];
     });
@@ -630,8 +701,8 @@ function App() {
     setPendingDateFilter(emptyItemFilters);
     setDraftNoteText("");
     setDraftDueDate(null);
-    setNotification(`${categoryName}: ${values.text}`);
-    void showAppNotification(categoryName, values.text).then(
+    setNotification(`${categoryName}: ${finalText}`);
+    void showAppNotification(categoryName, finalText).then(
       handleNotificationResult,
     );
   };
