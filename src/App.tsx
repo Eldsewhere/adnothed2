@@ -103,6 +103,81 @@ const formatShortRangeDate = (value: Dayjs): string => {
   return `${day} ${month} ${year}`;
 };
 
+const openGoogleCalendarWithText = (text: string, start: Dayjs) => {
+  const end = start.add(1, "hour");
+  const formatGoogleDate = (date: Dayjs) => date.format("YYYYMMDDTHHmmss");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text,
+    dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
+    ctz: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+
+  window.open(
+    `https://calendar.google.com/calendar/render?${params.toString()}`,
+    "_blank",
+    "noopener,noreferrer",
+  );
+};
+
+const parseSubmissionDueTime = (
+  text: string,
+  selectedDay: Dayjs | null,
+): {
+  cleanedText: string;
+  dueDate: Dayjs | null;
+  openCalendar: boolean;
+} => {
+  const trimmedText = text.trim();
+  if (!trimmedText) {
+    return { cleanedText: text, dueDate: null, openCalendar: false };
+  }
+
+  const match = trimmedText.match(
+    /(^|[\s(])(?<time>\d{1,2}(?::(?:0|15|30|45)|h(?:0|15|30|45)?))(?<dot>\.)?(?=$|[\s.,;:!?)]|$)/i,
+  );
+
+  if (!match?.groups?.time) {
+    return { cleanedText: text, dueDate: null, openCalendar: false };
+  }
+
+  const rawTime = match.groups.time.toLowerCase();
+  const hasMinutes = rawTime.includes(":") || rawTime.includes("h");
+  const timeParts = rawTime.includes(":")
+    ? rawTime.split(":")
+    : rawTime.match(/^(\d{1,2})h(?:(0|15|30|45))?$/i);
+
+  if (!timeParts || !Array.isArray(timeParts) || timeParts.length < 2) {
+    return { cleanedText: text, dueDate: null, openCalendar: false };
+  }
+
+  const hours = Number(Array.isArray(timeParts) ? timeParts[0] : "0");
+  const minutes = Array.isArray(timeParts)
+    ? Number(timeParts[1])
+    : Number(timeParts[2] ?? 0);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return { cleanedText: text, dueDate: null, openCalendar: false };
+  }
+
+  const baseDay = selectedDay && selectedDay.isValid() ? selectedDay : dayjs();
+  const dueDate = baseDay
+    .startOf("day")
+    .hour(hours)
+    .minute(minutes)
+    .second(0)
+    .millisecond(0);
+
+  const tokenText = match[0].trim();
+  const cleanedText = trimmedText.replace(tokenText, "").trim();
+
+  return {
+    cleanedText,
+    dueDate,
+    openCalendar: match.groups.dot === ".",
+  };
+};
+
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
   dueDaysByDate: Map<string, number>;
@@ -573,7 +648,11 @@ function App() {
   const parseDueTimeFromText = (
     text: string,
     selectedDay: Dayjs | null,
-  ): { cleanedText: string; dueTimestamp?: number } => {
+  ): {
+    cleanedText: string;
+    dueTimestamp?: number;
+    openCalendar?: boolean;
+  } => {
     const baseDate =
       selectedDay && selectedDay.isValid() ? selectedDay : today;
     const textWithToday = text.trim();
@@ -589,7 +668,7 @@ function App() {
         .trim();
     }
 
-    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(?=$|[\s)\],;.!?])/i.exec(
+    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(\.)?(?=$|[\s)\],;.!?])/i.exec(
       workingText,
     );
 
@@ -614,7 +693,11 @@ function App() {
       return { cleanedText: textWithToday };
     }
 
-    if (isHourSyntax && ![0, 15, 30, 45].includes(minute) && rawToken !== `${hour}h`) {
+    if (
+      isHourSyntax &&
+      ![0, 15, 30, 45].includes(minute) &&
+      rawToken !== `${hour}h`
+    ) {
       return { cleanedText: textWithToday };
     }
 
@@ -633,6 +716,7 @@ function App() {
     return {
       cleanedText,
       dueTimestamp: nextDue.unix(),
+      openCalendar: Boolean(match[3]),
     };
   };
 
@@ -656,6 +740,12 @@ function App() {
     const finalDueTimestamp =
       parsedSubmit.dueTimestamp ??
       (hasFutureSelectedDay ? selectedDay.unix() : undefined);
+
+    if (parsedSubmit.openCalendar && finalDueTimestamp !== undefined) {
+      const eventText = finalText || categoryName;
+      const start = dayjs.unix(finalDueTimestamp).second(0).millisecond(0);
+      openGoogleCalendarWithText(eventText, start);
+    }
 
     if (editingItem) {
       setItems((prev) =>
@@ -1193,20 +1283,9 @@ function App() {
     const start = weekPickerDueDate
       .hour(h24)
       .minute(weekPickerDueMinute)
-      .second(0);
-    const end = start.add(1, "hour");
-    const formatGoogleDate = (date: Dayjs) => date.format("YYYYMMDDTHHmmss");
-    const params = new URLSearchParams({
-      action: "TEMPLATE",
-      text: eventText,
-      dates: `${formatGoogleDate(start)}/${formatGoogleDate(end)}`,
-      ctz: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    });
-    window.open(
-      `https://calendar.google.com/calendar/render?${params.toString()}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+      .second(0)
+      .millisecond(0);
+    openGoogleCalendarWithText(eventText, start);
   };
 
   const handleWeekPickerClearDueDate = () => {
