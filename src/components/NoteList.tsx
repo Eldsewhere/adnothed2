@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Box, Alert, Menu, MenuItem, colors, Button } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiCheckboxMarked, mdiFormatListBulleted, mdiLabelOff } from "@mdi/js";
+import { mdiLabelOff } from "@mdi/js";
 import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
@@ -45,7 +45,6 @@ type NoteListProps = {
 const ROW_HEIGHT = 80;
 const EXPANDED_ROW_HEIGHT = 128;
 const OVERSCAN = 6;
-const BULLET_PREFIX = "• ";
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
 const getSearchQuery = (text: string): string =>
@@ -56,22 +55,6 @@ const getSearchQuery = (text: string): string =>
     )
     .join("\n")
     .trim();
-
-const allNonEmptyRowsBulleted = (text: string): boolean => {
-  const rows = text.split("\n").filter((row) => row.trim().length > 0);
-  return (
-    rows.length > 0 &&
-    rows.every((row) => row.trimStart().startsWith(BULLET_PREFIX))
-  );
-};
-
-const allNonEmptyRowsCheckboxes = (text: string): boolean => {
-  const rows = text.split("\n").filter((row) => row.trim().length > 0);
-  return (
-    rows.length > 0 &&
-    rows.every((row) => CHECKBOX_ROW_PATTERN.test(row.trimStart()))
-  );
-};
 
 function isTomorrow(date: number): boolean {
   const target = dayjs.unix(date).startOf("day");
@@ -96,8 +79,6 @@ const NoteList = ({
   onDelete,
   onCopy,
   onShareLink,
-  onToggleBullet,
-  onAddCheckboxes,
   onToggleCheckbox,
   onNotify,
   onLabelChange,
@@ -115,10 +96,6 @@ const NoteList = ({
   const [overflowModalnoteId, setOverflowModalnoteId] = useState<string | null>(
     null,
   );
-  const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
-    null,
-  );
-  const [formatMenuNote, setformatMenuNote] = useState<Note | null>(null);
   const [overflowingnoteIds, setOverflowingNoteIds] = useState<Set<string>>(
     new Set(),
   );
@@ -214,11 +191,6 @@ const NoteList = ({
 
   const handleNotify = (note: Note) => {
     onNotify(note);
-    closeMenu();
-  };
-
-  const handleToggleBullet = (note: Note) => {
-    onToggleBullet(note);
     closeMenu();
   };
 
@@ -642,53 +614,6 @@ const NoteList = ({
           }
         />
       )}
-      <Menu
-        anchorEl={formatMenuAnchor}
-        open={Boolean(formatMenuAnchor && formatMenuNote)}
-        onClose={() => {
-          setFormatMenuAnchor(null);
-          setformatMenuNote(null);
-        }}
-      >
-        {formatMenuNote && (
-          <>
-            <MenuItem
-              onClick={() => {
-                handleToggleBullet(formatMenuNote);
-                setFormatMenuAnchor(null);
-                setformatMenuNote(null);
-              }}
-            >
-              <Box
-                component="span"
-                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-              >
-                <Icon path={mdiFormatListBulleted} size={0.7} />
-              </Box>
-              {allNonEmptyRowsBulleted(formatMenuNote.text)
-                ? "Del bullets"
-                : "Add bullets"}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onAddCheckboxes(formatMenuNote);
-                setFormatMenuAnchor(null);
-                setformatMenuNote(null);
-              }}
-            >
-              <Box
-                component="span"
-                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-              >
-                <Icon path={mdiCheckboxMarked} size={0.7} />
-              </Box>
-              {allNonEmptyRowsCheckboxes(formatMenuNote.text)
-                ? "Del checkboxes"
-                : "Add checkboxes"}
-            </MenuItem>
-          </>
-        )}
-      </Menu>
       <Menu
         anchorEl={labelMenuAnchor?.el}
         open={!!labelMenuAnchor}
