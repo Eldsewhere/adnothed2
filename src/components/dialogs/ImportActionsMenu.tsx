@@ -2,19 +2,19 @@ import { Box, Menu, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiDownload, mdiUpload } from "@mdi/js";
 
-type LabelsActionsMenuProps = {
+type ImportActionsMenuProps = {
   anchorEl: HTMLElement | null;
   onClose: () => void;
   onImport: () => void;
   onExport: () => void;
 };
 
-const LabelsActionsMenu = ({
+const ImportActionsMenu = ({
   anchorEl,
   onClose,
   onImport,
   onExport,
-}: LabelsActionsMenuProps) => (
+}: ImportActionsMenuProps) => (
   <Menu
     id="labels-actions-menu"
     anchorEl={anchorEl}
@@ -46,4 +46,4 @@ const LabelsActionsMenu = ({
   </Menu>
 );
 
-export default LabelsActionsMenu;
+export default ImportActionsMenu;
