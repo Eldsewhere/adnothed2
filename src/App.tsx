@@ -38,7 +38,7 @@ import NoteList from "./components/NoteList";
 import WeekdayPicker from "./components/WeekdayPicker";
 import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
-import LabelsActionsMenu from "./components/dialogs/LabelsActionsMenu";
+import LabelsActionsMenu from "./components/dialogs/ImportActionsMenu";
 import BulkLabelMenu from "./components/dialogs/LabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
