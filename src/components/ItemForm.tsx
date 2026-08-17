@@ -528,7 +528,7 @@ const ItemForm = ({
                                       badgeContent={dueFutureCount}
                                       invisible={dueFutureCount === 0}
                                       anchorOrigin={{
-                                        vertical: "top",
+                                        vertical: "bottom",
                                         horizontal: "right",
                                       }}
                                       sx={{
@@ -540,7 +540,7 @@ const ItemForm = ({
                                           fontSize: "0.6rem",
                                           lineHeight: 1,
                                           p: 0,
-                                          top: 4,
+                                          bottom: 4,
                                           right: 4,
                                         },
                                       }}
