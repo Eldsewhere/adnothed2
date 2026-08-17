@@ -270,77 +270,114 @@ const CategoryForm = ({
             />
           )}
         />
-        <Stack
-          direction="row"
-          sx={{
-            alignItems: "center",
-            gap: 1,
-            width: "100%",
-            flexWrap: "nowrap",
+        <Controller
+          name="name"
+          control={control}
+          rules={{
+            required: "Label name is required",
+            maxLength: { value: 15, message: "Max 15 characters" },
           }}
-        >
-          <Controller
-            name="name"
-            control={control}
-            rules={{
-              required: "Label name is required",
-              maxLength: { value: 15, message: "Max 15 characters" },
-            }}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Label name"
-                size="small"
-                error={!!errors.name}
-                helperText={errors.name?.message}
-                fullWidth
-                sx={{
-                  "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+          render={({ field }) => (
+            <TextField
+              {...field}
+              label="Label name"
+              size="small"
+              error={!!errors.name}
+              helperText={errors.name?.message}
+              fullWidth
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        mr: 0.5,
+                        ml: 1,
+                      }}
+                    >
+                      {editingCategory && (
+                        <Tooltip title="Cancel edit">
+                          <span>
+                            <IconButton
+                              aria-label="Cancel edit"
+                              size="small"
+                              onClick={() => {
+                                onCancelEdit();
+                                reset(emptyValues);
+                              }}
+                              sx={{
+                                color: colors.red[400],
+                                border: "none",
+                                backgroundColor: "transparent",
+                                borderRadius: 1,
+                                minWidth: 32,
+                                width: 32,
+                                height: 32,
+                                p: 0,
+                                boxShadow: "none",
+                                "&:hover": {
+                                  backgroundColor: "rgba(239, 68, 68, 0.1)",
+                                },
+                              }}
+                            >
+                              <Icon path={mdiCancel} size={0.8} color={colors.red[400]} />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      )}
+                      <Tooltip title={editingCategory ? "Update label" : "Add label"}>
+                        <span>
+                          <IconButton
+                            type="submit"
+                            aria-label={editingCategory ? "Update label" : "Add label"}
+                            size="small"
+                            sx={{
+                              color: colors.lightGreen[400],
+                              border: "none",
+                              backgroundColor: "transparent",
+                              borderRadius: 1,
+                              minWidth: 32,
+                              width: 32,
+                              height: 32,
+                              p: 0,
+                              boxShadow: "none",
+                              "&:hover": {
+                                backgroundColor: "rgba(74, 222, 128, 0.12)",
+                              },
+                            }}
+                          >
+                            <Icon path={mdiCheckCircle} size={0.8} color={colors.lightGreen[400]} />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Box>
+                  ),
+                },
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+                "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                  {
                     borderColor: colors.blueGrey[500],
                   },
-                  "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
-                    {
-                      borderColor: colors.blueGrey[500],
-                    },
-                  "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
-                    {
-                      borderColor: colors.blueGrey[500],
-                    },
-                }}
-              />
-            )}
-          />
-          <Box sx={{ display: "flex", gap: 1, flexShrink: 0 }}>
-            <Tooltip title={editingCategory ? "Update label" : "Add label"}>
-              <span>
-                <IconButton
-                  type="submit"
-                  aria-label="Add label"
-                  color={"primary"}
-                  sx={{ color: colors.lightGreen[400] }}
-                >
-                  <Icon path={mdiCheckCircle} size={0.9} />
-                </IconButton>
-              </span>
-            </Tooltip>
-            {editingCategory && (
-              <Tooltip title="Cancel edit">
-                <span>
-                  <IconButton
-                    aria-label="Cancel edit"
-                    color={"primary"}
-                    onClick={() => {
-                      onCancelEdit();
-                      reset(emptyValues);
-                    }}
-                  >
-                    <Icon path={mdiCancel} size={0.9} />
-                  </IconButton>
-                </span>
-              </Tooltip>
-            )}
-          </Box>
-        </Stack>
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                  {
+                    borderColor: colors.blueGrey[500],
+                  },
+                "& .MuiInputBase-root": {
+                  pr: 0.5,
+                },
+                "& .MuiInputBase-input": {
+                  pr: 0.5,
+                },
+              }}
+            />
+          )}
+        />
       </Stack>
     </Box>
   );
