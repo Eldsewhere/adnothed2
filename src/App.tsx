@@ -1411,7 +1411,7 @@ function App() {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: "0.62rem",
+                          fontSize: "0.5rem",
                           opacity: 0.8,
                           mt: 0.15,
                         }}
@@ -1444,7 +1444,7 @@ function App() {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: "0.62rem",
+                          fontSize: "0.5rem",
                           opacity: 0.8,
                           mt: 0.15,
                         }}
@@ -1802,6 +1802,14 @@ function App() {
                       overflowX: "auto",
                       overflowY: "visible",
                       py: 1,
+                      scrollbarWidth: "none",
+                      "&::-webkit-scrollbar": {
+                        display: "none",
+                      },
+                      "&::-webkit-scrollbar-thumb": {
+                        display: "none",
+                      },
+                      "-ms-overflow-style": "none",
                     }}
                   >
                     <Box
