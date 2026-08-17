@@ -16,6 +16,7 @@ import LabelIcon from "./ui/LabelIcon";
 import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
+import LabelMenu from "./dialogs/LabelMenu";
 
 type NoteListProps = {
   notes: Note[];
@@ -614,47 +615,15 @@ const NoteList = ({
           }
         />
       )}
-      <Menu
-        anchorEl={labelMenuAnchor?.el}
-        open={!!labelMenuAnchor}
-        onClose={closeLabelMenu}
-      >
-        <MenuItem
-          autoFocus={labelMenuAnchor?.note.labelId === null}
-          selected={labelMenuAnchor?.note.labelId === null}
-          onClick={() => handleLabelSelect(null)}
-          sx={{ color: colors.blueGrey[300] }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              color: colors.blueGrey[300],
-            }}
-          >
-            <Icon path={mdiLabelOff} size={0.7} />
-          </Box>
-          {labels.length == 0 ? "no labels available" : "no label"}
-        </MenuItem>
-        {labels.map((label) => (
-          <MenuItem
-            key={label.id}
-            autoFocus={labelMenuAnchor?.note.labelId === label.id}
-            selected={labelMenuAnchor?.note.labelId === label.id}
-            onClick={() => handleLabelSelect(label.id)}
-          >
-            <Box
-              component="span"
-              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-            >
-              <LabelIcon icon={label.icon} color={label.color} size={0.7} />
-            </Box>
-            {label.name}
-          </MenuItem>
-        ))}
-      </Menu>
+      {labelMenuAnchor && (
+        <LabelMenu
+          anchorEl={labelMenuAnchor.el}
+          labels={labels}
+          onClose={closeLabelMenu}
+          onSelect={(val) => handleLabelSelect(val)}
+          selected={labelMenuAnchor?.note.labelId}
+        />
+      )}
       {dueDateDialogNote && (
         <DueDateDialog
           open
