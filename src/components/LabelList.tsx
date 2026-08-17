@@ -11,59 +11,59 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiPencil, mdiTrashCanOutline } from "@mdi/js";
-import type { Category } from "../types";
+import type { Label } from "../types";
 import LabelListRow from "./LabelListRow";
 
 type LabelListProps = {
-  categories: Category[];
-  onEdit: (category: Category) => void;
-  onDelete: (category: Category) => void;
-  newCategoryId?: string | null;
+  labels: Label[];
+  onEdit: (label: Label) => void;
+  onDelete: (label: Label) => void;
+  newlabelId?: string | null;
 };
 
 const LabelList = ({
-  categories,
+  labels,
   onEdit,
   onDelete,
-  newCategoryId,
+  newlabelId,
 }: LabelListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
-    category: Category | null;
-  }>({ anchorEl: null, category: null });
+    label: Label | null;
+  }>({ anchorEl: null, label: null });
 
   const handleOpenMenu = (
     event: React.MouseEvent<HTMLElement>,
-    category: Category,
+    label: Label,
   ) => {
-    setMenuState({ anchorEl: event.currentTarget, category });
+    setMenuState({ anchorEl: event.currentTarget, label });
   };
 
   const handleCloseMenu = () => {
-    setMenuState({ anchorEl: null, category: null });
+    setMenuState({ anchorEl: null, label: null });
   };
 
   const handleMenuEdit = () => {
-    if (menuState.category) {
-      onEdit(menuState.category);
+    if (menuState.label) {
+      onEdit(menuState.label);
     }
     handleCloseMenu();
   };
 
   const handleMenuDelete = () => {
-    if (menuState.category) {
-      onDelete(menuState.category);
+    if (menuState.label) {
+      onDelete(menuState.label);
     }
     handleCloseMenu();
   };
 
-  const orderedCategories = categories
+  const orderedLabels = labels
     .slice()
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <Box>
-      {orderedCategories.length === 0 ? (
+      {orderedLabels.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
           <Box> No labels added yet</Box>
           <Box sx={{ mt: 0.5 }}>Add labels to filter notes together</Box>
@@ -96,11 +96,11 @@ const LabelList = ({
               sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
             >
               <TableBody>
-                {orderedCategories.map((category) => (
+                {orderedLabels.map((label) => (
                   <LabelListRow
-                    key={category.id}
-                    category={category}
-                    isNewCategory={category.id === newCategoryId}
+                    key={label.id}
+                    label={label}
+                    isNewLabel={label.id === newlabelId}
                     onOpenMenu={handleOpenMenu}
                   />
                 ))}

@@ -17,7 +17,7 @@ import {
   mdiPin,
 } from "@mdi/js";
 import dayjs from "dayjs";
-import type { Category, Item } from "../types";
+import type { Label, Item } from "../types";
 import {
   formatDueDate,
   formatTimestamp,
@@ -36,7 +36,7 @@ const isTomorrow = (timestamp: number): boolean => {
 
 type NoteListRowProps = {
   item: Item;
-  category?: Category;
+  label?: Label;
   top: number;
   height: number;
   isPriority: boolean;
@@ -53,7 +53,7 @@ type NoteListRowProps = {
   isExpandable: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
-  onOpenCategoryMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
+  onOpenLabelMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
   onToggleCheckbox: (item: Item, rowIndex: number) => void;
   onOpenOverflow: (itemId: string) => void;
   onOpenActionsMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
@@ -62,7 +62,7 @@ type NoteListRowProps = {
 
 const NoteListRow = ({
   item,
-  category,
+  label,
   top,
   height,
   isPriority,
@@ -79,7 +79,7 @@ const NoteListRow = ({
   isExpandable,
   shouldHighlightRecentEdit,
   onToggleSelect,
-  onOpenCategoryMenu,
+  onOpenLabelMenu,
   onToggleCheckbox,
   onOpenOverflow,
   onOpenActionsMenu,
@@ -132,20 +132,20 @@ const NoteListRow = ({
         pr: 1,
       }}
     >
-      <Tooltip title={category ? category.name : "Assign a label"} arrow>
+      <Tooltip title={label ? label.name : "Assign a label"} arrow>
         <IconButton
           aria-label={`Change label for ${item.text}`}
           size="small"
           onClick={(event: MouseEvent<HTMLElement>) =>
-            onOpenCategoryMenu(event, item)
+            onOpenLabelMenu(event, item)
           }
           sx={{
             p: 0.5,
-            color: category ? "inherit" : colors.blueGrey[500],
+            color: label ? "inherit" : colors.blueGrey[500],
           }}
         >
-          {category ? (
-            <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+          {label ? (
+            <LabelIcon icon={label.icon} color={label.color} size={0.8} />
           ) : (
             <Icon path={mdiLabelOff} size={0.8} />
           )}

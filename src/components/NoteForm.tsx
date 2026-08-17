@@ -13,7 +13,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import type { Category, Item, ItemFormValues } from "../types";
+import type { Label, Item, ItemFormValues } from "../types";
 import {
   mdiCalendar,
   mdiCalendarClock,
@@ -41,23 +41,23 @@ import {
   mdiSelectAll,
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
-import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
+import { NO_LABEL_FILTER_VALUE } from "../utils/itemFilters";
 
 type NoteFormProps = {
   editingItem: Item | null;
   initialText?: string;
-  categories: Category[];
+  labels: Label[];
   dueLabel?: string;
   dueFutureCount?: number;
   onDueDateClick?: () => void;
   onSubmit: (values: ItemFormValues) => void | boolean;
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
-  onFilterCategoryChange: (value: string) => void;
+  onFilterLabelChange: (value: string) => void;
   onNoteTextChange?: (value: string) => void;
 };
 
-const emptyValues: ItemFormValues = { categoryId: "", text: "" };
+const emptyValues: ItemFormValues = { labelId: "", text: "" };
 
 type QueryTemplate = {
   label: string;
@@ -171,14 +171,14 @@ const querySubmenuGroups: Record<
 const NoteForm = ({
   editingItem,
   initialText,
-  categories,
+  labels,
   dueLabel,
   dueFutureCount = 0,
   onDueDateClick,
   onSubmit,
   onCancelEdit,
   onFilterTextChange,
-  onFilterCategoryChange,
+  onFilterLabelChange,
   onNoteTextChange,
 }: NoteFormProps) => {
   const {
@@ -189,7 +189,7 @@ const NoteForm = ({
     formState: { errors },
   } = useForm<ItemFormValues>({
     defaultValues: initialText
-      ? { categoryId: "", text: initialText }
+      ? { labelId: "", text: initialText }
       : emptyValues,
   });
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
@@ -212,24 +212,24 @@ const NoteForm = ({
 
   useEffect(() => {
     const nextValues = editingItem
-      ? { categoryId: editingItem.categoryId ?? "", text: editingItem.text }
+      ? { labelId: editingItem.labelId ?? "", text: editingItem.text }
       : initialText
-        ? { categoryId: "", text: initialText }
+        ? { labelId: "", text: initialText }
         : emptyValues;
 
     reset(nextValues);
     onNoteTextChange?.(nextValues.text);
     if (!isEditing) {
       onFilterTextChange(nextValues.text);
-      onFilterCategoryChange(
-        nextValues.categoryId ? nextValues.categoryId : "",
+      onFilterLabelChange(
+        nextValues.labelId ? nextValues.labelId : "",
       );
     }
   }, [
     editingItem,
     isEditing,
     initialText,
-    onFilterCategoryChange,
+    onFilterLabelChange,
     onFilterTextChange,
     onNoteTextChange,
     reset,
@@ -263,7 +263,7 @@ const NoteForm = ({
     reset(emptyValues);
     if (!isEditing) {
       onFilterTextChange("");
-      onFilterCategoryChange("");
+      onFilterLabelChange("");
     }
   });
 
@@ -463,12 +463,12 @@ const NoteForm = ({
                       }}
                     />
                     <Controller
-                      name="categoryId"
+                      name="labelId"
                       control={control}
                       render={({ field }) => {
-                        const activeCategoryId = field.value;
-                        const selectedCategory = categories.find(
-                          (category) => category.id === activeCategoryId,
+                        const activelabelId = field.value;
+                        const selectedLabel = labels.find(
+                          (label) => label.id === activelabelId,
                         );
 
                         return (
@@ -496,8 +496,8 @@ const NoteForm = ({
                               >
                                 <Tooltip
                                   title={
-                                    selectedCategory
-                                      ? selectedCategory.name
+                                    selectedLabel
+                                      ? selectedLabel.name
                                       : "Assign a label"
                                   }
                                   arrow
@@ -507,7 +507,7 @@ const NoteForm = ({
                                     size="small"
                                     onClick={openLabelMenu}
                                     sx={{
-                                      color: selectedCategory
+                                      color: selectedLabel
                                         ? "inherit"
                                         : colors.blueGrey[200],
                                       border: "none",
@@ -524,10 +524,10 @@ const NoteForm = ({
                                       },
                                     }}
                                   >
-                                    {selectedCategory ? (
+                                    {selectedLabel ? (
                                       <LabelIcon
-                                        icon={selectedCategory.icon}
-                                        color={selectedCategory.color}
+                                        icon={selectedLabel.icon}
+                                        color={selectedLabel.color}
                                         size={0.8}
                                       />
                                     ) : (
@@ -713,13 +713,13 @@ const NoteForm = ({
                               open={Boolean(labelMenuAnchor)}
                               onClose={closeLabelMenu}
                             >
-                              {categories.length > 0 && (
+                              {labels.length > 0 && (
                                 <MenuItem
                                   autoFocus
                                   onClick={() => {
                                     field.onChange("");
                                     if (!isEditing) {
-                                      onFilterCategoryChange("");
+                                      onFilterLabelChange("");
                                     }
                                     closeLabelMenu();
                                   }}
@@ -728,12 +728,12 @@ const NoteForm = ({
                                 </MenuItem>
                               )}
                               <MenuItem
-                                selected={activeCategoryId === ""}
+                                selected={activelabelId === ""}
                                 onClick={() => {
                                   field.onChange("");
                                   if (!isEditing) {
-                                    onFilterCategoryChange(
-                                      NO_CATEGORY_FILTER_VALUE,
+                                    onFilterLabelChange(
+                                      NO_LABEL_FILTER_VALUE,
                                     );
                                   }
                                   closeLabelMenu();
@@ -749,21 +749,21 @@ const NoteForm = ({
                                 >
                                   <Icon path={mdiLabelOff} size={0.8} />
                                   <span>
-                                    {categories.length == 0
+                                    {labels.length == 0
                                       ? "no labels available"
                                       : "no label"}
                                   </span>
                                 </Box>
                               </MenuItem>
-                              {categories.map((category) => (
+                              {labels.map((label) => (
                                 <MenuItem
-                                  key={category.id}
-                                  autoFocus={activeCategoryId === category.id}
-                                  selected={activeCategoryId === category.id}
+                                  key={label.id}
+                                  autoFocus={activelabelId === label.id}
+                                  selected={activelabelId === label.id}
                                   onClick={() => {
-                                    field.onChange(category.id);
+                                    field.onChange(label.id);
                                     if (!isEditing) {
-                                      onFilterCategoryChange(category.id);
+                                      onFilterLabelChange(label.id);
                                     }
                                     closeLabelMenu();
                                   }}
@@ -776,11 +776,11 @@ const NoteForm = ({
                                     }}
                                   >
                                     <LabelIcon
-                                      icon={category.icon}
-                                      color={category.color}
+                                      icon={label.icon}
+                                      color={label.color}
                                       size={0.7}
                                     />
-                                    <span>{category.name}</span>
+                                    <span>{label.name}</span>
                                   </Box>
                                 </MenuItem>
                               ))}

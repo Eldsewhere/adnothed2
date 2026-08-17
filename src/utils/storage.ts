@@ -1,7 +1,7 @@
 ﻿import { mdiLabelOff } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
-import type { Category, Item } from "../types";
+import type { Label, Item } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./itemTimestamps";
 import { createLetterIconOptionFromName } from "./letterIconOptions";
 
@@ -25,8 +25,8 @@ type PersistedState = {
 };
 
 type LegacyPersistedState = {
-  categories: Array<{ name: string; iconName: string }>;
-  items: Array<{ categoryId: string | null; text: string; createdAt: number }>;
+  labels: Array<{ name: string; iconName: string }>;
+  items: Array<{ labelId: string | null; text: string; createdAt: number }>;
 };
 
 type ParseResult = {
@@ -39,8 +39,8 @@ const STORAGE_KEY = "adnothed-local-storage";
 const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
 
 const emptyPersistedState: PersistedState = { labels: [], notes: [] };
-const emptyAppState: { categories: Category[]; items: Item[] } = {
-  categories: [],
+const emptyAppState: { labels: Label[]; items: Item[] } = {
+  labels: [],
   items: [],
 };
 
@@ -97,7 +97,7 @@ type FileSystemFileHandle = {
   getFile(): Promise<File>;
 };
 
-function resolveIconOption(name: string): Category["icon"] {
+function resolveIconOption(name: string): Label["icon"] {
   const letterOption = createLetterIconOptionFromName(name);
   if (letterOption) {
     return letterOption;
@@ -131,7 +131,7 @@ function normalizeItems(notes: PersistedNote[]): Item[] {
 
     normalized.push({
       id: String(createdAt),
-      categoryId: note.icon ?? null,
+      labelId: note.icon ?? null,
       text: note.text,
       createdAt,
       ...(note.due !== undefined && note.due !== null ? { due: note.due } : {}),
@@ -176,13 +176,13 @@ function normalizePersistedState(
 
   // TODO: remove this migration path after the legacy JSON format is retired.
   return {
-    labels: state.categories.map((category) => ({
-      name: category.name,
-      icon: category.iconName,
+    labels: state.labels.map((label) => ({
+      name: label.name,
+      icon: label.iconName,
     })),
     notes: state.items.map((item) =>
       toPersistedNote({
-        icon: item.categoryId,
+        icon: item.labelId,
         text: item.text,
         time: item.createdAt,
       }),
@@ -191,22 +191,22 @@ function normalizePersistedState(
 }
 
 export function serializeState(state: {
-  categories: Category[];
+  labels: Label[];
   items: Item[];
 }): PersistedState {
   return {
     // Persist the renamed label shape; keep the old parser only for compatibility.
-    labels: state.categories.map((category) => ({
-      name: category.name,
-      icon: category.icon.name,
-      ...(category.color ? { color: category.color } : {}),
+    labels: state.labels.map((label) => ({
+      name: label.name,
+      icon: label.icon.name,
+      ...(label.color ? { color: label.color } : {}),
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
     notes: state.items.map((item) => {
-      const { categoryId, text, createdAt, due, pinned } =
+      const { labelId, text, createdAt, due, pinned } =
         stripTransientItemFields(item);
       return toPersistedNote({
-        icon: categoryId,
+        icon: labelId,
         text,
         time: createdAt,
         due,
@@ -222,12 +222,12 @@ function stripTransientItemFields<T extends Item>(item: T): T {
 }
 
 function deserializeState(state: PersistedState): {
-  categories: Category[];
+  labels: Label[];
   items: Item[];
 } {
   return {
-    // Recreate runtime categories from the renamed persisted label shape.
-    categories: state.labels.map((label) => ({
+    // Recreate runtime labels from the renamed persisted label shape.
+    labels: state.labels.map((label) => ({
       id: label.icon,
       name: label.name,
       icon: resolveIconOption(label.icon),
@@ -282,7 +282,7 @@ export async function getPersistedFileName(): Promise<string> {
 export async function openPersistedStateFile(
   suggestedFileName: string = DEFAULT_FILE_NAME,
 ): Promise<{
-  categories: Category[];
+  labels: Label[];
   items: Item[];
   fileName: string;
   parseError: string | null;
@@ -360,7 +360,7 @@ export function hasPersistedStateFile(): boolean {
 }
 
 export async function loadPersistedState(): Promise<{
-  categories: Category[];
+  labels: Label[];
   items: Item[];
   fileName: string;
   parseError: string | null;
@@ -382,7 +382,7 @@ export async function loadPersistedState(): Promise<{
 
 export async function savePersistedState(
   state: {
-    categories: Category[];
+    labels: Label[];
     items: Item[];
   },
   suggestedFileName: string = DEFAULT_FILE_NAME,

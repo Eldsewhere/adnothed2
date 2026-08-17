@@ -13,7 +13,7 @@ import {
   createFilterOptions,
 } from "@mui/material";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
-import type { Category, CategoryFormValues, IconOption } from "../types";
+import type { Label, LabelFormValues, IconOption } from "../types";
 import { mdiCancel, mdiCheckCircle } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import LabelIcon from "./ui/LabelIcon";
@@ -21,9 +21,9 @@ import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
 import { LABEL_COLOR_OPTIONS, getLabelColorSwatch } from "../utils/labelColors";
 
 type LabelFormProps = {
-  editingCategory: Category | null;
+  editingLabel: Label | null;
   onSubmit: (
-    values: CategoryFormValues & { icon: IconOption },
+    values: LabelFormValues & { icon: IconOption },
   ) => boolean | void;
   onCancelEdit: () => void;
 };
@@ -35,7 +35,7 @@ const baseFilterOptions = createFilterOptions<IconOption>({
   stringify: (option) => option.label,
 });
 
-const emptyValues: CategoryFormValues = { name: "", icon: null, color: "" };
+const emptyValues: LabelFormValues = { name: "", icon: null, color: "" };
 
 const ColorDot = ({ colorName }: { colorName?: string }) => (
   <Box
@@ -53,7 +53,7 @@ const ColorDot = ({ colorName }: { colorName?: string }) => (
 );
 
 const LabelForm = ({
-  editingCategory,
+  editingLabel,
   onSubmit,
   onCancelEdit,
 }: LabelFormProps) => {
@@ -65,20 +65,20 @@ const LabelForm = ({
     reset,
     watch,
     formState: { errors },
-  } = useForm<CategoryFormValues>({ defaultValues: emptyValues });
+  } = useForm<LabelFormValues>({ defaultValues: emptyValues });
   const selectedColor = watch("color");
 
   useEffect(() => {
     reset(
-      editingCategory
+      editingLabel
         ? {
-            name: editingCategory.name,
-            icon: editingCategory.icon,
-            color: editingCategory.color ?? "",
+            name: editingLabel.name,
+            icon: editingLabel.icon,
+            color: editingLabel.color ?? "",
           }
         : emptyValues,
     );
-  }, [editingCategory, reset]);
+  }, [editingLabel, reset]);
 
   const submit = handleSubmit((values) => {
     if (!values.icon) {
@@ -297,7 +297,7 @@ const LabelForm = ({
                         ml: 1,
                       }}
                     >
-                      {editingCategory && (
+                      {editingLabel && (
                         <Tooltip title="Cancel edit">
                           <span>
                             <IconButton
@@ -327,11 +327,11 @@ const LabelForm = ({
                           </span>
                         </Tooltip>
                       )}
-                      <Tooltip title={editingCategory ? "Update label" : "Add label"}>
+                      <Tooltip title={editingLabel ? "Update label" : "Add label"}>
                         <span>
                           <IconButton
                             type="submit"
-                            aria-label={editingCategory ? "Update label" : "Add label"}
+                            aria-label={editingLabel ? "Update label" : "Add label"}
                             size="small"
                             sx={{
                               color: colors.lightGreen[400],

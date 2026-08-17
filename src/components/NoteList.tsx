@@ -36,7 +36,7 @@ import {
   mdiNoteText,
   mdiOpenInNew,
 } from "@mdi/js";
-import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
+import type { Label, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   dateRegex,
   formatDate,
@@ -44,7 +44,7 @@ import {
 } from "../utils/formatTimestamp";
 import {
   matchesTextFilters,
-  NO_CATEGORY_FILTER_VALUE,
+  NO_LABEL_FILTER_VALUE,
   parseTextFilters,
 } from "../utils/itemFilters";
 import { getFirstUrl } from "../utils/textPatterns";
@@ -55,7 +55,7 @@ import NoteListRow from "./NoteListRow";
 
 type NoteListProps = {
   items: Item[];
-  categories: Category[];
+  labels: Label[];
   filters: ItemFiltersValue;
   mostRecentAddedItemId: string | null;
   mostRecentEditedItemId: string | null;
@@ -69,7 +69,7 @@ type NoteListProps = {
   onAddCheckboxes: (item: Item) => void;
   onToggleCheckbox: (item: Item, rowIndex: number) => void;
   onNotify: (item: Item) => void;
-  onCategoryChange: (item: Item, categoryId: string | null) => void;
+  onLabelChange: (item: Item, labelId: string | null) => void;
   onDueChange: (item: Item, due: number | null) => void;
   onPin: (item: Item) => void;
   selectMode: boolean;
@@ -142,7 +142,7 @@ const isPriorityItem = (item: Item): boolean =>
 
 const NoteList = ({
   items,
-  categories,
+  labels,
   filters,
   mostRecentAddedItemId,
   mostRecentEditedItemId,
@@ -156,7 +156,7 @@ const NoteList = ({
   onAddCheckboxes,
   onToggleCheckbox,
   onNotify,
-  onCategoryChange,
+  onLabelChange,
   onDueChange,
   onPin,
   selectMode,
@@ -190,7 +190,7 @@ const NoteList = ({
   const [expandableItemIds, setExpandableItemIds] = useState<Set<string>>(
     new Set(),
   );
-  const [categoryMenuAnchor, setCategoryMenuAnchor] = useState<{
+  const [labelMenuAnchor, setLabelMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
   } | null>(null);
@@ -210,9 +210,9 @@ const NoteList = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
 
-  const categoriesById = useMemo(
-    () => new Map(categories.map((category) => [category.id, category])),
-    [categories],
+  const labelsById = useMemo(
+    () => new Map(labels.map((label) => [label.id, label])),
+    [labels],
   );
 
   const sortedItems = useMemo(() => {
@@ -371,11 +371,11 @@ const NoteList = ({
     });
   };
 
-  const openCategoryMenu = (event: MouseEvent<HTMLElement>, item: Item) => {
-    setCategoryMenuAnchor({ el: event.currentTarget, item });
+  const openLabelMenu = (event: MouseEvent<HTMLElement>, item: Item) => {
+    setLabelMenuAnchor({ el: event.currentTarget, item });
   };
 
-  const closeCategoryMenu = () => setCategoryMenuAnchor(null);
+  const closeLabelMenu = () => setLabelMenuAnchor(null);
 
   const openDueDateDialog = (item: Item) => {
     setDueDateDialogItem(item);
@@ -452,12 +452,12 @@ const NoteList = ({
     );
   };
 
-  const handleCategorySelect = (categoryId: string | null) => {
-    if (!categoryMenuAnchor) {
+  const handleLabelSelect = (labelId: string | null) => {
+    if (!labelMenuAnchor) {
       return;
     }
-    onCategoryChange(categoryMenuAnchor.item, categoryId);
-    closeCategoryMenu();
+    onLabelChange(labelMenuAnchor.item, labelId);
+    closeLabelMenu();
   };
 
   const parsedTextFilters = useMemo(
@@ -468,13 +468,13 @@ const NoteList = ({
   const filteredItems = useMemo(
     () =>
       sortedItems.filter((item, index) => {
-        if (filters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-          if (item.categoryId !== null) {
+        if (filters.labelId === NO_LABEL_FILTER_VALUE) {
+          if (item.labelId !== null) {
             return false;
           }
         } else if (
-          filters.categoryId &&
-          item.categoryId !== filters.categoryId
+          filters.labelId &&
+          item.labelId !== filters.labelId
         ) {
           return false;
         }
@@ -486,7 +486,7 @@ const NoteList = ({
             sortedItems.length,
             parsedTextFilters,
             item.due,
-            item.categoryId,
+            item.labelId,
           )
         ) {
           return false;
@@ -610,8 +610,8 @@ const NoteList = ({
           <Box sx={{ height: totalHeight, position: "relative" }}>
             {visibleItems.map((item, i) => {
               const index = startIndex + i;
-              const category = item.categoryId
-                ? categoriesById.get(item.categoryId)
+              const label = item.labelId
+                ? labelsById.get(item.labelId)
                 : undefined;
               const dayIndex =
                 dayIndexByDate.get(formatDate(item.createdAt)) ?? 0;
@@ -646,7 +646,7 @@ const NoteList = ({
                   top={rowOffsets[index] - rowHeights[index]}
                   height={rowHeights[index]}
                   item={item}
-                  category={category}
+                  label={label}
                   isPriority={isPrioritary}
                   isLastItem={isLastItem}
                   isPriorityBoundary={isPriorityBoundary}
@@ -661,7 +661,7 @@ const NoteList = ({
                   isExpandable={expandableItemIds.has(item.id)}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
                   onToggleSelect={onToggleSelect}
-                  onOpenCategoryMenu={openCategoryMenu}
+                  onOpenLabelMenu={openLabelMenu}
                   onToggleCheckbox={onToggleCheckbox}
                   onOpenOverflow={(id) => setOverflowModalItemId(id)}
                   onOpenActionsMenu={(event, note) =>
@@ -1056,8 +1056,8 @@ const NoteList = ({
             >
               <Typography variant="body2">
                 {(() => {
-                  const category = categories.find(
-                    (category) => category.id === overflowModalItem?.categoryId,
+                  const label = labels.find(
+                    (label) => label.id === overflowModalItem?.labelId,
                   );
 
                   return (
@@ -1069,16 +1069,16 @@ const NoteList = ({
                         gap: 1,
                       }}
                     >
-                      {category ? (
+                      {label ? (
                         <LabelIcon
-                          icon={category.icon}
-                          color={category.color}
+                          icon={label.icon}
+                          color={label.color}
                           size={0.8}
                         />
                       ) : (
                         <Icon path={mdiLabelOff} size={0.8} />
                       )}
-                      {category ? category.name : "no label"}
+                      {label ? label.name : "no label"}
                     </Box>
                   );
                 })()}
@@ -1228,14 +1228,14 @@ const NoteList = ({
         )}
       </Menu>
       <Menu
-        anchorEl={categoryMenuAnchor?.el}
-        open={!!categoryMenuAnchor}
-        onClose={closeCategoryMenu}
+        anchorEl={labelMenuAnchor?.el}
+        open={!!labelMenuAnchor}
+        onClose={closeLabelMenu}
       >
         <MenuItem
-          autoFocus={categoryMenuAnchor?.item.categoryId === null}
-          selected={categoryMenuAnchor?.item.categoryId === null}
-          onClick={() => handleCategorySelect(null)}
+          autoFocus={labelMenuAnchor?.item.labelId === null}
+          selected={labelMenuAnchor?.item.labelId === null}
+          onClick={() => handleLabelSelect(null)}
           sx={{ color: colors.blueGrey[300] }}
         >
           <Box
@@ -1249,26 +1249,26 @@ const NoteList = ({
           >
             <Icon path={mdiLabelOff} size={0.7} />
           </Box>
-          {categories.length == 0 ? "no labels available" : "no label"}
+          {labels.length == 0 ? "no labels available" : "no label"}
         </MenuItem>
-        {categories.map((category) => (
+        {labels.map((label) => (
           <MenuItem
-            key={category.id}
-            autoFocus={categoryMenuAnchor?.item.categoryId === category.id}
-            selected={categoryMenuAnchor?.item.categoryId === category.id}
-            onClick={() => handleCategorySelect(category.id)}
+            key={label.id}
+            autoFocus={labelMenuAnchor?.item.labelId === label.id}
+            selected={labelMenuAnchor?.item.labelId === label.id}
+            onClick={() => handleLabelSelect(label.id)}
           >
             <Box
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
               <LabelIcon
-                icon={category.icon}
-                color={category.color}
+                icon={label.icon}
+                color={label.color}
                 size={0.7}
               />
             </Box>
-            {category.name}
+            {label.name}
           </MenuItem>
         ))}
       </Menu>

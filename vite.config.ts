@@ -13,7 +13,7 @@ export default defineConfig({
       manifest: {
         name: "Adnothed",
         short_name: "Adnothed",
-        description: "Note manager with categories and notifications",
+        description: "Note manager with labels and notifications",
         theme_color: "#1976d2",
         background_color: "#ffffff",
         display: "standalone",

@@ -4,14 +4,14 @@ export type IconOption = {
   path: string;
 };
 
-export type Category = {
+export type Label = {
   id: string;
   name: string;
   icon: IconOption;
   color?: string;
 };
 
-export type CategoryFormValues = {
+export type LabelFormValues = {
   name: string;
   icon: IconOption | null;
   color?: string;
@@ -19,7 +19,7 @@ export type CategoryFormValues = {
 
 export type Item = {
   id: string;
-  categoryId: string | null;
+  labelId: string | null;
   text: string;
   createdAt: number;
   hasNotification?: boolean;
@@ -29,7 +29,7 @@ export type Item = {
 };
 
 export type ItemFormValues = {
-  categoryId: string;
+  labelId: string;
   text: string;
 };
 
@@ -39,7 +39,7 @@ export interface BeforeInstallPromptEvent extends Event {
 }
 
 export type ItemFilters = {
-  categoryId: string;
+  labelId: string;
   text: string;
   date: string;
   endDate: string;

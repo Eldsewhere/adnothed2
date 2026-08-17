@@ -1,31 +1,31 @@
 import { Box, Menu, MenuItem } from "@mui/material";
 import LabelIcon from "../ui/LabelIcon";
-import type { Category } from "../../types";
+import type { Label } from "../../types";
 
 type BulkLabelMenuProps = {
   anchorEl: HTMLElement | null;
-  categories: Category[];
+  labels: Label[];
   onClose: () => void;
-  onSelect: (categoryId: string | null) => void;
+  onSelect: (labelId: string | null) => void;
 };
 
 const BulkLabelMenu = ({
   anchorEl,
-  categories,
+  labels,
   onClose,
   onSelect,
 }: BulkLabelMenuProps) => (
   <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={onClose}>
     <MenuItem onClick={() => onSelect(null)}>no label</MenuItem>
-    {categories.map((category) => (
-      <MenuItem key={category.id} onClick={() => onSelect(category.id)}>
+    {labels.map((label) => (
+      <MenuItem key={label.id} onClick={() => onSelect(label.id)}>
         <Box
           component="span"
           sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
         >
-          <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+          <LabelIcon icon={label.icon} color={label.color} size={0.8} />
         </Box>
-        {category.name}
+        {label.name}
       </MenuItem>
     ))}
   </Menu>

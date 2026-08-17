@@ -43,7 +43,7 @@ import BulkLabelMenu from "./components/dialogs/BulkLabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
-import type { BeforeInstallPromptEvent, Category, Item } from "./types";
+import type { BeforeInstallPromptEvent, Label, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   DEFAULT_FILE_NAME,
@@ -60,12 +60,12 @@ import {
 import {
   emptyItemFilters,
   matchesTextFilters,
-  NO_CATEGORY_FILTER_VALUE,
+  NO_LABEL_FILTER_VALUE,
   parseTextFilters,
 } from "./utils/itemFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/itemTimestamps";
-type TabValue = "items" | "categories";
+type TabValue = "items" | "labels";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -152,8 +152,8 @@ function toggleBulletRows(text: string): string {
 
 function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("items");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [labels, setLabels] = useState<Label[]>([]);
+  const [editingLabel, setEditingLabel] = useState<Label | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   const [editingItem, setEditingItem] = useState<Item | null>(null);
   const [recentlyAddedItemId, setRecentlyAddedItemId] = useState<string | null>(
@@ -172,16 +172,16 @@ function App() {
     new Set(),
   );
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
-  const [bulkCategoryAnchor, setBulkCategoryAnchor] =
+  const [bulkLabelAnchor, setbulkLabelAnchor] =
     useState<HTMLElement | null>(null);
   const [labelsActionsAnchor, setLabelsActionsAnchor] =
     useState<HTMLElement | null>(null);
-  const [confirmDeleteCategory, setConfirmDeleteCategory] =
-    useState<Category | null>(null);
-  const [latestCategoryId, setLatestCategoryId] = useState<string | null>(null);
+  const [confirmDeleteLabel, setconfirmDeleteLabel] =
+    useState<Label | null>(null);
+  const [latestlabelId, setLatestlabelId] = useState<string | null>(null);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
-    categories: Category[];
+    labels: Label[];
     items: Item[];
     fileName: string;
     parseError: string | null;
@@ -287,7 +287,7 @@ function App() {
         return;
       }
 
-      setCategories(persistedState.categories);
+      setLabels(persistedState.labels);
       setItems(persistedState.items);
       setStorageFileName(persistedState.fileName);
       if (persistedState.parseError) {
@@ -310,12 +310,12 @@ function App() {
       return;
     }
 
-    savePersistedState({ categories, items }, storageFileName);
-  }, [categories, items, storageReady, storageFileName]);
+    savePersistedState({ labels, items }, storageFileName);
+  }, [labels, items, storageReady, storageFileName]);
 
   useEffect(() => {
     if (!storageReady) {
-      setActiveTab("categories");
+      setActiveTab("labels");
     }
   }, [storageReady]);
 
@@ -336,7 +336,7 @@ function App() {
       setConfirmImportOpen(false);
       return;
     }
-    setCategories(pendingImport.categories);
+    setLabels(pendingImport.labels);
     setItems(pendingImport.items);
     setStorageFileName(pendingImport.fileName);
     setStorageReady(true);
@@ -348,7 +348,7 @@ function App() {
   };
 
   const handleExportJson = () => {
-    const payload = serializeState({ categories, items });
+    const payload = serializeState({ labels, items });
     // filename format: adnothed-state_YYYY-MM-DD_HH-MM.json
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -375,9 +375,9 @@ function App() {
   ) => {
     const iconName = values.icon.name;
 
-    // ensure the icon is unique across categories
-    const conflict = categories.some(
-      (c) => c.id === iconName && c.id !== editingCategory?.id,
+    // ensure the icon is unique across labels
+    const conflict = labels.some(
+      (c) => c.id === iconName && c.id !== editingLabel?.id,
     );
     if (conflict) {
       setNotificationSeverity("error");
@@ -385,20 +385,20 @@ function App() {
       return false;
     }
 
-    if (editingCategory) {
-      setCategories((prev) =>
-        prev.map((prevCategory) => {
-          if (prevCategory.id === editingCategory.id) {
+    if (editingLabel) {
+      setLabels((prev) =>
+        prev.map((prevLabel) => {
+          if (prevLabel.id === editingLabel.id) {
             setItems((prev) =>
               prev.map((item) =>
-                item.categoryId === prevCategory.id
-                  ? { ...item, categoryId: iconName }
+                item.labelId === prevLabel.id
+                  ? { ...item, labelId: iconName }
                   : item,
               ),
             );
 
             return {
-              ...prevCategory,
+              ...prevLabel,
               name: values.name,
               icon: values.icon,
               color: values.color,
@@ -406,16 +406,16 @@ function App() {
             };
           }
 
-          return prevCategory;
+          return prevLabel;
         }),
       );
       setNotificationSeverity("success");
       setNotification(`Updated label "${values.name}"`);
-      setEditingCategory(null);
+      setEditingLabel(null);
       return;
     }
 
-    setCategories((prev) => [
+    setLabels((prev) => [
       ...prev,
       {
         id: iconName,
@@ -424,28 +424,28 @@ function App() {
         color: values.color,
       },
     ]);
-    setLatestCategoryId(iconName);
+    setLatestlabelId(iconName);
     setNotificationSeverity("success");
     setNotification(`Added label "${values.name}"`);
   };
 
-  const handleDelete = (category: Category) => {
-    setCategories((prev) => prev.filter((c) => c.id !== category.id));
+  const handleDelete = (label: Label) => {
+    setLabels((prev) => prev.filter((c) => c.id !== label.id));
     setItems((prev) =>
       prev.map((item) =>
-        item.categoryId === category.id ? { ...item, categoryId: null } : item,
+        item.labelId === label.id ? { ...item, labelId: null } : item,
       ),
     );
-    if (editingCategory?.id === category.id) {
-      setEditingCategory(null);
+    if (editingLabel?.id === label.id) {
+      setEditingLabel(null);
     }
-    if (editingItem?.categoryId === category.id) {
+    if (editingItem?.labelId === label.id) {
       setEditingItem(null);
     }
   };
 
-  const requestDeleteCategory = (category: Category) => {
-    setConfirmDeleteCategory(category);
+  const requestDeleteLabel = (label: Label) => {
+    setconfirmDeleteLabel(label);
   };
 
   const parseDueTimeFromText = (
@@ -526,9 +526,9 @@ function App() {
   const handleItemSubmit: React.ComponentProps<typeof NoteForm>["onSubmit"] = (
     values,
   ) => {
-    const categoryId = values.categoryId === "" ? null : values.categoryId;
-    const categoryName =
-      categories.find((c) => c.id === categoryId)?.name ?? "Reminder";
+    const labelId = values.labelId === "" ? null : values.labelId;
+    const labelName =
+      labels.find((c) => c.id === labelId)?.name ?? "Reminder";
     const selectedDay =
       draftDueDate ??
       (itemFilters.weekday
@@ -557,7 +557,7 @@ function App() {
     }
 
     if (parsedSubmit.openCalendar && finalDueTimestamp !== undefined) {
-      const eventText = finalText || categoryName;
+      const eventText = finalText || labelName;
       const start = dayjs.unix(finalDueTimestamp).second(0).millisecond(0);
       openGoogleCalendarWithText(eventText, start);
     }
@@ -568,7 +568,7 @@ function App() {
           item.id === editingItem.id
             ? {
                 ...item,
-                categoryId,
+                labelId,
                 text: finalText,
                 ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
               }
@@ -594,7 +594,7 @@ function App() {
         ...prev,
         {
           id,
-          categoryId,
+          labelId,
           text: finalText,
           createdAt,
           hasNotification: true,
@@ -606,8 +606,8 @@ function App() {
     setPendingDateFilter(emptyItemFilters);
     setDraftNoteText("");
     setDraftDueDate(null);
-    setNotification(`${categoryName}: ${finalText}`);
-    void showAppNotification(categoryName, finalText).then(
+    setNotification(`${labelName}: ${finalText}`);
+    void showAppNotification(labelName, finalText).then(
       handleNotificationResult,
     );
   };
@@ -751,14 +751,14 @@ function App() {
     setConfirmBulkDeleteOpen(false);
   };
 
-  const handleBulkCategoryChange = (categoryId: string | null) => {
+  const handleBulkLabelChange = (labelId: string | null) => {
     setItems((prev) =>
       prev.map((item) =>
-        selectedItemIds.has(item.id) ? { ...item, categoryId } : item,
+        selectedItemIds.has(item.id) ? { ...item, labelId } : item,
       ),
     );
     setSelectedItemIds(new Set());
-    setBulkCategoryAnchor(null);
+    setbulkLabelAnchor(null);
   };
 
   const handleEditItem = (item: Item) => {
@@ -801,13 +801,13 @@ function App() {
     );
   }, []);
 
-  const handleFilterCategoryChange = useCallback((value: string) => {
+  const handleFilterLabelChange = useCallback((value: string) => {
     setItemFilters((prev) =>
-      prev.categoryId === value
+      prev.labelId === value
         ? prev
         : {
             ...prev,
-            categoryId: value,
+            labelId: value,
           },
     );
   }, []);
@@ -847,13 +847,13 @@ function App() {
           }
         }
 
-        if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-          if (item.categoryId !== null) {
+        if (itemFilters.labelId === NO_LABEL_FILTER_VALUE) {
+          if (item.labelId !== null) {
             return false;
           }
         } else if (
-          itemFilters.categoryId &&
-          item.categoryId !== itemFilters.categoryId
+          itemFilters.labelId &&
+          item.labelId !== itemFilters.labelId
         ) {
           return false;
         }
@@ -865,11 +865,11 @@ function App() {
           sortedItems.length,
           parsedTextFilters,
           item.due,
-          item.categoryId,
+          item.labelId,
         );
       }),
     [
-      itemFilters.categoryId,
+      itemFilters.labelId,
       itemFilters.hasDue,
       parsedTextFilters,
       sortedItems,
@@ -879,13 +879,13 @@ function App() {
   const filteredNoteCount = useMemo(
     () =>
       sortedItems.filter((item, index) => {
-        if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
-          if (item.categoryId !== null) {
+        if (itemFilters.labelId === NO_LABEL_FILTER_VALUE) {
+          if (item.labelId !== null) {
             return false;
           }
         } else if (
-          itemFilters.categoryId &&
-          item.categoryId !== itemFilters.categoryId
+          itemFilters.labelId &&
+          item.labelId !== itemFilters.labelId
         ) {
           return false;
         }
@@ -898,7 +898,7 @@ function App() {
             sortedItems.length,
             parsedTextFilters,
             item.due,
-            item.categoryId,
+            item.labelId,
           )
         ) {
           return false;
@@ -943,7 +943,7 @@ function App() {
         return true;
       }).length,
     [
-      itemFilters.categoryId,
+      itemFilters.labelId,
       itemFilters.date,
       itemFilters.dueDate,
       itemFilters.endDate,
@@ -1262,10 +1262,10 @@ function App() {
               }}
               onChange={(_event, newValue) => {
                 const normalized =
-                  newValue === "items" || newValue === "categories"
+                  newValue === "items" || newValue === "labels"
                     ? newValue
                     : (String(newValue) as TabValue);
-                if (normalized === "categories") {
+                if (normalized === "labels") {
                   setItemFilters(emptyItemFilters);
                   setSelectMode(false);
                 }
@@ -1306,7 +1306,7 @@ function App() {
                 aria-controls="tabpanel-items"
               />
               <Tab
-                value="categories"
+                value="labels"
                 label={
                   <Box
                     sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
@@ -1329,14 +1329,14 @@ function App() {
                           mt: 0.15,
                         }}
                       >
-                        {categories.length}
+                        {labels.length}
                       </Box>
                     </Box>
                     <Box component="span">Labels</Box>
                   </Box>
                 }
-                id="tab-categories"
-                aria-controls="tabpanel-categories"
+                id="tab-labels"
+                aria-controls="tabpanel-labels"
               />
             </Tabs>
             {activeTab === "items" && (
@@ -1417,7 +1417,7 @@ function App() {
                 />
               </Stack>
             )}
-            {activeTab === "categories" && (
+            {activeTab === "labels" && (
               <>
                 <Tooltip title="Import/Export">
                   <IconButton
@@ -1453,14 +1453,14 @@ function App() {
                 <NoteForm
                   editingItem={editingItem}
                   initialText={sharedText ?? undefined}
-                  categories={categories}
+                  labels={labels}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
                   onSubmit={handleItemSubmit}
                   onCancelEdit={() => setEditingItem(null)}
                   onFilterTextChange={handleFilterTextChange}
-                  onFilterCategoryChange={handleFilterCategoryChange}
+                  onFilterLabelChange={handleFilterLabelChange}
                   onNoteTextChange={setDraftNoteText}
                 />
                 <Box
@@ -1523,7 +1523,7 @@ function App() {
                           startIcon={<Icon path={mdiFolderMove} size={0.9} />}
                           disabled={selectedItemIds.size === 0}
                           onClick={(event) =>
-                            setBulkCategoryAnchor(event.currentTarget)
+                            setbulkLabelAnchor(event.currentTarget)
                           }
                           sx={{ textTransform: "none" }}
                         >
@@ -1571,7 +1571,7 @@ function App() {
                 )}
                 <NoteList
                   items={items}
-                  categories={categories}
+                  labels={labels}
                   filters={itemFilters}
                   mostRecentAddedItemId={recentlyAddedItemId}
                   mostRecentEditedItemId={recentlyEditedItemId}
@@ -1587,8 +1587,8 @@ function App() {
                   onDueChange={handleItemDueChange}
                   onPin={handleItemPin}
                   onNotify={(item) => {
-                    const categoryName =
-                      categories.find((c) => c.id === item.categoryId)?.name ??
+                    const labelName =
+                      labels.find((c) => c.id === item.labelId)?.name ??
                       "Reminder";
                     const now = Math.floor(Date.now() / 1000);
                     // mark item as having an active notification
@@ -1613,21 +1613,21 @@ function App() {
                           : existingItem,
                       ),
                     );
-                    setNotification(`${categoryName}: ${item.text}`);
-                    void showAppNotification(categoryName, item.text).then(
+                    setNotification(`${labelName}: ${item.text}`);
+                    void showAppNotification(labelName, item.text).then(
                       handleNotificationResult,
                     );
                   }}
-                  onCategoryChange={(item, categoryId) => {
+                  onLabelChange={(item, labelId) => {
                     setItems((prev) =>
                       prev.map((existingItem) =>
                         existingItem.id === item.id
-                          ? { ...existingItem, categoryId }
+                          ? { ...existingItem, labelId }
                           : existingItem,
                       ),
                     );
                     if (editingItem?.id === item.id) {
-                      setEditingItem({ ...editingItem, categoryId });
+                      setEditingItem({ ...editingItem, labelId });
                     }
                   }}
                   selectMode={selectMode}
@@ -1637,18 +1637,18 @@ function App() {
                 />
               </Stack>
             </TabPanel>
-            <TabPanel value={activeTab} index="categories">
+            <TabPanel value={activeTab} index="labels">
               <Stack spacing={2}>
                 <LabelForm
-                  editingCategory={editingCategory}
+                  editingLabel={editingLabel}
                   onSubmit={handleSubmit}
-                  onCancelEdit={() => setEditingCategory(null)}
+                  onCancelEdit={() => setEditingLabel(null)}
                 />
                 <LabelList
-                  categories={categories}
-                  onEdit={setEditingCategory}
-                  onDelete={requestDeleteCategory}
-                  newCategoryId={latestCategoryId}
+                  labels={labels}
+                  onEdit={setEditingLabel}
+                  onDelete={requestDeleteLabel}
+                  newlabelId={latestlabelId}
                 />
               </Stack>
             </TabPanel>
@@ -1707,16 +1707,16 @@ function App() {
           onConfirm={handleBulkDelete}
         />
         <ConfirmDeleteLabelDialog
-          open={!!confirmDeleteCategory}
-          categoryName={confirmDeleteCategory?.name ?? null}
-          onClose={() => setConfirmDeleteCategory(null)}
+          open={!!confirmDeleteLabel}
+          labelName={confirmDeleteLabel?.name ?? null}
+          onClose={() => setconfirmDeleteLabel(null)}
           onConfirm={() => {
-            if (confirmDeleteCategory) {
-              handleDelete(confirmDeleteCategory);
+            if (confirmDeleteLabel) {
+              handleDelete(confirmDeleteLabel);
               setNotificationSeverity("success");
-              setNotification(`Deleted label "${confirmDeleteCategory.name}"`);
+              setNotification(`Deleted label "${confirmDeleteLabel.name}"`);
             }
-            setConfirmDeleteCategory(null);
+            setconfirmDeleteLabel(null);
           }}
         />
         <ConfirmImportDialog
@@ -1729,11 +1729,11 @@ function App() {
           onConfirm={confirmImport}
         />
         <BulkLabelMenu
-          anchorEl={bulkCategoryAnchor}
-          categories={categories}
-          onClose={() => setBulkCategoryAnchor(null)}
-          onSelect={(categoryId) => {
-            handleBulkCategoryChange(categoryId);
+          anchorEl={bulkLabelAnchor}
+          labels={labels}
+          onClose={() => setbulkLabelAnchor(null)}
+          onSelect={(labelId) => {
+            handleBulkLabelChange(labelId);
           }}
         />
       </Box>

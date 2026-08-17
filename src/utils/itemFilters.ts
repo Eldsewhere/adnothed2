@@ -6,10 +6,10 @@ import { containsEmail, containsNumbers, containsUrl } from "./textPatterns";
 const yearRegex = /^\d{4}$/;
 const yearMonthRegex = /^\d{4}-\d{2}$/;
 
-export const NO_CATEGORY_FILTER_VALUE = "__none__";
+export const NO_LABEL_FILTER_VALUE = "__none__";
 
 export const emptyItemFilters: ItemFilters = {
-  categoryId: "",
+  labelId: "",
   text: "",
   date: "",
   endDate: "",
@@ -199,7 +199,7 @@ export function matchesTextFilters(
   sortedItemsLength: number,
   parsed: ParsedTextFilters,
   due?: number,
-  categoryId: string | null = null,
+  labelId: string | null = null,
 ): boolean {
   if (
     parsed.query &&
@@ -283,7 +283,7 @@ export function matchesTextFilters(
     }
   }
 
-  if (parsed.withLabel && categoryId === null) {
+  if (parsed.withLabel && labelId === null) {
     return false;
   }
 

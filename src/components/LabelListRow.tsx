@@ -9,22 +9,22 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiDotsVertical } from "@mdi/js";
-import type { Category } from "../types";
+import type { Label } from "../types";
 import LabelIcon from "./ui/LabelIcon";
 
 type LabelListRowProps = {
-  category: Category;
-  isNewCategory: boolean;
-  onOpenMenu: (event: MouseEvent<HTMLElement>, category: Category) => void;
+  label: Label;
+  isNewLabel: boolean;
+  onOpenMenu: (event: MouseEvent<HTMLElement>, label: Label) => void;
 };
 
 const LabelListRow = ({
-  category,
-  isNewCategory,
+  label,
+  isNewLabel,
   onOpenMenu,
 }: LabelListRowProps) => (
   <TableRow
-    key={category.id}
+    key={label.id}
     sx={{
       borderBottom: "3px solid",
       borderColor: colors.grey[900],
@@ -42,8 +42,8 @@ const LabelListRow = ({
         verticalAlign: "middle",
       }}
     >
-      <Tooltip title={category.icon.label} aria-label={`Icon for ${category.name}`}>
-        <LabelIcon icon={category.icon} color={category.color} size={1} />
+      <Tooltip title={label.icon.label} aria-label={`Icon for ${label.name}`}>
+        <LabelIcon icon={label.icon} color={label.color} size={1} />
       </Tooltip>
     </TableCell>
     <TableCell
@@ -57,10 +57,10 @@ const LabelListRow = ({
       <Typography
         noWrap
         sx={{
-          color: isNewCategory ? colors.lightGreen[400] : "inherit",
+          color: isNewLabel ? colors.lightGreen[400] : "inherit",
         }}
       >
-        {category.name}
+        {label.name}
       </Typography>
     </TableCell>
     <TableCell
@@ -72,9 +72,9 @@ const LabelListRow = ({
     >
       <Tooltip title="Actions">
         <IconButton
-          aria-label={`Open actions for ${category.name}`}
+          aria-label={`Open actions for ${label.name}`}
           size="small"
-          onClick={(event) => onOpenMenu(event, category)}
+          onClick={(event) => onOpenMenu(event, label)}
         >
           <Icon path={mdiDotsVertical} size={0.8} />
         </IconButton>

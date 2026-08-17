@@ -9,19 +9,19 @@ import {
 
 type ConfirmDeleteLabelDialogProps = {
   open: boolean;
-  categoryName: string | null;
+  labelName: string | null;
   onClose: () => void;
   onConfirm: () => void;
 };
 
 const ConfirmDeleteLabelDialog = ({
   open,
-  categoryName,
+  labelName,
   onClose,
   onConfirm,
 }: ConfirmDeleteLabelDialogProps) => (
   <Dialog open={open} onClose={onClose}>
-    <DialogTitle>{`Delete label "${categoryName ?? ""}"?`}</DialogTitle>
+    <DialogTitle>{`Delete label "${labelName ?? ""}"?`}</DialogTitle>
     <DialogContent>
       <DialogContentText>
         Deleting this label will remove it and set any notes in this label to
