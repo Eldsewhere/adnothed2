@@ -626,6 +626,7 @@ const ItemList = ({
                 (!previousItem || isPriorityItem(previousItem));
               const isNonPriorityGroupEnd =
                 !isPrioritary && (!nextItem || isPriorityItem(nextItem));
+              const isLastItem = index === filteredItems.length - 1;
               const isPriorityBoundary =
                 isPrioritary && (!nextItem || !isPriorityItem(nextItem));
               const isMostRecentAddedItem =
@@ -651,27 +652,30 @@ const ItemList = ({
                     borderBottom: isPriorityBoundary
                       ? "6px solid "
                       : "3px solid",
-                    boxShadow: shouldHighlightRecentEdit
-                      ? `inset 4px 0 0 ${colors.lightGreen[700]}`
-                      : undefined,
                     paddingX: 1,
                     borderTopLeftRadius:
                       isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
                     borderTopRightRadius:
                       isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
                     borderBottomLeftRadius:
-                      isPriorityGroupEnd || isNonPriorityGroupEnd ? 12 : 0,
+                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem
+                        ? 12
+                        : 0,
                     borderBottomRightRadius:
-                      isPriorityGroupEnd || isNonPriorityGroupEnd ? 12 : 0,
+                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem
+                        ? 12
+                        : 0,
                     borderColor: isPriorityBoundary
                       ? colors.grey[900]
                       : colors.grey[900],
                     overflow: "hidden",
-                    bgcolor: isPrioritary
-                      ? "#414d4b"
-                      : dayIndex % 2 === 0
-                        ? colors.blueGrey[900]
-                        : colors.blueGrey[800],
+                    bgcolor: shouldHighlightRecentEdit
+                      ? "rgba(76, 175, 80, 0.18)"
+                      : isPrioritary
+                        ? "#414d4b"
+                        : dayIndex % 2 === 0
+                          ? colors.blueGrey[900]
+                          : colors.blueGrey[800],
                   }}
                 >
                   {selectMode && (

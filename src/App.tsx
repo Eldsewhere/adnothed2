@@ -636,18 +636,6 @@ function App() {
     );
   };
 
-  useEffect(() => {
-    if (!recentlyAddedItemId) {
-      return undefined;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      setRecentlyAddedItemId(null);
-    }, 6000);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [recentlyAddedItemId]);
-
   const handleItemCopy = (item: Item) => {
     navigator.clipboard.writeText(item.text);
     setNotificationSeverity("success");
