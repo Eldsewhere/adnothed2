@@ -1,41 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import {
-  Box,
-  Checkbox,
-  Alert,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Menu,
-  MenuItem,
-  Tooltip,
-  Typography,
-  colors,
-  DialogActions,
-  Button,
-  Divider,
-} from "@mui/material";
+import { Box, Alert, Menu, MenuItem, colors, Button } from "@mui/material";
 import { Icon } from "@mdi/react";
-import {
-  mdiBell,
-  mdiCalendarClock,
-  mdiClose,
-  mdiCheckboxMarked,
-  mdiContentCopy,
-  mdiDotsVertical,
-  mdiFormatListBulleted,
-  mdiLink,
-  mdiMagnify,
-  mdiLabelOff,
-  mdiPencil,
-  mdiPin,
-  mdiPinOff,
-  mdiShareVariant,
-  mdiTrashCanOutline,
-  mdiNoteText,
-  mdiOpenInNew,
-} from "@mdi/js";
+import { mdiCheckboxMarked, mdiFormatListBulleted, mdiLabelOff } from "@mdi/js";
 import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
@@ -49,6 +15,7 @@ import DueDateDialog from "./dialogs/DueDateDialog";
 import LabelIcon from "./ui/LabelIcon";
 import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
+import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 
 type NoteListProps = {
   notes: Note[];
@@ -89,26 +56,6 @@ const getSearchQuery = (text: string): string =>
     )
     .join("\n")
     .trim();
-
-const SEARCH_ICON_FILENAMES: Record<string, string> = {
-  "google.com": "google.png",
-  "chatgpt.com": "chatgpt.png",
-  "reddit.com": "reddit.png",
-  "youtube.com": "youtube.png",
-  "maps.google.com": "maps.png",
-  "instagram.com": "instagram.png",
-  "spotify.com": "spotify.png",
-  "amazon.es": "amazon-es.png",
-};
-
-const SearchSiteIcon = ({ domain }: { domain: string }) => (
-  <Box
-    component="img"
-    src={`${import.meta.env.BASE_URL}search-icons/${SEARCH_ICON_FILENAMES[domain]}`}
-    alt=""
-    sx={{ width: 16, height: 16, mr: 1, flexShrink: 0 }}
-  />
-);
 
 const allNonEmptyRowsBulleted = (text: string): boolean => {
   const rows = text.split("\n").filter((row) => row.trim().length > 0);
@@ -164,15 +111,6 @@ const NoteList = ({
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
     note: Note;
-  } | null>(null);
-  const [shareMenuAnchor, setShareMenuAnchor] = useState<{
-    el: HTMLElement;
-    note: Note;
-  } | null>(null);
-  const [searchMenuAnchor, setSearchMenuAnchor] = useState<{
-    el: HTMLElement;
-    note: Note;
-    selectedText?: string;
   } | null>(null);
   const [overflowModalnoteId, setOverflowModalnoteId] = useState<string | null>(
     null,
@@ -256,8 +194,6 @@ const NoteList = ({
 
   const closeMenu = () => {
     setMenuAnchor(null);
-    setShareMenuAnchor(null);
-    setSearchMenuAnchor(null);
     setOverflowModalnoteId(null);
   };
 
@@ -671,368 +607,26 @@ const NoteList = ({
           </Box>
         </Box>
       )}
-      <Menu anchorEl={menuAnchor?.el} open={!!menuAnchor} onClose={closeMenu}>
-        <MenuItem onClick={() => menuAnchor && handleNotify(menuAnchor.note)}>
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiBell} size={0.7} />
-          </Box>
-          Notify
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            if (menuAnchor) {
-              onPin(menuAnchor.note);
-              closeMenu();
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon
-              path={menuAnchor?.note.pinned ? mdiPinOff : mdiPin}
-              size={0.7}
-            />
-          </Box>
-          {menuAnchor?.note.pinned ? "Unpin" : "Pin"}
-        </MenuItem>
-        <Divider sx={{ m: `0 !important` }} />
-        <MenuItem onClick={() => menuAnchor && handleCopy(menuAnchor.note)}>
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiContentCopy} size={0.8} />
-          </Box>
-          Copy
-        </MenuItem>
-        <MenuItem
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            if (menuAnchor) {
-              setShareMenuAnchor({
-                el: event.currentTarget,
-                note: menuAnchor.note,
-              });
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiShareVariant} size={0.7} />
-          </Box>
-          Share
-        </MenuItem>
-        {menuAnchor && getFirstUrl(menuAnchor.note.text) ? (
-          <MenuItem onClick={() => handleOpen(menuAnchor.note)}>
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                mr: 1,
-                py: 1,
-                px: 0.5,
-              }}
-            >
-              <Icon path={mdiOpenInNew} size={0.7} />
-            </Box>
-            Open
-          </MenuItem>
-        ) : (
-          <MenuItem
-            onClick={(event: MouseEvent<HTMLElement>) => {
-              if (menuAnchor) {
-                setSearchMenuAnchor({
-                  el: event.currentTarget,
-                  note: menuAnchor.note,
-                  selectedText: getSelectedTextForNote(menuAnchor.note.id),
-                });
-              }
-            }}
-          >
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                mr: 1,
-                py: 1,
-                px: 0.5,
-              }}
-            >
-              <Icon path={mdiMagnify} size={0.7} />
-            </Box>
-            Search
-          </MenuItem>
-        )}
-        <Divider sx={{ m: `0 !important` }} />
-        <MenuItem
-          onClick={() => {
-            if (menuAnchor) {
-              openDueDateDialog(menuAnchor.note);
-              closeMenu();
-            }
-          }}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiCalendarClock} size={0.7} />
-          </Box>
-          Date
-        </MenuItem>
-        {false && (
-          <MenuItem
-            onClick={(event) => {
-              if (menuAnchor) {
-                setformatMenuNote(menuAnchor.note);
-                setFormatMenuAnchor(event.currentTarget);
-                closeMenu();
-              }
-            }}
-          >
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                mr: 1,
-                py: 1,
-                px: 0.5,
-              }}
-            >
-              <Icon path={mdiFormatListBulleted} size={0.7} />
-            </Box>
-            Format
-          </MenuItem>
-        )}
-        <MenuItem onClick={() => menuAnchor && handleEdit(menuAnchor.note)}>
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiPencil} size={0.7} />
-          </Box>
-          Edit
-        </MenuItem>
-        <MenuItem onClick={() => menuAnchor && handleDelete(menuAnchor.note)}>
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiTrashCanOutline} size={0.7} />
-          </Box>
-          Delete
-        </MenuItem>
-      </Menu>
-      <Menu
-        anchorEl={shareMenuAnchor?.el}
-        open={!!shareMenuAnchor}
-        onClose={() => setShareMenuAnchor(null)}
-        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-        transformOrigin={{ horizontal: "right", vertical: "center" }}
-      >
-        <MenuItem
-          onClick={() => shareMenuAnchor && handleShare(shareMenuAnchor.note)}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiNoteText} size={0.7} />
-          </Box>
-          Text
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            shareMenuAnchor && handleShareLink(shareMenuAnchor.note)
-          }
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              py: 1,
-              px: 0.5,
-            }}
-          >
-            <Icon path={mdiLink} size={0.7} />
-          </Box>
-          Link
-        </MenuItem>
-      </Menu>
-      <Menu
-        anchorEl={searchMenuAnchor?.el}
-        open={!!searchMenuAnchor}
-        onClose={() => setSearchMenuAnchor(null)}
-        anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
-        transformOrigin={{ horizontal: "right", vertical: "center" }}
-      >
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) => `https://www.google.com/search?q=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="google.com" />
-          Google
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) => `https://chatgpt.com/?q=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="chatgpt.com" />
-          ChatGPT
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) => `https://www.reddit.com/search/?q=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="reddit.com" />
-          Reddit
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) =>
-                `https://www.youtube.com/results?search_query=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="youtube.com" />
-          YouTube
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) =>
-                `https://www.google.com/maps/search/?api=1&query=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="maps.google.com" />
-          Maps
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) =>
-                `https://www.instagram.com/explore/search/keyword/?q=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="instagram.com" />
-          Instagram
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) => `https://open.spotify.com/search/${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="spotify.com" />
-          Spotify
-        </MenuItem>
-        <MenuItem
-          onClick={() =>
-            searchMenuAnchor &&
-            handleSearch(
-              searchMenuAnchor.note,
-              (query) => `https://www.amazon.es/s?k=${query}`,
-              searchMenuAnchor.selectedText,
-            )
-          }
-        >
-          <SearchSiteIcon domain="amazon.es" />
-          Amazon.es
-        </MenuItem>
-      </Menu>
+      {menuAnchor && (
+        <NoteActionsMenu
+          anchorEl={menuAnchor.el}
+          note={menuAnchor.note}
+          hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
+          isPinned={!!menuAnchor.note.pinned}
+          onClose={() => setMenuAnchor(null)}
+          onNotify={handleNotify}
+          onPin={onPin}
+          onCopy={handleCopy}
+          onShareText={handleShare}
+          onShareLink={handleShareLink}
+          onOpen={handleOpen}
+          onSearch={handleSearch}
+          getSelectedText={getSelectedTextForNote}
+          onDate={openDueDateDialog}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
       {overflowModalNote && (
         <NoteOverflowDialog
           open
