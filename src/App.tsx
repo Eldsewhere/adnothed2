@@ -899,6 +899,83 @@ function App() {
     ],
   );
 
+  const filteredNoteCount = useMemo(
+    () =>
+      sortedItems.filter((item, index) => {
+        if (itemFilters.categoryId === NO_CATEGORY_FILTER_VALUE) {
+          if (item.categoryId !== null) {
+            return false;
+          }
+        } else if (
+          itemFilters.categoryId &&
+          item.categoryId !== itemFilters.categoryId
+        ) {
+          return false;
+        }
+
+        if (
+          !matchesTextFilters(
+            item.text,
+            item.createdAt,
+            index,
+            sortedItems.length,
+            parsedTextFilters,
+            item.due,
+          )
+        ) {
+          return false;
+        }
+
+        const itemDate = formatDate(item.createdAt);
+        const hasStartDate =
+          itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
+        const hasEndDate =
+          itemFilters.endDate.length === 10 && dateRegex.test(itemFilters.endDate);
+
+        if (hasStartDate && itemDate < itemFilters.date.trim()) {
+          return false;
+        }
+        if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
+          return false;
+        }
+        if (itemFilters.dueDate) {
+          if (!item.due || formatDate(item.due) !== itemFilters.dueDate) {
+            return false;
+          }
+        }
+        if (itemFilters.weekday !== null) {
+          const itemCreatedDate = formatDate(item.createdAt);
+          const itemDueDate =
+            item.due !== undefined ? formatDate(item.due) : null;
+          if (
+            itemCreatedDate !== itemFilters.weekday &&
+            itemDueDate !== itemFilters.weekday
+          ) {
+            return false;
+          }
+        }
+        if (itemFilters.hasDue) {
+          const todayUnix = dayjs().startOf("day").unix();
+          if (item.due === undefined || item.due < todayUnix) {
+            return false;
+          }
+        }
+
+        return true;
+      }).length,
+    [
+      itemFilters.categoryId,
+      itemFilters.date,
+      itemFilters.dueDate,
+      itemFilters.endDate,
+      itemFilters.hasDue,
+      itemFilters.weekday,
+      itemFilters.text,
+      parsedTextFilters,
+      sortedItems,
+    ],
+  );
+
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const item of calendarFilteredItems) {
@@ -1218,7 +1295,7 @@ function App() {
                           mt: 0.15,
                         }}
                       >
-                        {items.length}
+                        {filteredNoteCount}
                       </Box>
                     </Box>
                     <Box component="span">Notes</Box>
