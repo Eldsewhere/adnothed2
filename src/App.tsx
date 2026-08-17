@@ -1198,17 +1198,63 @@ function App() {
             >
               <Tab
                 value="items"
-                label="Notes"
-                icon={<Icon path={mdiNoteText} size={0.75} />}
-                iconPosition="start"
+                label={
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        lineHeight: 1,
+                      }}
+                    >
+                      <Icon path={mdiNoteText} size={0.75} />
+                      <Box
+                        component="span"
+                        sx={{
+                          fontSize: "0.62rem",
+                          opacity: 0.8,
+                          mt: 0.15,
+                        }}
+                      >
+                        {items.length}
+                      </Box>
+                    </Box>
+                    <Box component="span">Notes</Box>
+                  </Box>
+                }
                 id="tab-items"
                 aria-controls="tabpanel-items"
               />
               <Tab
                 value="categories"
-                label="Labels"
-                icon={<Icon path={mdiLabelMultiple} size={0.75} />}
-                iconPosition="start"
+                label={
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        lineHeight: 1,
+                      }}
+                    >
+                      <Icon path={mdiLabelMultiple} size={0.75} />
+                      <Box
+                        component="span"
+                        sx={{
+                          fontSize: "0.62rem",
+                          opacity: 0.8,
+                          mt: 0.15,
+                        }}
+                      >
+                        {categories.length}
+                      </Box>
+                    </Box>
+                    <Box component="span">Labels</Box>
+                  </Box>
+                }
                 id="tab-categories"
                 aria-controls="tabpanel-categories"
               />
