@@ -91,23 +91,37 @@ const CategoryList = ({
             overflowY: "auto",
             minHeight: 0,
             bgcolor: colors.blueGrey[900],
+            borderRadius: 2,
+            overflow: "hidden",
           }}
         >
-          <TableContainer>
-            <Table size="small">
+          <TableContainer sx={{ borderRadius: 2, overflow: "hidden" }}>
+            <Table
+              size="small"
+              sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
+            >
               <TableBody>
                 {orderedCategories.map((category, index) => (
-                  <TableRow key={category.id}>
+                  <TableRow
+                    key={category.id}
+                    sx={{
+                      borderBottom: "3px solid",
+                      borderColor:
+                        index < orderedCategories.length - 1
+                          ? colors.grey[900]
+                          : "transparent",
+                        paddingY: 2,
+                        flexShrink: 0,
+                        width: 40,
+                        verticalAlign: "middle",
+                    }}
+                  >
                     <TableCell
                       sx={{
                         paddingY: 2,
                         flexShrink: 0,
                         width: 40,
                         verticalAlign: "middle",
-                        borderColor:
-                          index < orderedCategories.length - 1
-                            ? colors.blueGrey[700]
-                            : "transparent",
                       }}
                     >
                       <Tooltip
@@ -127,10 +141,6 @@ const CategoryList = ({
                         pl: 0,
                         maxWidth: 0,
                         width: "100%",
-                        borderColor:
-                          index < orderedCategories.length - 1
-                            ? colors.blueGrey[700]
-                            : "transparent",
                       }}
                     >
                       <Typography
@@ -150,10 +160,6 @@ const CategoryList = ({
                       sx={{
                         verticalAlign: "middle",
                         paddingY: 2,
-                        borderColor:
-                          index < orderedCategories.length - 1
-                            ? colors.blueGrey[700]
-                            : "transparent",
                       }}
                     >
                       <Tooltip title="Actions">
