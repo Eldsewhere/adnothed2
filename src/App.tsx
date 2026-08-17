@@ -1642,7 +1642,7 @@ function App() {
                                   sx={{
                                     minWidth: 32,
                                     width: 32,
-                                    height: 32,
+                                    height: 36,
                                     p: 0,
                                     borderRadius: 1,
                                     fontWeight: 700,
@@ -1690,19 +1690,44 @@ function App() {
                                 >
                                   <Box
                                     sx={{
-                                      fontSize: "0.62rem",
-                                      lineHeight: 1,
-                                      letterSpacing: "-0.04em",
                                       display: "flex",
+                                      flexDirection: "column",
                                       alignItems: "center",
-                                      justifyContent: "center",
-                                      fontWeight: isWeekend ? 900 : 500,
-                                      textDecoration: isWeekend
-                                        ? "underline"
-                                        : "none",
+                                      justifyContent: "space-between",
+                                      width: "100%",
+                                      height: "100%",
+                                      py: 0.45,
+                                      lineHeight: 1,
                                     }}
                                   >
-                                    {WEEKDAY_LETTERS[weekday]}
+                                    <Box
+                                      sx={{
+                                        fontSize: "0.62rem",
+                                        letterSpacing: "-0.04em",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontWeight: isWeekend ? 900 : 500,
+                                        textDecoration: isWeekend
+                                          ? "underline"
+                                          : "none",
+                                      }}
+                                    >
+                                      {WEEKDAY_LETTERS[weekday]}
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        fontSize: "0.5rem",
+                                        letterSpacing: "-0.04em",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        fontWeight: 700,
+                                        opacity: 0.9,
+                                      }}
+                                    >
+                                      {day.date()}
+                                    </Box>
                                   </Box>
                                 </Button>
                               </Badge>
