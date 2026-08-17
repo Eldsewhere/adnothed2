@@ -3,21 +3,16 @@ import {
   Alert,
   Box,
   colors,
-  IconButton,
   Menu,
   MenuItem,
   Table,
   TableBody,
-  TableCell,
   TableContainer,
-  TableRow,
-  Tooltip,
-  Typography,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiDotsVertical, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
+import { mdiPencil, mdiTrashCanOutline } from "@mdi/js";
 import type { Category } from "../types";
-import LabelIcon from "./ui/LabelIcon";
+import LabelListRow from "./LabelListRow";
 
 type LabelListProps = {
   categories: Category[];
@@ -101,78 +96,13 @@ const LabelList = ({
               sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
             >
               <TableBody>
-                {orderedCategories.map((category, index) => (
-                  <TableRow
+                {orderedCategories.map((category) => (
+                  <LabelListRow
                     key={category.id}
-                    sx={{
-                      borderBottom: "3px solid",
-                      borderColor:
-                        index < orderedCategories.length - 1
-                          ? colors.grey[900]
-                          : "transparent",
-                        paddingY: 2,
-                        flexShrink: 0,
-                        width: 40,
-                        verticalAlign: "middle",
-                    }}
-                  >
-                    <TableCell
-                      sx={{
-                        paddingY: 2,
-                        flexShrink: 0,
-                        width: 40,
-                        verticalAlign: "middle",
-                      }}
-                    >
-                      <Tooltip
-                        title={category.icon.label}
-                        aria-label={`Icon for ${category.name}`}
-                      >
-                        <LabelIcon
-                          icon={category.icon}
-                          color={category.color}
-                          size={1}
-                        />
-                      </Tooltip>
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        paddingY: 2,
-                        pl: 0,
-                        maxWidth: 0,
-                        width: "100%",
-                      }}
-                    >
-                      <Typography
-                        noWrap
-                        sx={{
-                          color:
-                            category.id === newCategoryId
-                              ? colors.lightGreen[400]
-                              : "inherit",
-                        }}
-                      >
-                        {category.name}
-                      </Typography>
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      sx={{
-                        verticalAlign: "middle",
-                        paddingY: 2,
-                      }}
-                    >
-                      <Tooltip title="Actions">
-                        <IconButton
-                          aria-label={`Open actions for ${category.name}`}
-                          size="small"
-                          onClick={(event) => handleOpenMenu(event, category)}
-                        >
-                          <Icon path={mdiDotsVertical} size={0.8} />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
+                    category={category}
+                    isNewCategory={category.id === newCategoryId}
+                    onOpenMenu={handleOpenMenu}
+                  />
                 ))}
               </TableBody>
             </Table>

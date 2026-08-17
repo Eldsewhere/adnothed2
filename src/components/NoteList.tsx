@@ -12,7 +12,6 @@ import {
   Tooltip,
   Typography,
   colors,
-  Stack,
   DialogActions,
   Button,
   Divider,
@@ -23,7 +22,6 @@ import {
   mdiCalendarClock,
   mdiClose,
   mdiCheckboxMarked,
-  mdiChevronDown,
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
@@ -42,8 +40,6 @@ import type { Category, Item, ItemFilters as ItemFiltersValue } from "../types";
 import {
   dateRegex,
   formatDate,
-  formatDueDate,
-  formatTimestamp,
   isToday,
 } from "../utils/formatTimestamp";
 import {
@@ -51,10 +47,11 @@ import {
   NO_CATEGORY_FILTER_VALUE,
   parseTextFilters,
 } from "../utils/itemFilters";
-import { getFirstUrl, splitTextByUrls } from "../utils/textPatterns";
+import { getFirstUrl } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
 import DueDateDialog from "./dialogs/DueDateDialog";
 import LabelIcon from "./ui/LabelIcon";
+import NoteListRow from "./NoteListRow";
 
 type NoteListProps = {
   items: Item[];
@@ -644,316 +641,34 @@ const NoteList = ({
                 isMostRecentAddedItem || isMostRecentlyEditedItem;
 
               return (
-                <Box
+                <NoteListRow
                   key={item.id}
-                  sx={{
-                    position: "absolute",
-                    top: rowOffsets[index] - rowHeights[index],
-                    left: 0,
-                    right: 0,
-                    height: rowHeights[index],
-                    display: "flex",
-                    alignItems: "center",
-                    borderBottom: isPriorityBoundary
-                      ? "6px solid "
-                      : "3px solid",
-                    paddingX: 1,
-                    borderTopLeftRadius:
-                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
-                    borderTopRightRadius:
-                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
-                    borderBottomLeftRadius:
-                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem
-                        ? 12
-                        : 0,
-                    borderBottomRightRadius:
-                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem
-                        ? 12
-                        : 0,
-                    borderColor: isPriorityBoundary
-                      ? colors.grey[900]
-                      : colors.grey[900],
-                    overflow: "hidden",
-                    bgcolor: shouldHighlightRecentEdit
-                      ? "rgba(76, 175, 80, 0.18)"
-                      : isPrioritary
-                        ? "#414d4b"
-                        : dayIndex % 2 === 0
-                          ? colors.blueGrey[900]
-                          : colors.blueGrey[800],
-                  }}
-                >
-                  {selectMode && (
-                    <Checkbox
-                      size="small"
-                      checked={selectedIds.has(item.id)}
-                      onChange={() => onToggleSelect(item.id)}
-                      sx={{ p: 0.5, mr: 0.5 }}
-                    />
-                  )}
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      flexShrink: 0,
-                      pr: 1,
-                    }}
-                  >
-                    <Tooltip
-                      title={category ? category.name : "Assign a label"}
-                      arrow
-                    >
-                      <IconButton
-                        aria-label={`Change label for ${item.text}`}
-                        size="small"
-                        onClick={(event: MouseEvent<HTMLElement>) =>
-                          openCategoryMenu(event, item)
-                        }
-                        sx={{
-                          p: 0.5,
-                          color: category ? "inherit" : colors.blueGrey[500],
-                        }}
-                      >
-                        {category ? (
-                          <LabelIcon
-                            icon={category.icon}
-                            color={category.color}
-                            size={0.8}
-                          />
-                        ) : (
-                          <Icon path={mdiLabelOff} size={0.8} />
-                        )}
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        minWidth: 0,
-                      }}
-                    >
-                      <Typography
-                        component="div"
-                        ref={(element) => updateOverflowState(item.id, element)}
-                        data-item-text-id={item.id}
-                        sx={{
-                          flex: 1,
-                          minWidth: 0,
-                          textAlign: "left",
-                          whiteSpace: "pre-wrap",
-                          overflow: "hidden",
-                          overflowWrap: "anywhere",
-                          wordBreak: "break-word",
-                          display: "-webkit-box",
-                          WebkitLineClamp: overflowingItemIds.has(item.id)
-                            ? 4
-                            : 2,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {item.text.split("\n").map((row, rowIndex) => {
-                          const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
-                          const isChecked =
-                            checkboxMatch?.[2]?.toLowerCase() === "x";
-                          const rowText = checkboxMatch?.[3] ?? row;
-                          return (
-                            <Box
-                              key={`${rowIndex}-${row}`}
-                              component="span"
-                              sx={{ display: "inline" }}
-                            >
-                              {checkboxMatch && (
-                                <Checkbox
-                                  slotProps={{
-                                    input: {
-                                      "aria-labelledby": `item-text-${item.id}-row-${rowIndex}`,
-                                    },
-                                  }}
-                                  checked={isChecked}
-                                  onChange={() =>
-                                    onToggleCheckbox(item, rowIndex)
-                                  }
-                                  size="small"
-                                  sx={{
-                                    p: 0,
-                                    mr: 0.25,
-                                    verticalAlign: "text-bottom",
-                                  }}
-                                />
-                              )}
-                              <Box
-                                id={
-                                  checkboxMatch
-                                    ? `item-text-${item.id}-row-${rowIndex}`
-                                    : undefined
-                                }
-                                component="span"
-                                sx={{
-                                  textDecoration: isChecked
-                                    ? "line-through"
-                                    : "none",
-                                }}
-                              >
-                                {splitTextByUrls(rowText).map(
-                                  (part, partIndex) =>
-                                    part.isUrl ? (
-                                      <Box
-                                        key={partIndex}
-                                        component="a"
-                                        href={part.value}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{
-                                          color: "info.main",
-                                          textDecoration: "underline",
-                                          wordBreak: "break-word",
-                                        }}
-                                      >
-                                        {part.value}
-                                      </Box>
-                                    ) : (
-                                      <span key={partIndex}>{part.value}</span>
-                                    ),
-                                )}
-                              </Box>
-                              {rowIndex < item.text.split("\n").length - 1 && (
-                                <br />
-                              )}
-                            </Box>
-                          );
-                        })}
-                      </Typography>
-                      {expandableItemIds.has(item.id) && (
-                        <Tooltip title="Expand note" arrow>
-                          <IconButton
-                            aria-label={`Expand ${item.text}`}
-                            size="small"
-                            onClick={() => setOverflowModalItemId(item.id)}
-                            sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
-                          >
-                            <Icon path={mdiChevronDown} size={0.7} />
-                          </IconButton>
-                        </Tooltip>
-                      )}
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Stack
-                        sx={{
-                          justifyContent: "space-between",
-                          flexDirection: "row",
-                          width: "100%",
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{
-                            textAlign: "left",
-                            display: "flex",
-                            alignItems: "center",
-                            color:
-                              isToday(item.createdAt) ||
-                              item.pinned ||
-                              (item.due !== undefined &&
-                                (isToday(item.due) || isTomorrow(item.due))) ||
-                              item.hasNotification
-                                ? colors.lightGreen[400]
-                                : colors.blueGrey[300],
-                          }}
-                        >
-                          {formatTimestamp(item.createdAt)}
-                          {item.hasNotification && (
-                            <Tooltip
-                              title="Notified"
-                              aria-label={undefined}
-                              arrow
-                            >
-                              <Box
-                                component="span"
-                                sx={{
-                                  ml: 0.5,
-                                  display: "inline-flex",
-                                  color: colors.lightGreen[400],
-                                }}
-                              >
-                                <Icon path={mdiBell} size={0.5} />
-                              </Box>
-                            </Tooltip>
-                          )}
-                          {item.pinned && (
-                            <Tooltip
-                              title="Pinned"
-                              aria-label={undefined}
-                              arrow
-                            >
-                              <Box
-                                component="span"
-                                sx={{
-                                  ml: 0.5,
-                                  display: "inline-flex",
-                                  color: colors.lightGreen[400],
-                                }}
-                              >
-                                <Icon path={mdiPin} size={0.6} />
-                              </Box>
-                            </Tooltip>
-                          )}
-                        </Typography>
-                        {selectMode ? (
-                          <Typography
-                            variant="caption"
-                            color="text.secondary"
-                            sx={{
-                              textAlign: "left",
-                              display: "block",
-                              color: colors.blueGrey[400],
-                            }}
-                          >
-                            #
-                            {sortedItems.length -
-                              sortedItems.findIndex(
-                                (currenItem) => currenItem.id === item.id,
-                              )}
-                          </Typography>
-                        ) : item.due !== undefined &&
-                          item.due >= today.unix() ? (
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              textAlign: "right",
-                              display: "block",
-                              color: colors.orange[300],
-                            }}
-                          >
-                            {formatDueDate(item.due)}
-                          </Typography>
-                        ) : null}
-                      </Stack>
-                    </Box>
-                  </Box>
-                  <Box
-                    sx={{
-                      flexShrink: 0,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Tooltip title="Actions">
-                      <IconButton
-                        aria-label={`Actions for ${item.text}`}
-                        size="small"
-                        onClick={(event: MouseEvent<HTMLElement>) =>
-                          setMenuAnchor({ el: event.currentTarget, item })
-                        }
-                        disabled={selectMode}
-                      >
-                        <Icon path={mdiDotsVertical} size={0.8} />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
+                  top={rowOffsets[index] - rowHeights[index]}
+                  height={rowHeights[index]}
+                  item={item}
+                  category={category}
+                  isPriority={isPrioritary}
+                  isLastItem={isLastItem}
+                  isPriorityBoundary={isPriorityBoundary}
+                  isPriorityGroupStart={isPriorityGroupStart}
+                  isPriorityGroupEnd={isPriorityGroupEnd}
+                  isNonPriorityGroupStart={isNonPriorityGroupStart}
+                  isNonPriorityGroupEnd={isNonPriorityGroupEnd}
+                  dayIndex={dayIndex}
+                  selectMode={selectMode}
+                  selectedIds={selectedIds}
+                  isOverflowing={overflowingItemIds.has(item.id)}
+                  isExpandable={expandableItemIds.has(item.id)}
+                  shouldHighlightRecentEdit={shouldHighlightRecentEdit}
+                  onToggleSelect={onToggleSelect}
+                  onOpenCategoryMenu={openCategoryMenu}
+                  onToggleCheckbox={onToggleCheckbox}
+                  onOpenOverflow={(id) => setOverflowModalItemId(id)}
+                  onOpenActionsMenu={(event, note) =>
+                    setMenuAnchor({ el: event.currentTarget, item: note })
+                  }
+                  setItemTextRef={(element) => updateOverflowState(item.id, element)}
+                />
               );
             })}
           </Box>

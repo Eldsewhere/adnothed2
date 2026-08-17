@@ -1,0 +1,346 @@
+import { type MouseEvent } from "react";
+import {
+  Box,
+  Checkbox,
+  IconButton,
+  Stack,
+  Tooltip,
+  Typography,
+  colors,
+} from "@mui/material";
+import { Icon } from "@mdi/react";
+import {
+  mdiBell,
+  mdiChevronDown,
+  mdiDotsVertical,
+  mdiLabelOff,
+  mdiPin,
+} from "@mdi/js";
+import dayjs from "dayjs";
+import type { Category, Item } from "../types";
+import {
+  formatDueDate,
+  formatTimestamp,
+  isToday,
+} from "../utils/formatTimestamp";
+import { splitTextByUrls } from "../utils/textPatterns";
+import LabelIcon from "./ui/LabelIcon";
+
+const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
+
+const isTomorrow = (timestamp: number): boolean => {
+  const target = dayjs.unix(timestamp).startOf("day");
+  const tomorrow = dayjs().add(1, "day").startOf("day");
+  return target.isSame(tomorrow, "day");
+};
+
+type NoteListRowProps = {
+  item: Item;
+  category?: Category;
+  top: number;
+  height: number;
+  isPriority: boolean;
+  isLastItem: boolean;
+  isPriorityBoundary: boolean;
+  isPriorityGroupStart: boolean;
+  isPriorityGroupEnd: boolean;
+  isNonPriorityGroupStart: boolean;
+  isNonPriorityGroupEnd: boolean;
+  dayIndex: number;
+  selectMode: boolean;
+  selectedIds: Set<string>;
+  isOverflowing: boolean;
+  isExpandable: boolean;
+  shouldHighlightRecentEdit: boolean;
+  onToggleSelect: (id: string) => void;
+  onOpenCategoryMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
+  onToggleCheckbox: (item: Item, rowIndex: number) => void;
+  onOpenOverflow: (itemId: string) => void;
+  onOpenActionsMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
+  setItemTextRef: (element: HTMLElement | null) => void;
+};
+
+const NoteListRow = ({
+  item,
+  category,
+  top,
+  height,
+  isPriority,
+  isLastItem,
+  isPriorityBoundary,
+  isPriorityGroupStart,
+  isPriorityGroupEnd,
+  isNonPriorityGroupStart,
+  isNonPriorityGroupEnd,
+  dayIndex,
+  selectMode,
+  selectedIds,
+  isOverflowing,
+  isExpandable,
+  shouldHighlightRecentEdit,
+  onToggleSelect,
+  onOpenCategoryMenu,
+  onToggleCheckbox,
+  onOpenOverflow,
+  onOpenActionsMenu,
+  setItemTextRef,
+}: NoteListRowProps) => (
+  <Box
+    key={item.id}
+    sx={{
+      position: "absolute",
+      top,
+      left: 0,
+      right: 0,
+      height,
+      display: "flex",
+      alignItems: "center",
+      borderBottom: isPriorityBoundary ? "6px solid " : "3px solid",
+      paddingX: 1,
+      borderTopLeftRadius:
+        isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+      borderTopRightRadius:
+        isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+      borderBottomLeftRadius:
+        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem ? 12 : 0,
+      borderBottomRightRadius:
+        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem ? 12 : 0,
+      borderColor: colors.grey[900],
+      overflow: "hidden",
+      bgcolor: shouldHighlightRecentEdit
+        ? "rgba(76, 175, 80, 0.18)"
+        : isPriority
+          ? "#414d4b"
+          : dayIndex % 2 === 0
+            ? colors.blueGrey[900]
+            : colors.blueGrey[800],
+    }}
+  >
+    {selectMode && (
+      <Checkbox
+        size="small"
+        checked={selectedIds.has(item.id)}
+        onChange={() => onToggleSelect(item.id)}
+        sx={{ p: 0.5, mr: 0.5 }}
+      />
+    )}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        flexShrink: 0,
+        pr: 1,
+      }}
+    >
+      <Tooltip title={category ? category.name : "Assign a label"} arrow>
+        <IconButton
+          aria-label={`Change label for ${item.text}`}
+          size="small"
+          onClick={(event: MouseEvent<HTMLElement>) =>
+            onOpenCategoryMenu(event, item)
+          }
+          sx={{
+            p: 0.5,
+            color: category ? "inherit" : colors.blueGrey[500],
+          }}
+        >
+          {category ? (
+            <LabelIcon icon={category.icon} color={category.color} size={0.8} />
+          ) : (
+            <Icon path={mdiLabelOff} size={0.8} />
+          )}
+        </IconButton>
+      </Tooltip>
+    </Box>
+    <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          minWidth: 0,
+        }}
+      >
+        <Typography
+          component="div"
+          ref={setItemTextRef}
+          data-item-text-id={item.id}
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            textAlign: "left",
+            whiteSpace: "pre-wrap",
+            overflow: "hidden",
+            overflowWrap: "anywhere",
+            wordBreak: "break-word",
+            display: "-webkit-box",
+            WebkitLineClamp: isOverflowing ? 4 : 2,
+            WebkitBoxOrient: "vertical",
+          }}
+        >
+          {item.text.split("\n").map((row, rowIndex) => {
+            const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
+            const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
+            const rowText = checkboxMatch?.[2] ?? row;
+            return (
+              <Box
+                key={`${rowIndex}-${row}`}
+                component="span"
+                sx={{ display: "inline" }}
+              >
+                {checkboxMatch && (
+                  <Checkbox
+                    slotProps={{
+                      input: {
+                        "aria-labelledby": `item-text-${item.id}-row-${rowIndex}`,
+                      },
+                    }}
+                    checked={isChecked}
+                    onChange={() => onToggleCheckbox(item, rowIndex)}
+                    size="small"
+                    sx={{
+                      p: 0,
+                      mr: 0.25,
+                      verticalAlign: "text-bottom",
+                    }}
+                  />
+                )}
+                <Box
+                  id={checkboxMatch ? `item-text-${item.id}-row-${rowIndex}` : undefined}
+                  component="span"
+                  sx={{
+                    textDecoration: isChecked ? "line-through" : "none",
+                  }}
+                >
+                  {splitTextByUrls(rowText).map((part, partIndex) =>
+                    part.isUrl ? (
+                      <Box
+                        key={partIndex}
+                        component="a"
+                        href={part.value}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          color: "info.main",
+                          textDecoration: "underline",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {part.value}
+                      </Box>
+                    ) : (
+                      <span key={partIndex}>{part.value}</span>
+                    ),
+                  )}
+                </Box>
+                {rowIndex < item.text.split("\n").length - 1 && <br />}
+              </Box>
+            );
+          })}
+        </Typography>
+        {isExpandable && (
+          <Tooltip title="Expand note" arrow>
+            <IconButton
+              aria-label={`Expand ${item.text}`}
+              size="small"
+              onClick={() => onOpenOverflow(item.id)}
+              sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
+            >
+              <Icon path={mdiChevronDown} size={0.7} />
+            </IconButton>
+          </Tooltip>
+        )}
+      </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Stack
+          sx={{
+            justifyContent: "space-between",
+            flexDirection: "row",
+            width: "100%",
+          }}
+        >
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{
+              textAlign: "left",
+              display: "flex",
+              alignItems: "center",
+              color:
+                isToday(item.createdAt) ||
+                item.pinned ||
+                (item.due !== undefined &&
+                  (isToday(item.due) || isTomorrow(item.due))) ||
+                item.hasNotification
+                  ? colors.lightGreen[400]
+                  : colors.blueGrey[300],
+            }}
+          >
+            {formatTimestamp(item.createdAt)}
+            {item.hasNotification && (
+              <Tooltip title="Notified" aria-label={undefined} arrow>
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 0.5,
+                    display: "inline-flex",
+                    color: colors.lightGreen[400],
+                  }}
+                >
+                  <Icon path={mdiBell} size={0.5} />
+                </Box>
+              </Tooltip>
+            )}
+            {item.pinned && (
+              <Tooltip title="Pinned" aria-label={undefined} arrow>
+                <Box
+                  component="span"
+                  sx={{
+                    ml: 0.5,
+                    display: "inline-flex",
+                    color: colors.lightGreen[400],
+                  }}
+                >
+                  <Icon path={mdiPin} size={0.6} />
+                </Box>
+              </Tooltip>
+            )}
+          </Typography>
+          {item.due !== undefined && item.due >= dayjs().unix() ? (
+            <Typography
+              variant="caption"
+              sx={{
+                textAlign: "right",
+                display: "block",
+                color: colors.orange[300],
+              }}
+            >
+              {formatDueDate(item.due)}
+            </Typography>
+          ) : null}
+        </Stack>
+      </Box>
+    </Box>
+    <Box
+      sx={{
+        flexShrink: 0,
+        display: "flex",
+        alignItems: "center",
+      }}
+    >
+      <Tooltip title="Actions">
+        <IconButton
+          aria-label={`Actions for ${item.text}`}
+          size="small"
+          onClick={(event: MouseEvent<HTMLElement>) =>
+            onOpenActionsMenu(event, item)
+          }
+          disabled={selectMode}
+        >
+          <Icon path={mdiDotsVertical} size={0.8} />
+        </IconButton>
+      </Tooltip>
+    </Box>
+  </Box>
+);
+
+export default NoteListRow;

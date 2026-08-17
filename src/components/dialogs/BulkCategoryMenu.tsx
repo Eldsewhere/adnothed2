@@ -1,6 +1,6 @@
 import { Box, Menu, MenuItem } from "@mui/material";
 import LabelIcon from "../ui/LabelIcon";
-import type { Category } from "../types";
+import type { Category } from "../../types";
 
 type BulkCategoryMenuProps = {
   anchorEl: HTMLElement | null;

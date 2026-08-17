@@ -35,6 +35,7 @@ import LabelList from "./components/LabelList";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
+import WeekdayPicker from "./components/WeekdayPicker";
 import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
 import LabelsActionsMenu from "./components/dialogs/LabelsActionsMenu";
@@ -82,8 +83,6 @@ const SHORT_MONTHS = [
   "Nov",
   "Dic",
 ];
-
-const WEEKDAY_LETTERS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const formatShortRangeDate = (value: Dayjs): string => {
   const day = value.date().toString().padStart(2, "0");
@@ -1491,170 +1490,18 @@ function App() {
                       "-ms-overflow-style": "none",
                     }}
                   >
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        columnGap: 0.6,
-                        minWidth: "max-content",
-                        height: 32,
-                        pt: 0.5,
-                      }}
-                    >
-                      {weekdayStripDays.map((day) => {
-                        const dayKey = day.format("YYYY-MM-DD");
-                        const weekday = day.day();
-                        const isWeekend = weekday === 0 || weekday === 6;
-                        const isSelected =
-                          (draftDueDate
-                            ? draftDueDate.format("YYYY-MM-DD")
-                            : itemFilters.weekday) === dayKey;
-                        const isCurrentDay = day.isSame(today, "day");
-                        const hasPreviousNotes =
-                          day.isBefore(today, "day") &&
-                          (noteCountByDay.get(dayKey) ?? 0) > 0;
-                        const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
-                        const noteCount = noteCountByDay.get(dayKey) ?? 0;
-                        const dueCount = dueCountByDay.get(dayKey) ?? 0;
-                        const badgeValue = noteCount + dueCount;
-                        return (
-                          <React.Fragment key={dayKey}>
-                            {false && (
-                              <Box
-                                sx={{
-                                  height: "25%",
-                                  width: 2,
-                                  backgroundColor: colors.blueGrey[500],
-                                  alignSelf: "flex-end",
-                                  mb: 0.5,
-                                  pointerEvents: "none",
-                                }}
-                              />
-                            )}
-                            <Tooltip title={day.format("ddd, MMM D")}>
-                              <Badge
-                                badgeContent={badgeValue > 0 ? badgeValue : 0}
-                                color={hasDue ? "warning" : "primary"}
-                                overlap="rectangular"
-                                anchorOrigin={{
-                                  vertical: "top",
-                                  horizontal: "right",
-                                }}
-                                sx={{
-                                  "& .MuiBadge-badge": {
-                                    minWidth: 12,
-                                    height: 12,
-                                    fontSize: "0.5rem",
-                                  },
-                                }}
-                              >
-                                <Button
-                                  variant={
-                                    isSelected ? "contained" : "outlined"
-                                  }
-                                  onClick={() => handleWeekdayToggle(dayKey)}
-                                  sx={{
-                                    minWidth: 32,
-                                    width: 32,
-                                    height: 34,
-                                    p: 0,
-                                    borderRadius: 2,
-                                    fontWeight: 700,
-                                    lineHeight: 1,
-                                    color: isSelected
-                                      ? colors.blueGrey[50]
-                                      : isCurrentDay
-                                        ? colors.lightBlue[100]
-                                        : hasDue
-                                          ? colors.orange[100]
-                                          : colors.blueGrey[100],
-                                    borderColor: isSelected
-                                      ? colors.lightBlue[700]
-                                      : isCurrentDay
-                                        ? colors.lightBlue[400]
-                                        : hasDue
-                                          ? "rgba(255, 152, 0, 0.6)"
-                                          : isWeekend
-                                            ? "rgba(120, 144, 156, 0.95)"
-                                            : colors.blueGrey[600],
-                                    backgroundColor: isSelected
-                                      ? colors.lightBlue[900]
-                                      : isCurrentDay
-                                        ? "rgba(33, 150, 243, 0.32)"
-                                        : hasDue
-                                          ? "rgba(255, 152, 0, 0.24)"
-                                          : hasPreviousNotes
-                                            ? "rgba(76, 175, 80, 0.24)"
-                                            : isWeekend
-                                              ? "rgba(120, 144, 156, 0.42)"
-                                              : "rgba(96, 125, 139, 0.16)",
-                                    "&:hover": {
-                                      backgroundColor: isSelected
-                                        ? colors.lightBlue[600]
-                                        : hasDue
-                                          ? "rgba(255, 152, 0, 0.32)"
-                                          : isCurrentDay
-                                            ? "rgba(33, 150, 243, 0.45)"
-                                            : isWeekend
-                                              ? "rgba(120, 144, 156, 0.58)"
-                                              : hasPreviousNotes
-                                                ? "rgba(76, 175, 80, 0.32)"
-                                                : "rgba(96, 125, 139, 0.24)",
-                                      borderColor: isSelected
-                                        ? colors.lightBlue[500]
-                                        : isCurrentDay
-                                          ? colors.lightBlue[300]
-                                          : isWeekend
-                                            ? colors.blueGrey[300]
-                                            : colors.blueGrey[500],
-                                    },
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      flexDirection: "column",
-                                      alignItems: "center",
-                                      justifyContent: "space-between",
-                                      width: "100%",
-                                      height: "100%",
-                                      py: 0.45,
-                                      lineHeight: 1,
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        fontSize: "0.62rem",
-                                        letterSpacing: "-0.04em",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontWeight: isWeekend ? 900 : 500,
-                                      }}
-                                    >
-                                      {WEEKDAY_LETTERS[weekday]}
-                                    </Box>
-                                    <Box
-                                      sx={{
-                                        fontSize: "0.5rem",
-                                        letterSpacing: "-0.04em",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        fontWeight: 700,
-                                        opacity: 0.9,
-                                      }}
-                                    >
-                                      {day.date()}
-                                    </Box>
-                                  </Box>
-                                </Button>
-                              </Badge>
-                            </Tooltip>
-                          </React.Fragment>
-                        );
-                      })}
-                    </Box>
+                    <WeekdayPicker
+                      days={weekdayStripDays}
+                      today={today}
+                      selectedDayKey={
+                        draftDueDate
+                          ? draftDueDate.format("YYYY-MM-DD")
+                          : itemFilters.weekday
+                      }
+                      noteCountByDay={noteCountByDay}
+                      dueCountByDay={dueCountByDay}
+                      onSelect={handleWeekdayToggle}
+                    />
                   </Box>
                 </Box>
                 {selectMode && (

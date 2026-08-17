@@ -6,7 +6,7 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import type { Category, Item } from "../types";
+import type { Category, Item } from "../../types";
 
 type ConfirmImportDialogProps = {
   open: boolean;

@@ -1,8 +1,8 @@
 import { Avatar, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
-import type { IconOption } from "../types";
-import { getLetterAvatarText } from "../utils/letterIconOptions";
-import { getLabelColorSwatch } from "../utils/labelColors";
+import type { IconOption } from "../../types";
+import { getLetterAvatarText } from "../../utils/letterIconOptions";
+import { getLabelColorSwatch } from "../../utils/labelColors";
 
 type LabelIconProps = {
   icon: IconOption;
