@@ -9,7 +9,6 @@ import {
   Alert,
   Badge,
   Box,
-  Button,
   colors,
   IconButton,
   Paper,
@@ -21,10 +20,7 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiCancel,
   mdiCheckboxMultipleMarked,
-  mdiFolderMove,
-  mdiTrashCanOutline,
   mdiCalendar,
   mdiNoteText,
   mdiLabelMultiple,
@@ -43,6 +39,7 @@ import BulkLabelMenu from "./components/dialogs/LabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
+import SelectModeActions from "./components/dialogs/SelectModeActions";
 import type { BeforeInstallPromptEvent, Label, Note } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
@@ -1505,69 +1502,17 @@ function App() {
                   </Box>
                 </Box>
                 {selectMode && (
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ alignItems: "center" }}
-                  >
-                    <Tooltip
-                      title={
-                        selectednoteIds.size > 0
-                          ? "Change label"
-                          : "Select notes to enable"
-                      }
-                    >
-                      <span>
-                        <Button
-                          variant="text"
-                          startIcon={<Icon path={mdiFolderMove} size={0.9} />}
-                          disabled={selectednoteIds.size === 0}
-                          onClick={(event) =>
-                            setbulkLabelAnchor(event.currentTarget)
-                          }
-                          sx={{ textTransform: "none" }}
-                        >
-                          Label
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip
-                      title={
-                        selectednoteIds.size > 0
-                          ? "Delete selected"
-                          : "Select notes to enable"
-                      }
-                    >
-                      <span>
-                        <Button
-                          variant="text"
-                          startIcon={
-                            <Icon path={mdiTrashCanOutline} size={0.9} />
-                          }
-                          disabled={selectednoteIds.size === 0}
-                          onClick={() => setConfirmBulkDeleteOpen(true)}
-                          sx={{ textTransform: "none" }}
-                        >
-                          Delete
-                        </Button>
-                      </span>
-                    </Tooltip>
-                    <Tooltip title="Exit select mode">
-                      <span>
-                        <Button
-                          variant="text"
-                          startIcon={<Icon path={mdiCancel} size={0.9} />}
-                          onClick={() => {
-                            setSelectedNoteIds(new Set());
-                            setSelectMode(false);
-                          }}
-                          sx={{ textTransform: "none" }}
-                        >
-                          Cancel
-                        </Button>
-                      </span>
-                    </Tooltip>
-                  </Stack>
+                  <SelectModeActions
+                    selectedCount={selectednoteIds.size}
+                    onLabelClick={(event) =>
+                      setbulkLabelAnchor(event.currentTarget)
+                    }
+                    onDeleteClick={() => setConfirmBulkDeleteOpen(true)}
+                    onCancelClick={() => {
+                      setSelectedNoteIds(new Set());
+                      setSelectMode(false);
+                    }}
+                  />
                 )}
                 <NoteList
                   notes={notes}
