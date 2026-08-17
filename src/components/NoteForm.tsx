@@ -40,10 +40,10 @@ import {
   mdiRayStartEnd,
   mdiSelectAll,
 } from "@mdi/js";
-import LabelIcon from "./LabelIcon";
+import LabelIcon from "./ui/LabelIcon";
 import { NO_CATEGORY_FILTER_VALUE } from "../utils/itemFilters";
 
-type ItemFormProps = {
+type NoteFormProps = {
   editingItem: Item | null;
   initialText?: string;
   categories: Category[];
@@ -168,7 +168,7 @@ const querySubmenuGroups: Record<
   ],
 };
 
-const ItemForm = ({
+const NoteForm = ({
   editingItem,
   initialText,
   categories,
@@ -180,7 +180,7 @@ const ItemForm = ({
   onFilterTextChange,
   onFilterCategoryChange,
   onNoteTextChange,
-}: ItemFormProps) => {
+}: NoteFormProps) => {
   const {
     control,
     handleSubmit,
@@ -1055,4 +1055,4 @@ const ItemForm = ({
   );
 };
 
-export default ItemForm;
+export default NoteForm;

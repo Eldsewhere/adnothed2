@@ -53,10 +53,10 @@ import {
 } from "../utils/itemFilters";
 import { getFirstUrl, splitTextByUrls } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
-import DueDateDialog from "./DueDateDialog";
-import LabelIcon from "./LabelIcon";
+import DueDateDialog from "./dialogs/DueDateDialog";
+import LabelIcon from "./ui/LabelIcon";
 
-type ItemListProps = {
+type NoteListProps = {
   items: Item[];
   categories: Category[];
   filters: ItemFiltersValue;
@@ -143,7 +143,7 @@ const isPriorityItem = (item: Item): boolean =>
   item.pinned ||
   (item.due !== undefined && (isToday(item.due) || isTomorrow(item.due)));
 
-const ItemList = ({
+const NoteList = ({
   items,
   categories,
   filters,
@@ -166,7 +166,7 @@ const ItemList = ({
   selectedIds,
   onToggleSelect,
   onInstall,
-}: ItemListProps) => {
+}: NoteListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
     item: Item;
@@ -1590,4 +1590,4 @@ const ItemList = ({
   );
 };
 
-export default ItemList;
+export default NoteList;

@@ -16,11 +16,11 @@ import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Category, CategoryFormValues, IconOption } from "../types";
 import { mdiCancel, mdiCheckCircle } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import LabelIcon from "./LabelIcon";
+import LabelIcon from "./ui/LabelIcon";
 import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
 import { LABEL_COLOR_OPTIONS, getLabelColorSwatch } from "../utils/labelColors";
 
-type CategoryFormProps = {
+type LabelFormProps = {
   editingCategory: Category | null;
   onSubmit: (
     values: CategoryFormValues & { icon: IconOption },
@@ -52,11 +52,11 @@ const ColorDot = ({ colorName }: { colorName?: string }) => (
   />
 );
 
-const CategoryForm = ({
+const LabelForm = ({
   editingCategory,
   onSubmit,
   onCancelEdit,
-}: CategoryFormProps) => {
+}: LabelFormProps) => {
   const iconOptions = useMdiIconOptions();
   const [iconInputValue, setIconInputValue] = useState("");
   const {
@@ -383,4 +383,4 @@ const CategoryForm = ({
   );
 };
 
-export default CategoryForm;
+export default LabelForm;

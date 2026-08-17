@@ -17,21 +17,21 @@ import {
 import { Icon } from "@mdi/react";
 import { mdiDotsVertical, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
 import type { Category } from "../types";
-import LabelIcon from "./LabelIcon";
+import LabelIcon from "./ui/LabelIcon";
 
-type CategoryListProps = {
+type LabelListProps = {
   categories: Category[];
   onEdit: (category: Category) => void;
   onDelete: (category: Category) => void;
   newCategoryId?: string | null;
 };
 
-const CategoryList = ({
+const LabelList = ({
   categories,
   onEdit,
   onDelete,
   newCategoryId,
-}: CategoryListProps) => {
+}: LabelListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
     category: Category | null;
@@ -221,4 +221,4 @@ const CategoryList = ({
   );
 };
 
-export default CategoryList;
+export default LabelList;

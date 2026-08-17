@@ -30,18 +30,18 @@ import {
   mdiLabelMultiple,
   mdiFileImport,
 } from "@mdi/js";
-import CategoryForm from "./components/CategoryForm";
-import CategoryList from "./components/CategoryList";
-import DueDateDialog from "./components/DueDateDialog";
-import ItemForm from "./components/ItemForm";
-import ItemList from "./components/ItemList";
-import TabPanel from "./components/TabPanel";
-import DateFilterPopover from "./components/DateFilterPopover";
-import LabelsActionsMenu from "./components/LabelsActionsMenu";
-import BulkCategoryMenu from "./components/BulkCategoryMenu";
-import ConfirmBulkDeleteDialog from "./components/ConfirmBulkDeleteDialog";
-import ConfirmDeleteCategoryDialog from "./components/ConfirmDeleteCategoryDialog";
-import ConfirmImportDialog from "./components/ConfirmImportDialog";
+import LabelForm from "./components/LabelForm";
+import LabelList from "./components/LabelList";
+import DueDateDialog from "./components/dialogs/DueDateDialog";
+import NoteForm from "./components/NoteForm";
+import NoteList from "./components/NoteList";
+import TabPanel from "./components/ui/TabPanel";
+import DateFilterPopover from "./components/dialogs/DateFilterPopover";
+import LabelsActionsMenu from "./components/dialogs/LabelsActionsMenu";
+import BulkCategoryMenu from "./components/dialogs/BulkCategoryMenu";
+import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
+import ConfirmDeleteCategoryDialog from "./components/dialogs/ConfirmDeleteCategoryDialog";
+import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
 import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
@@ -371,7 +371,7 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSubmit: React.ComponentProps<typeof CategoryForm>["onSubmit"] = (
+  const handleSubmit: React.ComponentProps<typeof LabelForm>["onSubmit"] = (
     values,
   ) => {
     const iconName = values.icon.name;
@@ -524,7 +524,7 @@ function App() {
     };
   };
 
-  const handleItemSubmit: React.ComponentProps<typeof ItemForm>["onSubmit"] = (
+  const handleItemSubmit: React.ComponentProps<typeof NoteForm>["onSubmit"] = (
     values,
   ) => {
     const categoryId = values.categoryId === "" ? null : values.categoryId;
@@ -1451,7 +1451,7 @@ function App() {
           <Box sx={{ pt: 2 }}>
             <TabPanel value={activeTab} index="items">
               <Stack spacing={1}>
-                <ItemForm
+                <NoteForm
                   editingItem={editingItem}
                   initialText={sharedText ?? undefined}
                   categories={categories}
@@ -1722,7 +1722,7 @@ function App() {
                     </Tooltip>
                   </Stack>
                 )}
-                <ItemList
+                <NoteList
                   items={items}
                   categories={categories}
                   filters={itemFilters}
@@ -1792,12 +1792,12 @@ function App() {
             </TabPanel>
             <TabPanel value={activeTab} index="categories">
               <Stack spacing={2}>
-                <CategoryForm
+                <LabelForm
                   editingCategory={editingCategory}
                   onSubmit={handleSubmit}
                   onCancelEdit={() => setEditingCategory(null)}
                 />
-                <CategoryList
+                <LabelList
                   categories={categories}
                   onEdit={setEditingCategory}
                   onDelete={requestDeleteCategory}

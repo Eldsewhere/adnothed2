@@ -1,5 +1,5 @@
 import { Box, Menu, MenuItem } from "@mui/material";
-import LabelIcon from "./LabelIcon";
+import LabelIcon from "../ui/LabelIcon";
 import type { Category } from "../types";
 
 type BulkCategoryMenuProps = {
