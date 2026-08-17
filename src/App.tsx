@@ -120,64 +120,6 @@ const openGoogleCalendarWithText = (text: string, start: Dayjs) => {
   );
 };
 
-const parseSubmissionDueTime = (
-  text: string,
-  selectedDay: Dayjs | null,
-): {
-  cleanedText: string;
-  dueDate: Dayjs | null;
-  openCalendar: boolean;
-} => {
-  const trimmedText = text.trim();
-  if (!trimmedText) {
-    return { cleanedText: text, dueDate: null, openCalendar: false };
-  }
-
-  const match = trimmedText.match(
-    /(^|[\s(])(?<time>\d{1,2}(?::(?:0|15|30|45)|h(?:0|15|30|45)?))(?<dot>\.)?(?=$|[\s.,;:!?)]|$)/i,
-  );
-
-  if (!match?.groups?.time) {
-    return { cleanedText: text, dueDate: null, openCalendar: false };
-  }
-
-  const rawTime = match.groups.time.toLowerCase();
-  const hasMinutes = rawTime.includes(":") || rawTime.includes("h");
-  const timeParts = rawTime.includes(":")
-    ? rawTime.split(":")
-    : rawTime.match(/^(\d{1,2})h(?:(0|15|30|45))?$/i);
-
-  if (!timeParts || !Array.isArray(timeParts) || timeParts.length < 2) {
-    return { cleanedText: text, dueDate: null, openCalendar: false };
-  }
-
-  const hours = Number(Array.isArray(timeParts) ? timeParts[0] : "0");
-  const minutes = Array.isArray(timeParts)
-    ? Number(timeParts[1])
-    : Number(timeParts[2] ?? 0);
-
-  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
-    return { cleanedText: text, dueDate: null, openCalendar: false };
-  }
-
-  const baseDay = selectedDay && selectedDay.isValid() ? selectedDay : dayjs();
-  const dueDate = baseDay
-    .startOf("day")
-    .hour(hours)
-    .minute(minutes)
-    .second(0)
-    .millisecond(0);
-
-  const tokenText = match[0].trim();
-  const cleanedText = trimmedText.replace(tokenText, "").trim();
-
-  return {
-    cleanedText,
-    dueDate,
-    openCalendar: match.groups.dot === ".",
-  };
-};
-
 type NoteDayProps = PickerDayProps & {
   noteCountsByDay: Map<string, number>;
   dueDaysByDate: Map<string, number>;
@@ -1347,21 +1289,39 @@ function App() {
       (itemFilters.weekday
         ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
         : null);
-    if (
-      !selectedDay ||
-      !selectedDay.isValid() ||
-      !selectedDay.isAfter(today, "day")
-    ) {
+    const parsedDue =
+      draftNoteText !== ""
+        ? parseDueTimeFromText(draftNoteText, selectedDay ?? today)
+        : null;
+    const activeDay =
+      parsedDue?.dueTimestamp !== undefined
+        ? dayjs.unix(parsedDue.dueTimestamp)
+        : selectedDay && selectedDay.isValid()
+          ? selectedDay
+          : null;
+
+    if (!activeDay || !activeDay.isValid()) {
       return undefined;
     }
-    const hasTime =
-      selectedDay.hour() !== 0 ||
-      selectedDay.minute() !== 0 ||
-      selectedDay.second() !== 0;
-    return hasTime
-      ? selectedDay.format("ddd, MMM D, HH:mm")
-      : selectedDay.format("ddd, MMM D");
-  }, [draftDueDate, itemFilters.weekday, today]);
+
+    const hasExplicitTime =
+      parsedDue?.dueTimestamp !== undefined ||
+      activeDay.hour() !== 0 ||
+      activeDay.minute() !== 0 ||
+      activeDay.second() !== 0;
+
+    if (parsedDue?.dueTimestamp !== undefined) {
+      return `${activeDay.format("ddd, MMM D")} at ${activeDay.format("HH:mm")}`;
+    }
+
+    if (selectedDay && selectedDay.isValid() && selectedDay.isAfter(today, "day")) {
+      return hasExplicitTime
+        ? `${selectedDay.format("ddd, MMM D")} at ${selectedDay.format("HH:mm")}`
+        : selectedDay.format("ddd, MMM D");
+    }
+
+    return undefined;
+  }, [draftDueDate, draftNoteText, itemFilters.weekday, today]);
 
   const openWeekPickerDueDialog = () => {
     const initialDate =
