@@ -1771,16 +1771,20 @@ function App() {
                                         ? colors.lightBlue[400]
                                         : hasDue
                                           ? "rgba(255, 152, 0, 0.6)"
-                                          : colors.blueGrey[600],
+                                          : isWeekend
+                                            ? "rgba(120, 144, 156, 0.95)"
+                                            : colors.blueGrey[600],
                                     backgroundColor: isSelected
                                       ? colors.lightBlue[700]
                                       : isCurrentDay
                                         ? "rgba(33, 150, 243, 0.32)"
-                                        : hasDue
-                                          ? "rgba(255, 152, 0, 0.24)"
-                                          : hasPreviousNotes
-                                            ? "rgba(76, 175, 80, 0.24)"
-                                            : "rgba(96, 125, 139, 0.16)",
+                                        : isWeekend
+                                          ? "rgba(120, 144, 156, 0.42)"
+                                          : hasDue
+                                            ? "rgba(255, 152, 0, 0.24)"
+                                            : hasPreviousNotes
+                                              ? "rgba(76, 175, 80, 0.24)"
+                                              : "rgba(96, 125, 139, 0.16)",
                                     "&:hover": {
                                       backgroundColor: isSelected
                                         ? colors.lightBlue[600]
@@ -1788,14 +1792,18 @@ function App() {
                                           ? "rgba(255, 152, 0, 0.32)"
                                           : isCurrentDay
                                             ? "rgba(33, 150, 243, 0.45)"
-                                            : hasPreviousNotes
-                                              ? "rgba(76, 175, 80, 0.32)"
-                                              : "rgba(96, 125, 139, 0.24)",
+                                            : isWeekend
+                                              ? "rgba(120, 144, 156, 0.58)"
+                                              : hasPreviousNotes
+                                                ? "rgba(76, 175, 80, 0.32)"
+                                                : "rgba(96, 125, 139, 0.24)",
                                       borderColor: isSelected
                                         ? colors.lightBlue[500]
                                         : isCurrentDay
                                           ? colors.lightBlue[300]
-                                          : colors.blueGrey[500],
+                                          : isWeekend
+                                            ? colors.blueGrey[300]
+                                            : colors.blueGrey[500],
                                     },
                                   }}
                                 >
@@ -1819,9 +1827,6 @@ function App() {
                                         alignItems: "center",
                                         justifyContent: "center",
                                         fontWeight: isWeekend ? 900 : 500,
-                                        textDecoration: isWeekend
-                                          ? "underline"
-                                          : "none",
                                       }}
                                     >
                                       {WEEKDAY_LETTERS[weekday]}
