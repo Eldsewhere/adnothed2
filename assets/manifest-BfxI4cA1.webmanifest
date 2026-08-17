@@ -1,7 +1,7 @@
 {
     "name": "Adnothed",
     "short_name": "Adnothed",
-    "description": "Note manager with categories and notifications",
+    "description": "Note manager with labels and notifications",
     "start_url": "/adnothed2/",
     "id": "/adnothed2/",
     "display": "standalone",
