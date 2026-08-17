@@ -615,7 +615,17 @@ const ItemList = ({
                 dayIndexByDate.get(formatDate(item.createdAt)) ?? 0;
 
               const isPrioritary = isPriorityItem(item);
+              const previousItem = filteredItems[index - 1];
               const nextItem = filteredItems[index + 1];
+              const isPriorityGroupStart =
+                isPrioritary && (!previousItem || !isPriorityItem(previousItem));
+              const isPriorityGroupEnd =
+                isPrioritary && (!nextItem || !isPriorityItem(nextItem));
+              const isNonPriorityGroupStart =
+                !isPrioritary &&
+                (!previousItem || isPriorityItem(previousItem));
+              const isNonPriorityGroupEnd =
+                !isPrioritary && (!nextItem || isPriorityItem(nextItem));
               const isPriorityBoundary =
                 isPrioritary && (!nextItem || !isPriorityItem(nextItem));
               const isMostRecentAddedItem =
@@ -645,7 +655,14 @@ const ItemList = ({
                       ? `inset 4px 0 0 ${colors.lightGreen[700]}`
                       : undefined,
                     paddingX: 1,
-                    borderRadius: 2,
+                    borderTopLeftRadius:
+                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+                    borderTopRightRadius:
+                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+                    borderBottomLeftRadius:
+                      isPriorityGroupEnd || isNonPriorityGroupEnd ? 12 : 0,
+                    borderBottomRightRadius:
+                      isPriorityGroupEnd || isNonPriorityGroupEnd ? 12 : 0,
                     borderColor: isPriorityBoundary
                       ? colors.grey[900]
                       : colors.grey[900],
