@@ -10,6 +10,7 @@ type LabelMenuProps = {
   onClose: () => void;
   onSelect: (labelId: string | null) => void;
   selected?: string | null;
+  onShowAllSelect?: () => void;
 };
 
 const LabelMenu = ({
@@ -18,8 +19,14 @@ const LabelMenu = ({
   onClose,
   onSelect,
   selected,
+  onShowAllSelect,
 }: LabelMenuProps) => (
   <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={onClose}>
+    {onShowAllSelect && labels.length > 0 && (
+      <MenuItem autoFocus onClick={onShowAllSelect}>
+        <span>Show All</span>
+      </MenuItem>
+    )}
     <MenuItem
       sx={{ color: colors.blueGrey[300] }}
       onClick={() => onSelect(null)}

@@ -32,7 +32,6 @@ import {
   mdiFormatListNumbered,
   mdiFormatText,
   mdiLabelMultiple,
-  mdiLabelOff,
   mdiLinkVariant,
   mdiNumeric,
   mdiRayEndArrow,
@@ -42,6 +41,7 @@ import {
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { NO_LABEL_FILTER_VALUE } from "../utils/noteFilters";
+import LabelMenu from "./dialogs/LabelMenu";
 
 type NoteFormProps = {
   editingNote: Note | null;
@@ -221,9 +221,7 @@ const NoteForm = ({
     onNoteTextChange?.(nextValues.text);
     if (!isEditing) {
       onFilterTextChange(nextValues.text);
-      onFilterLabelChange(
-        nextValues.labelId ? nextValues.labelId : "",
-      );
+      onFilterLabelChange(nextValues.labelId ? nextValues.labelId : "");
     }
   }, [
     editingNote,
@@ -708,83 +706,30 @@ const NoteForm = ({
                                 </Tooltip>
                               </Stack>
                             </Box>
-                            <Menu
-                              anchorEl={labelMenuAnchor}
-                              open={Boolean(labelMenuAnchor)}
-                              onClose={closeLabelMenu}
-                            >
-                              {labels.length > 0 && (
-                                <MenuItem
-                                  autoFocus
-                                  onClick={() => {
-                                    field.onChange("");
-                                    if (!isEditing) {
-                                      onFilterLabelChange("");
-                                    }
-                                    closeLabelMenu();
-                                  }}
-                                >
-                                  <span>Show All</span>
-                                </MenuItem>
-                              )}
-                              <MenuItem
-                                selected={activelabelId === ""}
-                                onClick={() => {
+                            {labelMenuAnchor && (
+                              <LabelMenu
+                                onShowAllSelect={() => {
                                   field.onChange("");
                                   if (!isEditing) {
+                                    onFilterLabelChange("");
+                                  }
+                                  closeLabelMenu();
+                                }}
+                                anchorEl={labelMenuAnchor}
+                                onClose={closeLabelMenu}
+                                labels={labels}
+                                selected={activelabelId}
+                                onSelect={(val) => {
+                                  field.onChange(val ?? "");
+                                  if (!isEditing) {
                                     onFilterLabelChange(
-                                      NO_LABEL_FILTER_VALUE,
+                                      val ?? NO_LABEL_FILTER_VALUE,
                                     );
                                   }
                                   closeLabelMenu();
                                 }}
-                              >
-                                <Box
-                                  sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 1,
-                                    color: colors.blueGrey[300],
-                                  }}
-                                >
-                                  <Icon path={mdiLabelOff} size={0.8} />
-                                  <span>
-                                    {labels.length == 0
-                                      ? "no labels available"
-                                      : "no label"}
-                                  </span>
-                                </Box>
-                              </MenuItem>
-                              {labels.map((label) => (
-                                <MenuItem
-                                  key={label.id}
-                                  autoFocus={activelabelId === label.id}
-                                  selected={activelabelId === label.id}
-                                  onClick={() => {
-                                    field.onChange(label.id);
-                                    if (!isEditing) {
-                                      onFilterLabelChange(label.id);
-                                    }
-                                    closeLabelMenu();
-                                  }}
-                                >
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 1,
-                                    }}
-                                  >
-                                    <LabelIcon
-                                      icon={label.icon}
-                                      color={label.color}
-                                      size={0.7}
-                                    />
-                                    <span>{label.name}</span>
-                                  </Box>
-                                </MenuItem>
-                              ))}
-                            </Menu>
+                              />
+                            )}
                           </>
                         );
                       }}

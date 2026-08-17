@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Menu, MenuItem, colors, Button } from "@mui/material";
-import { Icon } from "@mdi/react";
-import { mdiLabelOff } from "@mdi/js";
+import { Box, Alert, Button } from "@mui/material";
 import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
@@ -12,7 +10,6 @@ import {
 import { getFirstUrl } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
 import DueDateDialog from "./dialogs/DueDateDialog";
-import LabelIcon from "./ui/LabelIcon";
 import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
