@@ -7,19 +7,19 @@ import {
   DialogTitle,
 } from "@mui/material";
 
-type ConfirmDeleteCategoryDialogProps = {
+type ConfirmDeleteLabelDialogProps = {
   open: boolean;
   categoryName: string | null;
   onClose: () => void;
   onConfirm: () => void;
 };
 
-const ConfirmDeleteCategoryDialog = ({
+const ConfirmDeleteLabelDialog = ({
   open,
   categoryName,
   onClose,
   onConfirm,
-}: ConfirmDeleteCategoryDialogProps) => (
+}: ConfirmDeleteLabelDialogProps) => (
   <Dialog open={open} onClose={onClose}>
     <DialogTitle>{`Delete label "${categoryName ?? ""}"?`}</DialogTitle>
     <DialogContent>
@@ -39,4 +39,4 @@ const ConfirmDeleteCategoryDialog = ({
   </Dialog>
 );
 
-export default ConfirmDeleteCategoryDialog;
+export default ConfirmDeleteLabelDialog;

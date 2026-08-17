@@ -39,9 +39,9 @@ import WeekdayPicker from "./components/WeekdayPicker";
 import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
 import LabelsActionsMenu from "./components/dialogs/LabelsActionsMenu";
-import BulkCategoryMenu from "./components/dialogs/BulkCategoryMenu";
+import BulkLabelMenu from "./components/dialogs/BulkLabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
-import ConfirmDeleteCategoryDialog from "./components/dialogs/ConfirmDeleteCategoryDialog";
+import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
 import type { BeforeInstallPromptEvent, Category, Item } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
@@ -1706,7 +1706,7 @@ function App() {
           onClose={() => setConfirmBulkDeleteOpen(false)}
           onConfirm={handleBulkDelete}
         />
-        <ConfirmDeleteCategoryDialog
+        <ConfirmDeleteLabelDialog
           open={!!confirmDeleteCategory}
           categoryName={confirmDeleteCategory?.name ?? null}
           onClose={() => setConfirmDeleteCategory(null)}
@@ -1728,7 +1728,7 @@ function App() {
           }}
           onConfirm={confirmImport}
         />
-        <BulkCategoryMenu
+        <BulkLabelMenu
           anchorEl={bulkCategoryAnchor}
           categories={categories}
           onClose={() => setBulkCategoryAnchor(null)}

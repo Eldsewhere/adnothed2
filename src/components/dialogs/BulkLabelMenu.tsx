@@ -2,19 +2,19 @@ import { Box, Menu, MenuItem } from "@mui/material";
 import LabelIcon from "../ui/LabelIcon";
 import type { Category } from "../../types";
 
-type BulkCategoryMenuProps = {
+type BulkLabelMenuProps = {
   anchorEl: HTMLElement | null;
   categories: Category[];
   onClose: () => void;
   onSelect: (categoryId: string | null) => void;
 };
 
-const BulkCategoryMenu = ({
+const BulkLabelMenu = ({
   anchorEl,
   categories,
   onClose,
   onSelect,
-}: BulkCategoryMenuProps) => (
+}: BulkLabelMenuProps) => (
   <Menu anchorEl={anchorEl} open={!!anchorEl} onClose={onClose}>
     <MenuItem onClick={() => onSelect(null)}>no label</MenuItem>
     {categories.map((category) => (
@@ -31,4 +31,4 @@ const BulkCategoryMenu = ({
   </Menu>
 );
 
-export default BulkCategoryMenu;
+export default BulkLabelMenu;
