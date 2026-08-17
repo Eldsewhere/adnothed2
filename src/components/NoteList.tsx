@@ -440,6 +440,14 @@ const NoteList = ({
     return map;
   }, [filteredNotes]);
 
+  const globalIndexByNoteId = useMemo(
+    () =>
+      new Map(
+        sortedNotes.map((note, index) => [note.id, sortedNotes.length - index]),
+      ),
+    [sortedNotes],
+  );
+
   const rowHeights = filteredNotes.map((note) =>
     overflowingnoteIds.has(note.id) ? EXPANDED_ROW_HEIGHT : ROW_HEIGHT,
   );
@@ -515,6 +523,7 @@ const NoteList = ({
                 : undefined;
               const dayIndex =
                 dayIndexByDate.get(formatDate(note.createdAt)) ?? 0;
+              const globalIndex = globalIndexByNoteId.get(note.id);
 
               const isPrioritary = isPriorityNote(note);
               const previousNote = filteredNotes[index - 1];
@@ -557,6 +566,7 @@ const NoteList = ({
                   isNonPriorityGroupEnd={isNonPriorityGroupEnd}
                   dayIndex={dayIndex}
                   selectMode={selectMode}
+                  globalIndex={globalIndex}
                   selectedIds={selectedIds}
                   isOverflowing={overflowingnoteIds.has(note.id)}
                   isExpandable={expandablenoteIds.has(note.id)}

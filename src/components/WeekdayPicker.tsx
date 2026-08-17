@@ -159,7 +159,7 @@ const WeekdayPicker = ({
                   >
                     <Box
                       sx={{
-                        fontSize: "0.7rem",
+                        fontSize: "0.65rem",
                         letterSpacing: "-0.04em",
                         display: "flex",
                         alignItems: "center",
@@ -170,7 +170,7 @@ const WeekdayPicker = ({
                     </Box>
                     <Box
                       sx={{
-                        fontSize: "0.6rem",
+                        fontSize: "0.57rem",
                         letterSpacing: "-0.04em",
                         display: "flex",
                         alignItems: "center",

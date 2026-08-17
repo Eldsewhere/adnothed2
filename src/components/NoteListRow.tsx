@@ -48,6 +48,7 @@ type NoteListRowProps = {
   isNonPriorityGroupEnd: boolean;
   dayIndex: number;
   selectMode: boolean;
+  globalIndex?: number;
   selectedIds: Set<string>;
   isOverflowing: boolean;
   isExpandable: boolean;
@@ -74,6 +75,7 @@ const NoteListRow = ({
   isNonPriorityGroupEnd,
   dayIndex,
   selectMode,
+  globalIndex,
   selectedIds,
   isOverflowing,
   isExpandable,
@@ -305,7 +307,18 @@ const NoteListRow = ({
               </Tooltip>
             )}
           </Typography>
-          {note.due !== undefined && note.due >= dayjs().unix() ? (
+          {selectMode && globalIndex !== undefined ? (
+            <Typography
+              variant="caption"
+              sx={{
+                textAlign: "right",
+                display: "block",
+                color: colors.blueGrey[300],
+              }}
+            >
+              #{globalIndex}
+            </Typography>
+          ) : note.due !== undefined && note.due >= dayjs().unix() ? (
             <Typography
               variant="caption"
               sx={{
