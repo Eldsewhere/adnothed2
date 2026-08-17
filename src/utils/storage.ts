@@ -1,8 +1,8 @@
 ﻿import { mdiLabelOff } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
-import type { Label, Item } from "../types";
-import { getUniqueCreatedAt, normalizeCreatedAt } from "./itemTimestamps";
+import type { Label, Note } from "../types";
+import { getUniqueCreatedAt, normalizeCreatedAt } from "./noteTimestamps";
 import { createLetterIconOptionFromName } from "./letterIconOptions";
 
 type PersistedLabel = {
@@ -24,11 +24,6 @@ type PersistedState = {
   notes: PersistedNote[];
 };
 
-type LegacyPersistedState = {
-  labels: Array<{ name: string; iconName: string }>;
-  items: Array<{ labelId: string | null; text: string; createdAt: number }>;
-};
-
 type ParseResult = {
   state: PersistedState;
   error: string | null;
@@ -39,9 +34,9 @@ const STORAGE_KEY = "adnothed-local-storage";
 const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
 
 const emptyPersistedState: PersistedState = { labels: [], notes: [] };
-const emptyAppState: { labels: Label[]; items: Item[] } = {
+const emptyAppState: { labels: Label[]; notes: Note[] } = {
   labels: [],
-  items: [],
+  notes: [],
 };
 
 function getStoredValue(): string | null {
@@ -103,7 +98,7 @@ function resolveIconOption(name: string): Label["icon"] {
     return letterOption;
   }
 
-  const option = mdiIconOptions.find((item) => item.name === name);
+  const option = mdiIconOptions.find((note) => note.name === name);
   if (option) {
     return option;
   }
@@ -120,8 +115,8 @@ function resolveIconOption(name: string): Label["icon"] {
   };
 }
 
-function normalizeItems(notes: PersistedNote[]): Item[] {
-  const normalized: Item[] = [];
+function normalizeNotes(notes: PersistedNote[]): Note[] {
+  const normalized: Note[] = [];
 
   for (const note of notes) {
     const createdAt = getUniqueCreatedAt(
@@ -160,39 +155,20 @@ function toPersistedNote(note: {
   };
 }
 
-function normalizePersistedState(
-  state: PersistedState | LegacyPersistedState,
-): PersistedState {
-  if ("labels" in state) {
-    return {
-      labels: state.labels.map((label) => ({
-        name: label.name,
-        icon: label.icon,
-        ...(label.color ? { color: label.color } : {}),
-      })),
-      notes: state.notes.map(toPersistedNote),
-    };
-  }
-
-  // TODO: remove this migration path after the legacy JSON format is retired.
+function normalizePersistedState(state: PersistedState): PersistedState {
   return {
     labels: state.labels.map((label) => ({
       name: label.name,
-      icon: label.iconName,
+      icon: label.icon,
+      ...(label.color ? { color: label.color } : {}),
     })),
-    notes: state.items.map((item) =>
-      toPersistedNote({
-        icon: item.labelId,
-        text: item.text,
-        time: item.createdAt,
-      }),
-    ),
+    notes: state.notes.map(toPersistedNote),
   };
 }
 
 export function serializeState(state: {
   labels: Label[];
-  items: Item[];
+  notes: Note[];
 }): PersistedState {
   return {
     // Persist the renamed label shape; keep the old parser only for compatibility.
@@ -202,9 +178,9 @@ export function serializeState(state: {
       ...(label.color ? { color: label.color } : {}),
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
-    notes: state.items.map((item) => {
+    notes: state.notes.map((note) => {
       const { labelId, text, createdAt, due, pinned } =
-        stripTransientItemFields(item);
+        stripTransientNoteFields(note);
       return toPersistedNote({
         icon: labelId,
         text,
@@ -216,14 +192,14 @@ export function serializeState(state: {
   };
 }
 
-function stripTransientItemFields<T extends Item>(item: T): T {
-  const { updatedAt: _updatedAt, ...rest } = item;
+function stripTransientNoteFields<T extends Note>(note: T): T {
+  const { updatedAt: _updatedAt, ...rest } = note;
   return rest as T;
 }
 
 function deserializeState(state: PersistedState): {
   labels: Label[];
-  items: Item[];
+  notes: Note[];
 } {
   return {
     // Recreate runtime labels from the renamed persisted label shape.
@@ -233,7 +209,7 @@ function deserializeState(state: PersistedState): {
       icon: resolveIconOption(label.icon),
       ...(label.color ? { color: label.color } : {}),
     })),
-    items: normalizeItems(state.notes),
+    notes: normalizeNotes(state.notes),
   };
 }
 
@@ -283,7 +259,7 @@ export async function openPersistedStateFile(
   suggestedFileName: string = DEFAULT_FILE_NAME,
 ): Promise<{
   labels: Label[];
-  items: Item[];
+  notes: Note[];
   fileName: string;
   parseError: string | null;
 } | null> {
@@ -361,7 +337,7 @@ export function hasPersistedStateFile(): boolean {
 
 export async function loadPersistedState(): Promise<{
   labels: Label[];
-  items: Item[];
+  notes: Note[];
   fileName: string;
   parseError: string | null;
 }> {
@@ -383,7 +359,7 @@ export async function loadPersistedState(): Promise<{
 export async function savePersistedState(
   state: {
     labels: Label[];
-    items: Item[];
+    notes: Note[];
   },
   suggestedFileName: string = DEFAULT_FILE_NAME,
 ): Promise<void> {

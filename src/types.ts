@@ -17,7 +17,7 @@ export type LabelFormValues = {
   color?: string;
 };
 
-export type Item = {
+export type Note = {
   id: string;
   labelId: string | null;
   text: string;
@@ -28,7 +28,7 @@ export type Item = {
   updatedAt?: number;
 };
 
-export type ItemFormValues = {
+export type NoteFormValues = {
   labelId: string;
   text: string;
 };
@@ -38,7 +38,7 @@ export interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
-export type ItemFilters = {
+export type NoteFilters = {
   labelId: string;
   text: string;
   date: string;

@@ -43,7 +43,7 @@ import BulkLabelMenu from "./components/dialogs/BulkLabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
-import type { BeforeInstallPromptEvent, Label, Item } from "./types";
+import type { BeforeInstallPromptEvent, Label, Note } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   DEFAULT_FILE_NAME,
@@ -58,14 +58,14 @@ import {
   showAppNotification,
 } from "./utils/notifications";
 import {
-  emptyItemFilters,
+  emptyNoteFilters,
   matchesTextFilters,
   NO_LABEL_FILTER_VALUE,
   parseTextFilters,
-} from "./utils/itemFilters";
+} from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
-import { getUniqueCreatedAt } from "./utils/itemTimestamps";
-type TabValue = "items" | "labels";
+import { getUniqueCreatedAt } from "./utils/noteTimestamps";
+type TabValue = "notes" | "labels";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -151,24 +151,24 @@ function toggleBulletRows(text: string): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabValue>("items");
+  const [activeTab, setActiveTab] = useState<TabValue>("notes");
   const [labels, setLabels] = useState<Label[]>([]);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
-  const [items, setItems] = useState<Item[]>([]);
-  const [editingItem, setEditingItem] = useState<Item | null>(null);
-  const [recentlyAddedItemId, setRecentlyAddedItemId] = useState<string | null>(
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [editingNote, seteditingNote] = useState<Note | null>(null);
+  const [recentlyAddednoteId, setRecentlyAddedNoteId] = useState<string | null>(
     null,
   );
-  const [recentlyEditedItemId, setRecentlyEditedItemId] = useState<
+  const [recentlyEditednoteId, setRecentlyEditedNoteId] = useState<
     string | null
   >(null);
   const [notification, setNotification] = useState<string | null>(null);
   const [notificationSeverity, setNotificationSeverity] = useState<
     "success" | "error" | "info" | "warning"
   >("success");
-  const [itemFilters, setItemFilters] = useState(emptyItemFilters);
+  const [noteFilters, setNoteFilters] = useState(emptyNoteFilters);
   const [selectMode, setSelectMode] = useState(false);
-  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+  const [selectednoteIds, setSelectedNoteIds] = useState<Set<string>>(
     new Set(),
   );
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
@@ -182,7 +182,7 @@ function App() {
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
     labels: Label[];
-    items: Item[];
+    notes: Note[];
     fileName: string;
     parseError: string | null;
   } | null>(null);
@@ -200,7 +200,7 @@ function App() {
     endDate: string;
     dueDate?: string;
     hasDue?: boolean;
-  }>(emptyItemFilters);
+  }>(emptyNoteFilters);
   const [draftDueDate, setDraftDueDate] = useState<Dayjs | null>(null);
   const [draftNoteText, setDraftNoteText] = useState("");
   const [weekPickerDueDialogOpen, setWeekPickerDueDialogOpen] = useState(false);
@@ -288,14 +288,14 @@ function App() {
       }
 
       setLabels(persistedState.labels);
-      setItems(persistedState.items);
+      setNotes(persistedState.notes);
       setStorageFileName(persistedState.fileName);
       if (persistedState.parseError) {
         setNotificationSeverity("error");
         setNotification(persistedState.parseError);
       }
       setStorageReady(true);
-      setActiveTab("items");
+      setActiveTab("notes");
       isInitializingRef.current = false;
     }
 
@@ -310,8 +310,8 @@ function App() {
       return;
     }
 
-    savePersistedState({ labels, items }, storageFileName);
-  }, [labels, items, storageReady, storageFileName]);
+    savePersistedState({ labels, notes }, storageFileName);
+  }, [labels, notes, storageReady, storageFileName]);
 
   useEffect(() => {
     if (!storageReady) {
@@ -337,10 +337,10 @@ function App() {
       return;
     }
     setLabels(pendingImport.labels);
-    setItems(pendingImport.items);
+    setNotes(pendingImport.notes);
     setStorageFileName(pendingImport.fileName);
     setStorageReady(true);
-    setActiveTab("items");
+    setActiveTab("notes");
     setNotificationSeverity("success");
     setNotification(`Imported ${pendingImport.fileName}`);
     setPendingImport(null);
@@ -348,7 +348,7 @@ function App() {
   };
 
   const handleExportJson = () => {
-    const payload = serializeState({ labels, items });
+    const payload = serializeState({ labels, notes });
     // filename format: adnothed-state_YYYY-MM-DD_HH-MM.json
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -389,11 +389,11 @@ function App() {
       setLabels((prev) =>
         prev.map((prevLabel) => {
           if (prevLabel.id === editingLabel.id) {
-            setItems((prev) =>
-              prev.map((item) =>
-                item.labelId === prevLabel.id
-                  ? { ...item, labelId: iconName }
-                  : item,
+            setNotes((prev) =>
+              prev.map((note) =>
+                note.labelId === prevLabel.id
+                  ? { ...note, labelId: iconName }
+                  : note,
               ),
             );
 
@@ -431,16 +431,16 @@ function App() {
 
   const handleDelete = (label: Label) => {
     setLabels((prev) => prev.filter((c) => c.id !== label.id));
-    setItems((prev) =>
-      prev.map((item) =>
-        item.labelId === label.id ? { ...item, labelId: null } : item,
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.labelId === label.id ? { ...note, labelId: null } : note,
       ),
     );
     if (editingLabel?.id === label.id) {
       setEditingLabel(null);
     }
-    if (editingItem?.labelId === label.id) {
-      setEditingItem(null);
+    if (editingNote?.labelId === label.id) {
+      seteditingNote(null);
     }
   };
 
@@ -523,7 +523,7 @@ function App() {
     };
   };
 
-  const handleItemSubmit: React.ComponentProps<typeof NoteForm>["onSubmit"] = (
+  const handleNoteSubmit: React.ComponentProps<typeof NoteForm>["onSubmit"] = (
     values,
   ) => {
     const labelId = values.labelId === "" ? null : values.labelId;
@@ -531,8 +531,8 @@ function App() {
       labels.find((c) => c.id === labelId)?.name ?? "Reminder";
     const selectedDay =
       draftDueDate ??
-      (itemFilters.weekday
-        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+      (noteFilters.weekday
+        ? dayjs(noteFilters.weekday, "YYYY-MM-DD", true)
         : null);
     const hasExplicitSelectedDayTime =
       selectedDay !== null &&
@@ -562,33 +562,33 @@ function App() {
       openGoogleCalendarWithText(eventText, start);
     }
 
-    if (editingItem) {
-      setItems((prev) =>
-        prev.map((item) =>
-          item.id === editingItem.id
+    if (editingNote) {
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.id === editingNote.id
             ? {
-                ...item,
+                ...note,
                 labelId,
                 text: finalText,
                 ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
               }
-            : item,
+            : note,
         ),
       );
-      setRecentlyAddedItemId(null);
-      setRecentlyEditedItemId(editingItem.id);
+      setRecentlyAddedNoteId(null);
+      setRecentlyEditedNoteId(editingNote.id);
       setDraftNoteText("");
       setDraftDueDate(null);
-      setEditingItem(null);
+      seteditingNote(null);
       return;
     }
 
-    setItems((prev) => {
+    setNotes((prev) => {
       const createdAt = getUniqueCreatedAt(prev);
       const id = String(createdAt);
 
-      setRecentlyAddedItemId(id);
-      setRecentlyEditedItemId(null);
+      setRecentlyAddedNoteId(id);
+      setRecentlyEditedNoteId(null);
 
       return [
         ...prev,
@@ -602,8 +602,8 @@ function App() {
         },
       ];
     });
-    setItemFilters(emptyItemFilters);
-    setPendingDateFilter(emptyItemFilters);
+    setNoteFilters(emptyNoteFilters);
+    setPendingDateFilter(emptyNoteFilters);
     setDraftNoteText("");
     setDraftDueDate(null);
     setNotification(`${labelName}: ${finalText}`);
@@ -612,15 +612,15 @@ function App() {
     );
   };
 
-  const handleItemCopy = (item: Item) => {
-    navigator.clipboard.writeText(item.text);
+  const handleNoteCopy = (note: Note) => {
+    navigator.clipboard.writeText(note.text);
     setNotificationSeverity("success");
     setNotification("Note Copied");
   };
 
-  const handleItemShareLink = (item: Item) => {
+  const handleNoteShareLink = (note: Note) => {
     const url = `${window.location.origin}${window.location.pathname}?text=${encodeURIComponent(
-      item.text,
+      note.text,
     )}`;
     if (navigator.share) {
       void navigator.share({ url });
@@ -631,31 +631,31 @@ function App() {
     }
   };
 
-  const handleItemDelete = (item: Item) => {
-    setItems((prev) => prev.filter((i) => i.id !== item.id));
-    if (editingItem?.id === item.id) {
-      setEditingItem(null);
+  const handleNoteDelete = (note: Note) => {
+    setNotes((prev) => prev.filter((i) => i.id !== note.id));
+    if (editingNote?.id === note.id) {
+      seteditingNote(null);
     }
   };
 
-  const handleItemToggleBullet = (item: Item) => {
-    const nextText = toggleBulletRows(item.text);
-    setItems((prev) =>
-      prev.map((existingItem) =>
-        existingItem.id === item.id
-          ? { ...existingItem, text: nextText }
-          : existingItem,
+  const handleNoteToggleBullet = (note: Note) => {
+    const nextText = toggleBulletRows(note.text);
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, text: nextText }
+          : existingNote,
       ),
     );
-    setRecentlyAddedItemId(null);
-    setRecentlyEditedItemId(item.id);
-    if (editingItem?.id === item.id) {
-      setEditingItem({ ...editingItem, text: nextText });
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+    if (editingNote?.id === note.id) {
+      seteditingNote({ ...editingNote, text: nextText });
     }
   };
 
-  const handleItemAddCheckboxes = (item: Item) => {
-    const rows = item.text.split("\n");
+  const handleNoteAddCheckboxes = (note: Note) => {
+    const rows = note.text.split("\n");
     const nonEmptyRows = rows.filter((row) => row.trim().length > 0);
     const allNonEmptyRowsAreCheckboxes =
       nonEmptyRows.length > 0 &&
@@ -682,22 +682,22 @@ function App() {
         return `${leadingWhitespace}[ ] ${rowWithoutBullet}`;
       })
       .join("\n");
-    setItems((prev) =>
-      prev.map((existingItem) =>
-        existingItem.id === item.id
-          ? { ...existingItem, text: nextText }
-          : existingItem,
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, text: nextText }
+          : existingNote,
       ),
     );
-    setRecentlyAddedItemId(null);
-    setRecentlyEditedItemId(item.id);
-    if (editingItem?.id === item.id) {
-      setEditingItem({ ...editingItem, text: nextText });
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+    if (editingNote?.id === note.id) {
+      seteditingNote({ ...editingNote, text: nextText });
     }
   };
 
-  const handleItemToggleCheckbox = (item: Item, rowIndex: number) => {
-    const nextText = item.text
+  const handleNoteToggleCheckbox = (note: Note, rowIndex: number) => {
+    const nextText = note.text
       .split("\n")
       .map((row, index) => {
         if (index !== rowIndex) return row;
@@ -706,27 +706,27 @@ function App() {
         );
       })
       .join("\n");
-    setItems((prev) =>
-      prev.map((existingItem) =>
-        existingItem.id === item.id
-          ? { ...existingItem, text: nextText }
-          : existingItem,
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, text: nextText }
+          : existingNote,
       ),
     );
-    setRecentlyAddedItemId(null);
-    setRecentlyEditedItemId(item.id);
-    if (editingItem?.id === item.id) {
-      setEditingItem({ ...editingItem, text: nextText });
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+    if (editingNote?.id === note.id) {
+      seteditingNote({ ...editingNote, text: nextText });
     }
   };
 
   const toggleSelectMode = () => {
     setSelectMode((prev) => !prev);
-    setSelectedItemIds(new Set());
+    setSelectedNoteIds(new Set());
   };
 
-  const toggleItemSelected = (id: string) => {
-    setSelectedItemIds((prev) => {
+  const toggleNoteSelected = (id: string) => {
+    setSelectedNoteIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) {
         next.delete(id);
@@ -739,59 +739,59 @@ function App() {
 
   // if there are no notes, ensure select mode is disabled
   useEffect(() => {
-    if (items.length === 0 && selectMode) {
+    if (notes.length === 0 && selectMode) {
       setSelectMode(false);
-      setSelectedItemIds(new Set());
+      setSelectedNoteIds(new Set());
     }
-  }, [items.length, selectMode]);
+  }, [notes.length, selectMode]);
 
   const handleBulkDelete = () => {
-    setItems((prev) => prev.filter((item) => !selectedItemIds.has(item.id)));
-    setSelectedItemIds(new Set());
+    setNotes((prev) => prev.filter((note) => !selectednoteIds.has(note.id)));
+    setSelectedNoteIds(new Set());
     setConfirmBulkDeleteOpen(false);
   };
 
   const handleBulkLabelChange = (labelId: string | null) => {
-    setItems((prev) =>
-      prev.map((item) =>
-        selectedItemIds.has(item.id) ? { ...item, labelId } : item,
+    setNotes((prev) =>
+      prev.map((note) =>
+        selectednoteIds.has(note.id) ? { ...note, labelId } : note,
       ),
     );
-    setSelectedItemIds(new Set());
+    setSelectedNoteIds(new Set());
     setbulkLabelAnchor(null);
   };
 
-  const handleEditItem = (item: Item) => {
+  const handleEditNote = (note: Note) => {
     setDatePopoverAnchor(null);
-    setEditingItem(item);
+    seteditingNote(note);
   };
 
-  const handleItemDueChange = (item: Item, due: number | null) => {
-    setItems((prev) =>
-      prev.map((existingItem) =>
-        existingItem.id === item.id
-          ? { ...existingItem, due: due ?? undefined }
-          : existingItem,
+  const handleNoteDueChange = (note: Note, due: number | null) => {
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, due: due ?? undefined }
+          : existingNote,
       ),
     );
-    setRecentlyAddedItemId(null);
-    setRecentlyEditedItemId(item.id);
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
   };
 
-  const handleItemPin = (item: Item) => {
-    setItems((prev) =>
-      prev.map((existingItem) =>
-        existingItem.id === item.id
-          ? { ...existingItem, pinned: !existingItem.pinned }
-          : existingItem,
+  const handleNotePin = (note: Note) => {
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, pinned: !existingNote.pinned }
+          : existingNote,
       ),
     );
-    setRecentlyAddedItemId(null);
-    setRecentlyEditedItemId(item.id);
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
   };
 
   const handleFilterTextChange = useCallback((value: string) => {
-    setItemFilters((prev) =>
+    setNoteFilters((prev) =>
       prev.text === value
         ? prev
         : {
@@ -802,7 +802,7 @@ function App() {
   }, []);
 
   const handleFilterLabelChange = useCallback((value: string) => {
-    setItemFilters((prev) =>
+    setNoteFilters((prev) =>
       prev.labelId === value
         ? prev
         : {
@@ -812,130 +812,130 @@ function App() {
     );
   }, []);
 
-  const startDateValue = itemFilters.dueDate
-    ? dayjs(itemFilters.dueDate)
-    : itemFilters.date &&
-        dateRegex.test(itemFilters.date) &&
-        itemFilters.date.length === 10
-      ? dayjs(itemFilters.date)
+  const startDateValue = noteFilters.dueDate
+    ? dayjs(noteFilters.dueDate)
+    : noteFilters.date &&
+        dateRegex.test(noteFilters.date) &&
+        noteFilters.date.length === 10
+      ? dayjs(noteFilters.date)
       : null;
 
   const endDateValue =
-    itemFilters.endDate &&
-    dateRegex.test(itemFilters.endDate) &&
-    itemFilters.endDate.length === 10
-      ? dayjs(itemFilters.endDate)
+    noteFilters.endDate &&
+    dateRegex.test(noteFilters.endDate) &&
+    noteFilters.endDate.length === 10
+      ? dayjs(noteFilters.endDate)
       : null;
 
-  const sortedItems = useMemo(
-    () => [...items].sort((a, b) => b.createdAt - a.createdAt),
-    [items],
+  const sortedNotes = useMemo(
+    () => [...notes].sort((a, b) => b.createdAt - a.createdAt),
+    [notes],
   );
 
   const parsedTextFilters = useMemo(
-    () => parseTextFilters(itemFilters.text),
-    [itemFilters.text],
+    () => parseTextFilters(noteFilters.text),
+    [noteFilters.text],
   );
 
-  const calendarFilteredItems = useMemo(
+  const calendarFilteredNotes = useMemo(
     () =>
-      sortedItems.filter((item, index) => {
-        if (itemFilters.hasDue) {
+      sortedNotes.filter((note, index) => {
+        if (noteFilters.hasDue) {
           const todayUnix = dayjs().startOf("day").unix();
-          if (item.due === undefined || item.due < todayUnix) {
+          if (note.due === undefined || note.due < todayUnix) {
             return false;
           }
         }
 
-        if (itemFilters.labelId === NO_LABEL_FILTER_VALUE) {
-          if (item.labelId !== null) {
+        if (noteFilters.labelId === NO_LABEL_FILTER_VALUE) {
+          if (note.labelId !== null) {
             return false;
           }
         } else if (
-          itemFilters.labelId &&
-          item.labelId !== itemFilters.labelId
+          noteFilters.labelId &&
+          note.labelId !== noteFilters.labelId
         ) {
           return false;
         }
 
         return matchesTextFilters(
-          item.text,
-          item.createdAt,
+          note.text,
+          note.createdAt,
           index,
-          sortedItems.length,
+          sortedNotes.length,
           parsedTextFilters,
-          item.due,
-          item.labelId,
+          note.due,
+          note.labelId,
         );
       }),
     [
-      itemFilters.labelId,
-      itemFilters.hasDue,
+      noteFilters.labelId,
+      noteFilters.hasDue,
       parsedTextFilters,
-      sortedItems,
+      sortedNotes,
     ],
   );
 
   const filteredNoteCount = useMemo(
     () =>
-      sortedItems.filter((item, index) => {
-        if (itemFilters.labelId === NO_LABEL_FILTER_VALUE) {
-          if (item.labelId !== null) {
+      sortedNotes.filter((note, index) => {
+        if (noteFilters.labelId === NO_LABEL_FILTER_VALUE) {
+          if (note.labelId !== null) {
             return false;
           }
         } else if (
-          itemFilters.labelId &&
-          item.labelId !== itemFilters.labelId
+          noteFilters.labelId &&
+          note.labelId !== noteFilters.labelId
         ) {
           return false;
         }
 
         if (
           !matchesTextFilters(
-            item.text,
-            item.createdAt,
+            note.text,
+            note.createdAt,
             index,
-            sortedItems.length,
+            sortedNotes.length,
             parsedTextFilters,
-            item.due,
-            item.labelId,
+            note.due,
+            note.labelId,
           )
         ) {
           return false;
         }
 
-        const itemDate = formatDate(item.createdAt);
+        const noteDate = formatDate(note.createdAt);
         const hasStartDate =
-          itemFilters.date.length === 10 && dateRegex.test(itemFilters.date);
+          noteFilters.date.length === 10 && dateRegex.test(noteFilters.date);
         const hasEndDate =
-          itemFilters.endDate.length === 10 &&
-          dateRegex.test(itemFilters.endDate);
+          noteFilters.endDate.length === 10 &&
+          dateRegex.test(noteFilters.endDate);
 
-        if (hasStartDate && itemDate < itemFilters.date.trim()) {
+        if (hasStartDate && noteDate < noteFilters.date.trim()) {
           return false;
         }
-        if (hasEndDate && itemDate > itemFilters.endDate.trim()) {
+        if (hasEndDate && noteDate > noteFilters.endDate.trim()) {
           return false;
         }
-        if (itemFilters.dueDate) {
-          if (!item.due || formatDate(item.due) !== itemFilters.dueDate) {
+        if (noteFilters.dueDate) {
+          if (!note.due || formatDate(note.due) !== noteFilters.dueDate) {
             return false;
           }
         }
-        if (itemFilters.weekday !== null) {
-          const itemCreatedDate = formatDate(item.createdAt);
-          const itemDueDate =
-            item.due !== undefined ? formatDate(item.due) : null;
+        if (noteFilters.weekday !== null) {
+          const noteCreatedDate = formatDate(note.createdAt);
+          const noteDueDate =
+            note.due !== undefined ? formatDate(note.due) : null;
           if (
-            itemCreatedDate !== itemFilters.weekday &&
-            itemDueDate !== itemFilters.weekday
+            noteCreatedDate !== noteFilters.weekday &&
+            noteDueDate !== noteFilters.weekday
           ) {
             return false;
           }
         }
-        if (itemFilters.hasDue) {
+        if (noteFilters.hasDue) {
           const todayUnix = dayjs().startOf("day").unix();
-          if (item.due === undefined || item.due < todayUnix) {
+          if (note.due === undefined || note.due < todayUnix) {
             return false;
           }
         }
@@ -943,53 +943,53 @@ function App() {
         return true;
       }).length,
     [
-      itemFilters.labelId,
-      itemFilters.date,
-      itemFilters.dueDate,
-      itemFilters.endDate,
-      itemFilters.hasDue,
-      itemFilters.weekday,
-      itemFilters.text,
+      noteFilters.labelId,
+      noteFilters.date,
+      noteFilters.dueDate,
+      noteFilters.endDate,
+      noteFilters.hasDue,
+      noteFilters.weekday,
+      noteFilters.text,
       parsedTextFilters,
-      sortedItems,
+      sortedNotes,
     ],
   );
 
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const item of calendarFilteredItems) {
-      const dayKey = formatDate(item.createdAt);
+    for (const note of calendarFilteredNotes) {
+      const dayKey = formatDate(note.createdAt);
       counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
     }
     return counts;
-  }, [calendarFilteredItems]);
+  }, [calendarFilteredNotes]);
 
   const oldestNoteDate = useMemo(() => {
-    if (items.length === 0) {
+    if (notes.length === 0) {
       return dayjs().startOf("day");
     }
-    const minTimestamp = Math.min(...items.map((item) => item.createdAt));
+    const minTimestamp = Math.min(...notes.map((note) => note.createdAt));
     return dayjs.unix(minTimestamp).startOf("day");
-  }, [items]);
+  }, [notes]);
 
   const today = useMemo(() => dayjs().startOf("day"), []);
 
   const filteredMinDate = useMemo(() => {
-    if (calendarFilteredItems.length === 0) {
+    if (calendarFilteredNotes.length === 0) {
       return oldestNoteDate;
     }
     const minTimestamp = Math.min(
-      ...calendarFilteredItems.map((item) => item.createdAt),
+      ...calendarFilteredNotes.map((note) => note.createdAt),
     );
     return dayjs.unix(minTimestamp).startOf("day");
-  }, [calendarFilteredItems, oldestNoteDate]);
+  }, [calendarFilteredNotes, oldestNoteDate]);
 
   const dueFutureCount = useMemo(() => {
     const todayUnix = today.unix();
-    return items.filter(
-      (item) => item.due !== undefined && item.due >= todayUnix,
+    return notes.filter(
+      (note) => note.due !== undefined && note.due >= todayUnix,
     ).length;
-  }, [items, today]);
+  }, [notes, today]);
 
   const weekdayStripDays = useMemo(
     () =>
@@ -1002,20 +1002,20 @@ function App() {
 
   const noteCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const item of items) {
-      const key = dayjs.unix(item.createdAt).format("YYYY-MM-DD");
+    for (const note of notes) {
+      const key = dayjs.unix(note.createdAt).format("YYYY-MM-DD");
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return counts;
-  }, [items]);
+  }, [notes]);
 
   const dueCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const item of items) {
-      if (item.due === undefined) {
+    for (const note of notes) {
+      if (note.due === undefined) {
         continue;
       }
-      const dueDay = dayjs.unix(item.due).startOf("day");
+      const dueDay = dayjs.unix(note.due).startOf("day");
       if (dueDay.isBefore(today, "day")) {
         continue;
       }
@@ -1023,7 +1023,7 @@ function App() {
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return counts;
-  }, [items, today]);
+  }, [notes, today]);
 
   const weekPickerRef = useRef<HTMLDivElement | null>(null);
 
@@ -1044,7 +1044,7 @@ function App() {
       date: "",
       endDate: "",
     }));
-    setItemFilters((prev) => ({
+    setNoteFilters((prev) => ({
       ...prev,
       weekday: prev.weekday === dayKey ? null : dayKey,
       date: "",
@@ -1054,7 +1054,7 @@ function App() {
     }));
   };
 
-  const noteTextForGoogleCalendar = editingItem?.text ?? draftNoteText;
+  const noteTextForGoogleCalendar = editingNote?.text ?? draftNoteText;
 
   const handleWeekPickerSaveDueDate = () => {
     const nextSelectedDay = weekPickerDueDate ?? today;
@@ -1076,7 +1076,7 @@ function App() {
       .minute(weekPickerDueMinute)
       .second(0);
     setDraftDueDate(nextDueDate);
-    setItemFilters((prev) => ({
+    setNoteFilters((prev) => ({
       ...prev,
       weekday: nextDueDate.format("YYYY-MM-DD"),
       date: "",
@@ -1108,7 +1108,7 @@ function App() {
 
   const handleWeekPickerClearDueDate = () => {
     setDraftDueDate(null);
-    setItemFilters((prev) => ({
+    setNoteFilters((prev) => ({
       ...prev,
       weekday: null,
       date: "",
@@ -1150,7 +1150,7 @@ function App() {
     hasDue?: boolean;
   }) => {
     setPendingDateFilter(nextFilter);
-    setItemFilters((prev) => ({
+    setNoteFilters((prev) => ({
       ...prev,
       date: nextFilter.date,
       endDate: nextFilter.endDate,
@@ -1162,8 +1162,8 @@ function App() {
   const futureDueLabel = useMemo(() => {
     const selectedDay =
       draftDueDate ??
-      (itemFilters.weekday
-        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+      (noteFilters.weekday
+        ? dayjs(noteFilters.weekday, "YYYY-MM-DD", true)
         : null);
     const parsedDue =
       draftNoteText !== ""
@@ -1208,13 +1208,13 @@ function App() {
     }
 
     return undefined;
-  }, [draftDueDate, draftNoteText, itemFilters.weekday, today]);
+  }, [draftDueDate, draftNoteText, noteFilters.weekday, today]);
 
   const openWeekPickerDueDialog = () => {
     const initialDate =
       draftDueDate ??
-      (itemFilters.weekday
-        ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
+      (noteFilters.weekday
+        ? dayjs(noteFilters.weekday, "YYYY-MM-DD", true)
         : today);
     const baseDate = initialDate.isValid()
       ? initialDate.isBefore(today, "day")
@@ -1262,18 +1262,18 @@ function App() {
               }}
               onChange={(_event, newValue) => {
                 const normalized =
-                  newValue === "items" || newValue === "labels"
+                  newValue === "notes" || newValue === "labels"
                     ? newValue
                     : (String(newValue) as TabValue);
                 if (normalized === "labels") {
-                  setItemFilters(emptyItemFilters);
+                  setNoteFilters(emptyNoteFilters);
                   setSelectMode(false);
                 }
                 setActiveTab(normalized);
               }}
             >
               <Tab
-                value="items"
+                value="notes"
                 label={
                   <Box
                     sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
@@ -1302,8 +1302,8 @@ function App() {
                     <Box component="span">Notes</Box>
                   </Box>
                 }
-                id="tab-items"
-                aria-controls="tabpanel-items"
+                id="tab-notes"
+                aria-controls="tabpanel-notes"
               />
               <Tab
                 value="labels"
@@ -1339,7 +1339,7 @@ function App() {
                 aria-controls="tabpanel-labels"
               />
             </Tabs>
-            {activeTab === "items" && (
+            {activeTab === "notes" && (
               <Stack direction="row" sx={{ alignItems: "center" }}>
                 <Tooltip
                   title={
@@ -1350,10 +1350,10 @@ function App() {
                     aria-label="Toggle select mode"
                     color={selectMode ? "primary" : "default"}
                     onClick={toggleSelectMode}
-                    disabled={items.length === 0}
+                    disabled={notes.length === 0}
                   >
                     <Badge
-                      badgeContent={selectedItemIds.size}
+                      badgeContent={selectednoteIds.size}
                       color="primary"
                       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                       sx={{
@@ -1375,10 +1375,10 @@ function App() {
                     aria-label="Filter by date"
                     color={
                       isDatePopoverOpen ||
-                      itemFilters.date ||
-                      itemFilters.endDate ||
-                      itemFilters.dueDate ||
-                      itemFilters.hasDue
+                      noteFilters.date ||
+                      noteFilters.endDate ||
+                      noteFilters.dueDate ||
+                      noteFilters.hasDue
                         ? "primary"
                         : "default"
                     }
@@ -1388,13 +1388,13 @@ function App() {
                         return;
                       }
                       setPendingDateFilter({
-                        date: itemFilters.date,
-                        endDate: itemFilters.endDate,
+                        date: noteFilters.date,
+                        endDate: noteFilters.endDate,
                       });
                       setDatePickerMode("start");
                       setDatePopoverAnchor(event.currentTarget);
                     }}
-                    disabled={items.length === 0 || selectMode}
+                    disabled={notes.length === 0 || selectMode}
                   >
                     <Icon path={mdiCalendar} size={0.9} />
                   </IconButton>
@@ -1448,17 +1448,17 @@ function App() {
             )}
           </Stack>
           <Box sx={{ pt: 2 }}>
-            <TabPanel value={activeTab} index="items">
+            <TabPanel value={activeTab} index="notes">
               <Stack spacing={1}>
                 <NoteForm
-                  editingItem={editingItem}
+                  editingNote={editingNote}
                   initialText={sharedText ?? undefined}
                   labels={labels}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
-                  onSubmit={handleItemSubmit}
-                  onCancelEdit={() => setEditingItem(null)}
+                  onSubmit={handleNoteSubmit}
+                  onCancelEdit={() => seteditingNote(null)}
                   onFilterTextChange={handleFilterTextChange}
                   onFilterLabelChange={handleFilterLabelChange}
                   onNoteTextChange={setDraftNoteText}
@@ -1496,7 +1496,7 @@ function App() {
                       selectedDayKey={
                         draftDueDate
                           ? draftDueDate.format("YYYY-MM-DD")
-                          : itemFilters.weekday
+                          : noteFilters.weekday
                       }
                       noteCountByDay={noteCountByDay}
                       dueCountByDay={dueCountByDay}
@@ -1512,7 +1512,7 @@ function App() {
                   >
                     <Tooltip
                       title={
-                        selectedItemIds.size > 0
+                        selectednoteIds.size > 0
                           ? "Change label"
                           : "Select notes to enable"
                       }
@@ -1521,7 +1521,7 @@ function App() {
                         <Button
                           variant="text"
                           startIcon={<Icon path={mdiFolderMove} size={0.9} />}
-                          disabled={selectedItemIds.size === 0}
+                          disabled={selectednoteIds.size === 0}
                           onClick={(event) =>
                             setbulkLabelAnchor(event.currentTarget)
                           }
@@ -1533,7 +1533,7 @@ function App() {
                     </Tooltip>
                     <Tooltip
                       title={
-                        selectedItemIds.size > 0
+                        selectednoteIds.size > 0
                           ? "Delete selected"
                           : "Select notes to enable"
                       }
@@ -1544,7 +1544,7 @@ function App() {
                           startIcon={
                             <Icon path={mdiTrashCanOutline} size={0.9} />
                           }
-                          disabled={selectedItemIds.size === 0}
+                          disabled={selectednoteIds.size === 0}
                           onClick={() => setConfirmBulkDeleteOpen(true)}
                           sx={{ textTransform: "none" }}
                         >
@@ -1558,7 +1558,7 @@ function App() {
                           variant="text"
                           startIcon={<Icon path={mdiCancel} size={0.9} />}
                           onClick={() => {
-                            setSelectedItemIds(new Set());
+                            setSelectedNoteIds(new Set());
                             setSelectMode(false);
                           }}
                           sx={{ textTransform: "none" }}
@@ -1570,69 +1570,69 @@ function App() {
                   </Stack>
                 )}
                 <NoteList
-                  items={items}
+                  notes={notes}
                   labels={labels}
-                  filters={itemFilters}
-                  mostRecentAddedItemId={recentlyAddedItemId}
-                  mostRecentEditedItemId={recentlyEditedItemId}
+                  filters={noteFilters}
+                  mostRecentAddedNoteId={recentlyAddednoteId}
+                  mostRecentEditedNoteId={recentlyEditednoteId}
                   dueDaysByDate={dueCountByDay}
                   noteCountsByDay={noteCountByDay}
-                  onEdit={handleEditItem}
-                  onDelete={handleItemDelete}
-                  onCopy={handleItemCopy}
-                  onShareLink={handleItemShareLink}
-                  onToggleBullet={handleItemToggleBullet}
-                  onAddCheckboxes={handleItemAddCheckboxes}
-                  onToggleCheckbox={handleItemToggleCheckbox}
-                  onDueChange={handleItemDueChange}
-                  onPin={handleItemPin}
-                  onNotify={(item) => {
+                  onEdit={handleEditNote}
+                  onDelete={handleNoteDelete}
+                  onCopy={handleNoteCopy}
+                  onShareLink={handleNoteShareLink}
+                  onToggleBullet={handleNoteToggleBullet}
+                  onAddCheckboxes={handleNoteAddCheckboxes}
+                  onToggleCheckbox={handleNoteToggleCheckbox}
+                  onDueChange={handleNoteDueChange}
+                  onPin={handleNotePin}
+                  onNotify={(note) => {
                     const labelName =
-                      labels.find((c) => c.id === item.labelId)?.name ??
+                      labels.find((c) => c.id === note.labelId)?.name ??
                       "Reminder";
                     const now = Math.floor(Date.now() / 1000);
-                    // mark item as having an active notification
-                    setItems((prev) =>
-                      prev.map((existingItem) =>
-                        existingItem.id === item.id
+                    // mark note as having an active notification
+                    setNotes((prev) =>
+                      prev.map((existingNote) =>
+                        existingNote.id === note.id
                           ? (() => {
                               const shouldRefreshTimestamp = isToday(
-                                existingItem.createdAt,
+                                existingNote.createdAt,
                               );
                               const nextCreatedAt = shouldRefreshTimestamp
-                                ? getUniqueCreatedAt(prev, now, existingItem.id)
-                                : existingItem.createdAt;
+                                ? getUniqueCreatedAt(prev, now, existingNote.id)
+                                : existingNote.createdAt;
 
                               return {
-                                ...existingItem,
+                                ...existingNote,
                                 hasNotification: true,
                                 id: String(nextCreatedAt),
                                 createdAt: nextCreatedAt,
                               };
                             })()
-                          : existingItem,
+                          : existingNote,
                       ),
                     );
-                    setNotification(`${labelName}: ${item.text}`);
-                    void showAppNotification(labelName, item.text).then(
+                    setNotification(`${labelName}: ${note.text}`);
+                    void showAppNotification(labelName, note.text).then(
                       handleNotificationResult,
                     );
                   }}
-                  onLabelChange={(item, labelId) => {
-                    setItems((prev) =>
-                      prev.map((existingItem) =>
-                        existingItem.id === item.id
-                          ? { ...existingItem, labelId }
-                          : existingItem,
+                  onLabelChange={(note, labelId) => {
+                    setNotes((prev) =>
+                      prev.map((existingNote) =>
+                        existingNote.id === note.id
+                          ? { ...existingNote, labelId }
+                          : existingNote,
                       ),
                     );
-                    if (editingItem?.id === item.id) {
-                      setEditingItem({ ...editingItem, labelId });
+                    if (editingNote?.id === note.id) {
+                      seteditingNote({ ...editingNote, labelId });
                     }
                   }}
                   selectMode={selectMode}
-                  selectedIds={selectedItemIds}
-                  onToggleSelect={toggleItemSelected}
+                  selectedIds={selectednoteIds}
+                  onToggleSelect={toggleNoteSelected}
                   onInstall={installPrompt ? handleInstall : undefined}
                 />
               </Stack>
@@ -1681,7 +1681,7 @@ function App() {
               !weekPickerDueDate || !noteTextForGoogleCalendar.trim()
             }
             onRemove={handleWeekPickerClearDueDate}
-            showRemoveButton={Boolean(draftDueDate || itemFilters.weekday)}
+            showRemoveButton={Boolean(draftDueDate || noteFilters.weekday)}
             dueDaysByDate={dueCountByDay}
             noteCountsByDay={noteCountByDay}
             title="Set due date"
@@ -1702,7 +1702,7 @@ function App() {
         </Snackbar>
         <ConfirmBulkDeleteDialog
           open={confirmBulkDeleteOpen}
-          selectedCount={selectedItemIds.size}
+          selectedCount={selectednoteIds.size}
           onClose={() => setConfirmBulkDeleteOpen(false)}
           onConfirm={handleBulkDelete}
         />

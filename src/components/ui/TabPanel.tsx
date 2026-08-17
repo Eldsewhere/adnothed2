@@ -3,8 +3,8 @@ import { Box } from "@mui/material";
 
 type TabPanelProps = {
   children: ReactNode;
-  value: "items" | "labels" | "utils";
-  index: "items" | "labels" | "utils";
+  value: "notes" | "labels" | "utils";
+  index: "notes" | "labels" | "utils";
 };
 
 const TabPanel = ({ children, value, index }: TabPanelProps) => {

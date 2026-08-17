@@ -12,6 +12,7 @@ import {
   Tooltip,
   Typography,
   colors,
+  Stack,
   DialogActions,
   Button,
   Divider,
@@ -22,6 +23,7 @@ import {
   mdiCalendarClock,
   mdiClose,
   mdiCheckboxMarked,
+  mdiChevronDown,
   mdiContentCopy,
   mdiDotsVertical,
   mdiFormatListBulleted,
@@ -36,10 +38,12 @@ import {
   mdiNoteText,
   mdiOpenInNew,
 } from "@mdi/js";
-import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
+import type { Label, Note, NoteFilters as NoteFiltersValue } from "../types";
 import {
   dateRegex,
   formatDate,
+  formatDueDate,
+  formatTimestamp,
   isToday,
 } from "../utils/formatTimestamp";
 import {
@@ -47,16 +51,15 @@ import {
   NO_LABEL_FILTER_VALUE,
   parseTextFilters,
 } from "../utils/noteFilters";
-import { getFirstUrl } from "../utils/textPatterns";
+import { getFirstUrl, splitTextByUrls } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
-import DueDateDialog from "./dialogs/DueDateDialog";
+import DueDateDialog from "./DueDateDialog";
 import LabelIcon from "./ui/LabelIcon";
-import NoteListRow from "./NoteListRow";
 
 type NoteListProps = {
   notes: Note[];
-  labels: Label[];
-  filters: noteFiltersValue;
+  categories: Label[];
+  filters: NoteFiltersValue;
   mostRecentAddedNoteId: string | null;
   mostRecentEditedNoteId: string | null;
   dueDaysByDate?: Map<string, number>;
@@ -69,7 +72,7 @@ type NoteListProps = {
   onAddCheckboxes: (note: Note) => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onNotify: (note: Note) => void;
-  onLabelChange: (note: Note, labelId: string | null) => void;
+  onCategoryChange: (note: Note, labelId: string | null) => void;
   onDueChange: (note: Note, due: number | null) => void;
   onPin: (note: Note) => void;
   selectMode: boolean;
@@ -140,9 +143,9 @@ const isPriorityNote = (note: Note): boolean =>
   note.pinned ||
   (note.due !== undefined && (isToday(note.due) || isTomorrow(note.due)));
 
-const NoteList = ({
+const ItemList = ({
   notes,
-  labels,
+  categories,
   filters,
   mostRecentAddedNoteId,
   mostRecentEditedNoteId,
@@ -156,7 +159,7 @@ const NoteList = ({
   onAddCheckboxes,
   onToggleCheckbox,
   onNotify,
-  onLabelChange,
+  onCategoryChange,
   onDueChange,
   onPin,
   selectMode,
@@ -190,7 +193,7 @@ const NoteList = ({
   const [expandablenoteIds, setExpandableNoteIds] = useState<Set<string>>(
     new Set(),
   );
-  const [labelMenuAnchor, setLabelMenuAnchor] = useState<{
+  const [categoryMenuAnchor, setCategoryMenuAnchor] = useState<{
     el: HTMLElement;
     note: Note;
   } | null>(null);
@@ -210,9 +213,9 @@ const NoteList = ({
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(400);
 
-  const labelsById = useMemo(
-    () => new Map(labels.map((label) => [label.id, label])),
-    [labels],
+  const categoriesById = useMemo(
+    () => new Map(categories.map((category) => [category.id, category])),
+    [categories],
   );
 
   const sortedNotes = useMemo(() => {
@@ -371,11 +374,11 @@ const NoteList = ({
     });
   };
 
-  const openLabelMenu = (event: MouseEvent<HTMLElement>, note: Note) => {
-    setLabelMenuAnchor({ el: event.currentTarget, note });
+  const openCategoryMenu = (event: MouseEvent<HTMLElement>, note: Note) => {
+    setCategoryMenuAnchor({ el: event.currentTarget, note });
   };
 
-  const closeLabelMenu = () => setLabelMenuAnchor(null);
+  const closeCategoryMenu = () => setCategoryMenuAnchor(null);
 
   const openDueDateDialog = (note: Note) => {
     setdueDateDialogNote(note);
@@ -452,12 +455,12 @@ const NoteList = ({
     );
   };
 
-  const handleLabelSelect = (labelId: string | null) => {
-    if (!labelMenuAnchor) {
+  const handleCategorySelect = (labelId: string | null) => {
+    if (!categoryMenuAnchor) {
       return;
     }
-    onLabelChange(labelMenuAnchor.note, labelId);
-    closeLabelMenu();
+    onCategoryChange(categoryMenuAnchor.note, labelId);
+    closeCategoryMenu();
   };
 
   const parsedTextFilters = useMemo(
@@ -610,8 +613,8 @@ const NoteList = ({
           <Box sx={{ height: totalHeight, position: "relative" }}>
             {visibleNotes.map((note, i) => {
               const index = startIndex + i;
-              const label = note.labelId
-                ? labelsById.get(note.labelId)
+              const category = note.labelId
+                ? categoriesById.get(note.labelId)
                 : undefined;
               const dayIndex =
                 dayIndexByDate.get(formatDate(note.createdAt)) ?? 0;
@@ -641,34 +644,316 @@ const NoteList = ({
                 isMostRecentAddedNote || isMostRecentlyEditedNote;
 
               return (
-                <NoteListRow
+                <Box
                   key={note.id}
-                  top={rowOffsets[index] - rowHeights[index]}
-                  height={rowHeights[index]}
-                  note={note}
-                  label={label}
-                  isPriority={isPrioritary}
-                  isLastNote={isLastNote}
-                  isPriorityBoundary={isPriorityBoundary}
-                  isPriorityGroupStart={isPriorityGroupStart}
-                  isPriorityGroupEnd={isPriorityGroupEnd}
-                  isNonPriorityGroupStart={isNonPriorityGroupStart}
-                  isNonPriorityGroupEnd={isNonPriorityGroupEnd}
-                  dayIndex={dayIndex}
-                  selectMode={selectMode}
-                  selectedIds={selectedIds}
-                  isOverflowing={overflowingnoteIds.has(note.id)}
-                  isExpandable={expandablenoteIds.has(note.id)}
-                  shouldHighlightRecentEdit={shouldHighlightRecentEdit}
-                  onToggleSelect={onToggleSelect}
-                  onOpenLabelMenu={openLabelMenu}
-                  onToggleCheckbox={onToggleCheckbox}
-                  onOpenOverflow={(id) => setOverflowModalnoteId(id)}
-                  onOpenActionsMenu={(event, note) =>
-                    setMenuAnchor({ el: event.currentTarget, note: note })
-                  }
-                  setnoteTextRef={(element) => updateOverflowState(note.id, element)}
-                />
+                  sx={{
+                    position: "absolute",
+                    top: rowOffsets[index] - rowHeights[index],
+                    left: 0,
+                    right: 0,
+                    height: rowHeights[index],
+                    display: "flex",
+                    alignItems: "center",
+                    borderBottom: isPriorityBoundary
+                      ? "6px solid "
+                      : "3px solid",
+                    paddingX: 1,
+                    borderTopLeftRadius:
+                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+                    borderTopRightRadius:
+                      isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
+                    borderBottomLeftRadius:
+                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote
+                        ? 12
+                        : 0,
+                    borderBottomRightRadius:
+                      isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote
+                        ? 12
+                        : 0,
+                    borderColor: isPriorityBoundary
+                      ? colors.grey[900]
+                      : colors.grey[900],
+                    overflow: "hidden",
+                    bgcolor: shouldHighlightRecentEdit
+                      ? "rgba(76, 175, 80, 0.18)"
+                      : isPrioritary
+                        ? "#414d4b"
+                        : dayIndex % 2 === 0
+                          ? colors.blueGrey[900]
+                          : colors.blueGrey[800],
+                  }}
+                >
+                  {selectMode && (
+                    <Checkbox
+                      size="small"
+                      checked={selectedIds.has(note.id)}
+                      onChange={() => onToggleSelect(note.id)}
+                      sx={{ p: 0.5, mr: 0.5 }}
+                    />
+                  )}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexShrink: 0,
+                      pr: 1,
+                    }}
+                  >
+                    <Tooltip
+                      title={category ? category.name : "Assign a label"}
+                      arrow
+                    >
+                      <IconButton
+                        aria-label={`Change label for ${note.text}`}
+                        size="small"
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          openCategoryMenu(event, note)
+                        }
+                        sx={{
+                          p: 0.5,
+                          color: category ? "inherit" : colors.blueGrey[500],
+                        }}
+                      >
+                        {category ? (
+                          <LabelIcon
+                            icon={category.icon}
+                            color={category.color}
+                            size={0.8}
+                          />
+                        ) : (
+                          <Icon path={mdiLabelOff} size={0.8} />
+                        )}
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        minWidth: 0,
+                      }}
+                    >
+                      <Typography
+                        component="div"
+                        ref={(element) => updateOverflowState(note.id, element)}
+                        data-note-text-id={note.id}
+                        sx={{
+                          flex: 1,
+                          minWidth: 0,
+                          textAlign: "left",
+                          whiteSpace: "pre-wrap",
+                          overflow: "hidden",
+                          overflowWrap: "anywhere",
+                          wordBreak: "break-word",
+                          display: "-webkit-box",
+                          WebkitLineClamp: overflowingnoteIds.has(note.id)
+                            ? 4
+                            : 2,
+                          WebkitBoxOrient: "vertical",
+                        }}
+                      >
+                        {note.text.split("\n").map((row, rowIndex) => {
+                          const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
+                          const isChecked =
+                            checkboxMatch?.[2]?.toLowerCase() === "x";
+                          const rowText = checkboxMatch?.[3] ?? row;
+                          return (
+                            <Box
+                              key={`${rowIndex}-${row}`}
+                              component="span"
+                              sx={{ display: "inline" }}
+                            >
+                              {checkboxMatch && (
+                                <Checkbox
+                                  slotProps={{
+                                    input: {
+                                      "aria-labelledby": `note-text-${note.id}-row-${rowIndex}`,
+                                    },
+                                  }}
+                                  checked={isChecked}
+                                  onChange={() =>
+                                    onToggleCheckbox(note, rowIndex)
+                                  }
+                                  size="small"
+                                  sx={{
+                                    p: 0,
+                                    mr: 0.25,
+                                    verticalAlign: "text-bottom",
+                                  }}
+                                />
+                              )}
+                              <Box
+                                id={
+                                  checkboxMatch
+                                    ? `note-text-${note.id}-row-${rowIndex}`
+                                    : undefined
+                                }
+                                component="span"
+                                sx={{
+                                  textDecoration: isChecked
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              >
+                                {splitTextByUrls(rowText).map(
+                                  (part, partIndex) =>
+                                    part.isUrl ? (
+                                      <Box
+                                        key={partIndex}
+                                        component="a"
+                                        href={part.value}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{
+                                          color: "info.main",
+                                          textDecoration: "underline",
+                                          wordBreak: "break-word",
+                                        }}
+                                      >
+                                        {part.value}
+                                      </Box>
+                                    ) : (
+                                      <span key={partIndex}>{part.value}</span>
+                                    ),
+                                )}
+                              </Box>
+                              {rowIndex < note.text.split("\n").length - 1 && (
+                                <br />
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Typography>
+                      {expandablenoteIds.has(note.id) && (
+                        <Tooltip title="Expand note" arrow>
+                          <IconButton
+                            aria-label={`Expand ${note.text}`}
+                            size="small"
+                            onClick={() => setOverflowModalnoteId(note.id)}
+                            sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
+                          >
+                            <Icon path={mdiChevronDown} size={0.7} />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Stack
+                        sx={{
+                          justifyContent: "space-between",
+                          flexDirection: "row",
+                          width: "100%",
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{
+                            textAlign: "left",
+                            display: "flex",
+                            alignItems: "center",
+                            color:
+                              isToday(note.createdAt) ||
+                              note.pinned ||
+                              (note.due !== undefined &&
+                                (isToday(note.due) || isTomorrow(note.due))) ||
+                              note.hasNotification
+                                ? colors.lightGreen[400]
+                                : colors.blueGrey[300],
+                          }}
+                        >
+                          {formatTimestamp(note.createdAt)}
+                          {note.hasNotification && (
+                            <Tooltip
+                              title="Notified"
+                              aria-label={undefined}
+                              arrow
+                            >
+                              <Box
+                                component="span"
+                                sx={{
+                                  ml: 0.5,
+                                  display: "inline-flex",
+                                  color: colors.lightGreen[400],
+                                }}
+                              >
+                                <Icon path={mdiBell} size={0.5} />
+                              </Box>
+                            </Tooltip>
+                          )}
+                          {note.pinned && (
+                            <Tooltip
+                              title="Pinned"
+                              aria-label={undefined}
+                              arrow
+                            >
+                              <Box
+                                component="span"
+                                sx={{
+                                  ml: 0.5,
+                                  display: "inline-flex",
+                                  color: colors.lightGreen[400],
+                                }}
+                              >
+                                <Icon path={mdiPin} size={0.6} />
+                              </Box>
+                            </Tooltip>
+                          )}
+                        </Typography>
+                        {selectMode ? (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{
+                              textAlign: "left",
+                              display: "block",
+                              color: colors.blueGrey[400],
+                            }}
+                          >
+                            #
+                            {sortedNotes.length -
+                              sortedNotes.findIndex(
+                                (currenItem) => currenItem.id === note.id,
+                              )}
+                          </Typography>
+                        ) : note.due !== undefined &&
+                          note.due >= today.unix() ? (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              textAlign: "right",
+                              display: "block",
+                              color: colors.orange[300],
+                            }}
+                          >
+                            {formatDueDate(note.due)}
+                          </Typography>
+                        ) : null}
+                      </Stack>
+                    </Box>
+                  </Box>
+                  <Box
+                    sx={{
+                      flexShrink: 0,
+                      display: "flex",
+                      alignItems: "center",
+                    }}
+                  >
+                    <Tooltip title="Actions">
+                      <IconButton
+                        aria-label={`Actions for ${note.text}`}
+                        size="small"
+                        onClick={(event: MouseEvent<HTMLElement>) =>
+                          setMenuAnchor({ el: event.currentTarget, note })
+                        }
+                        disabled={selectMode}
+                      >
+                        <Icon path={mdiDotsVertical} size={0.8} />
+                      </IconButton>
+                    </Tooltip>
+                  </Box>
+                </Box>
               );
             })}
           </Box>
@@ -1056,8 +1341,8 @@ const NoteList = ({
             >
               <Typography variant="body2">
                 {(() => {
-                  const label = labels.find(
-                    (label) => label.id === overflowModalNote?.labelId,
+                  const category = categories.find(
+                    (category) => category.id === overflowModalNote?.labelId,
                   );
 
                   return (
@@ -1069,16 +1354,16 @@ const NoteList = ({
                         gap: 1,
                       }}
                     >
-                      {label ? (
+                      {category ? (
                         <LabelIcon
-                          icon={label.icon}
-                          color={label.color}
+                          icon={category.icon}
+                          color={category.color}
                           size={0.8}
                         />
                       ) : (
                         <Icon path={mdiLabelOff} size={0.8} />
                       )}
-                      {label ? label.name : "no label"}
+                      {category ? category.name : "no label"}
                     </Box>
                   );
                 })()}
@@ -1228,14 +1513,14 @@ const NoteList = ({
         )}
       </Menu>
       <Menu
-        anchorEl={labelMenuAnchor?.el}
-        open={!!labelMenuAnchor}
-        onClose={closeLabelMenu}
+        anchorEl={categoryMenuAnchor?.el}
+        open={!!categoryMenuAnchor}
+        onClose={closeCategoryMenu}
       >
         <MenuItem
-          autoFocus={labelMenuAnchor?.note.labelId === null}
-          selected={labelMenuAnchor?.note.labelId === null}
-          onClick={() => handleLabelSelect(null)}
+          autoFocus={categoryMenuAnchor?.note.labelId === null}
+          selected={categoryMenuAnchor?.note.labelId === null}
+          onClick={() => handleCategorySelect(null)}
           sx={{ color: colors.blueGrey[300] }}
         >
           <Box
@@ -1249,26 +1534,26 @@ const NoteList = ({
           >
             <Icon path={mdiLabelOff} size={0.7} />
           </Box>
-          {labels.length == 0 ? "no labels available" : "no label"}
+          {categories.length == 0 ? "no labels available" : "no label"}
         </MenuItem>
-        {labels.map((label) => (
+        {categories.map((category) => (
           <MenuItem
-            key={label.id}
-            autoFocus={labelMenuAnchor?.note.labelId === label.id}
-            selected={labelMenuAnchor?.note.labelId === label.id}
-            onClick={() => handleLabelSelect(label.id)}
+            key={category.id}
+            autoFocus={categoryMenuAnchor?.note.labelId === category.id}
+            selected={categoryMenuAnchor?.note.labelId === category.id}
+            onClick={() => handleCategorySelect(category.id)}
           >
             <Box
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
               <LabelIcon
-                icon={label.icon}
-                color={label.color}
+                icon={category.icon}
+                color={category.color}
                 size={0.7}
               />
             </Box>
-            {label.name}
+            {category.name}
           </MenuItem>
         ))}
       </Menu>
@@ -1305,4 +1590,4 @@ const NoteList = ({
   );
 };
 
-export default NoteList;
+export default ItemList;

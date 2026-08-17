@@ -6,13 +6,13 @@ import {
   DialogContentText,
   DialogTitle,
 } from "@mui/material";
-import type { Label, Item } from "../../types";
+import type { Label, Note } from "../../types";
 
 type ConfirmImportDialogProps = {
   open: boolean;
   pendingImport: {
     labels: Label[];
-    items: Item[];
+    notes: Note[];
     fileName: string;
     parseError: string | null;
   } | null;

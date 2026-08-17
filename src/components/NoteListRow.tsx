@@ -17,7 +17,7 @@ import {
   mdiPin,
 } from "@mdi/js";
 import dayjs from "dayjs";
-import type { Label, Item } from "../types";
+import type { Label, Note } from "../types";
 import {
   formatDueDate,
   formatTimestamp,
@@ -35,12 +35,12 @@ const isTomorrow = (timestamp: number): boolean => {
 };
 
 type NoteListRowProps = {
-  item: Item;
+  note: Note;
   label?: Label;
   top: number;
   height: number;
   isPriority: boolean;
-  isLastItem: boolean;
+  isLastNote: boolean;
   isPriorityBoundary: boolean;
   isPriorityGroupStart: boolean;
   isPriorityGroupEnd: boolean;
@@ -53,20 +53,20 @@ type NoteListRowProps = {
   isExpandable: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
-  onOpenLabelMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
-  onToggleCheckbox: (item: Item, rowIndex: number) => void;
-  onOpenOverflow: (itemId: string) => void;
-  onOpenActionsMenu: (event: MouseEvent<HTMLElement>, item: Item) => void;
-  setItemTextRef: (element: HTMLElement | null) => void;
+  onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
+  onToggleCheckbox: (note: Note, rowIndex: number) => void;
+  onOpenOverflow: (noteId: string) => void;
+  onOpenActionsMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
+  setnoteTextRef: (element: HTMLElement | null) => void;
 };
 
 const NoteListRow = ({
-  item,
+  note,
   label,
   top,
   height,
   isPriority,
-  isLastItem,
+  isLastNote,
   isPriorityBoundary,
   isPriorityGroupStart,
   isPriorityGroupEnd,
@@ -83,10 +83,10 @@ const NoteListRow = ({
   onToggleCheckbox,
   onOpenOverflow,
   onOpenActionsMenu,
-  setItemTextRef,
+  setnoteTextRef,
 }: NoteListRowProps) => (
   <Box
-    key={item.id}
+    key={note.id}
     sx={{
       position: "absolute",
       top,
@@ -102,9 +102,9 @@ const NoteListRow = ({
       borderTopRightRadius:
         isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
       borderBottomLeftRadius:
-        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem ? 12 : 0,
+        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
       borderBottomRightRadius:
-        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastItem ? 12 : 0,
+        isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
       borderColor: colors.grey[900],
       overflow: "hidden",
       bgcolor: shouldHighlightRecentEdit
@@ -119,8 +119,8 @@ const NoteListRow = ({
     {selectMode && (
       <Checkbox
         size="small"
-        checked={selectedIds.has(item.id)}
-        onChange={() => onToggleSelect(item.id)}
+        checked={selectedIds.has(note.id)}
+        onChange={() => onToggleSelect(note.id)}
         sx={{ p: 0.5, mr: 0.5 }}
       />
     )}
@@ -134,10 +134,10 @@ const NoteListRow = ({
     >
       <Tooltip title={label ? label.name : "Assign a label"} arrow>
         <IconButton
-          aria-label={`Change label for ${item.text}`}
+          aria-label={`Change label for ${note.text}`}
           size="small"
           onClick={(event: MouseEvent<HTMLElement>) =>
-            onOpenLabelMenu(event, item)
+            onOpenLabelMenu(event, note)
           }
           sx={{
             p: 0.5,
@@ -162,8 +162,8 @@ const NoteListRow = ({
       >
         <Typography
           component="div"
-          ref={setItemTextRef}
-          data-item-text-id={item.id}
+          ref={setnoteTextRef}
+          data-note-text-id={note.id}
           sx={{
             flex: 1,
             minWidth: 0,
@@ -177,7 +177,7 @@ const NoteListRow = ({
             WebkitBoxOrient: "vertical",
           }}
         >
-          {item.text.split("\n").map((row, rowIndex) => {
+          {note.text.split("\n").map((row, rowIndex) => {
             const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
             const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
             const rowText = checkboxMatch?.[2] ?? row;
@@ -191,11 +191,11 @@ const NoteListRow = ({
                   <Checkbox
                     slotProps={{
                       input: {
-                        "aria-labelledby": `item-text-${item.id}-row-${rowIndex}`,
+                        "aria-labelledby": `note-text-${note.id}-row-${rowIndex}`,
                       },
                     }}
                     checked={isChecked}
-                    onChange={() => onToggleCheckbox(item, rowIndex)}
+                    onChange={() => onToggleCheckbox(note, rowIndex)}
                     size="small"
                     sx={{
                       p: 0,
@@ -205,7 +205,7 @@ const NoteListRow = ({
                   />
                 )}
                 <Box
-                  id={checkboxMatch ? `item-text-${item.id}-row-${rowIndex}` : undefined}
+                  id={checkboxMatch ? `note-text-${note.id}-row-${rowIndex}` : undefined}
                   component="span"
                   sx={{
                     textDecoration: isChecked ? "line-through" : "none",
@@ -232,7 +232,7 @@ const NoteListRow = ({
                     ),
                   )}
                 </Box>
-                {rowIndex < item.text.split("\n").length - 1 && <br />}
+                {rowIndex < note.text.split("\n").length - 1 && <br />}
               </Box>
             );
           })}
@@ -240,9 +240,9 @@ const NoteListRow = ({
         {isExpandable && (
           <Tooltip title="Expand note" arrow>
             <IconButton
-              aria-label={`Expand ${item.text}`}
+              aria-label={`Expand ${note.text}`}
               size="small"
-              onClick={() => onOpenOverflow(item.id)}
+              onClick={() => onOpenOverflow(note.id)}
               sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
             >
               <Icon path={mdiChevronDown} size={0.7} />
@@ -266,17 +266,17 @@ const NoteListRow = ({
               display: "flex",
               alignItems: "center",
               color:
-                isToday(item.createdAt) ||
-                item.pinned ||
-                (item.due !== undefined &&
-                  (isToday(item.due) || isTomorrow(item.due))) ||
-                item.hasNotification
+                isToday(note.createdAt) ||
+                note.pinned ||
+                (note.due !== undefined &&
+                  (isToday(note.due) || isTomorrow(note.due))) ||
+                note.hasNotification
                   ? colors.lightGreen[400]
                   : colors.blueGrey[300],
             }}
           >
-            {formatTimestamp(item.createdAt)}
-            {item.hasNotification && (
+            {formatTimestamp(note.createdAt)}
+            {note.hasNotification && (
               <Tooltip title="Notified" aria-label={undefined} arrow>
                 <Box
                   component="span"
@@ -290,7 +290,7 @@ const NoteListRow = ({
                 </Box>
               </Tooltip>
             )}
-            {item.pinned && (
+            {note.pinned && (
               <Tooltip title="Pinned" aria-label={undefined} arrow>
                 <Box
                   component="span"
@@ -305,7 +305,7 @@ const NoteListRow = ({
               </Tooltip>
             )}
           </Typography>
-          {item.due !== undefined && item.due >= dayjs().unix() ? (
+          {note.due !== undefined && note.due >= dayjs().unix() ? (
             <Typography
               variant="caption"
               sx={{
@@ -314,7 +314,7 @@ const NoteListRow = ({
                 color: colors.orange[300],
               }}
             >
-              {formatDueDate(item.due)}
+              {formatDueDate(note.due)}
             </Typography>
           ) : null}
         </Stack>
@@ -329,10 +329,10 @@ const NoteListRow = ({
     >
       <Tooltip title="Actions">
         <IconButton
-          aria-label={`Actions for ${item.text}`}
+          aria-label={`Actions for ${note.text}`}
           size="small"
           onClick={(event: MouseEvent<HTMLElement>) =>
-            onOpenActionsMenu(event, item)
+            onOpenActionsMenu(event, note)
           }
           disabled={selectMode}
         >

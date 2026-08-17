@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import type { ItemFilters } from "../types";
+import type { NoteFilters } from "../types";
 import { dateRegex, formatDate } from "./formatTimestamp";
 import { containsEmail, containsNumbers, containsUrl } from "./textPatterns";
 
@@ -8,7 +8,7 @@ const yearMonthRegex = /^\d{4}-\d{2}$/;
 
 export const NO_LABEL_FILTER_VALUE = "__none__";
 
-export const emptyItemFilters: ItemFilters = {
+export const emptyNoteFilters: NoteFilters = {
   labelId: "",
   text: "",
   date: "",
@@ -196,7 +196,7 @@ export function matchesTextFilters(
   text: string,
   createdAt: number,
   index: number,
-  sortedItemsLength: number,
+  sortedNotesLength: number,
   parsed: ParsedTextFilters,
   due?: number,
   labelId: string | null = null,
@@ -208,7 +208,7 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.indexAt !== null && index !== sortedItemsLength - parsed.indexAt) {
+  if (parsed.indexAt !== null && index !== sortedNotesLength - parsed.indexAt) {
     return false;
   }
 
@@ -232,27 +232,27 @@ export function matchesTextFilters(
     return false;
   }
 
-  const itemDate = formatDate(createdAt);
+  const noteDate = formatDate(createdAt);
 
   if (parsed.exactDate !== null) {
     if (yearRegex.test(parsed.exactDate)) {
-      if (!itemDate.startsWith(`${parsed.exactDate}-`)) {
+      if (!noteDate.startsWith(`${parsed.exactDate}-`)) {
         return false;
       }
     } else if (yearMonthRegex.test(parsed.exactDate)) {
-      if (!itemDate.startsWith(`${parsed.exactDate}-`)) {
+      if (!noteDate.startsWith(`${parsed.exactDate}-`)) {
         return false;
       }
-    } else if (itemDate !== parsed.exactDate) {
+    } else if (noteDate !== parsed.exactDate) {
       return false;
     }
   }
 
-  if (parsed.minDate !== null && itemDate < parsed.minDate) {
+  if (parsed.minDate !== null && noteDate < parsed.minDate) {
     return false;
   }
 
-  if (parsed.maxDate !== null && itemDate > parsed.maxDate) {
+  if (parsed.maxDate !== null && noteDate > parsed.maxDate) {
     return false;
   }
 
