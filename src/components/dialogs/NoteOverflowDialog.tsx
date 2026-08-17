@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react";
 import {
   Box,
+  Button,
   Checkbox,
   Dialog,
   DialogActions,
@@ -21,7 +22,7 @@ const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 type NoteOverflowDialogProps = {
   open: boolean;
   note: Note | null;
-  categories: Label[];
+  labels: Label[];
   onClose: () => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenActionsMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
@@ -30,7 +31,7 @@ type NoteOverflowDialogProps = {
 const NoteOverflowDialog = ({
   open,
   note,
-  categories,
+  labels,
   onClose,
   onToggleCheckbox,
   onOpenActionsMenu,
@@ -54,9 +55,7 @@ const NoteOverflowDialog = ({
         >
           <Typography variant="body2">
             {(() => {
-              const category = categories.find(
-                (category) => category.id === note.labelId,
-              );
+              const label = labels.find((label) => label.id === note.labelId);
 
               return (
                 <Box
@@ -67,16 +66,16 @@ const NoteOverflowDialog = ({
                     gap: 1,
                   }}
                 >
-                  {category ? (
+                  {label ? (
                     <LabelIcon
-                      icon={category.icon}
-                      color={category.color}
+                      icon={label.icon}
+                      color={label.color}
                       size={0.8}
                     />
                   ) : (
                     <Icon path={mdiLabelOff} size={0.8} />
                   )}
-                  {category ? category.name : "no label"}
+                  {label ? label.name : "no label"}
                 </Box>
               );
             })()}
@@ -161,14 +160,16 @@ const NoteOverflowDialog = ({
         }}
       >
         <Tooltip title="Actions">
-          <IconButton
-            size="small"
+          <Button
+            color="primary"
+            variant="outlined"
+            startIcon={<Icon path={mdiDotsVertical} size={0.8} />}
             onClick={(event: MouseEvent<HTMLElement>) =>
               onOpenActionsMenu(event, note)
             }
           >
-            <Icon path={mdiDotsVertical} size={0.8} />
-          </IconButton>
+            Actions
+          </Button>
         </Tooltip>
       </DialogActions>
     </Dialog>

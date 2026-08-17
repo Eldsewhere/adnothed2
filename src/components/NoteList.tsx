@@ -37,11 +37,7 @@ import {
   mdiOpenInNew,
 } from "@mdi/js";
 import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
-import {
-  dateRegex,
-  formatDate,
-  isToday,
-} from "../utils/formatTimestamp";
+import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
   matchesTextFilters,
   NO_LABEL_FILTER_VALUE,
@@ -52,6 +48,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import DueDateDialog from "./dialogs/DueDateDialog";
 import LabelIcon from "./ui/LabelIcon";
 import NoteListRow from "./NoteListRow";
+import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 
 type NoteListProps = {
   notes: Note[];
@@ -472,10 +469,7 @@ const NoteList = ({
           if (note.labelId !== null) {
             return false;
           }
-        } else if (
-          filters.labelId &&
-          note.labelId !== filters.labelId
-        ) {
+        } else if (filters.labelId && note.labelId !== filters.labelId) {
           return false;
         }
         if (
@@ -620,7 +614,8 @@ const NoteList = ({
               const previousNote = filteredNotes[index - 1];
               const nextNote = filteredNotes[index + 1];
               const isPriorityGroupStart =
-                isPrioritary && (!previousNote || !isPriorityNote(previousNote));
+                isPrioritary &&
+                (!previousNote || !isPriorityNote(previousNote));
               const isPriorityGroupEnd =
                 isPrioritary && (!nextNote || !isPriorityNote(nextNote));
               const isNonPriorityGroupStart =
@@ -667,7 +662,9 @@ const NoteList = ({
                   onOpenActionsMenu={(event, note) =>
                     setMenuAnchor({ el: event.currentTarget, note: note })
                   }
-                  setnoteTextRef={(element) => updateOverflowState(note.id, element)}
+                  setnoteTextRef={(element) =>
+                    updateOverflowState(note.id, element)
+                  }
                 />
               );
             })}
@@ -1037,148 +1034,19 @@ const NoteList = ({
         </MenuItem>
       </Menu>
       {overflowModalNote && (
-        <Dialog
+        <NoteOverflowDialog
           open
+          note={overflowModalNote}
+          labels={labels}
           onClose={() => setOverflowModalnoteId(null)}
-          fullWidth
-          maxWidth="sm"
-        >
-          <DialogTitle
-            sx={{ position: "relative", bgcolor: colors.blueGrey[900], p: 1.5 }}
-          >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 1,
-              }}
-            >
-              <Typography variant="body2">
-                {(() => {
-                  const label = labels.find(
-                    (label) => label.id === overflowModalNote?.labelId,
-                  );
-
-                  return (
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 1,
-                      }}
-                    >
-                      {label ? (
-                        <LabelIcon
-                          icon={label.icon}
-                          color={label.color}
-                          size={0.8}
-                        />
-                      ) : (
-                        <Icon path={mdiLabelOff} size={0.8} />
-                      )}
-                      {label ? label.name : "no label"}
-                    </Box>
-                  );
-                })()}
-              </Typography>
-            </Box>
-            <Tooltip title="Close">
-              <IconButton
-                aria-label="Close"
-                size="small"
-                onClick={() => setOverflowModalnoteId(null)}
-                sx={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  color: colors.blueGrey[100],
-                }}
-              >
-                <Icon path={mdiClose} size={0.8} />
-              </IconButton>
-            </Tooltip>
-          </DialogTitle>
-          <DialogContent sx={{ bgcolor: colors.blueGrey[800], p: 2 }}>
-            <Box
-              sx={{
-                overflowWrap: "anywhere",
-                mt: 2,
-                maxHeight: "calc(10 * 1.5em)",
-                overflowY: "auto",
-              }}
-            >
-              {overflowModalNote.text.split("\n").map((row, rowIndex) => {
-                const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
-                const isChecked = checkboxMatch?.[2]?.toLowerCase() === "x";
-                const rowText = checkboxMatch?.[3] ?? row;
-                return (
-                  <Box
-                    key={`${rowIndex}-${row}`}
-                    sx={{
-                      display: "flex",
-                      alignItems: "flex-start",
-                      minHeight: "1.5em",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {checkboxMatch && (
-                      <Checkbox
-                        slotProps={{
-                          input: {
-                            "aria-labelledby": `note-text-${overflowModalNote.id}-row-${rowIndex}`,
-                          },
-                        }}
-                        checked={isChecked}
-                        onChange={() =>
-                          onToggleCheckbox(overflowModalNote, rowIndex)
-                        }
-                        size="small"
-                        sx={{ p: 0.25, mr: 0.5, mt: 0.1 }}
-                      />
-                    )}
-                    <Typography
-                      id={
-                        checkboxMatch
-                          ? `note-text-${overflowModalNote.id}-row-${rowIndex}`
-                          : undefined
-                      }
-                      component="span"
-                      variant="body1"
-                      sx={{
-                        textDecoration: isChecked ? "line-through" : "none",
-                      }}
-                    >
-                      {rowText}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-          </DialogContent>
-          <DialogActions
-            sx={{
-              bgcolor: colors.blueGrey[900],
-              p: 1,
-              gap: 1,
-            }}
-          >
-            <Tooltip title="Actions">
-              <IconButton
-                size="small"
-                onClick={(event: MouseEvent<HTMLElement>) =>
-                  setMenuAnchor({
-                    el: event.currentTarget,
-                    note: overflowModalNote,
-                  })
-                }
-              >
-                <Icon path={mdiDotsVertical} size={0.8} />
-              </IconButton>
-            </Tooltip>
-          </DialogActions>
-        </Dialog>
+          onToggleCheckbox={onToggleCheckbox}
+          onOpenActionsMenu={(event: MouseEvent<HTMLElement>) =>
+            setMenuAnchor({
+              el: event.currentTarget,
+              note: overflowModalNote,
+            })
+          }
+        />
       )}
       <Menu
         anchorEl={formatMenuAnchor}
@@ -1262,11 +1130,7 @@ const NoteList = ({
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <LabelIcon
-                icon={label.icon}
-                color={label.color}
-                size={0.7}
-              />
+              <LabelIcon icon={label.icon} color={label.color} size={0.7} />
             </Box>
             {label.name}
           </MenuItem>
