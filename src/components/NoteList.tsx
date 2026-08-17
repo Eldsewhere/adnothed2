@@ -184,7 +184,7 @@ const NoteList = ({
     null,
   );
   const [formatMenuNote, setformatMenuNote] = useState<Note | null>(null);
-  const [overflowingnoteIds, setOverflowingnoteIds] = useState<Set<string>>(
+  const [overflowingnoteIds, setOverflowingNoteIds] = useState<Set<string>>(
     new Set(),
   );
   const [expandablenoteIds, setExpandableNoteIds] = useState<Set<string>>(
@@ -350,7 +350,7 @@ const NoteList = ({
     const isOverflowing =
       element.scrollWidth > element.clientWidth ||
       element.scrollHeight > element.clientHeight;
-    setOverflowingnoteIds((currentIds) => {
+    setOverflowingNoteIds((currentIds) => {
       if (!isOverflowing || currentIds.has(noteId)) return currentIds;
       const nextIds = new Set(currentIds);
       nextIds.add(noteId);
