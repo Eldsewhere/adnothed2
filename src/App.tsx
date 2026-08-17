@@ -748,6 +748,56 @@ function App() {
     setConfirmBulkDeleteOpen(false);
   };
 
+  const handleBulkPinToggle = () => {
+    if (selectednoteIds.size === 0) {
+      return;
+    }
+
+    const selectedNotes = notes.filter((note) => selectednoteIds.has(note.id));
+    const shouldPin = !selectedNotes.every((note) => note.pinned);
+
+    setNotes((prev) =>
+      prev.map((note) =>
+        selectednoteIds.has(note.id) ? { ...note, pinned: shouldPin } : note,
+      ),
+    );
+  };
+
+  const handleBulkShareText = async () => {
+    if (selectednoteIds.size === 0) {
+      return;
+    }
+
+    const selectedNotes = notes.filter((note) => selectednoteIds.has(note.id));
+    const text = selectedNotes
+      .map((note) => note.text.trim())
+      .filter(Boolean)
+      .join("\n\n");
+
+    if (!text) {
+      return;
+    }
+
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+      }
+      setNotificationSeverity("success");
+      setNotification(`Copied ${selectedNotes.length} note(s) as text`);
+    } catch {
+      try {
+        await navigator.clipboard.writeText(text);
+        setNotificationSeverity("success");
+        setNotification(`Copied ${selectedNotes.length} note(s) as text`);
+      } catch {
+        setNotificationSeverity("error");
+        setNotification("Unable to share selected notes");
+      }
+    }
+  };
+
   const handleBulkLabelChange = (labelId: string | null) => {
     setNotes((prev) =>
       prev.map((note) =>
@@ -1504,9 +1554,20 @@ function App() {
                 {selectMode && (
                   <SelectModeActions
                     selectedCount={selectednoteIds.size}
+                    allSelectedPinned={
+                      selectednoteIds.size > 0 &&
+                      [...selectednoteIds].every((id) => {
+                        const note = notes.find((item) => item.id === id);
+                        return note?.pinned === true;
+                      })
+                    }
                     onLabelClick={(event) =>
                       setbulkLabelAnchor(event.currentTarget)
                     }
+                    onPinToggleClick={handleBulkPinToggle}
+                    onShareTextClick={() => {
+                      void handleBulkShareText();
+                    }}
                     onDeleteClick={() => setConfirmBulkDeleteOpen(true)}
                     onCancelClick={() => {
                       setSelectedNoteIds(new Set());
