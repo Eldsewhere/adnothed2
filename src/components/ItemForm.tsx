@@ -238,7 +238,7 @@ const ItemForm = ({
   const stripDueTimeForValidation = (value: string) => {
     const cleaned = value
       .replace(
-        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(\.)?(?=$|[\s)\],;.!?])/gi,
+        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)([g.]?)?(?=$|[\s)\],;.!?])/gi,
         "$1",
       )
       .replace(/\b(today)\b/gi, "")

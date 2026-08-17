@@ -15,6 +15,7 @@ import {
   Stack,
   Tooltip,
   Badge,
+  Typography,
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
@@ -302,6 +303,17 @@ const DueDateDialog = ({
               ))}
             </Select>
           </FormControl>
+        </Stack>
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Typography variant="caption" sx={{ color: colors.blueGrey[400] }}>
+            also write HHhMM or HH:MM on note field
+          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions
