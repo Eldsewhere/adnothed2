@@ -410,6 +410,7 @@ const ItemForm = ({
                       error={!!errors.text}
                       helperText={errors.text?.message}
                       sx={{
+                        borderRadius: 2,
                         "& .MuiInputBase-root": {
                           paddingBottom: "46px",
                         },

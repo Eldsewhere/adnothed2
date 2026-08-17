@@ -639,15 +639,16 @@ const ItemList = ({
                     display: "flex",
                     alignItems: "center",
                     borderBottom: isPriorityBoundary
-                      ? "4px solid "
-                      : "1px solid",
+                      ? "6px solid "
+                      : "3px solid",
                     boxShadow: shouldHighlightRecentEdit
                       ? `inset 4px 0 0 ${colors.lightGreen[700]}`
                       : undefined,
                     paddingX: 1,
+                    borderRadius: 2,
                     borderColor: isPriorityBoundary
                       ? colors.grey[900]
-                      : colors.blueGrey[700],
+                      : colors.grey[900],
                     overflow: "hidden",
                     bgcolor: isPrioritary
                       ? "#414d4b"
