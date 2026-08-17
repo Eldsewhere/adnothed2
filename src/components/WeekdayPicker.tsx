@@ -71,7 +71,7 @@ const WeekdayPicker = ({
             <Tooltip key={dayKey} title={day.format("ddd, MMM D")}>
               <Badge
                 badgeContent={badgeValue > 0 ? badgeValue : 0}
-                color={hasDue ? "warning" : "primary"}
+                color={hasDue && !isCurrentDay ? "warning" : "primary"}
                 overlap="rectangular"
                 anchorOrigin={{
                   vertical: "top",

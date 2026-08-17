@@ -90,7 +90,11 @@ const LabelList = ({
             overflow: "hidden",
           }}
         >
-          <TableContainer sx={{ borderRadius: 2, overflow: "hidden" }}>
+          <TableContainer
+            sx={{
+              overflow: "hidden",
+            }}
+          >
             <Table
               size="small"
               sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
