@@ -448,7 +448,7 @@ const ItemForm = ({
                                 position: "absolute",
                                 left: 8,
                                 right: 8,
-                                bottom: 8,
+                                bottom: errors.text ? 34 : 8,
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "space-between",
