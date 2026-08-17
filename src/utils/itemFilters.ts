@@ -38,6 +38,7 @@ export type ParsedTextFilters = {
   withBullets: boolean;
   withCheckboxes: boolean;
   withDueDate: boolean;
+  withLabel: boolean;
 };
 
 const defaultParsedTextFilters: ParsedTextFilters = {
@@ -57,6 +58,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withBullets: false,
   withCheckboxes: false,
   withDueDate: false,
+  withLabel: false,
 };
 
 function toPositiveInt(value: string): number | null {
@@ -165,6 +167,10 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
         parsed.withDueDate = true;
         continue;
       }
+      if (token === "label") {
+        parsed.withLabel = true;
+        continue;
+      }
     }
 
     // Unknown slash commands are ignored so mistyped command drafts do not filter.
@@ -193,6 +199,7 @@ export function matchesTextFilters(
   sortedItemsLength: number,
   parsed: ParsedTextFilters,
   due?: number,
+  categoryId: string | null = null,
 ): boolean {
   if (
     parsed.query &&
@@ -274,6 +281,10 @@ export function matchesTextFilters(
     if (due === undefined || due < todayUnix) {
       return false;
     }
+  }
+
+  if (parsed.withLabel && categoryId === null) {
+    return false;
   }
 
   return true;

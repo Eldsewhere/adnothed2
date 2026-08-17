@@ -683,6 +683,10 @@ function App() {
       parsedSubmit.dueTimestamp ??
       (hasFutureSelectedDay ? selectedDay.unix() : undefined);
 
+    if (finalText.length === 0) {
+      return;
+    }
+
     if (parsedSubmit.openCalendar && finalDueTimestamp !== undefined) {
       const eventText = finalText || categoryName;
       const start = dayjs.unix(finalDueTimestamp).second(0).millisecond(0);
@@ -992,6 +996,7 @@ function App() {
           sortedItems.length,
           parsedTextFilters,
           item.due,
+          item.categoryId,
         );
       }),
     [
@@ -1024,6 +1029,7 @@ function App() {
             sortedItems.length,
             parsedTextFilters,
             item.due,
+            item.categoryId,
           )
         ) {
           return false;
@@ -1311,7 +1317,8 @@ function App() {
       activeDay.second() !== 0;
 
     if (parsedDue?.dueTimestamp !== undefined) {
-      return `${activeDay.format("ddd, MMM D")} at ${activeDay.format("HH:mm")}`;
+      const label = `${activeDay.format("ddd, MMM D")} at ${activeDay.format("HH:mm")}`;
+      return parsedDue.openCalendar ? `${label} g` : label;
     }
 
     if (selectedDay && selectedDay.isValid() && selectedDay.isAfter(today, "day")) {

@@ -485,6 +485,7 @@ const ItemList = ({
             sortedItems.length,
             parsedTextFilters,
             item.due,
+            item.categoryId,
           )
         ) {
           return false;

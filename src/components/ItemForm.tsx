@@ -50,7 +50,7 @@ type ItemFormProps = {
   dueLabel?: string;
   dueFutureCount?: number;
   onDueDateClick?: () => void;
-  onSubmit: (values: ItemFormValues) => void;
+  onSubmit: (values: ItemFormValues) => void | boolean;
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
   onFilterCategoryChange: (value: string) => void;
@@ -143,6 +143,11 @@ const queryTemplates: QueryTemplate[] = [
     command: "/with: due;",
     iconPath: mdiCalendar,
   },
+  {
+    label: "label",
+    command: "/with: label;",
+    iconPath: mdiLabelMultiple,
+  },
 ];
 
 const querySubmenuGroups: Record<
@@ -159,6 +164,7 @@ const querySubmenuGroups: Record<
     queryTemplates[12],
     queryTemplates[13],
     queryTemplates[14],
+    queryTemplates[15],
   ],
 };
 
@@ -179,6 +185,7 @@ const ItemForm = ({
     control,
     handleSubmit,
     reset,
+    setError,
     formState: { errors },
   } = useForm<ItemFormValues>({
     defaultValues: initialText
@@ -228,8 +235,31 @@ const ItemForm = ({
     reset,
   ]);
 
+  const stripDueTimeForValidation = (value: string) => {
+    const cleaned = value
+      .replace(
+        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(\.)?(?=$|[\s)\],;.!?])/gi,
+        "$1",
+      )
+      .replace(/\b(today)\b/gi, "")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+
+    return cleaned;
+  };
+
   const submit = handleSubmit((values) => {
-    onSubmit(values);
+    const remainingText = stripDueTimeForValidation(values.text);
+    if (!remainingText) {
+      setError("text", { type: "required", message: "Note is required" });
+      return;
+    }
+
+    const result = onSubmit(values);
+    if (result === false) {
+      return;
+    }
+
     reset(emptyValues);
     if (!isEditing) {
       onFilterTextChange("");
