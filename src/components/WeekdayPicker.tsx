@@ -62,8 +62,6 @@ const WeekdayPicker = ({
           const isWeekend = weekday === 0 || weekday === 6;
           const isSelected = selectedDayKey === dayKey;
           const isCurrentDay = day.isSame(today, "day");
-          const hasPreviousNotes =
-            day.isBefore(today, "day") && (noteCountByDay.get(dayKey) ?? 0) > 0;
           const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
           const noteCount = noteCountByDay.get(dayKey) ?? 0;
           const dueCount = dueCountByDay.get(dayKey) ?? 0;
