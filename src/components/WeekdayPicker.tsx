@@ -1,11 +1,5 @@
 import type { Dayjs } from "dayjs";
-import {
-  Badge,
-  Box,
-  Button,
-  Tooltip,
-  colors,
-} from "@mui/material";
+import { Badge, Box, Button, Tooltip, colors } from "@mui/material";
 
 const WEEKDAY_LETTERS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
@@ -126,7 +120,7 @@ const WeekdayPicker = ({
                         ? "rgba(33, 150, 243, 0.32)"
                         : hasDue
                           ? "rgba(255, 152, 0, 0.24)"
-                          : hasPreviousNotes
+                          : day.date() === 1
                             ? "rgba(76, 175, 80, 0.24)"
                             : isWeekend
                               ? "rgba(120, 144, 156, 0.42)"
@@ -138,10 +132,10 @@ const WeekdayPicker = ({
                           ? "rgba(255, 152, 0, 0.32)"
                           : isCurrentDay
                             ? "rgba(33, 150, 243, 0.45)"
-                            : isWeekend
-                              ? "rgba(120, 144, 156, 0.58)"
-                              : hasPreviousNotes
-                                ? "rgba(76, 175, 80, 0.32)"
+                            : day.date() === 1
+                              ? "rgba(76, 175, 80, 0.32)"
+                              : isWeekend
+                                ? "rgba(120, 144, 156, 0.58)"
                                 : "rgba(96, 125, 139, 0.24)",
                       borderColor: isSelected
                         ? colors.lightBlue[500]
@@ -167,24 +161,22 @@ const WeekdayPicker = ({
                   >
                     <Box
                       sx={{
-                        fontSize: "0.62rem",
+                        fontSize: "0.7rem",
                         letterSpacing: "-0.04em",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontWeight: isWeekend ? 900 : 500,
                       }}
                     >
                       {WEEKDAY_LETTERS[weekday]}
                     </Box>
                     <Box
                       sx={{
-                        fontSize: "0.5rem",
+                        fontSize: "0.6rem",
                         letterSpacing: "-0.04em",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontWeight: 700,
                         opacity: 0.9,
                       }}
                     >
