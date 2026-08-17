@@ -318,7 +318,8 @@ const NoteListRow = ({
             >
               #{globalIndex}
             </Typography>
-          ) : note.due !== undefined && note.due >= dayjs().unix() ? (
+          ) : note.due !== undefined &&
+              (isToday(note.due) || isTomorrow(note.due) || note.due >= dayjs().unix()) ? (
             <Typography
               variant="caption"
               sx={{

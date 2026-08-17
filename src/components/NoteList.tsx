@@ -441,10 +441,7 @@ const NoteList = ({
   }, [filteredNotes]);
 
   const globalIndexByNoteId = useMemo(
-    () =>
-      new Map(
-        sortedNotes.map((note, index) => [note.id, sortedNotes.length - index]),
-      ),
+    () => new Map(sortedNotes.map((note, index) => [note.id, index + 1])),
     [sortedNotes],
   );
 
