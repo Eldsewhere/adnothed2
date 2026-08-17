@@ -1684,11 +1684,6 @@ function App() {
                       overflowX: "auto",
                       overflowY: "visible",
                       py: 1,
-                      scrollbarWidth: "none",
-                      msOverflowStyle: "none",
-                      "&::-webkit-scrollbar": {
-                        display: "none",
-                      },
                     }}
                   >
                     <Box
