@@ -201,7 +201,9 @@ const ItemList = ({
   const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
   const [dueHour12, setDueHour12] = useState<number>(12);
   const [dueAmPm, setDueAmPm] = useState<"AM" | "PM">("AM");
-  const [dueMinute, setDueMinute] = useState<0 | 15 | 30 | 45>(0);
+  const [dueMinute, setDueMinute] = useState<
+    0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55
+  >(0);
   const today = useMemo(() => dayjs().startOf("day"), []);
   const endOfNextMonth = useMemo(
     () => dayjs().add(1, "month").endOf("month").startOf("day"),
@@ -385,7 +387,9 @@ const ItemList = ({
       setDueDateValue(d.startOf("day"));
       const h24 = d.hour();
       const rawMinute = d.minute();
-      const roundedMinute = ([0, 15, 30, 45] as const).reduce((prev, curr) =>
+      const roundedMinute = (
+        [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55] as const
+      ).reduce((prev, curr) =>
         Math.abs(curr - rawMinute) < Math.abs(prev - rawMinute) ? curr : prev,
       );
       setDueMinute(roundedMinute);

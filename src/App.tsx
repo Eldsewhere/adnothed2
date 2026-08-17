@@ -349,7 +349,7 @@ function App() {
   const [weekPickerDueHour12, setWeekPickerDueHour12] = useState<number>(12);
   const [weekPickerDueAmPm, setWeekPickerDueAmPm] = useState<"AM" | "PM">("AM");
   const [weekPickerDueMinute, setWeekPickerDueMinute] = useState<
-    0 | 15 | 30 | 45
+    0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55
   >(0);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
@@ -610,7 +610,7 @@ function App() {
         .trim();
     }
 
-    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|15|30|45)|(?:[01]?\d|2[0-3])h(?:0|15|30|45)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
       workingText,
     );
 
@@ -631,13 +631,13 @@ function App() {
       return { cleanedText: textWithToday };
     }
 
-    if (!isHourSyntax && ![0, 15, 30, 45].includes(minute)) {
+    if (!isHourSyntax && ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)) {
       return { cleanedText: textWithToday };
     }
 
     if (
       isHourSyntax &&
-      ![0, 15, 30, 45].includes(minute) &&
+      ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
       rawToken !== `${hour}h`
     ) {
       return { cleanedText: textWithToday };
@@ -1351,10 +1351,11 @@ function App() {
     );
     setWeekPickerDueAmPm(baseDate.hour() >= 12 ? "PM" : "AM");
     setWeekPickerDueMinute(
-      ([0, 15, 30, 45] as const).reduce((prev, curr) =>
-        Math.abs(curr - baseDate.minute()) < Math.abs(prev - baseDate.minute())
-          ? curr
-          : prev,
+      ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55] as const).reduce(
+        (prev, curr) =>
+          Math.abs(curr - baseDate.minute()) < Math.abs(prev - baseDate.minute())
+            ? curr
+            : prev,
       ),
     );
     setWeekPickerDueDialogOpen(true);

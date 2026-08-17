@@ -37,10 +37,36 @@ type DueDateDialogProps = {
   maxDate?: Dayjs | null;
   hour12: number;
   amPm: "AM" | "PM";
-  minute: 0 | 15 | 30 | 45;
+  minute:
+    | 0
+    | 5
+    | 10
+    | 15
+    | 20
+    | 25
+    | 30
+    | 35
+    | 40
+    | 45
+    | 50
+    | 55;
   onHourChange: (hour: number) => void;
   onAmPmChange: (value: "AM" | "PM") => void;
-  onMinuteChange: (minute: 0 | 15 | 30 | 45) => void;
+  onMinuteChange: (
+    minute:
+      | 0
+      | 5
+      | 10
+      | 15
+      | 20
+      | 25
+      | 30
+      | 35
+      | 40
+      | 45
+      | 50
+      | 55,
+  ) => void;
   onSave: () => void;
   onGoogleCalendar?: () => void;
   googleCalendarDisabled?: boolean;
@@ -293,14 +319,30 @@ const DueDateDialog = ({
               labelId="due-date-minute"
               value={minute}
               onChange={(event) =>
-                onMinuteChange(Number(event.target.value) as 0 | 15 | 30 | 45)
+                onMinuteChange(
+                  Number(event.target.value) as
+                    | 0
+                    | 5
+                    | 10
+                    | 15
+                    | 20
+                    | 25
+                    | 30
+                    | 35
+                    | 40
+                    | 45
+                    | 50
+                    | 55,
+                )
               }
             >
-              {[0, 15, 30, 45].map((minuteOption) => (
-                <MenuItem key={minuteOption} value={minuteOption}>
-                  {String(minuteOption).padStart(2, "0")}
-                </MenuItem>
-              ))}
+              {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map(
+                (minuteOption) => (
+                  <MenuItem key={minuteOption} value={minuteOption}>
+                    {String(minuteOption).padStart(2, "0")}
+                  </MenuItem>
+                ),
+              )}
             </Select>
           </FormControl>
         </Stack>
