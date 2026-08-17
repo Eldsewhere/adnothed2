@@ -673,6 +673,12 @@ function App() {
       (itemFilters.weekday
         ? dayjs(itemFilters.weekday, "YYYY-MM-DD", true)
         : null);
+    const hasExplicitSelectedDayTime =
+      selectedDay !== null &&
+      selectedDay.isValid() &&
+      (selectedDay.hour() !== 0 ||
+        selectedDay.minute() !== 0 ||
+        selectedDay.second() !== 0);
     const hasFutureSelectedDay =
       selectedDay !== null &&
       selectedDay.isValid() &&
@@ -681,7 +687,9 @@ function App() {
     const finalText = parsedSubmit.cleanedText.trim();
     const finalDueTimestamp =
       parsedSubmit.dueTimestamp ??
-      (hasFutureSelectedDay ? selectedDay.unix() : undefined);
+      (hasFutureSelectedDay || hasExplicitSelectedDayTime
+        ? selectedDay?.unix()
+        : undefined);
 
     if (finalText.length === 0) {
       return;
@@ -1188,11 +1196,12 @@ function App() {
   const noteTextForGoogleCalendar = editingItem?.text ?? draftNoteText;
 
   const handleWeekPickerSaveDueDate = () => {
-    if (!weekPickerDueDate) return;
-    if (weekPickerDueDate.isBefore(today, "day")) {
+    const nextSelectedDay = weekPickerDueDate ?? today;
+    if (nextSelectedDay.isBefore(today, "day")) {
       setWeekPickerDueDate(today);
       return;
     }
+    setWeekPickerDueDate(nextSelectedDay.startOf("day"));
     const h24 =
       weekPickerDueAmPm === "AM"
         ? weekPickerDueHour12 === 12
@@ -1201,7 +1210,7 @@ function App() {
         : weekPickerDueHour12 === 12
           ? 12
           : weekPickerDueHour12 + 12;
-    const nextDueDate = weekPickerDueDate
+    const nextDueDate = nextSelectedDay
       .hour(h24)
       .minute(weekPickerDueMinute)
       .second(0);
@@ -1317,14 +1326,24 @@ function App() {
       activeDay.second() !== 0;
 
     if (parsedDue?.dueTimestamp !== undefined) {
-      const label = `${activeDay.format("ddd, MMM D")} at ${activeDay.format("HH:mm")}`;
+      const dayLabel = activeDay.isSame(today, "day")
+        ? "Today"
+        : activeDay.format("ddd, MMM D");
+      const label = `${dayLabel} at ${activeDay.format("HH:mm")}`;
       return parsedDue.openCalendar ? `${label} g` : label;
     }
 
-    if (selectedDay && selectedDay.isValid() && selectedDay.isAfter(today, "day")) {
-      return hasExplicitTime
-        ? `${selectedDay.format("ddd, MMM D")} at ${selectedDay.format("HH:mm")}`
-        : selectedDay.format("ddd, MMM D");
+    if (selectedDay && selectedDay.isValid()) {
+      const isTodaySelected = selectedDay.isSame(today, "day");
+      if (isTodaySelected && hasExplicitTime) {
+        return `Today at ${selectedDay.format("HH:mm")}`;
+      }
+
+      if (selectedDay.isAfter(today, "day")) {
+        return hasExplicitTime
+          ? `${selectedDay.format("ddd, MMM D")} at ${selectedDay.format("HH:mm")}`
+          : selectedDay.format("ddd, MMM D");
+      }
     }
 
     return undefined;
@@ -1835,9 +1854,9 @@ function App() {
                           day.isBefore(today, "day") &&
                           (noteCountByDay.get(dayKey) ?? 0) > 0;
                         const hasDue = (dueCountByDay.get(dayKey) ?? 0) > 0;
-                        const badgeValue = hasDue
-                          ? (dueCountByDay.get(dayKey) ?? 0)
-                          : (noteCountByDay.get(dayKey) ?? 0);
+                        const noteCount = noteCountByDay.get(dayKey) ?? 0;
+                        const dueCount = dueCountByDay.get(dayKey) ?? 0;
+                        const badgeValue = noteCount + dueCount;
                         return (
                           <React.Fragment key={dayKey}>
                             {false && (
@@ -1854,7 +1873,7 @@ function App() {
                             )}
                             <Tooltip title={day.format("ddd, MMM D")}>
                               <Badge
-                                badgeContent={badgeValue > 1 ? badgeValue : 0}
+                                badgeContent={badgeValue > 0 ? badgeValue : 0}
                                 color={hasDue ? "warning" : "primary"}
                                 overlap="rectangular"
                                 anchorOrigin={{
