@@ -170,12 +170,14 @@ function App() {
     new Set(),
   );
   const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
-  const [bulkLabelAnchor, setbulkLabelAnchor] =
-    useState<HTMLElement | null>(null);
+  const [bulkLabelAnchor, setbulkLabelAnchor] = useState<HTMLElement | null>(
+    null,
+  );
   const [labelsActionsAnchor, setLabelsActionsAnchor] =
     useState<HTMLElement | null>(null);
-  const [confirmDeleteLabel, setconfirmDeleteLabel] =
-    useState<Label | null>(null);
+  const [confirmDeleteLabel, setconfirmDeleteLabel] = useState<Label | null>(
+    null,
+  );
   const [latestlabelId, setLatestlabelId] = useState<string | null>(null);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
@@ -247,7 +249,10 @@ function App() {
         return;
       }
 
-      if (event.data && (event.data as { type: string }).type === "SHARE_TEXT") {
+      if (
+        event.data &&
+        (event.data as { type: string }).type === "SHARE_TEXT"
+      ) {
         const text = (event.data as { text: string }).text;
         const url = (event.data as { url?: string }).url;
 
@@ -474,8 +479,7 @@ function App() {
     dueTimestamp?: number;
     openCalendar?: boolean;
   } => {
-    const baseDate =
-      selectedDay && selectedDay.isValid() ? selectedDay : today;
+    const baseDate = selectedDay && selectedDay.isValid() ? selectedDay : today;
     const textWithToday = text.trim();
     let effectiveDate = baseDate;
     let workingText = textWithToday;
@@ -489,9 +493,10 @@ function App() {
         .trim();
     }
 
-    const match = /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
-      workingText,
-    );
+    const match =
+      /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+        workingText,
+      );
 
     if (!match) {
       return { cleanedText: textWithToday };
@@ -510,7 +515,10 @@ function App() {
       return { cleanedText: textWithToday };
     }
 
-    if (!isHourSyntax && ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)) {
+    if (
+      !isHourSyntax &&
+      ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
+    ) {
       return { cleanedText: textWithToday };
     }
 
@@ -545,8 +553,7 @@ function App() {
     values,
   ) => {
     const labelId = values.labelId === "" ? null : values.labelId;
-    const labelName =
-      labels.find((c) => c.id === labelId)?.name ?? "Reminder";
+    const labelName = labels.find((c) => c.id === labelId)?.name ?? "Reminder";
     const selectedDay =
       draftDueDate ??
       (noteFilters.weekday
@@ -588,7 +595,9 @@ function App() {
                 ...note,
                 labelId,
                 text: finalText,
-                ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
+                ...(finalDueTimestamp !== undefined
+                  ? { due: finalDueTimestamp }
+                  : {}),
               }
             : note,
         ),
@@ -616,7 +625,9 @@ function App() {
           text: finalText,
           createdAt,
           hasNotification: true,
-          ...(finalDueTimestamp !== undefined ? { due: finalDueTimestamp } : {}),
+          ...(finalDueTimestamp !== undefined
+            ? { due: finalDueTimestamp }
+            : {}),
         },
       ];
     });
@@ -937,12 +948,7 @@ function App() {
           note.pinned,
         );
       }),
-    [
-      noteFilters.labelId,
-      noteFilters.hasDue,
-      parsedTextFilters,
-      sortedNotes,
-    ],
+    [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
   );
 
   const filteredNoteCount = useMemo(
@@ -1320,7 +1326,8 @@ function App() {
     setWeekPickerDueMinute(
       ([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55] as const).reduce(
         (prev, curr) =>
-          Math.abs(curr - baseDate.minute()) < Math.abs(prev - baseDate.minute())
+          Math.abs(curr - baseDate.minute()) <
+          Math.abs(prev - baseDate.minute())
             ? curr
             : prev,
       ),
@@ -1558,46 +1565,36 @@ function App() {
                   onNoteTextChange={setDraftNoteText}
                 />
                 <Box
+                  ref={weekPickerRef}
                   sx={{
-                    display: "flex",
-                    width: "100%",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 1,
+                    flex: 1,
+                    minWidth: 0,
+                    overflowX: "auto",
+                    overflowY: "visible",
+                    scrollbarWidth: "none",
+                    "&::-webkit-scrollbar": {
+                      display: "none",
+                    },
+                    "&::-webkit-scrollbar-thumb": {
+                      display: "none",
+                    },
+                    "-ms-overflow-style": "none",
                   }}
                 >
-                  <Box
-                    ref={weekPickerRef}
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      overflowX: "auto",
-                      overflowY: "visible",
-                      py: 1,
-                      scrollbarWidth: "none",
-                      "&::-webkit-scrollbar": {
-                        display: "none",
-                      },
-                      "&::-webkit-scrollbar-thumb": {
-                        display: "none",
-                      },
-                      "-ms-overflow-style": "none",
-                    }}
-                  >
-                    <WeekdayPicker
-                      days={weekdayStripDays}
-                      today={today}
-                      selectedDayKey={
-                        draftDueDate
-                          ? draftDueDate.format("YYYY-MM-DD")
-                          : noteFilters.weekday
-                      }
-                      noteCountByDay={noteCountByDay}
-                      dueCountByDay={dueCountByDay}
-                      onSelect={handleWeekdayToggle}
-                    />
-                  </Box>
+                  <WeekdayPicker
+                    days={weekdayStripDays}
+                    today={today}
+                    selectedDayKey={
+                      draftDueDate
+                        ? draftDueDate.format("YYYY-MM-DD")
+                        : noteFilters.weekday
+                    }
+                    noteCountByDay={noteCountByDay}
+                    dueCountByDay={dueCountByDay}
+                    onSelect={handleWeekdayToggle}
+                  />
                 </Box>
+
                 {selectMode && (
                   <SelectModeActions
                     selectedCount={selectednoteIds.size}
