@@ -65,19 +65,7 @@ const LabelList = ({
     <Box>
       {orderedLabels.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
-          <Box> No labels added yet</Box>
-          <Box sx={{ mt: 0.5 }}>Add labels to filter notes together</Box>
-          <Box sx={{ mt: 0.5 }}>
-            Search icons by typing icon name from{" "}
-            <a
-              href="https://pictogrammers.com/library/mdi/"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              https://pictogrammers.com/library/mdi/
-            </a>
-          </Box>
-          <Box sx={{ mt: 0.5 }}>Or use avatar text: A, AB, 0-99, or A0.</Box>
+          <Box> No labels added yet. Add labels to filter notes together</Box>
         </Alert>
       ) : (
         <Box

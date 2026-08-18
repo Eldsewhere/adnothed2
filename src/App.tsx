@@ -25,6 +25,7 @@ import {
   mdiNoteText,
   mdiLabelMultiple,
   mdiFileImport,
+  mdiInformationOutline,
 } from "@mdi/js";
 import LabelForm from "./components/LabelForm";
 import LabelList from "./components/LabelList";
@@ -40,6 +41,7 @@ import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialo
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
 import SelectModeActions from "./components/dialogs/SelectModeActions";
+import NoteStorageInfoDialog from "./components/dialogs/NoteStorageInfoDialog";
 import type { BeforeInstallPromptEvent, Label, Note } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
@@ -67,6 +69,7 @@ type TabValue = "notes" | "labels";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
+const HIDE_TOP_BAR_INFO_STORAGE_KEY = "adnothed-hide-topbar-info";
 const SHORT_MONTHS = [
   "Ene",
   "Feb",
@@ -200,6 +203,7 @@ function App() {
     fileName: string;
     parseError: string | null;
   } | null>(null);
+  const [noteStorageInfoOpen, setNoteStorageInfoOpen] = useState(false);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
   const [storageReady, setStorageReady] = useState(true);
@@ -228,6 +232,16 @@ function App() {
   >(0);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const [hideTopBarInfoButton, setHideTopBarInfoButton] = useState<boolean>(
+    () => {
+      if (typeof window === "undefined") {
+        return false;
+      }
+      return (
+        window.localStorage.getItem(HIDE_TOP_BAR_INFO_STORAGE_KEY) === "true"
+      );
+    },
+  );
 
   const [sharedText] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -290,6 +304,14 @@ function App() {
     if (!installPrompt) return;
     void installPrompt.prompt();
     installPrompt.userChoice.then(() => setInstallPrompt(null));
+  };
+
+  const handleNeverShowInfoTipsAgain = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(HIDE_TOP_BAR_INFO_STORAGE_KEY, "true");
+    }
+    setHideTopBarInfoButton(true);
+    setNoteStorageInfoOpen(false);
   };
 
   const handleNotificationResult = (result: AppNotificationResult) => {
@@ -1413,9 +1435,10 @@ function App() {
       }
 
       if (selectedDay.isAfter(today, "day")) {
-        const dayLabel = selectedDay.year() !== today.year()
-          ? selectedDay.format("ddd, MMM D, YYYY")
-          : selectedDay.format("ddd, MMM D");
+        const dayLabel =
+          selectedDay.year() !== today.year()
+            ? selectedDay.format("ddd, MMM D, YYYY")
+            : selectedDay.format("ddd, MMM D");
         return hasExplicitTime
           ? `${dayLabel} at ${selectedDay.format("HH:mm")}`
           : dayLabel;
@@ -1557,6 +1580,17 @@ function App() {
             </Tabs>
             {activeTab === "notes" && (
               <Stack direction="row" sx={{ alignItems: "center" }}>
+                {!hideTopBarInfoButton && (
+                  <Tooltip title="Info tips">
+                    <IconButton
+                      aria-label="Info tips"
+                      color="default"
+                      onClick={() => setNoteStorageInfoOpen(true)}
+                    >
+                      <Icon path={mdiInformationOutline} size={0.9} />
+                    </IconButton>
+                  </Tooltip>
+                )}
                 <Tooltip
                   title={
                     selectMode ? "Cancel select mode" : "Select multiple notes"
@@ -1670,6 +1704,11 @@ function App() {
               </>
             )}
           </Stack>
+          <NoteStorageInfoDialog
+            open={noteStorageInfoOpen}
+            onClose={() => setNoteStorageInfoOpen(false)}
+            onNeverShowAgain={handleNeverShowInfoTipsAgain}
+          />
           <Box sx={{ pt: 2 }}>
             <TabPanel value={activeTab} index="notes">
               <Stack spacing={1}>
@@ -1758,6 +1797,7 @@ function App() {
                   onToggleCheckbox={handleNoteToggleCheckbox}
                   onDueChange={handleNoteDueChange}
                   onPin={handleNotePin}
+                  onInfoTips={() => setNoteStorageInfoOpen(true)}
                   onNotify={(note) => {
                     const labelName =
                       labels.find((c) => c.id === note.labelId)?.name ??

@@ -37,35 +37,11 @@ type DueDateDialogProps = {
   maxDate?: Dayjs | null;
   hour12: number;
   amPm: "AM" | "PM";
-  minute:
-    | 0
-    | 5
-    | 10
-    | 15
-    | 20
-    | 25
-    | 30
-    | 35
-    | 40
-    | 45
-    | 50
-    | 55;
+  minute: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55;
   onHourChange: (hour: number) => void;
   onAmPmChange: (value: "AM" | "PM") => void;
   onMinuteChange: (
-    minute:
-      | 0
-      | 5
-      | 10
-      | 15
-      | 20
-      | 25
-      | 30
-      | 35
-      | 40
-      | 45
-      | 50
-      | 55,
+    minute: 0 | 5 | 10 | 15 | 20 | 25 | 30 | 35 | 40 | 45 | 50 | 55,
   ) => void;
   onSave: () => void;
   onGoogleCalendar?: () => void;
@@ -104,7 +80,7 @@ const DueDateDay = ({
   const isDisabled = Boolean(disabled || day.isBefore(calendarToday, "day"));
   const isRangeBoundary =
     startDate?.isSame(day, "day") || endDate?.isSame(day, "day");
-  const showBadge = !isDisabled && (dueCount > 0);
+  const showBadge = !isDisabled && dueCount > 0;
 
   return (
     <Badge
@@ -337,17 +313,6 @@ const DueDateDialog = ({
               )}
             </Select>
           </FormControl>
-        </Stack>
-        <Stack
-          direction="row"
-          sx={{
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Typography variant="caption" sx={{ color: colors.blueGrey[400] }}>
-            also write HHhMM or HH:MM on note field
-          </Typography>
         </Stack>
       </DialogContent>
       <DialogActions

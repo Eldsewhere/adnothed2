@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button } from "@mui/material";
+import { Box, Alert, Button, Divider } from "@mui/material";
 import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
@@ -14,6 +14,8 @@ import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
+import { mdiDownload, mdiInformation, mdiInformationOutline } from "@mdi/js";
+import { Icon } from "@mdi/react";
 
 type NoteListProps = {
   notes: Note[];
@@ -37,6 +39,7 @@ type NoteListProps = {
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
+  onInfoTips?: () => void;
   onInstall?: () => void;
 };
 
@@ -85,6 +88,7 @@ const NoteList = ({
   selectMode,
   selectedIds,
   onToggleSelect,
+  onInfoTips,
   onInstall,
 }: NoteListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
@@ -475,33 +479,40 @@ const NoteList = ({
   return (
     <Box>
       {filteredNotes.length === 0 ? (
-        <Alert severity="info" sx={{ textAlign: "left" }}>
-          {sortedNotes.length === 0 ? (
-            <>
-              <Box>No notes added yet</Box>
-              <Box sx={{ mt: 0.5 }}>
-                Notes are kept in your browser only, so they might be lost if
-                browser history is cleared
-              </Box>
-              <Box sx={{ mt: 0.5 }}>
-                Backup notes using `Save as JSON` button on `Labels` tab
-              </Box>
-              <Box sx={{ mt: 0.5 }}>
-                Allow notification permission to receive a notification when
-                adding a note or clicking `Notify` button
-              </Box>
-              {onInstall && (
-                <Box sx={{ mt: 1 }}>
-                  <Button variant="outlined" size="small" onClick={onInstall}>
-                    Install app
-                  </Button>
-                </Box>
-              )}
-            </>
-          ) : (
-            "No notes match the current filters"
-          )}
-        </Alert>
+        <>
+          <Alert severity="info" sx={{ textAlign: "left" }}>
+            {sortedNotes.length === 0 ? (
+              <>
+                <Box>No notes added yet</Box>
+              </>
+            ) : (
+              "No notes match the current filters"
+            )}
+          </Alert>
+          <Divider sx={{ mt: 2 }}/>
+          <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
+            {onInfoTips && (
+              <Button
+                startIcon={<Icon path={mdiInformationOutline} size={0.9} />}
+                variant="outlined"
+                size="small"
+                onClick={onInfoTips}
+              >
+                Info tips
+              </Button>
+            )}
+            {onInstall && (
+              <Button
+                startIcon={<Icon path={mdiDownload} size={0.9} />}
+                variant="outlined"
+                size="small"
+                onClick={onInstall}
+              >
+                Install app
+              </Button>
+            )}
+          </Box>
+        </>
       ) : (
         <Box
           ref={containerRef}
