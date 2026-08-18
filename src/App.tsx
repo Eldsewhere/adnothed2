@@ -520,7 +520,14 @@ function App() {
       }
 
       const currentMonth = today.month();
-      const year = monthValue >= currentMonth ? today.year() : today.year() + 1;
+      const isSameMonth = monthValue === currentMonth;
+      const isLaterOrSameDayInCurrentMonth =
+        !isSameMonth || dayValue >= today.date();
+      const year =
+        monthValue > currentMonth ||
+        (isSameMonth && isLaterOrSameDayInCurrentMonth)
+          ? today.year()
+          : today.year() + 1;
       const parsedDate = dayjs(
         `${year}-${String(monthValue + 1).padStart(2, "0")}-${String(dayValue).padStart(2, "0")}`,
         "YYYY-MM-DD",
@@ -1389,9 +1396,12 @@ function App() {
       activeDay.second() !== 0;
 
     if (parsedDue?.dueTimestamp !== undefined) {
+      const isFutureYear = activeDay.year() !== today.year();
       const dayLabel = activeDay.isSame(today, "day")
         ? "Today"
-        : activeDay.format("ddd, MMM D");
+        : isFutureYear
+          ? activeDay.format("ddd, MMM D, YYYY")
+          : activeDay.format("ddd, MMM D");
       const label = `${dayLabel} at ${activeDay.format("HH:mm")}`;
       return parsedDue.openCalendar ? `${label} g` : label;
     }
@@ -1403,9 +1413,12 @@ function App() {
       }
 
       if (selectedDay.isAfter(today, "day")) {
-        return hasExplicitTime
-          ? `${selectedDay.format("ddd, MMM D")} at ${selectedDay.format("HH:mm")}`
+        const dayLabel = selectedDay.year() !== today.year()
+          ? selectedDay.format("ddd, MMM D, YYYY")
           : selectedDay.format("ddd, MMM D");
+        return hasExplicitTime
+          ? `${dayLabel} at ${selectedDay.format("HH:mm")}`
+          : dayLabel;
       }
     }
 
