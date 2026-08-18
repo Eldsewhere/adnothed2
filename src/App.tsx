@@ -44,6 +44,7 @@ import type { BeforeInstallPromptEvent, Label, Note } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   DEFAULT_FILE_NAME,
+  enableGoogleDriveFromQuery,
   getPersistedFileName,
   loadPersistedState,
   openPersistedStateFile,
@@ -223,6 +224,10 @@ function App() {
     window.history.replaceState({}, "", window.location.pathname);
     return combined;
   });
+
+  useEffect(() => {
+    enableGoogleDriveFromQuery();
+  }, []);
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -1506,6 +1511,12 @@ function App() {
                   onClose={() => setLabelsActionsAnchor(null)}
                   onImport={() => {
                     void selectImportFile();
+                  }}
+                  labels={labels}
+                  notes={notes}
+                  onNotify={(severity, message) => {
+                    setNotificationSeverity(severity);
+                    setNotification(message);
                   }}
                   onExport={() => {
                     handleExportJson();

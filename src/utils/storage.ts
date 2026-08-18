@@ -32,6 +32,7 @@ type ParseResult = {
 export const DEFAULT_FILE_NAME = "adnothed-state.json";
 const STORAGE_KEY = "adnothed-local-storage";
 const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
+const GOOGLE_DRIVE_STORAGE_KEY = "adnothed-google-drive-enabled";
 
 const emptyPersistedState: PersistedState = { labels: [], notes: [] };
 const emptyAppState: { labels: Label[]; notes: Note[] } = {
@@ -370,6 +371,75 @@ export async function savePersistedState(
     setStoredFileName(suggestedFileName.trim() || DEFAULT_FILE_NAME);
   } catch {
     clearStoredValue();
+  }
+}
+
+function getGoogleDriveQueryValue(): string | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  try {
+    return new URLSearchParams(window.location.search).get("googledrive");
+  } catch {
+    return null;
+  }
+}
+
+function isGoogleDriveQueryEnabled(): boolean {
+  const value = getGoogleDriveQueryValue()?.toLowerCase();
+  return value === "true" || value === "1";
+}
+
+function consumeGoogleDriveQueryFlag(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  try {
+    const cleanUrl = new URL(window.location.href);
+    if (!cleanUrl.searchParams.has("googledrive")) {
+      return;
+    }
+
+    cleanUrl.searchParams.delete("googledrive");
+    const nextUrl = `${cleanUrl.pathname}${cleanUrl.search}${cleanUrl.hash}`;
+    window.history.replaceState({}, "", nextUrl || "/");
+  } catch {
+    // Ignore malformed URLs and keep the current page state stable.
+  }
+}
+
+export function isGoogleDriveEnabled(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    const storageEnabled =
+      window.localStorage.getItem(GOOGLE_DRIVE_STORAGE_KEY)?.toLowerCase() ===
+      "true";
+
+    return isGoogleDriveQueryEnabled() || storageEnabled;
+  } catch {
+    return false;
+  }
+}
+
+export function enableGoogleDriveFromQuery(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
+    if (isGoogleDriveQueryEnabled()) {
+      window.localStorage.setItem(GOOGLE_DRIVE_STORAGE_KEY, "true");
+      consumeGoogleDriveQueryFlag();
+    }
+
+    return isGoogleDriveEnabled();
+  } catch {
+    return false;
   }
 }
 
