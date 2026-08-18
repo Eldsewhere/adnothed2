@@ -81,6 +81,20 @@ const SHORT_MONTHS = [
   "Nov",
   "Dic",
 ];
+const SHORT_MONTH_LOOKUP: Record<string, number> = {
+  jan: 0,
+  feb: 1,
+  mar: 2,
+  apr: 3,
+  may: 4,
+  jun: 5,
+  jul: 6,
+  aug: 7,
+  sep: 8,
+  oct: 9,
+  nov: 10,
+  dec: 11,
+};
 
 const formatShortRangeDate = (value: Dayjs): string => {
   const day = value.date().toString().padStart(2, "0");
@@ -491,6 +505,101 @@ function App() {
         .replace(todayMatch[0], todayMatch[1] ?? "")
         .replace(/\s{2,}/g, " ")
         .trim();
+    }
+
+    const monthDateMatch =
+      /(^|[\s(])(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+        workingText,
+      );
+
+    if (monthDateMatch) {
+      const dayValue = Number.parseInt(monthDateMatch[2], 10);
+      const monthValue = SHORT_MONTH_LOOKUP[monthDateMatch[3].toLowerCase()];
+      if (!Number.isInteger(dayValue) || dayValue < 1 || dayValue > 31) {
+        return { cleanedText: textWithToday };
+      }
+
+      const currentMonth = today.month();
+      const year = monthValue >= currentMonth ? today.year() : today.year() + 1;
+      const parsedDate = dayjs(
+        `${year}-${String(monthValue + 1).padStart(2, "0")}-${String(dayValue).padStart(2, "0")}`,
+        "YYYY-MM-DD",
+        true,
+      );
+
+      if (!parsedDate.isValid()) {
+        return { cleanedText: textWithToday };
+      }
+
+      const dateText = workingText
+        .replace(monthDateMatch[0], monthDateMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      const timeMatch =
+        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+          dateText,
+        );
+
+      if (!timeMatch) {
+        return {
+          cleanedText: dateText,
+          dueTimestamp: parsedDate
+            .clone()
+            .hour(0)
+            .minute(0)
+            .second(0)
+            .millisecond(0)
+            .unix(),
+          openCalendar: Boolean(monthDateMatch[4]),
+        };
+      }
+
+      const rawToken = timeMatch[2].toLowerCase();
+      const isHourSyntax = rawToken.includes("h");
+      const hour = isHourSyntax
+        ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
+        : Number.parseInt(rawToken.split(":")[0], 10);
+      const minute = isHourSyntax
+        ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
+        : Number.parseInt(rawToken.split(":")[1], 10);
+
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
+        return { cleanedText: textWithToday };
+      }
+
+      if (
+        !isHourSyntax &&
+        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
+      ) {
+        return { cleanedText: textWithToday };
+      }
+
+      if (
+        isHourSyntax &&
+        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
+        rawToken !== `${hour}h`
+      ) {
+        return { cleanedText: textWithToday };
+      }
+
+      const finalDue = parsedDate
+        .clone()
+        .hour(hour)
+        .minute(minute)
+        .second(0)
+        .millisecond(0);
+
+      const cleanedText = dateText
+        .replace(timeMatch[0], timeMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      return {
+        cleanedText,
+        dueTimestamp: finalDue.unix(),
+        openCalendar: Boolean(monthDateMatch[4] || timeMatch[3]),
+      };
     }
 
     const match =

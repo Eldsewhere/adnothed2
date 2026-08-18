@@ -69,6 +69,10 @@ export function formatDueDate(timestamp: number): string {
   const now = new Date();
 
   const isMidnight = date.getHours() === 0 && date.getMinutes() === 0;
+  const yearSuffix =
+    date.getFullYear() !== now.getFullYear()
+      ? `, ${date.getFullYear()}`
+      : "";
 
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -80,7 +84,11 @@ export function formatDueDate(timestamp: number): string {
     if (isSameDay(date, now)) return "Today";
     if (isSameDay(date, tomorrow)) return "Tomorrow";
     const dow = DAY_ABBREVS[date.getDay()];
-    return `${dow}, ${month} ${day}`;
+    const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
+    if (date.getFullYear() !== now.getFullYear()) {
+      return `${dateText} at 00:00`;
+    }
+    return dateText;
   }
 
   const hours = pad(date.getHours());
@@ -89,8 +97,15 @@ export function formatDueDate(timestamp: number): string {
 
   if (isSameDay(date, now)) return `Today • ${time}`;
   if (isSameDay(date, tomorrow)) return `Tomorrow • ${time}`;
+
   const dow = DAY_ABBREVS[date.getDay()];
-  return `${dow}, ${month} ${day} • ${time}`;
+  const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
+
+  if (date.getFullYear() !== now.getFullYear()) {
+    return `${dateText} at ${time}`;
+  }
+
+  return `${dateText} • ${time}`;
 }
 
 export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
