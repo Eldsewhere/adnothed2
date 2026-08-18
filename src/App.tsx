@@ -244,6 +244,22 @@ function App() {
       if (event.data && (event.data as { type: string }).type === "COPY_TEXT") {
         const text = (event.data as { text: string }).text;
         void navigator.clipboard.writeText(text);
+        return;
+      }
+
+      if (event.data && (event.data as { type: string }).type === "SHARE_TEXT") {
+        const text = (event.data as { text: string }).text;
+        const url = (event.data as { url?: string }).url;
+
+        if (navigator.share) {
+          void navigator.share({
+            text,
+            ...(url ? { url } : {}),
+          });
+          return;
+        }
+
+        void navigator.clipboard.writeText(text);
       }
     };
     navigator.serviceWorker.addEventListener("message", handler);
