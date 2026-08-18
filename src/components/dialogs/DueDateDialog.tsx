@@ -99,20 +99,18 @@ const DueDateDay = ({
   ...other
 }: DueDateDayProps) => {
   const key = dayjs(day).format("YYYY-MM-DD");
-  const noteCount = noteCountsByDay.get(key) ?? 0;
-  const hasNotes = noteCount > 0;
   const dueCount = dueDaysByDate.get(key) ?? 0;
   const hasDue = dueCount > 0;
   const isDisabled = Boolean(disabled || day.isBefore(calendarToday, "day"));
   const isRangeBoundary =
     startDate?.isSame(day, "day") || endDate?.isSame(day, "day");
-  const showBadge = !isDisabled && (noteCount > 0 || dueCount > 0);
+  const showBadge = !isDisabled && (dueCount > 0);
 
   return (
     <Badge
       overlap="circular"
-      badgeContent={showBadge ? noteCount || dueCount : 0}
-      color={noteCount ? "success" : hasDue ? "warning" : "default"}
+      badgeContent={showBadge ? dueCount : 0}
+      color={hasDue ? "warning" : "default"}
       sx={{
         "& .MuiBadge-badge": {
           minWidth: 14,
@@ -141,28 +139,22 @@ const DueDateDay = ({
             ? "transparent"
             : isRangeBoundary
               ? "rgba(33, 150, 243, 0.12)"
-              : hasNotes
-                ? "rgba(76, 175, 80, 0.2)"
-                : hasDue
-                  ? "rgba(255, 152, 0, 0.2)"
-                  : "transparent",
+              : hasDue
+                ? "rgba(255, 152, 0, 0.2)"
+                : "transparent",
           border: isDisabled
             ? "1px solid transparent"
-            : hasNotes
-              ? `1px solid ${colors.blueGrey[400]}`
-              : hasDue
-                ? `2px solid ${colors.orange[400]}`
-                : isRangeBoundary
-                  ? `1px solid ${colors.blue[600]}`
-                  : "1px solid transparent",
+            : hasDue
+              ? `2px solid ${colors.orange[400]}`
+              : isRangeBoundary
+                ? `1px solid ${colors.blue[600]}`
+                : "1px solid transparent",
           "&:hover, &:focus": {
             backgroundColor: isDisabled
               ? "transparent"
-              : hasNotes
-                ? "rgba(76, 175, 80, 0.32)"
-                : hasDue
-                  ? "rgba(255, 152, 0, 0.28)"
-                  : "rgba(96,125,139,0.24)",
+              : hasDue
+                ? "rgba(255, 152, 0, 0.28)"
+                : "rgba(96,125,139,0.24)",
           },
           "&.Mui-selected": {
             backgroundColor: colors.blue[700],
