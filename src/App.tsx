@@ -508,7 +508,7 @@ function App() {
     }
 
     const monthDateMatch =
-      /(^|[\s(])(\d{1,2})\s*(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+      /(^|[\s(])(\d{1,2})(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
         workingText,
       );
 
