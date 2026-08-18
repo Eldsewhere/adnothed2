@@ -14,7 +14,7 @@ import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
-import { mdiDownload, mdiInformation, mdiInformationOutline } from "@mdi/js";
+import { mdiDownload, mdiInformationOutline } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 type NoteListProps = {
@@ -489,7 +489,7 @@ const NoteList = ({
               "No notes match the current filters"
             )}
           </Alert>
-          <Divider sx={{ mt: 2 }}/>
+          <Divider sx={{ mt: 2 }} />
           <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
             {onInfoTips && (
               <Button

@@ -15,7 +15,6 @@ import {
   Stack,
   Tooltip,
   Badge,
-  Typography,
 } from "@mui/material";
 import { DateCalendar } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
