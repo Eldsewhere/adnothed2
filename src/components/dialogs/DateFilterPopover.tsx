@@ -38,6 +38,7 @@ type DateFilterPopoverProps = {
   pendingDateFilter: DateFilterState;
   setPendingDateFilter: Dispatch<SetStateAction<DateFilterState>>;
   applyDateFilter: (nextFilter: DateFilterState) => void;
+  clearDateFilter: () => void;
   filteredMinDate: Dayjs | undefined;
   noteCountsByDay: Map<string, number>;
   today: Dayjs;
@@ -182,6 +183,7 @@ const DateFilterPopover = ({
   pendingDateFilter,
   setPendingDateFilter,
   applyDateFilter,
+  clearDateFilter,
   filteredMinDate,
   noteCountsByDay,
   today,
@@ -352,7 +354,7 @@ const DateFilterPopover = ({
             aria-label="Remove date filter"
             color="error"
             onClick={() => {
-              setPendingDateFilter({ date: "", endDate: "" });
+              clearDateFilter();
               onClose();
             }}
           >

@@ -1206,6 +1206,17 @@ function App() {
     }));
   };
 
+  const clearDateFilter = () => {
+    setPendingDateFilter(emptyNoteFilters);
+    setNoteFilters((prev) => ({
+      ...prev,
+      date: "",
+      endDate: "",
+      dueDate: "",
+      hasDue: false,
+    }));
+  };
+
   const futureDueLabel = useMemo(() => {
     const selectedDay =
       draftDueDate ??
@@ -1457,6 +1468,7 @@ function App() {
                   pendingDateFilter={pendingDateFilter}
                   setPendingDateFilter={setPendingDateFilter}
                   applyDateFilter={applyDateFilter}
+                  clearDateFilter={clearDateFilter}
                   filteredMinDate={filteredMinDate}
                   noteCountsByDay={noteCountsByDay}
                   today={today}
