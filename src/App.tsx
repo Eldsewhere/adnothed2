@@ -913,6 +913,7 @@ function App() {
           parsedTextFilters,
           note.due,
           note.labelId,
+          note.pinned,
         );
       }),
     [
@@ -946,6 +947,7 @@ function App() {
             parsedTextFilters,
             note.due,
             note.labelId,
+            note.pinned,
           )
         ) {
           return false;
@@ -1207,14 +1209,20 @@ function App() {
   };
 
   const clearDateFilter = () => {
-    setPendingDateFilter(emptyNoteFilters);
-    setNoteFilters((prev) => ({
-      ...prev,
+    const nextFilter = {
+      ...emptyNoteFilters,
       date: "",
       endDate: "",
       dueDate: "",
       hasDue: false,
+    };
+    setPendingDateFilter(nextFilter);
+    setNoteFilters((prev) => ({
+      ...prev,
+      ...nextFilter,
+      weekday: null,
     }));
+    setDatePickerMode("start");
   };
 
   const futureDueLabel = useMemo(() => {

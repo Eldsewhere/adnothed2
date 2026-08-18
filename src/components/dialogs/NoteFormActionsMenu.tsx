@@ -19,6 +19,7 @@ import {
   mdiLabelMultiple,
   mdiLinkVariant,
   mdiNumeric,
+  mdiPin,
   mdiRayEndArrow,
   mdiRayStartArrow,
   mdiRayStartEnd,
@@ -70,10 +71,22 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiRayEndArrow,
   },
   {
-    label: "exact",
+    label: "fullDate",
     command: "/date: YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
     iconPath: mdiCalendar,
+  },
+  {
+    label: "yearMonth",
+    command: "/date: YYYY-MM;",
+    placeholder: "YYYY-MM",
+    iconPath: mdiCalendarStart,
+  },
+  {
+    label: "year",
+    command: "/date: YYYY;",
+    placeholder: "YYYY",
+    iconPath: mdiCalendarEnd,
   },
   {
     label: "min",
@@ -110,6 +123,11 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiCalendar,
   },
   {
+    label: "priority",
+    command: "/with: priority;",
+    iconPath: mdiPin,
+  },
+  {
     label: "label",
     command: "/with: label;",
     iconPath: mdiLabelMultiple,
@@ -122,15 +140,16 @@ const querySubmenuGroups: Record<
 > = {
   count: [queryTemplates[1], queryTemplates[2]],
   length: [queryTemplates[3], queryTemplates[4], queryTemplates[5]],
-  date: [queryTemplates[6], queryTemplates[7], queryTemplates[8]],
+  date: [queryTemplates[6], queryTemplates[7], queryTemplates[8], queryTemplates[9], queryTemplates[10]],
   with: [
-    queryTemplates[9],
-    queryTemplates[10],
     queryTemplates[11],
     queryTemplates[12],
     queryTemplates[13],
     queryTemplates[14],
     queryTemplates[15],
+    queryTemplates[16],
+    queryTemplates[17],
+    queryTemplates[18],
   ],
 };
 

@@ -29,7 +29,9 @@ export type ParsedTextFilters = {
   exactLength: number | null;
   minLength: number | null;
   maxLength: number | null;
-  exactDate: string | null;
+  fullDate: string | null;
+  yearMonth: string | null;
+  year: string | null;
   minDate: string | null;
   maxDate: string | null;
   withNumbers: boolean;
@@ -38,6 +40,7 @@ export type ParsedTextFilters = {
   withBullets: boolean;
   withCheckboxes: boolean;
   withDueDate: boolean;
+  withPriority: boolean;
   withLabel: boolean;
 };
 
@@ -49,7 +52,9 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   exactLength: null,
   minLength: null,
   maxLength: null,
-  exactDate: null,
+  fullDate: null,
+  yearMonth: null,
+  year: null,
   minDate: null,
   maxDate: null,
   withNumbers: false,
@@ -58,6 +63,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withBullets: false,
   withCheckboxes: false,
   withDueDate: false,
+  withPriority: false,
   withLabel: false,
 };
 
@@ -125,12 +131,17 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
       continue;
     }
     if (key === "date") {
-      parsed.exactDate =
-        dateRegex.test(value) ||
-        yearRegex.test(value) ||
-        yearMonthRegex.test(value)
-          ? value
-          : null;
+      if (dateRegex.test(value)) {
+        parsed.fullDate = value;
+        continue;
+      }
+      if (yearMonthRegex.test(value)) {
+        parsed.yearMonth = value;
+        continue;
+      }
+      if (yearRegex.test(value)) {
+        parsed.year = value;
+      }
       continue;
     }
     if (key === "mindate") {
@@ -167,6 +178,10 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
         parsed.withDueDate = true;
         continue;
       }
+      if (token === "priority") {
+        parsed.withPriority = true;
+        continue;
+      }
       if (token === "label") {
         parsed.withLabel = true;
         continue;
@@ -192,6 +207,18 @@ function countLines(text: string): number {
   return text.split(/\r?\n/).length;
 }
 
+function isDueTodayOrTomorrow(timestamp?: number): boolean {
+  if (timestamp === undefined) {
+    return false;
+  }
+
+  const startOfDay = dayjs.unix(timestamp).startOf("day");
+  const today = dayjs().startOf("day");
+  const tomorrow = today.add(1, "day");
+
+  return startOfDay.isSame(today, "day") || startOfDay.isSame(tomorrow, "day");
+}
+
 export function matchesTextFilters(
   text: string,
   createdAt: number,
@@ -200,6 +227,7 @@ export function matchesTextFilters(
   parsed: ParsedTextFilters,
   due?: number,
   labelId: string | null = null,
+  isPinned = false,
 ): boolean {
   if (
     parsed.query &&
@@ -234,18 +262,16 @@ export function matchesTextFilters(
 
   const noteDate = formatDate(createdAt);
 
-  if (parsed.exactDate !== null) {
-    if (yearRegex.test(parsed.exactDate)) {
-      if (!noteDate.startsWith(`${parsed.exactDate}-`)) {
-        return false;
-      }
-    } else if (yearMonthRegex.test(parsed.exactDate)) {
-      if (!noteDate.startsWith(`${parsed.exactDate}-`)) {
-        return false;
-      }
-    } else if (noteDate !== parsed.exactDate) {
-      return false;
-    }
+  if (parsed.fullDate !== null && noteDate !== parsed.fullDate) {
+    return false;
+  }
+
+  if (parsed.yearMonth !== null && !noteDate.startsWith(`${parsed.yearMonth}-`)) {
+    return false;
+  }
+
+  if (parsed.year !== null && !noteDate.startsWith(`${parsed.year}-`)) {
+    return false;
   }
 
   if (parsed.minDate !== null && noteDate < parsed.minDate) {
@@ -281,6 +307,10 @@ export function matchesTextFilters(
     if (due === undefined || due < todayUnix) {
       return false;
     }
+  }
+
+  if (parsed.withPriority && !isPinned && !isDueTodayOrTomorrow(due)) {
+    return false;
   }
 
   if (parsed.withLabel && labelId === null) {

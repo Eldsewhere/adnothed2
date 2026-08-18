@@ -387,6 +387,7 @@ const NoteList = ({
             parsedTextFilters,
             note.due,
             note.labelId,
+            note.pinned,
           )
         ) {
           return false;
