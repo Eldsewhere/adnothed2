@@ -148,7 +148,11 @@ const NoteListRow = ({
             event.stopPropagation();
             onRemoveHashtagFromNote?.(note, part);
           }}
-          deleteIcon={<Icon path={mdiClose} size={0.5} />}
+          deleteIcon={
+            <Tooltip title="Remove hashtag" aria-label={undefined}>
+              <Icon path={mdiClose} size={0.5} />
+            </Tooltip>
+          }
           sx={{
             height: 20,
             ml: 0.25,

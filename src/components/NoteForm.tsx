@@ -132,8 +132,15 @@ const NoteForm = ({
 
   const submit = handleSubmit((values) => {
     const remainingText = stripDueTimeForValidation(values.text);
-    if (!remainingText) {
-      setError("text", { type: "required", message: "Note is required" });
+    const nonHashtagText = remainingText
+      .replace(/(?:^|\s)#[\w-]+/g, "")
+      .trim();
+
+    if (!remainingText || !nonHashtagText) {
+      setError("text", {
+        type: "required",
+        message: "Note is required",
+      });
       return;
     }
 

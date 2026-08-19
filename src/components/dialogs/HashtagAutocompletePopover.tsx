@@ -6,6 +6,7 @@ import {
   InputAdornment,
   Popover,
   TextField,
+  Tooltip,
   colors,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
@@ -78,83 +79,84 @@ const HashtagAutocompletePopover = ({
         },
       }}
     >
-      <Box sx={{ p: 1 }}>
-        <Autocomplete
-          options={filteredOptions}
-          autoHighlight
-          openOnFocus
-          freeSolo
-          disablePortal
-          filterOptions={(filteredOptions) => filteredOptions}
-          inputValue={hashtagInputValue}
-          slotProps={{
-            listbox: {
-              sx: {
-                minHeight: 96,
-                maxHeight: 220,
-                overflowY: "auto",
-                scrollbarWidth: "none",
-                "&::-webkit-scrollbar": {
-                  display: "none",
+      <Box sx={{ p: 1, display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Autocomplete
+            options={filteredOptions}
+            autoHighlight
+            openOnFocus
+            freeSolo
+            disablePortal
+            filterOptions={(filteredOptions) => filteredOptions}
+            inputValue={hashtagInputValue}
+            slotProps={{
+              listbox: {
+                sx: {
+                  minHeight: 96,
+                  maxHeight: 220,
+                  overflowY: "auto",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none",
+                  },
                 },
               },
-            },
-            popper: {
-              placement: "bottom-start",
-              modifiers: [
-                {
-                  name: "offset",
-                  options: { offset: [0, 2] },
-                },
-              ],
-            },
-          }}
-          onInputChange={(_event, newValue) => setHashtagInputValue(newValue)}
-          onChange={handleAutocompleteSelect}
-          renderInput={(params) => {
-            const inputProps = (params as any).InputProps ?? {};
+              popper: {
+                placement: "bottom-start",
+                modifiers: [
+                  {
+                    name: "offset",
+                    options: { offset: [0, 2] },
+                  },
+                ],
+              },
+            }}
+            onInputChange={(_event, newValue) => setHashtagInputValue(newValue)}
+            onChange={handleAutocompleteSelect}
+            renderInput={(params) => {
+              const inputProps = (params as any).InputProps ?? {};
 
-            return (
-              <TextField
-                {...(params as any)}
-                label="Hashtags"
-                size="small"
-                autoFocus
-                InputProps={{
-                  ...inputProps,
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Box sx={{ display: "flex" }}>
-                        <Icon path={mdiPound} size={0.7} />
-                      </Box>
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <>
-                      {inputProps.endAdornment}
-                      <IconButton
-                        type="button"
-                        size="small"
-                        aria-label="Add hashtag"
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                        }}
-                        onClick={submitTag}
-                        sx={{
-                          color: colors.lightGreen[400],
-                          ml: 0.5,
-                          marginLeft: "auto",
-                        }}
-                      >
-                        <Icon path={mdiCheckCircle} size={0.7} />
-                      </IconButton>
-                    </>
-                  ),
-                }}
-              />
-            );
-          }}
-        />
+              return (
+                <TextField
+                  {...(params as any)}
+                  label="Hashtags"
+                  size="small"
+                  autoFocus
+                  InputProps={{
+                    ...inputProps,
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Box sx={{ display: "flex" }}>
+                          <Icon path={mdiPound} size={0.7} />
+                        </Box>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              );
+            }}
+          />
+        </Box>
+        <Tooltip title="Submit hashtag">
+          <IconButton
+            type="button"
+            size="small"
+            aria-label="Submit hashtag"
+            onMouseDown={(event) => {
+              event.preventDefault();
+            }}
+            onClick={submitTag}
+            sx={{
+              color: colors.lightGreen[400],
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon path={mdiCheckCircle} size={0.7} />
+          </IconButton>
+        </Tooltip>
       </Box>
     </Popover>
   );
