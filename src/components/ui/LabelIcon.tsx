@@ -1,6 +1,7 @@
 import { Avatar, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import type { IconOption } from "../../types";
+import { getEmojiIcon } from "../../utils/emojiIconOptions";
 import { getLetterAvatarText } from "../../utils/letterIconOptions";
 import { getLabelColorSwatch } from "../../utils/labelColors";
 
@@ -12,7 +13,24 @@ type LabelIconProps = {
 
 const LabelIcon = ({ icon, size = 0.8, color }: LabelIconProps) => {
   const letters = getLetterAvatarText(icon.name);
+  const emoji = getEmojiIcon(icon.name);
   const swatch = color ? getLabelColorSwatch(color) : null;
+
+  if (emoji) {
+    return (
+      <span
+        aria-label={icon.label}
+        role="img"
+        style={{
+          display: "inline-flex",
+          fontSize: `${Math.max(16, Math.round(size * 24))}px`,
+          lineHeight: 1,
+        }}
+      >
+        {emoji}
+      </span>
+    );
+  }
 
   if (letters) {
     const avatarSize = Math.max(16, Math.round(size * 24));

@@ -3,6 +3,7 @@ import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
 import type { Label, Note } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./noteTimestamps";
+import { createEmojiIconOptionFromName } from "./emojiIconOptions";
 import { createLetterIconOptionFromName } from "./letterIconOptions";
 
 type PersistedLabel = {
@@ -94,6 +95,11 @@ type FileSystemFileHandle = {
 };
 
 function resolveIconOption(name: string): Label["icon"] {
+  const emojiOption = createEmojiIconOptionFromName(name);
+  if (emojiOption) {
+    return emojiOption;
+  }
+
   const letterOption = createLetterIconOptionFromName(name);
   if (letterOption) {
     return letterOption;
