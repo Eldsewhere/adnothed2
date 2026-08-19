@@ -171,6 +171,7 @@ function App() {
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editingNote, seteditingNote] = useState<Note | null>(null);
+  const [cloneNote, setCloneNote] = useState<Note | null>(null);
   const [recentlyAddednoteId, setRecentlyAddedNoteId] = useState<string | null>(
     null,
   );
@@ -745,6 +746,7 @@ function App() {
       setDraftNoteText("");
       setDraftDueDate(null);
       seteditingNote(null);
+      setCloneNote(null);
       return;
     }
 
@@ -773,6 +775,7 @@ function App() {
     setPendingDateFilter(emptyNoteFilters);
     setDraftNoteText("");
     setDraftDueDate(null);
+    setCloneNote(null);
     setNotification(`${labelName}: ${finalText}`);
     void showAppNotification(labelName, finalText).then(
       handleNotificationResult,
@@ -980,7 +983,14 @@ function App() {
 
   const handleEditNote = (note: Note) => {
     setDatePopoverAnchor(null);
+    setCloneNote(null);
     seteditingNote(note);
+  };
+
+  const handleCloneNote = (note: Note) => {
+    setDatePopoverAnchor(null);
+    seteditingNote(null);
+    setCloneNote(note);
   };
 
   const handleNoteDueChange = (note: Note, due: number | null) => {
@@ -1027,6 +1037,19 @@ function App() {
             labelId: value,
           },
     );
+  }, []);
+
+  const handleClearFilters = useCallback(() => {
+    setNoteFilters(emptyNoteFilters);
+    setPendingDateFilter(emptyNoteFilters);
+    setDatePopoverAnchor(null);
+    setDatePickerMode("start");
+    setDraftDueDate(null);
+    setWeekPickerDueDialogOpen(false);
+    setWeekPickerDueDate(null);
+    setWeekPickerDueHour12(12);
+    setWeekPickerDueAmPm("AM");
+    setWeekPickerDueMinute(0);
   }, []);
 
   const startDateValue = noteFilters.dueDate
@@ -1714,6 +1737,7 @@ function App() {
               <Stack spacing={1}>
                 <NoteForm
                   editingNote={editingNote}
+                  cloneNote={cloneNote}
                   initialText={sharedText ?? undefined}
                   labels={labels}
                   dueLabel={futureDueLabel}
@@ -1723,6 +1747,7 @@ function App() {
                   onCancelEdit={() => seteditingNote(null)}
                   onFilterTextChange={handleFilterTextChange}
                   onFilterLabelChange={handleFilterLabelChange}
+                  onClearFilters={handleClearFilters}
                   onNoteTextChange={setDraftNoteText}
                 />
                 <Box
@@ -1791,6 +1816,7 @@ function App() {
                   onEdit={handleEditNote}
                   onDelete={handleNoteDelete}
                   onCopy={handleNoteCopy}
+                  onClone={handleCloneNote}
                   onShareLink={handleNoteShareLink}
                   onToggleBullet={handleNoteToggleBullet}
                   onAddCheckboxes={handleNoteAddCheckboxes}

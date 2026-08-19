@@ -25,6 +25,7 @@ import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
 
 type NoteFormProps = {
   editingNote: Note | null;
+  cloneNote?: Note | null;
   initialText?: string;
   labels: Label[];
   dueLabel?: string;
@@ -34,6 +35,7 @@ type NoteFormProps = {
   onCancelEdit: () => void;
   onFilterTextChange: (value: string) => void;
   onFilterLabelChange: (value: string) => void;
+  onClearFilters: () => void;
   onNoteTextChange?: (value: string) => void;
 };
 
@@ -41,6 +43,7 @@ const emptyValues: NoteFormValues = { labelId: "", text: "" };
 
 const NoteForm = ({
   editingNote,
+  cloneNote,
   initialText,
   labels,
   dueLabel,
@@ -50,6 +53,7 @@ const NoteForm = ({
   onCancelEdit,
   onFilterTextChange,
   onFilterLabelChange,
+  onClearFilters,
   onNoteTextChange,
 }: NoteFormProps) => {
   const {
@@ -73,6 +77,8 @@ const NoteForm = ({
   useEffect(() => {
     const nextValues = editingNote
       ? { labelId: editingNote.labelId ?? "", text: editingNote.text }
+      : cloneNote
+        ? { labelId: cloneNote.labelId ?? "", text: cloneNote.text }
       : initialText
         ? { labelId: "", text: initialText }
         : emptyValues;
@@ -86,6 +92,7 @@ const NoteForm = ({
   }, [
     editingNote,
     isEditing,
+    cloneNote,
     initialText,
     onFilterLabelChange,
     onFilterTextChange,
@@ -360,6 +367,11 @@ const NoteForm = ({
                                 <NoteFormActionsMenu
                                   value={text}
                                   onTextChange={handleTextChange}
+                                  onClear={() => {
+                                    handleTextChange("");
+                                    field.onChange("");
+                                    onClearFilters();
+                                  }}
                                   textAreaRef={textAreaRef}
                                 />
                               </Stack>

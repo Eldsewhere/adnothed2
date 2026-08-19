@@ -10,6 +10,7 @@ import {
   mdiCheckboxBlankOutline,
   mdiChevronRight,
   mdiCircleSmall,
+  mdiCloseCircleOutline,
   mdiContentPaste,
   mdiEmailOutline,
   mdiFormatLineSpacing,
@@ -156,12 +157,14 @@ const querySubmenuGroups: Record<
 type NoteFormActionsMenuProps = {
   value: string;
   onTextChange: (str: string) => void;
+  onClear: () => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 };
 
 const NoteFormActionsMenu = ({
   value,
   onTextChange,
+  onClear,
   textAreaRef,
 }: NoteFormActionsMenuProps) => {
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
@@ -389,6 +392,26 @@ const NoteFormActionsMenu = ({
             <Icon path={mdiSelectAll} size={0.75} />
           </Box>
           Select
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            onClear();
+            setFormatMenuAnchor(null);
+            closeQueryMenu();
+            requestAnimationFrame(() => textAreaRef.current?.focus());
+          }}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+            }}
+          >
+            <Icon path={mdiCloseCircleOutline} size={0.75} />
+          </Box>
+          Clear
         </MenuItem>
         <MenuItem
           onClick={async () => {

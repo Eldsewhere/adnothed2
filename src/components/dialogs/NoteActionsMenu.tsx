@@ -5,6 +5,7 @@ import {
   mdiBell,
   mdiCalendarClock,
   mdiContentCopy,
+  mdiContentDuplicate,
   mdiLink,
   mdiMagnify,
   mdiNoteText,
@@ -26,6 +27,7 @@ type NoteActionsMenuProps = {
   onNotify: (note: Note) => void;
   onPin: (note: Note) => void;
   onCopy: (note: Note) => void;
+  onClone: (note: Note) => void;
   onShareText: (note: Note) => void;
   onShareLink: (note: Note) => void;
   onOpen: (note: Note) => void;
@@ -69,6 +71,7 @@ const NoteActionsMenu = ({
   onNotify,
   onPin,
   onCopy,
+  onClone,
   onShareText,
   onShareLink,
   onOpen,
@@ -134,7 +137,16 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiBell} size={0.7} />
               </Box>
               Notify
@@ -145,7 +157,16 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={isPinned ? mdiPinOff : mdiPin} size={0.7} />
               </Box>
               {isPinned ? "Unpin" : "Pin"}
@@ -157,7 +178,16 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiContentCopy} size={0.8} />
               </Box>
               Copy
@@ -167,7 +197,16 @@ const NoteActionsMenu = ({
                 setShareMenuAnchor(event.currentTarget);
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiShareVariant} size={0.7} />
               </Box>
               Share
@@ -179,7 +218,16 @@ const NoteActionsMenu = ({
                   handleMenuClose();
                 }}
               >
-                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    mr: 1,
+                    py: 1,
+                    px: 0.5,
+                  }}
+                >
                   <Icon path={mdiOpenInNew} size={0.7} />
                 </Box>
                 Open
@@ -190,7 +238,16 @@ const NoteActionsMenu = ({
                   setSearchMenuAnchor(event.currentTarget);
                 }}
               >
-                <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    mr: 1,
+                    py: 1,
+                    px: 0.5,
+                  }}
+                >
                   <Icon path={mdiMagnify} size={0.7} />
                 </Box>
                 Search
@@ -203,10 +260,19 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiCalendarClock} size={0.7} />
               </Box>
-              Date
+              Schedule
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -214,10 +280,39 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiPencil} size={0.7} />
               </Box>
               Edit
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onClone(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiContentDuplicate} size={0.8} />
+              </Box>
+              Clone
             </MenuItem>
             <MenuItem
               onClick={() => {
@@ -225,7 +320,16 @@ const NoteActionsMenu = ({
                 handleMenuClose();
               }}
             >
-              <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
                 <Icon path={mdiTrashCanOutline} size={0.7} />
               </Box>
               Delete
@@ -249,7 +353,16 @@ const NoteActionsMenu = ({
             onClose();
           }}
         >
-          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
             <Icon path={mdiNoteText} size={0.7} />
           </Box>
           Text
@@ -262,7 +375,16 @@ const NoteActionsMenu = ({
             onClose();
           }}
         >
-          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
             <Icon path={mdiLink} size={0.7} />
           </Box>
           Link
@@ -276,16 +398,18 @@ const NoteActionsMenu = ({
         anchorOrigin={{ horizontal: "left", vertical: "bottom" }}
         transformOrigin={{ horizontal: "right", vertical: "center" }}
       >
-        {([
-          "google.com",
-          "chatgpt.com",
-          "reddit.com",
-          "youtube.com",
-          "maps.google.com",
-          "instagram.com",
-          "spotify.com",
-          "amazon.es",
-        ] as const).map((site) => (
+        {(
+          [
+            "google.com",
+            "chatgpt.com",
+            "reddit.com",
+            "youtube.com",
+            "maps.google.com",
+            "instagram.com",
+            "spotify.com",
+            "amazon.es",
+          ] as const
+        ).map((site) => (
           <MenuItem key={site} onClick={() => runSearch(site)}>
             <SearchSiteIcon domain={site} />
             {site === "google.com"

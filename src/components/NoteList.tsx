@@ -28,6 +28,7 @@ type NoteListProps = {
   onEdit: (note: Note) => void;
   onDelete: (note: Note) => void;
   onCopy: (note: Note) => void;
+  onClone: (note: Note) => void;
   onShareLink: (note: Note) => void;
   onToggleBullet: (note: Note) => void;
   onAddCheckboxes: (note: Note) => void;
@@ -79,6 +80,7 @@ const NoteList = ({
   onEdit,
   onDelete,
   onCopy,
+  onClone,
   onShareLink,
   onToggleCheckbox,
   onNotify,
@@ -188,6 +190,11 @@ const NoteList = ({
 
   const handleCopy = (note: Note) => {
     onCopy(note);
+    closeMenu();
+  };
+
+  const handleClone = (note: Note) => {
+    onClone(note);
     closeMenu();
   };
 
@@ -606,6 +613,7 @@ const NoteList = ({
           onNotify={handleNotify}
           onPin={onPin}
           onCopy={handleCopy}
+          onClone={handleClone}
           onShareText={handleShare}
           onShareLink={handleShareLink}
           onOpen={handleOpen}
