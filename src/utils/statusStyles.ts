@@ -7,6 +7,7 @@ export const STATUS_FORMAT_OPTIONS = [
   "bold",
   "strikethrough",
   "spoiler",
+  "transparent",
   "red",
   "orange",
   "green",
@@ -20,6 +21,7 @@ export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
   bold: "Bold",
   strikethrough: "Strikethrough",
   spoiler: "Spoiler",
+  transparent: "Transparent",
   red: "Red",
   orange: "Orange",
   green: "Green",
@@ -33,6 +35,7 @@ export function getStatusTextStyle(format?: StatusFormat): {
   filter?: string;
   textShadow?: string;
   userSelect?: "none";
+  opacity?: number;
 } {
   switch (format) {
     case "underline":
@@ -43,6 +46,8 @@ export function getStatusTextStyle(format?: StatusFormat): {
       return { textDecoration: "line-through" };
     case "spoiler":
       return {};
+    case "transparent":
+      return { opacity: 0.2 };
     case "red":
       return { color: colors.red[400] };
     case "orange":

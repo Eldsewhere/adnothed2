@@ -25,6 +25,7 @@ import {
   mdiTrashCanOutline,
 } from "@mdi/js";
 import type { Note, Status } from "../../types";
+import { getStatusTextStyle } from "../../utils/statusStyles";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
@@ -440,27 +441,33 @@ const NoteActionsMenu = ({
           </Box>
           {statuses.length === 0 ? "no statuses available" : "no status"}
         </MenuItem>
-        {statuses.map((status) => (
-          <MenuItem
-            key={status.id}
-            onClick={() => selectStatus(status)}
-            autoFocus={Boolean(note?.emoji && note.emoji === status.emoji)}
-            selected={Boolean(note?.emoji && note.emoji === status.emoji)}
-          >
-            <Box
-              component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                mr: 1,
-                fontSize: "1.1rem",
-              }}
+        {statuses.map((status) => {
+          const statusTextStyle = getStatusTextStyle(status.format);
+
+          return (
+            <MenuItem
+              key={status.id}
+              onClick={() => selectStatus(status)}
+              autoFocus={Boolean(note?.emoji && note.emoji === status.emoji)}
+              selected={Boolean(note?.emoji && note.emoji === status.emoji)}
             >
-              {status.emoji}
-            </Box>
-            {status.name}
-          </MenuItem>
-        ))}
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  fontSize: "1.1rem",
+                }}
+              >
+                {status.emoji}
+              </Box>
+              <Box component="span" sx={statusTextStyle}>
+                {status.name}
+              </Box>
+            </MenuItem>
+          );
+        })}
       </Menu>
 
       <Menu

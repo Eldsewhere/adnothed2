@@ -261,8 +261,8 @@ const StatusForm = ({
                         ? { fontWeight: 700 }
                         : option === "strikethrough"
                           ? { textDecoration: "line-through" }
-                          : option === "spoiler"
-                            ? { opacity: 0.6 }
+                          : option === "transparent"
+                            ? { opacity: 0.2 }
                             : option === "red"
                               ? { color: colors.red[400] }
                               : option === "orange"

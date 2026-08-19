@@ -12,6 +12,7 @@ export const StatusFormatSchema = z.enum([
   "bold",
   "strikethrough",
   "spoiler",
+  "transparent",
   "red",
   "orange",
   "green",

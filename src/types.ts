@@ -23,6 +23,7 @@ export type StatusFormat =
   | "bold"
   | "strikethrough"
   | "spoiler"
+  | "transparent"
   | "red"
   | "orange"
   | "green";
