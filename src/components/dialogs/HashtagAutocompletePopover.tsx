@@ -30,6 +30,7 @@ const HashtagAutocompletePopover = ({
   onSelect,
 }: HashtagAutocompletePopoverProps) => {
   const [hashtagInputValue, setHashtagInputValue] = useState("");
+  const [hashtagError, setHashtagError] = useState<string | null>(null);
   const normalizedExcludedTags = new Set(
     (excludeTags ?? []).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)),
   );
@@ -40,9 +41,16 @@ const HashtagAutocompletePopover = ({
   const submitTag = () => {
     const tag = hashtagInputValue.trim();
     if (!tag) {
+      setHashtagError(null);
       return;
     }
 
+    if (/\s/.test(hashtagInputValue)) {
+      setHashtagError("Hashtags cannot have spaces");
+      return;
+    }
+
+    setHashtagError(null);
     onSelect(tag);
     setHashtagInputValue("");
     onClose();
@@ -53,6 +61,12 @@ const HashtagAutocompletePopover = ({
       return;
     }
 
+    if (/\s/.test(value)) {
+      setHashtagError("Hashtags cannot have spaces");
+      return;
+    }
+
+    setHashtagError(null);
     onSelect(value);
     setHashtagInputValue("");
     onClose();
@@ -89,6 +103,12 @@ const HashtagAutocompletePopover = ({
             disablePortal
             filterOptions={(filteredOptions) => filteredOptions}
             inputValue={hashtagInputValue}
+            onInputChange={(_event, newValue) => {
+              setHashtagInputValue(newValue);
+              if (hashtagError) {
+                setHashtagError(null);
+              }
+            }}
             slotProps={{
               listbox: {
                 sx: {
@@ -111,7 +131,6 @@ const HashtagAutocompletePopover = ({
                 ],
               },
             }}
-            onInputChange={(_event, newValue) => setHashtagInputValue(newValue)}
             onChange={handleAutocompleteSelect}
             renderInput={(params) => {
               const inputProps = (params as any).InputProps ?? {};
@@ -122,6 +141,8 @@ const HashtagAutocompletePopover = ({
                   label="Hashtags"
                   size="small"
                   autoFocus
+                  error={Boolean(hashtagError)}
+                  helperText={hashtagError ?? " "}
                   InputProps={{
                     ...inputProps,
                     startAdornment: (
