@@ -1,6 +1,14 @@
 import { useState, type MouseEvent } from "react";
 
-import { Box, colors, Divider, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
+import {
+  Box,
+  colors,
+  Divider,
+  IconButton,
+  Menu,
+  MenuItem,
+  Tooltip,
+} from "@mui/material";
 import { Icon } from "@mdi/react";
 
 import {
@@ -11,6 +19,7 @@ import {
   mdiChevronRight,
   mdiCircleSmall,
   mdiCloseCircleOutline,
+  mdiContentCopy,
   mdiContentPaste,
   mdiEmailOutline,
   mdiFormatLineSpacing,
@@ -141,7 +150,13 @@ const querySubmenuGroups: Record<
 > = {
   count: [queryTemplates[1], queryTemplates[2]],
   length: [queryTemplates[3], queryTemplates[4], queryTemplates[5]],
-  date: [queryTemplates[6], queryTemplates[7], queryTemplates[8], queryTemplates[9], queryTemplates[10]],
+  date: [
+    queryTemplates[6],
+    queryTemplates[7],
+    queryTemplates[8],
+    queryTemplates[9],
+    queryTemplates[10],
+  ],
   with: [
     queryTemplates[11],
     queryTemplates[12],
@@ -152,6 +167,14 @@ const querySubmenuGroups: Record<
     queryTemplates[17],
     queryTemplates[18],
   ],
+};
+
+const menuItemIconSx = {
+  display: "inline-flex",
+  alignItems: "center",
+  mr: 1,
+  py: 1,
+  px: 0.5,
 };
 
 type NoteFormActionsMenuProps = {
@@ -338,11 +361,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiCircleSmall} size={0.9} />
           </Box>
@@ -356,11 +375,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiCheckboxBlankOutline} size={0.75} />
           </Box>
@@ -372,7 +387,7 @@ const NoteFormActionsMenu = ({
             setFormatMenuAnchor(null);
             requestAnimationFrame(() => {
               const el = textAreaRef.current;
-              console.log(el, value)
+              console.log(el, value);
               if (!el) {
                 return;
               }
@@ -383,11 +398,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiSelectAll} size={0.75} />
           </Box>
@@ -403,15 +414,26 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiCloseCircleOutline} size={0.75} />
           </Box>
           Clear
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            void navigator.clipboard.writeText(value);
+            setFormatMenuAnchor(null);
+            closeQueryMenu();
+          }}
+        >
+          <Box
+            component="span"
+            sx={menuItemIconSx}
+          >
+            <Icon path={mdiContentCopy} size={0.75} />
+          </Box>
+          Copy
         </MenuItem>
         <MenuItem
           onClick={async () => {
@@ -423,11 +445,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiContentPaste} size={0.75} />
           </Box>
@@ -441,11 +459,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiChevronRight} size={0.75} />
           </Box>
@@ -471,11 +485,7 @@ const NoteFormActionsMenu = ({
         >
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={queryTemplates[0].iconPath} size={0.75} />
           </Box>
@@ -484,11 +494,7 @@ const NoteFormActionsMenu = ({
         <MenuItem onClick={(event) => openQuerySubmenu(event, "count")}>
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiFormatText} size={0.75} />
           </Box>
@@ -497,11 +503,7 @@ const NoteFormActionsMenu = ({
         <MenuItem onClick={(event) => openQuerySubmenu(event, "length")}>
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiRayStartEnd} size={0.75} />
           </Box>
@@ -510,11 +512,7 @@ const NoteFormActionsMenu = ({
         <MenuItem onClick={(event) => openQuerySubmenu(event, "date")}>
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiCalendar} size={0.75} />
           </Box>
@@ -523,11 +521,7 @@ const NoteFormActionsMenu = ({
         <MenuItem onClick={(event) => openQuerySubmenu(event, "with")}>
           <Box
             component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-            }}
+            sx={menuItemIconSx}
           >
             <Icon path={mdiFormatListBulleted} size={0.75} />
           </Box>
@@ -559,11 +553,7 @@ const NoteFormActionsMenu = ({
             >
               <Box
                 component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                }}
+                sx={menuItemIconSx}
               >
                 <Icon path={template.iconPath} size={0.75} />
               </Box>
