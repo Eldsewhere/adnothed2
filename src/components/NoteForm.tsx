@@ -20,6 +20,8 @@ import {
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { NO_LABEL_FILTER_VALUE } from "../utils/noteFilters";
+import { countGraphemes } from "../utils/textLength";
+import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
 
@@ -76,7 +78,10 @@ const NoteForm = ({
 
   useEffect(() => {
     const nextValues = editingNote
-      ? { labelId: editingNote.labelId ?? "", text: editingNote.text }
+      ? {
+          labelId: editingNote.labelId ?? "",
+          text: editingNote.text,
+        }
       : cloneNote
         ? { labelId: "", text: cloneNote.text }
       : initialText
@@ -157,7 +162,8 @@ const NoteForm = ({
               control={control}
               rules={{
                 required: "Note is required",
-                maxLength: { value: 500, message: "Max 500 characters" },
+                validate: (value) =>
+                  countGraphemes(value) <= 500 || "Max 500 characters",
               }}
               render={({ field }) => {
                 const handleTextChange = (value: string) => {
@@ -372,6 +378,11 @@ const NoteForm = ({
                                     field.onChange("");
                                     onClearFilters();
                                   }}
+                                  textAreaRef={textAreaRef}
+                                />
+                                <EmojiMenu
+                                  value={text}
+                                  onTextChange={handleTextChange}
                                   textAreaRef={textAreaRef}
                                 />
                               </Stack>

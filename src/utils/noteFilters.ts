@@ -2,6 +2,7 @@ import dayjs from "dayjs";
 import type { NoteFilters } from "../types";
 import { dateRegex, formatDate } from "./formatTimestamp";
 import { containsEmail, containsNumbers, containsUrl } from "./textPatterns";
+import { countGraphemes } from "./textLength";
 
 const yearRegex = /^\d{4}$/;
 const yearMonthRegex = /^\d{4}-\d{2}$/;
@@ -290,15 +291,17 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.exactLength !== null && text.length !== parsed.exactLength) {
+  const textLength = countGraphemes(text);
+
+  if (parsed.exactLength !== null && textLength !== parsed.exactLength) {
     return false;
   }
 
-  if (parsed.minLength !== null && text.length < parsed.minLength) {
+  if (parsed.minLength !== null && textLength < parsed.minLength) {
     return false;
   }
 
-  if (parsed.maxLength !== null && text.length > parsed.maxLength) {
+  if (parsed.maxLength !== null && textLength > parsed.maxLength) {
     return false;
   }
 
