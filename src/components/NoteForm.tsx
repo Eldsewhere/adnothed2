@@ -17,7 +17,6 @@ import {
   mdiCheckCircle,
   mdiChevronDown,
   mdiLabelMultiple,
-  mdiPound,
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { NO_LABEL_FILTER_VALUE } from "../utils/noteFilters";
@@ -419,40 +418,16 @@ const NoteForm = ({
                                     onClearFilters();
                                   }}
                                   textAreaRef={textAreaRef}
+                                  onOpenHashtagMenu={(event) => {
+                                    onHashtagPickerOpen?.();
+                                    setHashtagMenuAnchor(event.currentTarget);
+                                  }}
                                 />
                                 <EmojiMenu
                                   value={text}
                                   onTextChange={handleTextChange}
                                   textAreaRef={textAreaRef}
                                 />
-                                <Tooltip title="Insert hashtag" arrow>
-                                  <IconButton
-                                    aria-label="Insert hashtag"
-                                    size="small"
-                                    onClick={(event: MouseEvent<HTMLElement>) => {
-                                      onHashtagPickerOpen?.();
-                                      setHashtagMenuAnchor(event.currentTarget);
-                                    }}
-                                    sx={{
-                                      color: hashtagMenuAnchor ? "#e2e8f0" : "#cbd5e1",
-                                      backgroundColor: hashtagMenuAnchor
-                                        ? "rgba(148, 163, 184, 0.18)"
-                                        : "transparent",
-                                      borderRadius: 1,
-                                      minWidth: 32,
-                                      width: 32,
-                                      height: 32,
-                                      p: 0,
-                                      "&:hover": {
-                                        backgroundColor: hashtagMenuAnchor
-                                          ? "rgba(148, 163, 184, 0.22)"
-                                          : "rgba(148, 163, 184, 0.12)",
-                                      },
-                                    }}
-                                  >
-                                    <Icon path={mdiPound} size={0.8} />
-                                  </IconButton>
-                                </Tooltip>
                               </Stack>
                               <Stack
                                 direction="row"
