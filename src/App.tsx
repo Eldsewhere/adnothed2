@@ -1017,6 +1017,18 @@ function App() {
     setRecentlyEditedNoteId(note.id);
   };
 
+  const handleNoteEmojiChange = (note: Note, emoji: string | null) => {
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, emoji: emoji ?? undefined }
+          : existingNote,
+      ),
+    );
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+  };
+
   const handleFilterTextChange = useCallback((value: string) => {
     setNoteFilters((prev) =>
       prev.text === value
@@ -1825,6 +1837,7 @@ function App() {
                   onToggleCheckbox={handleNoteToggleCheckbox}
                   onDueChange={handleNoteDueChange}
                   onPin={handleNotePin}
+                  onEmojiChange={handleNoteEmojiChange}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
                   onNotify={(note) => {
                     const labelName =

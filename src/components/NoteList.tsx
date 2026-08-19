@@ -37,6 +37,7 @@ type NoteListProps = {
   onLabelChange: (note: Note, labelId: string | null) => void;
   onDueChange: (note: Note, due: number | null) => void;
   onPin: (note: Note) => void;
+  onEmojiChange: (note: Note, emoji: string | null) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -87,6 +88,7 @@ const NoteList = ({
   onLabelChange,
   onDueChange,
   onPin,
+  onEmojiChange,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -615,6 +617,7 @@ const NoteList = ({
           onClose={() => setMenuAnchor(null)}
           onNotify={handleNotify}
           onPin={onPin}
+          onEmojiChange={onEmojiChange}
           onComplete={(note) => onDueChange(note, null)}
           onCopy={handleCopy}
           onClone={handleClone}

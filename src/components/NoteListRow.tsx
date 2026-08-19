@@ -337,6 +337,24 @@ const NoteListRow = ({
                   </Box>
                 </Tooltip>
               )}
+              {note.emoji && (
+                <Tooltip title="Note emoji" aria-label={undefined} arrow>
+                  <Box
+                    component="span"
+                    role="img"
+                    aria-label="Note emoji"
+                    sx={{
+                      ml: 0.5,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      fontSize: "0.85rem",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {note.emoji}
+                  </Box>
+                </Tooltip>
+              )}
             </Typography>
             {selectMode && globalIndex !== undefined ? (
               <Typography

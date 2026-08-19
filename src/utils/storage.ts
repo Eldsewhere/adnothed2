@@ -15,6 +15,7 @@ type PersistedLabel = {
 type PersistedNote = {
   icon?: string | null;
   text: string;
+  emoji?: string;
   time: number;
   due?: number | null;
   pinned?: boolean;
@@ -136,6 +137,7 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
       labelId: note.icon ?? null,
       text: note.text,
       createdAt,
+      ...(note.emoji ? { emoji: note.emoji } : {}),
       ...(note.due !== undefined && note.due !== null ? { due: note.due } : {}),
       ...(note.pinned ? { pinned: note.pinned } : {}),
     });
@@ -147,6 +149,7 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
 function toPersistedNote(note: {
   icon?: string | null;
   text: string;
+  emoji?: string;
   time: number;
   due?: number | null;
   pinned?: boolean;
@@ -156,6 +159,7 @@ function toPersistedNote(note: {
   return {
     ...(icon ? { icon } : {}),
     text: note.text,
+    ...(note.emoji ? { emoji: note.emoji } : {}),
     time: normalizeCreatedAt(note.time),
     ...(note.due !== undefined ? { due: note.due } : {}),
     ...(note.pinned ? { pinned: note.pinned } : {}),
@@ -186,11 +190,12 @@ export function serializeState(state: {
     })),
     // Persist the renamed note shape; keep the old parser only for compatibility.
     notes: state.notes.map((note) => {
-      const { labelId, text, createdAt, due, pinned } =
+      const { labelId, text, emoji, createdAt, due, pinned } =
         stripTransientNoteFields(note);
       return toPersistedNote({
         icon: labelId,
         text,
+        emoji,
         time: createdAt,
         due,
         pinned,

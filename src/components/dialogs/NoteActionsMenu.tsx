@@ -1,11 +1,13 @@
 import { useState, type MouseEvent } from "react";
-import { Box, Divider, Menu, MenuItem } from "@mui/material";
+import { Box, Button, Divider, Menu, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
+import Picker, { Theme, type EmojiClickData } from "emoji-picker-react";
 import {
   mdiBell,
   mdiCalendarClock,
   mdiClockOutline,
   mdiContentCopy,
+  mdiEmoticonOutline,
   mdiFilter,
   mdiLink,
   mdiMagnify,
@@ -27,6 +29,7 @@ type NoteActionsMenuProps = {
   onClose: () => void;
   onNotify: (note: Note) => void;
   onPin: (note: Note) => void;
+  onEmojiChange: (note: Note, emoji: string | null) => void;
   onComplete: (note: Note) => void;
   onCopy: (note: Note) => void;
   onClone: (note: Note) => void;
@@ -78,6 +81,7 @@ const NoteActionsMenu = ({
   onClose,
   onNotify,
   onPin,
+  onEmojiChange,
   onComplete,
   onCopy,
   onClone,
@@ -96,10 +100,14 @@ const NoteActionsMenu = ({
   const [searchMenuAnchor, setSearchMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [emojiMenuAnchor, setEmojiMenuAnchor] = useState<HTMLElement | null>(
+    null,
+  );
 
   const closeSubmenus = () => {
     setShareMenuAnchor(null);
     setSearchMenuAnchor(null);
+    setEmojiMenuAnchor(null);
   };
 
   const handleMenuClose = () => {
@@ -129,6 +137,12 @@ const NoteActionsMenu = ({
     onSearch(note, queryBuilder, getSelectedText?.(note.id));
     setSearchMenuAnchor(null);
     onClose();
+  };
+
+  const selectEmoji = (emojiData: EmojiClickData) => {
+    if (!note) return;
+    onEmojiChange(note, emojiData.emoji);
+    handleMenuClose();
   };
 
   return (
@@ -179,6 +193,25 @@ const NoteActionsMenu = ({
                 <Icon path={isPinned ? mdiPinOff : mdiPin} size={0.7} />
               </Box>
               {isPinned ? "Unpin" : "Pin"}
+            </MenuItem>
+            <MenuItem
+              onClick={(event: MouseEvent<HTMLElement>) =>
+                setEmojiMenuAnchor(event.currentTarget)
+              }
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiEmoticonOutline} size={0.7} />
+              </Box>
+              React
             </MenuItem>
             {note.due !== undefined && isDueTodayOrLater(note.due) && (
               <MenuItem
@@ -367,6 +400,45 @@ const NoteActionsMenu = ({
             </MenuItem>
           </>
         )}
+      </Menu>
+      <Menu
+        anchorEl={emojiMenuAnchor}
+        open={Boolean(emojiMenuAnchor)}
+        onClose={() => setEmojiMenuAnchor(null)}
+        slotProps={{
+          paper: {
+            sx: {
+              overflow: "hidden",
+              bgcolor: "#263238",
+              border: "1px solid #455a64",
+            },
+          },
+        }}
+      >
+        <Box role="group" aria-label="Emoji picker">
+          <Picker
+            onEmojiClick={selectEmoji}
+            lazyLoadEmojis
+            theme={Theme.DARK}
+            width={352}
+            height={420}
+          />
+        </Box>
+        <Box sx={{ p: 1 }}>
+          <Button
+            fullWidth
+            variant="outlined"
+            color="error"
+            disabled={!note?.emoji}
+            startIcon={<Icon path={mdiTrashCanOutline} size={0.7} />}
+            onClick={() => {
+              if (note) onEmojiChange(note, null);
+              handleMenuClose();
+            }}
+          >
+            Remove emoji
+          </Button>
+        </Box>
       </Menu>
 
       <Menu

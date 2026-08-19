@@ -22,6 +22,7 @@ export type Note = {
   labelId: string | null;
   text: string;
   createdAt: number;
+  emoji?: string;
   hasNotification?: boolean;
   due?: number;
   pinned?: boolean;
