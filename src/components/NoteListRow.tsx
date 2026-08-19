@@ -290,6 +290,24 @@ const NoteListRow = ({
               {shouldUsePriorityDueDate
                 ? formatDueDate(note.due!)
                 : formatTimestamp(note.createdAt)}
+              {note.emoji && (
+                <Tooltip title="Note status" aria-label={undefined} arrow>
+                  <Box
+                    component="span"
+                    role="img"
+                    aria-label="Note status"
+                    sx={{
+                      ml: 0.5,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      fontSize: "0.85rem",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {note.emoji}
+                  </Box>
+                </Tooltip>
+              )}
               {shouldUsePriorityDueDate && (
                 <Tooltip title="Due date" aria-label={undefined} arrow>
                   <Box
@@ -334,24 +352,6 @@ const NoteListRow = ({
                     }}
                   >
                     <Icon path={mdiPin} size={0.6} />
-                  </Box>
-                </Tooltip>
-              )}
-              {note.emoji && (
-                <Tooltip title="Note emoji" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    role="img"
-                    aria-label="Note emoji"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      fontSize: "0.85rem",
-                      lineHeight: 1,
-                    }}
-                  >
-                    {note.emoji}
                   </Box>
                 </Tooltip>
               )}
