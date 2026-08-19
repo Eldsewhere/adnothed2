@@ -1041,6 +1041,8 @@ function App() {
 
   const handleClearFilters = useCallback(() => {
     setNoteFilters(emptyNoteFilters);
+    setSelectMode(false);
+    setSelectedNoteIds(new Set());
     setPendingDateFilter(emptyNoteFilters);
     setDatePopoverAnchor(null);
     setDatePickerMode("start");
