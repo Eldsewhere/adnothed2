@@ -612,6 +612,7 @@ const NoteList = ({
           onClose={() => setMenuAnchor(null)}
           onNotify={handleNotify}
           onPin={onPin}
+          onComplete={(note) => onDueChange(note, null)}
           onCopy={handleCopy}
           onClone={handleClone}
           onShareText={handleShare}

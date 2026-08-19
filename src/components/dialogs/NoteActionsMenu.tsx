@@ -4,6 +4,7 @@ import { Icon } from "@mdi/react";
 import {
   mdiBell,
   mdiCalendarClock,
+  mdiClockOutline,
   mdiContentCopy,
   mdiContentDuplicate,
   mdiLink,
@@ -26,6 +27,7 @@ type NoteActionsMenuProps = {
   onClose: () => void;
   onNotify: (note: Note) => void;
   onPin: (note: Note) => void;
+  onComplete: (note: Note) => void;
   onCopy: (note: Note) => void;
   onClone: (note: Note) => void;
   onShareText: (note: Note) => void;
@@ -62,6 +64,12 @@ const SearchSiteIcon = ({ domain }: { domain: string }) => (
   />
 );
 
+const isDueTodayOrLater = (due: number): boolean => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return due >= today.getTime() / 1000;
+};
+
 const NoteActionsMenu = ({
   anchorEl,
   note,
@@ -70,6 +78,7 @@ const NoteActionsMenu = ({
   onClose,
   onNotify,
   onPin,
+  onComplete,
   onCopy,
   onClone,
   onShareText,
@@ -171,6 +180,28 @@ const NoteActionsMenu = ({
               </Box>
               {isPinned ? "Unpin" : "Pin"}
             </MenuItem>
+            {note.due !== undefined && isDueTodayOrLater(note.due) && (
+              <MenuItem
+                onClick={() => {
+                  onComplete(note);
+                  handleMenuClose();
+                }}
+              >
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    mr: 1,
+                    py: 1,
+                    px: 0.5,
+                  }}
+                >
+                  <Icon path={mdiClockOutline} size={0.7} />
+                </Box>
+                Complete
+              </MenuItem>
+            )}
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
