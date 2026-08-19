@@ -244,7 +244,7 @@ const LabelForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search icon or use A, AB, 0-99, A0"
+                  label="Search icon, emoji or use A, AB, 0-99, A0"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
