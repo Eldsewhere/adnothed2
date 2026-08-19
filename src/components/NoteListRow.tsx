@@ -2,6 +2,7 @@ import { useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
+  Chip,
   IconButton,
   Stack,
   Tooltip,
@@ -13,6 +14,7 @@ import {
   mdiBell,
   mdiChevronDown,
   mdiClockOutline,
+  mdiClose,
   mdiDotsVertical,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -68,6 +70,12 @@ type NoteListRowProps = {
     openStatusPicker?: boolean,
   ) => void;
   setnoteTextRef: (element: HTMLElement | null) => void;
+  availableHashtags?: string[];
+  filterText?: string;
+  onFilterTextChange?: (value: string) => void;
+  onToggleHashtagFilter?: (tag: string) => void;
+  onAppendHashtagToNote?: (note: Note, tag: string) => void;
+  onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
 };
 
 const NoteListRow = ({
@@ -96,6 +104,9 @@ const NoteListRow = ({
   onOpenOverflow,
   onOpenActionsMenu,
   setnoteTextRef,
+  filterText = "",
+  onToggleHashtagFilter,
+  onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
   const shouldUsePriorityDueDate =
     note.due !== undefined && (isToday(note.due) || isTomorrow(note.due));
@@ -104,8 +115,61 @@ const NoteListRow = ({
     status && status.format !== "spoiler"
       ? getStatusTextStyle(status.format)
       : {};
+  const activeHashtagSet = new Set(
+    (filterText || "")
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean),
+  );
+  const isHashtagActive = (tag: string) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+    return activeHashtagSet.has(normalizedTag);
+  };
   const isSpoilerStatus = status?.format === "spoiler";
   const shouldHideSpoilerText = isSpoilerStatus && !isSpoilerVisible;
+
+  const renderTextWithHashtags = (value: string) =>
+    value.split(/(#\w[\w-]*\b)/g).map((part, index) => {
+      if (!/^#\w[\w-]*$/.test(part)) {
+        return <span key={`${part}-${index}`}>{part}</span>;
+      }
+
+      const isActive = isHashtagActive(part);
+      return (
+        <Chip
+          key={`${part}-${index}`}
+          label={part}
+          size="small"
+          onClick={(event) => {
+            event.stopPropagation();
+            onToggleHashtagFilter?.(part);
+          }}
+          onDelete={(event) => {
+            event.stopPropagation();
+            onRemoveHashtagFromNote?.(note, part);
+          }}
+          deleteIcon={<Icon path={mdiClose} size={0.5} />}
+          sx={{
+            height: 20,
+            ml: 0.25,
+            mr: 0.25,
+            p: 0.5,
+            borderRadius: 999,
+            bgcolor: isActive ? colors.lightGreen[400] : colors.blueGrey[700],
+            color: isActive ? colors.grey[900] : colors.grey[100],
+            ".MuiChip-label": {
+              px: 0.75,
+              fontSize: "0.7rem",
+            },
+            ".MuiChip-deleteIcon": {
+              color: isActive ? colors.grey[900] : colors.grey[100],
+              fontSize: "0.7rem",
+              margin: 0,
+            },
+          }}
+        />
+      );
+    });
 
   const maskSpoilerText = (value: string): string =>
     Array.from(value)
@@ -287,25 +351,62 @@ const NoteListRow = ({
                       textDecoration: isChecked ? "line-through" : "none",
                     }}
                   >
-                    {splitTextByUrls(visibleRowText).map((part, partIndex) =>
-                      part.isUrl ? (
-                        <Box
-                          key={partIndex}
-                          component="a"
-                          href={part.value}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            color: "info.main",
-                            textDecoration: "underline",
-                            wordBreak: "break-word",
-                          }}
-                        >
-                          {part.value}
-                        </Box>
-                      ) : (
-                        <span key={partIndex}>{part.value}</span>
-                      ),
+                    {!selectMode && /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
+                      <Chip
+                        label={visibleRowText.trim()}
+                        size="small"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onToggleHashtagFilter?.(visibleRowText.trim());
+                        }}
+                        onDelete={(event) => {
+                          event.stopPropagation();
+                          onRemoveHashtagFromNote?.(note, visibleRowText.trim());
+                        }}
+                        deleteIcon={<Icon path={mdiClose} size={0.5} />}
+                        sx={{
+                          height: 20,
+                          borderRadius: 999,
+                          bgcolor: isHashtagActive(visibleRowText.trim())
+                            ? colors.lightGreen[400]
+                            : colors.blueGrey[700],
+                          color: isHashtagActive(visibleRowText.trim())
+                            ? colors.grey[900]
+                            : colors.grey[100],
+                          ".MuiChip-label": {
+                            px: 0.75,
+                            fontSize: "0.7rem",
+                          },
+                          ".MuiChip-deleteIcon": {
+                            color: isHashtagActive(visibleRowText.trim())
+                              ? colors.grey[900]
+                              : colors.grey[100],
+                            fontSize: "0.7rem",
+                            margin: 0,
+                          },
+                        }}
+                      />
+                    ) : (
+                      splitTextByUrls(visibleRowText).map((part, partIndex) =>
+                        part.isUrl ? (
+                          <Box
+                            key={partIndex}
+                            component="a"
+                            href={part.value}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            sx={{
+                              color: "info.main",
+                              textDecoration: "underline",
+                              wordBreak: "break-word",
+                            }}
+                          >
+                            {part.value}
+                          </Box>
+                        ) : (
+                          renderTextWithHashtags(part.value)
+                        ),
+                      )
                     )}
                   </Box>
                   {rowIndex < note.text.split("\n").length - 1 && <br />}

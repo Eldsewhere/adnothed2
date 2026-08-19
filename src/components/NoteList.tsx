@@ -49,6 +49,11 @@ type NoteListProps = {
   onToggleSelect: (id: string) => void;
   onInfoTips?: () => void;
   onInstall?: () => void;
+  availableHashtags?: string[];
+  onFilterTextChange?: (value: string) => void;
+  onToggleHashtagFilter?: (tag: string) => void;
+  onAppendHashtagToNote?: (note: Note, tag: string) => void;
+  onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
 };
 
 const ROW_HEIGHT = 80;
@@ -101,6 +106,11 @@ const NoteList = ({
   onToggleSelect,
   onInfoTips,
   onInstall,
+  availableHashtags = [],
+  onFilterTextChange,
+  onToggleHashtagFilter,
+  onAppendHashtagToNote,
+  onRemoveHashtagFromNote,
 }: NoteListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
@@ -620,6 +630,12 @@ const NoteList = ({
                   setnoteTextRef={(element) =>
                     updateOverflowState(note.id, element)
                   }
+                  availableHashtags={availableHashtags}
+                  filterText={filters.text}
+                  onFilterTextChange={onFilterTextChange}
+                  onToggleHashtagFilter={onToggleHashtagFilter}
+                  onAppendHashtagToNote={onAppendHashtagToNote}
+                  onRemoveHashtagFromNote={onRemoveHashtagFromNote}
                 />
               );
             })}
@@ -631,6 +647,7 @@ const NoteList = ({
           anchorEl={menuAnchor.el}
           note={menuAnchor.note}
           statuses={statuses}
+          availableHashtags={availableHashtags}
           openStatusPicker={menuAnchor.openStatusPicker}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
           isPinned={!!menuAnchor.note.pinned}
@@ -649,6 +666,7 @@ const NoteList = ({
           onDate={openDueDateDialog}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onAppendHashtagToNote={onAppendHashtagToNote}
         />
       )}
       {overflowModalNote && (

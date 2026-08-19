@@ -17,6 +17,7 @@ import {
   mdiCheckCircle,
   mdiChevronDown,
   mdiLabelMultiple,
+  mdiPound,
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { NO_LABEL_FILTER_VALUE } from "../utils/noteFilters";
@@ -24,12 +25,14 @@ import { countGraphemes } from "../utils/textLength";
 import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
+import HashtagAutocompletePopover from "./dialogs/HashtagAutocompletePopover";
 
 type NoteFormProps = {
   editingNote: Note | null;
   cloneNote?: Note | null;
   initialText?: string;
   labels: Label[];
+  availableHashtags?: string[];
   dueLabel?: string;
   dueFutureCount?: number;
   onDueDateClick?: () => void;
@@ -48,6 +51,7 @@ const NoteForm = ({
   cloneNote,
   initialText,
   labels,
+  availableHashtags = [],
   dueLabel,
   dueFutureCount = 0,
   onDueDateClick,
@@ -72,6 +76,8 @@ const NoteForm = ({
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [hashtagMenuAnchor, setHashtagMenuAnchor] =
+    useState<HTMLElement | null>(null);
 
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const isEditing = editingNote !== null;
@@ -147,6 +153,31 @@ const NoteForm = ({
 
   const closeLabelMenu = () => {
     setLabelMenuAnchor(null);
+  };
+
+  const insertHashtag = (
+    tag: string,
+    currentValue: string,
+    onChange: (value: string) => void,
+  ) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+    const textArea = textAreaRef.current;
+    const start = textArea?.selectionStart ?? currentValue.length;
+    const end = textArea?.selectionEnd ?? currentValue.length;
+    const prefix = currentValue.slice(0, start);
+    const suffix = currentValue.slice(end);
+    const needsLeadingSpace =
+      prefix.length > 0 && !/\s$/.test(prefix) && !prefix.endsWith("#");
+    const nextValue =
+      prefix + (needsLeadingSpace ? " " : "") + normalizedTag + suffix;
+    onChange(nextValue);
+    setHashtagMenuAnchor(null);
+
+    requestAnimationFrame(() => {
+      textArea?.focus();
+      const cursor = start + (needsLeadingSpace ? normalizedTag.length + 1 : normalizedTag.length);
+      textArea?.setSelectionRange(cursor, cursor);
+    });
   };
 
   return (
@@ -385,6 +416,33 @@ const NoteForm = ({
                                   onTextChange={handleTextChange}
                                   textAreaRef={textAreaRef}
                                 />
+                                <Tooltip title="Insert hashtag" arrow>
+                                  <IconButton
+                                    aria-label="Insert hashtag"
+                                    size="small"
+                                    onClick={(event: MouseEvent<HTMLElement>) => {
+                                      setHashtagMenuAnchor(event.currentTarget);
+                                    }}
+                                    sx={{
+                                      color: hashtagMenuAnchor ? "#e2e8f0" : "#cbd5e1",
+                                      backgroundColor: hashtagMenuAnchor
+                                        ? "rgba(148, 163, 184, 0.18)"
+                                        : "transparent",
+                                      borderRadius: 1,
+                                      minWidth: 32,
+                                      width: 32,
+                                      height: 32,
+                                      p: 0,
+                                      "&:hover": {
+                                        backgroundColor: hashtagMenuAnchor
+                                          ? "rgba(148, 163, 184, 0.22)"
+                                          : "rgba(148, 163, 184, 0.12)",
+                                      },
+                                    }}
+                                  >
+                                    <Icon path={mdiPound} size={0.8} />
+                                  </IconButton>
+                                </Tooltip>
                               </Stack>
                               <Stack
                                 direction="row"
@@ -455,6 +513,17 @@ const NoteForm = ({
                                 </Tooltip>
                               </Stack>
                             </Box>
+                            {hashtagMenuAnchor && (
+                              <HashtagAutocompletePopover
+                                anchorEl={hashtagMenuAnchor}
+                                open={Boolean(hashtagMenuAnchor)}
+                                options={availableHashtags}
+                                onClose={() => setHashtagMenuAnchor(null)}
+                                onSelect={(tag) => {
+                                  insertHashtag(tag, text, handleTextChange);
+                                }}
+                              />
+                            )}
                             {labelMenuAnchor && (
                               <LabelMenu
                                 onShowAllSelect={() => {

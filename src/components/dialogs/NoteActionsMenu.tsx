@@ -1,11 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import {
-  Box,
-  Divider,
-  Menu,
-  MenuItem,
-  colors,
-} from "@mui/material";
+import { Box, Divider, Menu, MenuItem, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiBell,
@@ -21,16 +15,19 @@ import {
   mdiPencil,
   mdiPin,
   mdiPinOff,
+  mdiPound,
   mdiShareVariant,
   mdiTrashCanOutline,
 } from "@mdi/js";
 import type { Note, Status } from "../../types";
 import { getStatusTextStyle } from "../../utils/statusStyles";
+import HashtagAutocompletePopover from "./HashtagAutocompletePopover";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
   note: Note | null;
   statuses: Status[];
+  availableHashtags?: string[];
   openStatusPicker?: boolean;
   hasUrl: boolean;
   isPinned: boolean;
@@ -53,6 +50,7 @@ type NoteActionsMenuProps = {
   onDate: (note: Note) => void;
   onEdit: (note: Note) => void;
   onDelete: (note: Note) => void;
+  onAppendHashtagToNote?: (note: Note, tag: string) => void;
 };
 
 const SEARCH_ICON_FILENAMES: Record<string, string> = {
@@ -85,6 +83,7 @@ const NoteActionsMenu = ({
   anchorEl,
   note,
   statuses,
+  availableHashtags = [],
   openStatusPicker,
   hasUrl,
   isPinned,
@@ -103,6 +102,7 @@ const NoteActionsMenu = ({
   onDate,
   onEdit,
   onDelete,
+  onAppendHashtagToNote,
 }: NoteActionsMenuProps) => {
   const [shareMenuAnchor, setShareMenuAnchor] = useState<HTMLElement | null>(
     null,
@@ -113,6 +113,8 @@ const NoteActionsMenu = ({
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [hashtagMenuAnchor, setHashtagMenuAnchor] =
+    useState<HTMLElement | null>(null);
 
   useEffect(() => {
     if (openStatusPicker && anchorEl && note) {
@@ -124,6 +126,7 @@ const NoteActionsMenu = ({
     setShareMenuAnchor(null);
     setSearchMenuAnchor(null);
     setStatusMenuAnchor(null);
+    setHashtagMenuAnchor(null);
   };
 
   const handleMenuClose = () => {
@@ -228,6 +231,31 @@ const NoteActionsMenu = ({
                 <Icon path={mdiEmoticonOutline} size={0.7} />
               </Box>
               Status
+            </MenuItem>
+            <MenuItem
+              onClick={(event: MouseEvent<HTMLElement>) =>
+                setHashtagMenuAnchor(event.currentTarget)
+              }
+              selected={Boolean(hashtagMenuAnchor)}
+              sx={{
+                backgroundColor: hashtagMenuAnchor
+                  ? "rgba(148, 163, 184, 0.16)"
+                  : "transparent",
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiPound} size={0.7} />
+              </Box>
+              Hashtag
             </MenuItem>
             {note.due !== undefined && isDueTodayOrLater(note.due) && (
               <MenuItem
@@ -417,6 +445,19 @@ const NoteActionsMenu = ({
           </>
         )}
       </Menu>
+      <HashtagAutocompletePopover
+        anchorEl={hashtagMenuAnchor}
+        open={Boolean(hashtagMenuAnchor)}
+        options={availableHashtags}
+        onClose={() => setHashtagMenuAnchor(null)}
+        onSelect={(tag) => {
+          if (!note) {
+            return;
+          }
+          onAppendHashtagToNote?.(note, tag);
+          setHashtagMenuAnchor(null);
+        }}
+      />
       <Menu
         anchorEl={statusMenuAnchor}
         open={Boolean(statusMenuAnchor)}

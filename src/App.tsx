@@ -1122,6 +1122,56 @@ function App() {
     );
   }, []);
 
+  const handleToggleHashtagFilter = useCallback((tag: string) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+    setNoteFilters((prev) => {
+      const tokens = prev.text
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter(Boolean);
+      const hasTag = tokens.includes(normalizedTag);
+      const nextTokens = hasTag
+        ? tokens.filter((token) => token !== normalizedTag)
+        : [...tokens, normalizedTag];
+
+      return {
+        ...prev,
+        text: nextTokens.join(" "),
+      };
+    });
+  }, []);
+
+  const handleAppendHashtagToNote = useCallback((note: Note, tag: string) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+
+    setNotes((prev) => {
+      const currentNote = prev.find((existingNote) => existingNote.id === note.id);
+      const sourceText = currentNote?.text ?? note.text;
+      const existingTags = new Set(
+        (sourceText.match(/(?:^|\s)#[\w-]+/g) ?? []).map((token) =>
+          token.trim(),
+        ),
+      );
+
+      if (existingTags.has(normalizedTag)) {
+        return prev;
+      }
+
+      const nextText = sourceText.trim()
+        ? `${sourceText}${sourceText.endsWith(" ") ? "" : " "}${normalizedTag}`
+        : normalizedTag;
+
+      return prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, text: nextText }
+          : existingNote,
+      );
+    });
+
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+  }, []);
+
   const handleFilterLabelChange = useCallback((value: string) => {
     setNoteFilters((prev) =>
       prev.labelId === value
@@ -1167,6 +1217,18 @@ function App() {
     () => [...notes].sort((a, b) => b.createdAt - a.createdAt),
     [notes],
   );
+
+  const availableHashtags = useMemo(() => {
+    const hashtags = new Set<string>();
+    for (const note of notes) {
+      for (const part of note.text.split(/\s+/)) {
+        if (/^#\w[\w-]*$/.test(part)) {
+          hashtags.add(part);
+        }
+      }
+    }
+    return Array.from(hashtags).sort((a, b) => a.localeCompare(b));
+  }, [notes]);
 
   const parsedTextFilters = useMemo(
     () => parseTextFilters(noteFilters.text),
@@ -1875,6 +1937,7 @@ function App() {
                   cloneNote={cloneNote}
                   initialText={sharedText ?? undefined}
                   labels={labels}
+                  availableHashtags={availableHashtags}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
@@ -1961,6 +2024,27 @@ function App() {
                   onPin={handleNotePin}
                   onEmojiChange={handleNoteEmojiChange}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
+                  availableHashtags={availableHashtags}
+                  onFilterTextChange={handleFilterTextChange}
+                  onToggleHashtagFilter={handleToggleHashtagFilter}
+                  onAppendHashtagToNote={handleAppendHashtagToNote}
+                  onRemoveHashtagFromNote={(note, tag) => {
+                    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+                    const nextText = note.text
+                      .split(/\s+/)
+                      .filter((part) => part !== normalizedTag)
+                      .join(" ")
+                      .trim();
+                    if (nextText !== note.text) {
+                      setNotes((prev) =>
+                        prev.map((existing) =>
+                          existing.id === note.id
+                            ? { ...existing, text: nextText }
+                            : existing,
+                        ),
+                      );
+                    }
+                  }}
                   onNotify={(note) => {
                     const labelName =
                       labels.find((c) => c.id === note.labelId)?.name ??
