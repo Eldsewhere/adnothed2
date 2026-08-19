@@ -287,26 +287,6 @@ const NoteActionsMenu = ({
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
-                onDate(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon path={mdiCalendarClock} size={0.7} />
-              </Box>
-              Schedule
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
                 onEdit(note);
                 handleMenuClose();
               }}
@@ -324,6 +304,26 @@ const NoteActionsMenu = ({
                 <Icon path={mdiPencil} size={0.7} />
               </Box>
               Edit
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onDate(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiCalendarClock} size={0.7} />
+              </Box>
+              Schedule
             </MenuItem>
             <MenuItem
               onClick={() => {
