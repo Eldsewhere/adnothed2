@@ -91,7 +91,7 @@ const StatusForm = ({
   onCancelEdit,
 }: StatusFormProps) => {
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<HTMLElement | null>(null);
-  const [emojiInputValue, setEmojiInputValue] = useState("");
+
   const {
     control,
     handleSubmit,
@@ -100,11 +100,6 @@ const StatusForm = ({
   } = useForm<StatusFormValues>({ defaultValues: emptyValues });
 
   useEffect(() => {
-    const nextEmoji = editingStatus?.emoji ?? "";
-    const matchingLabel =
-      statusEmojiOptions.find((option) => option.emoji === nextEmoji)?.label ??
-      "";
-    setEmojiInputValue(matchingLabel);
     reset(
       editingStatus
         ? {
@@ -139,11 +134,8 @@ const StatusForm = ({
           rules={{ required: "Emoji is required" }}
           render={({ field: { onChange, value, ...field } }) => {
             const selectEmoji = (emojiData: EmojiClickData) => {
-              const selected = statusEmojiOptions.find(
-                (option) => option.emoji === emojiData.emoji,
-              );
               onChange(emojiData.emoji);
-              setEmojiInputValue(selected ? selected.label : emojiData.emoji);
+
               setEmojiAnchorEl(null);
             };
 

@@ -1,10 +1,9 @@
-import { useEffect, useState, type MouseEvent } from "react";
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Autocomplete,
   Box,
   IconButton,
-  Menu,
   MenuItem,
   Select,
   Stack,
@@ -15,11 +14,9 @@ import {
 } from "@mui/material";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Label, LabelFormValues, IconOption } from "../types";
-import { mdiCancel, mdiCheckCircle, mdiEmoticonOutline } from "@mdi/js";
+import { mdiCancel, mdiCheckCircle } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import Picker, { Theme, type EmojiClickData } from "emoji-picker-react";
 import LabelIcon from "./ui/LabelIcon";
-import { createEmojiIconOption } from "../utils/emojiIconOptions";
 import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
 import { LABEL_COLOR_OPTIONS, getLabelColorSwatch } from "../utils/labelColors";
 
@@ -62,7 +59,6 @@ const LabelForm = ({
 }: LabelFormProps) => {
   const iconOptions = useMdiIconOptions();
   const [iconInputValue, setIconInputValue] = useState("");
-  const [emojiAnchorEl, setEmojiAnchorEl] = useState<HTMLElement | null>(null);
   const {
     control,
     handleSubmit,
@@ -152,14 +148,8 @@ const LabelForm = ({
           control={control}
           rules={{ required: "Icon is required" }}
           render={({ field: { onChange, value, ...field } }) => {
-            const selectEmoji = (emojiData: EmojiClickData) => {
-              onChange(createEmojiIconOption(emojiData.emoji));
-              setEmojiAnchorEl(null);
-            };
-
             return (
-              <>
-                <Autocomplete
+              <Autocomplete
               {...field}
               value={value}
               onChange={(_event, newValue) => onChange(newValue)}
@@ -244,7 +234,7 @@ const LabelForm = ({
               renderInput={(params) => (
                 <TextField
                   {...params}
-                  label="Search icon, emoji or use A, AB, 0-99, A0"
+                  label="Search icon or use A, AB, 0-99, A0"
                   size="small"
                   error={!!errors.icon}
                   helperText={errors.icon?.message}
@@ -259,23 +249,6 @@ const LabelForm = ({
                           color={selectedColor || undefined}
                         />
                       ) : null,
-                      endAdornment: (
-                        <>
-                          <Tooltip title="Choose emoji">
-                            <IconButton
-                              aria-label="Choose emoji"
-                              size="small"
-                              onMouseDown={(event) => event.preventDefault()}
-                              onClick={(event: MouseEvent<HTMLElement>) =>
-                                setEmojiAnchorEl(event.currentTarget)
-                              }
-                            >
-                              <Icon path={mdiEmoticonOutline} size={0.75} />
-                            </IconButton>
-                          </Tooltip>
-                          {params.slotProps.input?.endAdornment}
-                        </>
-                      ),
                     },
                   }}
                   fullWidth
@@ -295,32 +268,7 @@ const LabelForm = ({
                   }}
                 />
               )}
-                />
-                <Menu
-                  anchorEl={emojiAnchorEl}
-                  open={Boolean(emojiAnchorEl)}
-                  onClose={() => setEmojiAnchorEl(null)}
-                  slotProps={{
-                    paper: {
-                      sx: {
-                        overflow: "hidden",
-                        bgcolor: "#263238",
-                        border: "1px solid #455a64",
-                      },
-                    },
-                  }}
-                >
-                  <Box role="group" aria-label="Emoji picker">
-                    <Picker
-                      onEmojiClick={selectEmoji}
-                      lazyLoadEmojis
-                      theme={Theme.DARK}
-                      width={352}
-                      height={420}
-                    />
-                  </Box>
-                </Menu>
-              </>
+            />
             );
           }}
         />
