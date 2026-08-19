@@ -1,7 +1,6 @@
 import { useEffect, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Autocomplete,
   Box,
   FormControl,
   IconButton,
@@ -144,103 +143,68 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
             const selectedOption =
               statusEmojiOptions.find((option) => option.emoji === selectedEmoji) ??
               null;
+            const fieldDisplayValue = selectedEmoji
+              ? selectedOption?.label ?? selectedEmoji
+              : "";
 
             return (
               <>
-                <Autocomplete
+                <TextField
                   {...field}
-                  options={statusEmojiOptions}
-                  value={selectedOption}
-                  inputValue={emojiInputValue}
-                  onChange={(_event, newValue) => {
-                    const nextEmoji = newValue?.emoji ?? "";
-                    onChange(nextEmoji);
-                    setEmojiInputValue(newValue ? newValue.label : "");
+                  label="Emoji"
+                  size="small"
+                  fullWidth
+                  value={fieldDisplayValue}
+                  onClick={(event: MouseEvent<HTMLElement>) =>
+                    setEmojiAnchorEl(event.currentTarget)
+                  }
+                  error={!!errors.emoji}
+                  helperText={errors.emoji?.message}
+                  slotProps={{
+                    input: {
+                      readOnly: true,
+                      startAdornment: selectedEmoji ? (
+                        <Box
+                          component="span"
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            mr: 1,
+                            fontSize: "1.1rem",
+                          }}
+                        >
+                          {selectedEmoji}
+                        </Box>
+                      ) : null,
+                      endAdornment: (
+                        <Tooltip title="Choose emoji">
+                          <IconButton
+                            aria-label="Choose emoji"
+                            size="small"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={(event: MouseEvent<HTMLElement>) => {
+                              event.stopPropagation();
+                              setEmojiAnchorEl(event.currentTarget);
+                            }}
+                          >
+                            <Icon path={mdiEmoticonOutline} size={0.75} />
+                          </IconButton>
+                        </Tooltip>
+                      ),
+                    },
                   }}
-                  onInputChange={(_event, newInputValue) => {
-                    setEmojiInputValue(newInputValue);
-                    if (!newInputValue.trim()) {
-                      onChange("");
-                    }
+                  sx={{
+                    width: "100%",
+                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
+                      borderColor: colors.blueGrey[500],
+                    },
+                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
+                      borderColor: colors.blueGrey[500],
+                    },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                      borderColor: colors.blueGrey[500],
+                    },
                   }}
-                  getOptionLabel={(option) => option.label}
-                  isOptionEqualToValue={(option, value) => option.emoji === value.emoji}
-                  filterOptions={(options, state) => {
-                    const input = state.inputValue.trim().toLowerCase();
-                    if (!input) return options;
-                    return options.filter((option) => {
-                      const searchable = `${option.label} ${option.search}`.toLowerCase();
-                      return searchable.includes(input);
-                    });
-                  }}
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props} key={`${option.emoji}-${option.label}`}>
-                      <Box component="span" sx={{ mr: 1, fontSize: "1.1rem" }}>
-                        {option.emoji}
-                      </Box>
-                      {option.label}
-                    </Box>
-                  )}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Emoji"
-                      size="small"
-                      fullWidth
-                      error={!!errors.emoji}
-                      helperText={errors.emoji?.message}
-                      slotProps={{
-                        ...params.slotProps,
-                        input: {
-                          ...params.slotProps.input,
-                          startAdornment: selectedEmoji ? (
-                            <Box
-                              component="span"
-                              sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                mr: 1,
-                                fontSize: "1.1rem",
-                              }}
-                            >
-                              {selectedEmoji}
-                            </Box>
-                          ) : null,
-                          endAdornment: (
-                            <>
-                              <Tooltip title="Choose emoji">
-                                <IconButton
-                                  aria-label="Choose emoji"
-                                  size="small"
-                                  onMouseDown={(event) => event.preventDefault()}
-                                  onClick={(event: MouseEvent<HTMLElement>) =>
-                                    setEmojiAnchorEl(event.currentTarget)
-                                  }
-                                >
-                                  <Icon path={mdiEmoticonOutline} size={0.75} />
-                                </IconButton>
-                              </Tooltip>
-                              {params.slotProps.input?.endAdornment}
-                            </>
-                          ),
-                        },
-                      }}
-                      sx={{
-                        "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
-                          borderColor: colors.blueGrey[500],
-                        },
-                        "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                          borderColor: colors.blueGrey[500],
-                        },
-                        "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          borderColor: colors.blueGrey[500],
-                        },
-                      }}
-                    />
-                  )}
-                  sx={{ width: "100%" }}
-                  openOnFocus
-                  selectOnFocus
                 />
                 <Menu
                   anchorEl={emojiAnchorEl}
