@@ -4,7 +4,6 @@ import type { StatusFormat } from "../types";
 export const STATUS_FORMAT_OPTIONS = [
   "none",
   "underline",
-  "italic",
   "bold",
   "strikethrough",
   "red",
@@ -17,7 +16,6 @@ export type StatusFormatOption = (typeof STATUS_FORMAT_OPTIONS)[number];
 export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
   none: "None",
   underline: "Underline",
-  italic: "Italic",
   bold: "Bold",
   strikethrough: "Strikethrough",
   red: "Red",
@@ -27,15 +25,13 @@ export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
 
 export function getStatusTextStyle(format?: StatusFormat): {
   color?: string;
-  fontStyle?: "normal" | "italic";
+  fontStyle?: "normal";
   fontWeight?: number;
   textDecoration?: string;
 } {
   switch (format) {
     case "underline":
       return { textDecoration: "underline" };
-    case "italic":
-      return { fontStyle: "italic" };
     case "bold":
       return { fontWeight: 700 };
     case "strikethrough":

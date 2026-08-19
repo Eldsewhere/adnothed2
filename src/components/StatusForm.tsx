@@ -18,7 +18,10 @@ import { Icon } from "@mdi/react";
 import Picker, { Theme, type EmojiClickData } from "emoji-picker-react";
 import emojiData from "emoji-picker-react/dist/data/emojis";
 import type { Status, StatusFormValues, StatusFormat } from "../types";
-import { STATUS_FORMAT_LABELS, STATUS_FORMAT_OPTIONS } from "../utils/statusStyles";
+import {
+  STATUS_FORMAT_LABELS,
+  STATUS_FORMAT_OPTIONS,
+} from "../utils/statusStyles";
 
 type StatusFormProps = {
   editingStatus: Status | null;
@@ -82,7 +85,11 @@ const statusEmojiOptions = buildStatusEmojiOptions();
 
 const emptyValues: StatusFormValues = { name: "", emoji: "", format: "none" };
 
-const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) => {
+const StatusForm = ({
+  editingStatus,
+  onSubmit,
+  onCancelEdit,
+}: StatusFormProps) => {
   const [emojiAnchorEl, setEmojiAnchorEl] = useState<HTMLElement | null>(null);
   const [emojiInputValue, setEmojiInputValue] = useState("");
   const {
@@ -95,7 +102,8 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
   useEffect(() => {
     const nextEmoji = editingStatus?.emoji ?? "";
     const matchingLabel =
-      statusEmojiOptions.find((option) => option.emoji === nextEmoji)?.label ?? "";
+      statusEmojiOptions.find((option) => option.emoji === nextEmoji)?.label ??
+      "";
     setEmojiInputValue(matchingLabel);
     reset(
       editingStatus
@@ -141,10 +149,11 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
 
             const selectedEmoji = typeof value === "string" ? value : "";
             const selectedOption =
-              statusEmojiOptions.find((option) => option.emoji === selectedEmoji) ??
-              null;
+              statusEmojiOptions.find(
+                (option) => option.emoji === selectedEmoji,
+              ) ?? null;
             const fieldDisplayValue = selectedEmoji
-              ? selectedOption?.label ?? selectedEmoji
+              ? (selectedOption?.label ?? selectedEmoji)
               : "";
 
             return (
@@ -195,15 +204,18 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
                   }}
                   sx={{
                     width: "100%",
-                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
-                      borderColor: colors.blueGrey[500],
-                    },
-                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                      borderColor: colors.blueGrey[500],
-                    },
-                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      borderColor: colors.blueGrey[500],
-                    },
+                    "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
+                    "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                      {
+                        borderColor: colors.blueGrey[500],
+                      },
                   }}
                 />
                 <Menu
@@ -253,19 +265,17 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
                   const style =
                     option === "underline"
                       ? { textDecoration: "underline" }
-                      : option === "italic"
-                        ? { fontStyle: "italic" }
-                        : option === "bold"
-                          ? { fontWeight: 700 }
-                          : option === "strikethrough"
-                            ? { textDecoration: "line-through" }
-                            : option === "red"
-                              ? { color: colors.red[400] }
-                              : option === "orange"
-                                ? { color: colors.orange[400] }
-                                : option === "green"
-                                  ? { color: colors.green[400] }
-                                  : {};
+                      : option === "bold"
+                        ? { fontWeight: 700 }
+                        : option === "strikethrough"
+                          ? { textDecoration: "line-through" }
+                          : option === "red"
+                            ? { color: colors.red[400] }
+                            : option === "orange"
+                              ? { color: colors.orange[400] }
+                              : option === "green"
+                                ? { color: colors.green[400] }
+                                : {};
 
                   return (
                     <MenuItem key={option} value={option}>
@@ -331,16 +341,24 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
                                 },
                               }}
                             >
-                              <Icon path={mdiCancel} size={0.8} color={colors.red[400]} />
+                              <Icon
+                                path={mdiCancel}
+                                size={0.8}
+                                color={colors.red[400]}
+                              />
                             </IconButton>
                           </span>
                         </Tooltip>
                       )}
-                      <Tooltip title={editingStatus ? "Update status" : "Add status"}>
+                      <Tooltip
+                        title={editingStatus ? "Update status" : "Add status"}
+                      >
                         <span>
                           <IconButton
                             type="submit"
-                            aria-label={editingStatus ? "Update status" : "Add status"}
+                            aria-label={
+                              editingStatus ? "Update status" : "Add status"
+                            }
                             size="small"
                             sx={{
                               color: colors.lightGreen[400],
@@ -357,7 +375,11 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
                               },
                             }}
                           >
-                            <Icon path={mdiCheckCircle} size={0.8} color={colors.lightGreen[400]} />
+                            <Icon
+                              path={mdiCheckCircle}
+                              size={0.8}
+                              color={colors.lightGreen[400]}
+                            />
                           </IconButton>
                         </span>
                       </Tooltip>
@@ -369,12 +391,14 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
                 "& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline": {
                   borderColor: colors.blueGrey[500],
                 },
-                "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: colors.blueGrey[500],
-                },
-                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: colors.blueGrey[500],
-                },
+                "& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline":
+                  {
+                    borderColor: colors.blueGrey[500],
+                  },
+                "& .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline":
+                  {
+                    borderColor: colors.blueGrey[500],
+                  },
                 "& .MuiInputBase-root": {
                   pr: 0.5,
                 },

@@ -20,7 +20,6 @@ export type LabelFormValues = {
 export type StatusFormat =
   | "none"
   | "underline"
-  | "italic"
   | "bold"
   | "strikethrough"
   | "red"

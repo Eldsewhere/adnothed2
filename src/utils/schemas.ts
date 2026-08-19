@@ -9,7 +9,6 @@ export const IconOptionSchema = z.object({
 export const StatusFormatSchema = z.enum([
   "none",
   "underline",
-  "italic",
   "bold",
   "strikethrough",
   "red",
