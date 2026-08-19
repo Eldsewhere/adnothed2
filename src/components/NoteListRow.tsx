@@ -145,8 +145,13 @@ const NoteListRow = ({
             onToggleHashtagFilter?.(part);
           }}
           onDelete={(event) => {
+            event.preventDefault();
             event.stopPropagation();
             onRemoveHashtagFromNote?.(note, part);
+          }}
+          onMouseDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
           }}
           deleteIcon={
             <Tooltip title="Remove hashtag" aria-label={undefined}>
@@ -364,8 +369,13 @@ const NoteListRow = ({
                           onToggleHashtagFilter?.(visibleRowText.trim());
                         }}
                         onDelete={(event) => {
+                          event.preventDefault();
                           event.stopPropagation();
                           onRemoveHashtagFromNote?.(note, visibleRowText.trim());
+                        }}
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
                         }}
                         deleteIcon={<Icon path={mdiClose} size={0.5} />}
                         sx={{
