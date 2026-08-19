@@ -28,6 +28,7 @@ type NoteActionsMenuProps = {
   note: Note | null;
   statuses: Status[];
   availableHashtags?: string[];
+  onHashtagPickerOpen?: () => void;
   openStatusPicker?: boolean;
   hasUrl: boolean;
   isPinned: boolean;
@@ -84,6 +85,7 @@ const NoteActionsMenu = ({
   note,
   statuses,
   availableHashtags = [],
+  onHashtagPickerOpen,
   openStatusPicker,
   hasUrl,
   isPinned,
@@ -233,9 +235,10 @@ const NoteActionsMenu = ({
               Status
             </MenuItem>
             <MenuItem
-              onClick={(event: MouseEvent<HTMLElement>) =>
-                setHashtagMenuAnchor(event.currentTarget)
-              }
+              onClick={(event: MouseEvent<HTMLElement>) => {
+                onHashtagPickerOpen?.();
+                setHashtagMenuAnchor(event.currentTarget);
+              }}
               selected={Boolean(hashtagMenuAnchor)}
               sx={{
                 backgroundColor: hashtagMenuAnchor
@@ -449,6 +452,17 @@ const NoteActionsMenu = ({
         anchorEl={hashtagMenuAnchor}
         open={Boolean(hashtagMenuAnchor)}
         options={availableHashtags}
+        excludeTags={
+          note
+            ? Array.from(
+                new Set(
+                  (note.text.match(/(?:^|\s)#[\w-]+/g) ?? []).map((token) =>
+                    token.trim(),
+                  ),
+                ),
+              )
+            : []
+        }
         onClose={() => setHashtagMenuAnchor(null)}
         onSelect={(tag) => {
           if (!note) {

@@ -15,6 +15,7 @@ type HashtagAutocompletePopoverProps = {
   anchorEl: HTMLElement | null;
   open: boolean;
   options: string[];
+  excludeTags?: string[];
   onClose: () => void;
   onSelect: (tag: string) => void;
 };
@@ -23,10 +24,17 @@ const HashtagAutocompletePopover = ({
   anchorEl,
   open,
   options,
+  excludeTags = [],
   onClose,
   onSelect,
 }: HashtagAutocompletePopoverProps) => {
   const [hashtagInputValue, setHashtagInputValue] = useState("");
+  const normalizedExcludedTags = new Set(
+    (excludeTags ?? []).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)),
+  );
+  const filteredOptions = options.filter(
+    (tag) => !normalizedExcludedTags.has(tag.startsWith("#") ? tag : `#${tag}`),
+  );
 
   const submitTag = () => {
     const tag = hashtagInputValue.trim();
@@ -72,7 +80,7 @@ const HashtagAutocompletePopover = ({
     >
       <Box sx={{ p: 1 }}>
         <Autocomplete
-          options={options}
+          options={filteredOptions}
           autoHighlight
           openOnFocus
           freeSolo

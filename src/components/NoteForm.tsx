@@ -33,6 +33,7 @@ type NoteFormProps = {
   initialText?: string;
   labels: Label[];
   availableHashtags?: string[];
+  onHashtagPickerOpen?: () => void;
   dueLabel?: string;
   dueFutureCount?: number;
   onDueDateClick?: () => void;
@@ -52,6 +53,7 @@ const NoteForm = ({
   initialText,
   labels,
   availableHashtags = [],
+  onHashtagPickerOpen,
   dueLabel,
   dueFutureCount = 0,
   onDueDateClick,
@@ -421,6 +423,7 @@ const NoteForm = ({
                                     aria-label="Insert hashtag"
                                     size="small"
                                     onClick={(event: MouseEvent<HTMLElement>) => {
+                                      onHashtagPickerOpen?.();
                                       setHashtagMenuAnchor(event.currentTarget);
                                     }}
                                     sx={{
@@ -518,6 +521,15 @@ const NoteForm = ({
                                 anchorEl={hashtagMenuAnchor}
                                 open={Boolean(hashtagMenuAnchor)}
                                 options={availableHashtags}
+                                excludeTags={
+                                  Array.from(
+                                    new Set(
+                                      (text.match(/(?:^|\s)#[\w-]+/g) ?? []).map(
+                                        (token) => token.trim(),
+                                      ),
+                                    ),
+                                  )
+                                }
                                 onClose={() => setHashtagMenuAnchor(null)}
                                 onSelect={(tag) => {
                                   insertHashtag(tag, text, handleTextChange);

@@ -50,6 +50,7 @@ type NoteListProps = {
   onInfoTips?: () => void;
   onInstall?: () => void;
   availableHashtags?: string[];
+  onRefreshAvailableHashtags?: () => void;
   onFilterTextChange?: (value: string) => void;
   onToggleHashtagFilter?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
@@ -107,6 +108,7 @@ const NoteList = ({
   onInfoTips,
   onInstall,
   availableHashtags = [],
+  onRefreshAvailableHashtags,
   onFilterTextChange,
   onToggleHashtagFilter,
   onAppendHashtagToNote,
@@ -648,6 +650,7 @@ const NoteList = ({
           note={menuAnchor.note}
           statuses={statuses}
           availableHashtags={availableHashtags}
+          onHashtagPickerOpen={onRefreshAvailableHashtags}
           openStatusPicker={menuAnchor.openStatusPicker}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
           isPinned={!!menuAnchor.note.pinned}

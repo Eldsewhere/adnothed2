@@ -1157,8 +1157,9 @@ function App() {
         return prev;
       }
 
-      const nextText = sourceText.trim()
-        ? `${sourceText}${sourceText.endsWith(" ") ? "" : " "}${normalizedTag}`
+      const trimmedText = sourceText.trim();
+      const nextText = trimmedText
+        ? `${trimmedText}${trimmedText.endsWith(" ") ? "" : " "}${normalizedTag}`
         : normalizedTag;
 
       return prev.map((existingNote) =>
@@ -1218,7 +1219,9 @@ function App() {
     [notes],
   );
 
-  const availableHashtags = useMemo(() => {
+  const [availableHashtags, setAvailableHashtags] = useState<string[]>([]);
+
+  const refreshAvailableHashtags = useCallback(() => {
     const hashtags = new Set<string>();
     for (const note of notes) {
       for (const part of note.text.split(/\s+/)) {
@@ -1227,7 +1230,7 @@ function App() {
         }
       }
     }
-    return Array.from(hashtags).sort((a, b) => a.localeCompare(b));
+    setAvailableHashtags(Array.from(hashtags).sort((a, b) => a.localeCompare(b)));
   }, [notes]);
 
   const parsedTextFilters = useMemo(
@@ -1938,6 +1941,7 @@ function App() {
                   initialText={sharedText ?? undefined}
                   labels={labels}
                   availableHashtags={availableHashtags}
+                  onHashtagPickerOpen={refreshAvailableHashtags}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
@@ -2025,6 +2029,7 @@ function App() {
                   onEmojiChange={handleNoteEmojiChange}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
                   availableHashtags={availableHashtags}
+                  onRefreshAvailableHashtags={refreshAvailableHashtags}
                   onFilterTextChange={handleFilterTextChange}
                   onToggleHashtagFilter={handleToggleHashtagFilter}
                   onAppendHashtagToNote={handleAppendHashtagToNote}
