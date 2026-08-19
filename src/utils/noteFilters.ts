@@ -34,6 +34,11 @@ export type ParsedTextFilters = {
   year: string | null;
   minDate: string | null;
   maxDate: string | null;
+  dueFullDate: string | null;
+  dueYearMonth: string | null;
+  dueYear: string | null;
+  minDueDate: string | null;
+  maxDueDate: string | null;
   withNumbers: boolean;
   withUrl: boolean;
   withEmail: boolean;
@@ -57,6 +62,11 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   year: null,
   minDate: null,
   maxDate: null,
+  dueFullDate: null,
+  dueYearMonth: null,
+  dueYear: null,
+  minDueDate: null,
+  maxDueDate: null,
   withNumbers: false,
   withUrl: false,
   withEmail: false,
@@ -93,12 +103,12 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
     }
 
     if (!segment.startsWith("/")) {
-      queryParts.push(segment);
+      queryParts.push(segment.replace(/\s+/g, ""));
       continue;
     }
 
     const command = segment.slice(1).trim();
-    const commandMatch = command.match(/^([a-zA-Z]+)\s*:\s*(.+)$/);
+    const commandMatch = command.match(/^([a-zA-Z]+):([^\s].*)$/);
     if (!commandMatch) {
       continue;
     }
@@ -150,6 +160,28 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
     }
     if (key === "maxdate") {
       parsed.maxDate = dateRegex.test(value) ? value : null;
+      continue;
+    }
+    if (key === "due") {
+      if (dateRegex.test(value)) {
+        parsed.dueFullDate = value;
+        continue;
+      }
+      if (yearMonthRegex.test(value)) {
+        parsed.dueYearMonth = value;
+        continue;
+      }
+      if (yearRegex.test(value)) {
+        parsed.dueYear = value;
+      }
+      continue;
+    }
+    if (key === "mindue") {
+      parsed.minDueDate = dateRegex.test(value) ? value : null;
+      continue;
+    }
+    if (key === "maxdue") {
+      parsed.maxDueDate = dateRegex.test(value) ? value : null;
       continue;
     }
     if (key === "with") {
@@ -279,6 +311,40 @@ export function matchesTextFilters(
   }
 
   if (parsed.maxDate !== null && noteDate > parsed.maxDate) {
+    return false;
+  }
+
+  const dueDate = due === undefined ? null : formatDate(due);
+
+  if (parsed.dueFullDate !== null && dueDate !== parsed.dueFullDate) {
+    return false;
+  }
+
+  if (
+    parsed.dueYearMonth !== null &&
+    (dueDate === null || !dueDate.startsWith(`${parsed.dueYearMonth}-`))
+  ) {
+    return false;
+  }
+
+  if (
+    parsed.dueYear !== null &&
+    (dueDate === null || !dueDate.startsWith(`${parsed.dueYear}-`))
+  ) {
+    return false;
+  }
+
+  if (
+    parsed.minDueDate !== null &&
+    (dueDate === null || dueDate < parsed.minDueDate)
+  ) {
+    return false;
+  }
+
+  if (
+    parsed.maxDueDate !== null &&
+    (dueDate === null || dueDate > parsed.maxDueDate)
+  ) {
     return false;
   }
 

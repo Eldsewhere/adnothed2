@@ -13,6 +13,7 @@ import { Icon } from "@mdi/react";
 
 import {
   mdiCalendar,
+  mdiCalendarClock,
   mdiCalendarEnd,
   mdiCalendarStart,
   mdiCheckboxBlankOutline,
@@ -46,106 +47,136 @@ type QueryTemplate = {
 const queryTemplates: QueryTemplate[] = [
   {
     label: "indexAt",
-    command: "/index: number;",
+    command: "/index:number;",
     placeholder: "number",
     iconPath: mdiFormatListNumbered,
   },
   {
     label: "words",
-    command: "/word: number;",
+    command: "/word:number;",
     placeholder: "number",
     iconPath: mdiFormatText,
   },
   {
     label: "lines",
-    command: "/lines: number;",
+    command: "/lines:number;",
     placeholder: "number",
     iconPath: mdiFormatLineSpacing,
   },
   {
     label: "exact",
-    command: "/length: number;",
+    command: "/length:number;",
     placeholder: "number",
     iconPath: mdiRayStartEnd,
   },
   {
     label: "min",
-    command: "/minlength: number;",
+    command: "/minlength:number;",
     placeholder: "number",
     iconPath: mdiRayStartArrow,
   },
   {
     label: "max",
-    command: "/maxlength: number;",
+    command: "/maxlength:number;",
     placeholder: "number",
     iconPath: mdiRayEndArrow,
   },
   {
     label: "fullDate",
-    command: "/date: YYYY-MM-DD;",
+    command: "/date:YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
     iconPath: mdiCalendar,
   },
   {
     label: "yearMonth",
-    command: "/date: YYYY-MM;",
+    command: "/date:YYYY-MM;",
     placeholder: "YYYY-MM",
     iconPath: mdiCalendarStart,
   },
   {
     label: "year",
-    command: "/date: YYYY;",
+    command: "/date:YYYY;",
     placeholder: "YYYY",
     iconPath: mdiCalendarEnd,
   },
   {
     label: "min",
-    command: "/mindate: YYYY-MM-DD;",
+    command: "/mindate:YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
     iconPath: mdiCalendarStart,
   },
   {
     label: "max",
-    command: "/maxdate: YYYY-MM-DD;",
+    command: "/maxdate:YYYY-MM-DD;",
     placeholder: "YYYY-MM-DD",
     iconPath: mdiCalendarEnd,
   },
-  { label: "numbers", command: "/with: numbers;", iconPath: mdiNumeric },
-  { label: "URL", command: "/with: url;", iconPath: mdiLinkVariant },
+  {
+    label: "fullDate",
+    command: "/due:YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendar,
+  },
+  {
+    label: "yearMonth",
+    command: "/due:YYYY-MM;",
+    placeholder: "YYYY-MM",
+    iconPath: mdiCalendarStart,
+  },
+  {
+    label: "year",
+    command: "/due:YYYY;",
+    placeholder: "YYYY",
+    iconPath: mdiCalendarEnd,
+  },
+  {
+    label: "min",
+    command: "/mindue:YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendarStart,
+  },
+  {
+    label: "max",
+    command: "/maxdue:YYYY-MM-DD;",
+    placeholder: "YYYY-MM-DD",
+    iconPath: mdiCalendarEnd,
+  },
+  { label: "numbers", command: "/with:numbers;", iconPath: mdiNumeric },
+  { label: "URL", command: "/with:url;", iconPath: mdiLinkVariant },
   {
     label: "email",
-    command: "/with: email;",
+    command: "/with:email;",
     iconPath: mdiEmailOutline,
   },
   {
     label: "bullets",
-    command: "/with: bullets;",
+    command: "/with:bullets;",
     iconPath: mdiCircleSmall,
   },
   {
     label: "checkboxes",
-    command: "/with: checkboxes;",
+    command: "/with:checkboxes;",
     iconPath: mdiCheckboxBlankOutline,
   },
   {
     label: "due date",
-    command: "/with: due;",
+    command: "/with:due;",
     iconPath: mdiCalendar,
   },
   {
     label: "priority",
-    command: "/with: priority;",
+    command: "/with:priority;",
     iconPath: mdiPin,
   },
   {
     label: "label",
-    command: "/with: label;",
+    command: "/with:label;",
     iconPath: mdiLabelMultiple,
   },
 ];
 
 const querySubmenuGroups: Record<
-  "count" | "length" | "date" | "with",
+  "count" | "length" | "date" | "due" | "with",
   QueryTemplate[]
 > = {
   count: [queryTemplates[1], queryTemplates[2]],
@@ -157,15 +188,22 @@ const querySubmenuGroups: Record<
     queryTemplates[9],
     queryTemplates[10],
   ],
-  with: [
+  due: [
     queryTemplates[11],
     queryTemplates[12],
     queryTemplates[13],
     queryTemplates[14],
     queryTemplates[15],
+  ],
+  with: [
     queryTemplates[16],
     queryTemplates[17],
     queryTemplates[18],
+    queryTemplates[19],
+    queryTemplates[20],
+    queryTemplates[21],
+    queryTemplates[22],
+    queryTemplates[23],
   ],
 };
 
@@ -199,7 +237,7 @@ const NoteFormActionsMenu = ({
   const [querySubmenuAnchor, setQuerySubmenuAnchor] =
     useState<HTMLElement | null>(null);
   const [querySubmenuKey, setQuerySubmenuKey] = useState<
-    "count" | "length" | "date" | "with" | null
+    "count" | "length" | "date" | "due" | "with" | null
   >(null);
   const [querySubmenuOpenLeft, setQuerySubmenuOpenLeft] = useState(false);
 
@@ -212,7 +250,7 @@ const NoteFormActionsMenu = ({
 
   const openQuerySubmenu = (
     event: MouseEvent<HTMLElement>,
-    key: "count" | "length" | "date" | "with",
+    key: "count" | "length" | "date" | "due" | "with",
   ) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const submenuWidth = 220;
@@ -517,6 +555,15 @@ const NoteFormActionsMenu = ({
             <Icon path={mdiCalendar} size={0.75} />
           </Box>
           Date
+        </MenuItem>
+        <MenuItem onClick={(event) => openQuerySubmenu(event, "due")}>
+          <Box
+            component="span"
+            sx={menuItemIconSx}
+          >
+            <Icon path={mdiCalendarClock} size={0.75} />
+          </Box>
+          Due
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "with")}>
           <Box
