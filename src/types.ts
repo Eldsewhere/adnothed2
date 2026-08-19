@@ -17,6 +17,29 @@ export type LabelFormValues = {
   color?: string;
 };
 
+export type StatusFormat =
+  | "none"
+  | "underline"
+  | "italic"
+  | "bold"
+  | "strikethrough"
+  | "red"
+  | "orange"
+  | "green";
+
+export type Status = {
+  id: string;
+  name: string;
+  emoji: string;
+  format: StatusFormat;
+};
+
+export type StatusFormValues = {
+  name: string;
+  emoji: string;
+  format: StatusFormat;
+};
+
 export type Note = {
   id: string;
   labelId: string | null;

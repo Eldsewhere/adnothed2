@@ -18,7 +18,7 @@ import {
   mdiPin,
 } from "@mdi/js";
 import dayjs from "dayjs";
-import type { Label, Note } from "../types";
+import type { Label, Note, Status } from "../types";
 import {
   formatDueDate,
   formatTimestamp,
@@ -26,6 +26,7 @@ import {
 } from "../utils/formatTimestamp";
 import { splitTextByUrls } from "../utils/textPatterns";
 import LabelIcon from "./ui/LabelIcon";
+import { getStatusTextStyle } from "../utils/statusStyles";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
 
@@ -38,6 +39,7 @@ const isTomorrow = (timestamp: number): boolean => {
 type NoteListRowProps = {
   note: Note;
   label?: Label;
+  status?: Status;
   top: number;
   height: number;
   isPriority: boolean;
@@ -65,6 +67,7 @@ type NoteListRowProps = {
 const NoteListRow = ({
   note,
   label,
+  status,
   top,
   height,
   isPriority,
@@ -90,6 +93,7 @@ const NoteListRow = ({
 }: NoteListRowProps) => {
   const shouldUsePriorityDueDate =
     note.due !== undefined && (isToday(note.due) || isTomorrow(note.due));
+  const statusStyle = status ? getStatusTextStyle(status.format) : {};
 
   return (
     <Box
@@ -182,6 +186,7 @@ const NoteListRow = ({
               display: "-webkit-box",
               WebkitLineClamp: isOverflowing ? 4 : 2,
               WebkitBoxOrient: "vertical",
+              ...statusStyle,
             }}
           >
             {note.text.split("\n").map((row, rowIndex) => {

@@ -6,10 +6,27 @@ export const IconOptionSchema = z.object({
   path: z.string(),
 });
 
+export const StatusFormatSchema = z.enum([
+  "none",
+  "underline",
+  "italic",
+  "bold",
+  "strikethrough",
+  "red",
+  "orange",
+  "green",
+]);
+
 export const PersistedLabelSchema = z.object({
   name: z.string(),
   icon: z.string(),
   color: z.string().optional(),
+});
+
+export const PersistedStatusSchema = z.object({
+  name: z.string(),
+  emoji: z.string(),
+  format: StatusFormatSchema,
 });
 
 export const PersistedNoteSchema = z.object({
@@ -24,6 +41,7 @@ export const PersistedNoteSchema = z.object({
 
 export const PersistedStateSchema = z.object({
   labels: z.array(PersistedLabelSchema),
+  statuses: z.array(PersistedStatusSchema).optional().default([]),
   notes: z.array(PersistedNoteSchema),
 });
 

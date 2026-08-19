@@ -1,7 +1,13 @@
 import { useState, type MouseEvent } from "react";
-import { Box, Button, Divider, Menu, MenuItem } from "@mui/material";
+import {
+  Autocomplete,
+  Box,
+  Divider,
+  Menu,
+  MenuItem,
+  TextField,
+} from "@mui/material";
 import { Icon } from "@mdi/react";
-import Picker, { Theme, type EmojiClickData } from "emoji-picker-react";
 import {
   mdiBell,
   mdiCalendarClock,
@@ -19,11 +25,12 @@ import {
   mdiShareVariant,
   mdiTrashCanOutline,
 } from "@mdi/js";
-import type { Note } from "../../types";
+import type { Note, Status } from "../../types";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
   note: Note | null;
+  statuses: Status[];
   hasUrl: boolean;
   isPinned: boolean;
   onClose: () => void;
@@ -76,6 +83,7 @@ const isDueTodayOrLater = (due: number): boolean => {
 const NoteActionsMenu = ({
   anchorEl,
   note,
+  statuses,
   hasUrl,
   isPinned,
   onClose,
@@ -100,14 +108,14 @@ const NoteActionsMenu = ({
   const [searchMenuAnchor, setSearchMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [emojiMenuAnchor, setEmojiMenuAnchor] = useState<HTMLElement | null>(
+  const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
 
   const closeSubmenus = () => {
     setShareMenuAnchor(null);
     setSearchMenuAnchor(null);
-    setEmojiMenuAnchor(null);
+    setStatusMenuAnchor(null);
   };
 
   const handleMenuClose = () => {
@@ -139,9 +147,9 @@ const NoteActionsMenu = ({
     onClose();
   };
 
-  const selectEmoji = (emojiData: EmojiClickData) => {
+  const selectStatus = (status: Status | null) => {
     if (!note) return;
-    onEmojiChange(note, emojiData.emoji);
+    onEmojiChange(note, status ? status.emoji : null);
     handleMenuClose();
   };
 
@@ -196,7 +204,7 @@ const NoteActionsMenu = ({
             </MenuItem>
             <MenuItem
               onClick={(event: MouseEvent<HTMLElement>) =>
-                setEmojiMenuAnchor(event.currentTarget)
+                setStatusMenuAnchor(event.currentTarget)
               }
             >
               <Box
@@ -402,42 +410,79 @@ const NoteActionsMenu = ({
         )}
       </Menu>
       <Menu
-        anchorEl={emojiMenuAnchor}
-        open={Boolean(emojiMenuAnchor)}
-        onClose={() => setEmojiMenuAnchor(null)}
+        anchorEl={statusMenuAnchor}
+        open={Boolean(statusMenuAnchor)}
+        onClose={() => setStatusMenuAnchor(null)}
         slotProps={{
           paper: {
             sx: {
-              overflow: "hidden",
-              bgcolor: "#263238",
-              border: "1px solid #455a64",
+              minWidth: 280,
+              p: 1,
             },
           },
         }}
       >
-        <Box role="group" aria-label="Emoji picker">
-          <Picker
-            onEmojiClick={selectEmoji}
-            lazyLoadEmojis
-            theme={Theme.DARK}
-            width={352}
-            height={420}
-          />
-        </Box>
-        <Box sx={{ p: 1 }}>
-          <Button
-            fullWidth
-            variant="outlined"
-            color="error"
-            disabled={!note?.emoji}
-            startIcon={<Icon path={mdiTrashCanOutline} size={0.7} />}
-            onClick={() => {
-              if (note) onEmojiChange(note, null);
-              handleMenuClose();
+        <Box sx={{ minWidth: 248 }}>
+          <Autocomplete
+            autoFocus
+            options={statuses}
+            value={
+              note && note.emoji
+                ? statuses.find((status) => status.emoji === note.emoji) ?? null
+                : null
+            }
+            onChange={(_event, newValue) => {
+              selectStatus(newValue);
+              setStatusMenuAnchor(null);
             }}
-          >
-            Remove emoji
-          </Button>
+            getOptionLabel={(option) => `${option.emoji} ${option.name}`}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            clearOnEscape
+            noOptionsText="No saved statuses"
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option.id}>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    mr: 1,
+                    fontSize: "1.1rem",
+                  }}
+                >
+                  {option.emoji}
+                </Box>
+                {option.name}
+              </Box>
+            )}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                size="small"
+                label="Status"
+                placeholder={statuses.length ? "Choose status" : "No saved statuses"}
+                slotProps={{
+                  ...params.slotProps,
+                  input: {
+                    ...params.slotProps.input,
+                    startAdornment: note?.emoji ? (
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          mr: 1,
+                          fontSize: "1.1rem",
+                        }}
+                      >
+                        {note.emoji}
+                      </Box>
+                    ) : null,
+                  },
+                }}
+              />
+            )}
+          />
         </Box>
       </Menu>
 

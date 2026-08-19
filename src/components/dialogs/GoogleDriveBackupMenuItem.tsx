@@ -1,7 +1,7 @@
 import { Box, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiGoogleDrive } from "@mdi/js";
-import type { Label, Note } from "../../types";
+import type { Label, Note, Status } from "../../types";
 import { serializeState } from "../../utils/storage";
 
 type GoogleDriveTokenClient = {
@@ -37,6 +37,7 @@ type GoogleDriveBackupMenuItemProps = {
     message: string,
   ) => void;
   labels: Label[];
+  statuses?: Status[];
   notes: Note[];
 };
 
@@ -78,6 +79,7 @@ const GoogleDriveBackupMenuItem = ({
   onClose,
   onNotify,
   labels,
+  statuses,
   notes,
 }: GoogleDriveBackupMenuItemProps) => {
   const handleBackupToGoogleDrive = async () => {
@@ -176,7 +178,7 @@ const GoogleDriveBackupMenuItem = ({
         throw new Error("Google Drive folder ID was not available.");
       }
 
-      const payload = serializeState({ labels, notes });
+      const payload = serializeState({ labels, statuses: statuses ?? [], notes });
       const now = new Date();
       const pad = (n: number) => String(n).padStart(2, "0");
       const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(

@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Box, Alert, Button, Divider } from "@mui/material";
-import type { Label, Note, NoteFilters as noteFiltersValue } from "../types";
+import type {
+  Label,
+  Note,
+  NoteFilters as noteFiltersValue,
+  Status,
+} from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
   matchesTextFilters,
@@ -20,6 +25,7 @@ import { Icon } from "@mdi/react";
 type NoteListProps = {
   notes: Note[];
   labels: Label[];
+  statuses: Status[];
   filters: noteFiltersValue;
   mostRecentAddedNoteId: string | null;
   mostRecentEditedNoteId: string | null;
@@ -73,6 +79,7 @@ const isPriorityNote = (note: Note): boolean =>
 const NoteList = ({
   notes,
   labels,
+  statuses,
   filters,
   mostRecentAddedNoteId,
   mostRecentEditedNoteId,
@@ -131,6 +138,10 @@ const NoteList = ({
   const labelsById = useMemo(
     () => new Map(labels.map((label) => [label.id, label])),
     [labels],
+  );
+  const statusByEmoji = useMemo(
+    () => new Map(statuses.map((status) => [status.emoji, status])),
+    [statuses],
   );
 
   const sortedNotes = useMemo(() => {
@@ -579,6 +590,7 @@ const NoteList = ({
                   height={rowHeights[index]}
                   note={note}
                   label={label}
+                  status={note.emoji ? statusByEmoji.get(note.emoji) : undefined}
                   isPriority={isPrioritary}
                   isLastNote={isLastNote}
                   isPriorityBoundary={isPriorityBoundary}
@@ -613,6 +625,7 @@ const NoteList = ({
         <NoteActionsMenu
           anchorEl={menuAnchor.el}
           note={menuAnchor.note}
+          statuses={statuses}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
           isPinned={!!menuAnchor.note.pinned}
           onClose={() => setMenuAnchor(null)}

@@ -29,6 +29,8 @@ import {
 } from "@mdi/js";
 import LabelForm from "./components/LabelForm";
 import LabelList from "./components/LabelList";
+import StatusForm from "./components/StatusForm";
+import StatusList from "./components/StatusList";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
@@ -42,7 +44,13 @@ import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDia
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
 import SelectModeActions from "./components/dialogs/SelectModeActions";
 import NoteStorageInfoDialog from "./components/dialogs/NoteStorageInfoDialog";
-import type { BeforeInstallPromptEvent, Label, Note } from "./types";
+import type {
+  BeforeInstallPromptEvent,
+  Label,
+  Note,
+  Status,
+  StatusFormValues,
+} from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
   DEFAULT_FILE_NAME,
@@ -169,6 +177,8 @@ function App() {
   const [activeTab, setActiveTab] = useState<TabValue>("notes");
   const [labels, setLabels] = useState<Label[]>([]);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
+  const [statuses, setStatuses] = useState<Status[]>([]);
+  const [editingStatus, setEditingStatus] = useState<Status | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editingNote, seteditingNote] = useState<Note | null>(null);
   const [cloneNote, setCloneNote] = useState<Note | null>(null);
@@ -197,9 +207,11 @@ function App() {
     null,
   );
   const [latestlabelId, setLatestlabelId] = useState<string | null>(null);
+  const [latestStatusId, setLatestStatusId] = useState<string | null>(null);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
     labels: Label[];
+    statuses: Status[];
     notes: Note[];
     fileName: string;
     parseError: string | null;
@@ -348,6 +360,7 @@ function App() {
       }
 
       setLabels(persistedState.labels);
+      setStatuses(persistedState.statuses ?? []);
       setNotes(persistedState.notes);
       setStorageFileName(persistedState.fileName);
       if (persistedState.parseError) {
@@ -370,8 +383,8 @@ function App() {
       return;
     }
 
-    savePersistedState({ labels, notes }, storageFileName);
-  }, [labels, notes, storageReady, storageFileName]);
+    savePersistedState({ labels, statuses, notes }, storageFileName);
+  }, [labels, statuses, notes, storageReady, storageFileName]);
 
   useEffect(() => {
     if (!storageReady) {
@@ -397,6 +410,7 @@ function App() {
       return;
     }
     setLabels(pendingImport.labels);
+    setStatuses(pendingImport.statuses ?? []);
     setNotes(pendingImport.notes);
     setStorageFileName(pendingImport.fileName);
     setStorageReady(true);
@@ -408,7 +422,7 @@ function App() {
   };
 
   const handleExportJson = () => {
-    const payload = serializeState({ labels, notes });
+    const payload = serializeState({ labels, statuses, notes });
     // filename format: adnothed-state_YYYY-MM-DD_HH-MM.json
     const now = new Date();
     const pad = (n: number) => String(n).padStart(2, "0");
@@ -501,6 +515,73 @@ function App() {
     }
     if (editingNote?.labelId === label.id) {
       seteditingNote(null);
+    }
+  };
+
+  const handleStatusSubmit: (values: StatusFormValues) => boolean | void = (
+    values,
+  ) => {
+    const emoji = values.emoji.trim();
+    const conflict = statuses.some(
+      (status) => status.emoji === emoji && status.id !== editingStatus?.id,
+    );
+    if (!emoji) {
+      return false;
+    }
+    if (conflict) {
+      setNotificationSeverity("error");
+      setNotification("A status with that emoji already exists.");
+      return false;
+    }
+
+    if (editingStatus) {
+      setStatuses((prev) =>
+        prev.map((status) =>
+          status.id === editingStatus.id
+            ? {
+                ...status,
+                name: values.name,
+                emoji,
+                format: values.format,
+                id: emoji,
+              }
+            : status,
+        ),
+      );
+      setNotes((prev) =>
+        prev.map((note) =>
+          note.emoji === editingStatus.emoji ? { ...note, emoji } : note,
+        ),
+      );
+      setNotificationSeverity("success");
+      setNotification(`Updated status "${values.name}"`);
+      setEditingStatus(null);
+      return;
+    }
+
+    setStatuses((prev) => [
+      ...prev,
+      {
+        id: emoji,
+        name: values.name,
+        emoji,
+        format: values.format,
+      },
+    ]);
+    setLatestStatusId(emoji);
+    setNotificationSeverity("success");
+    setNotification(`Added status "${values.name}"`);
+  };
+
+  const handleStatusDelete = (status: Status) => {
+    setStatuses((prev) => prev.filter((item) => item.id !== status.id));
+    setNotes((prev) =>
+      prev.map((note) =>
+        note.emoji === status.emoji ? { ...note, emoji: undefined } : note,
+      ),
+    );
+    if (editingStatus?.id === status.id) {
+      setEditingStatus(null);
     }
   };
 
@@ -1824,6 +1905,7 @@ function App() {
                 <NoteList
                   notes={notes}
                   labels={labels}
+                  statuses={statuses}
                   filters={noteFilters}
                   mostRecentAddedNoteId={recentlyAddednoteId}
                   mostRecentEditedNoteId={recentlyEditednoteId}
@@ -1905,6 +1987,35 @@ function App() {
                   onDelete={requestDeleteLabel}
                   newlabelId={latestlabelId}
                 />
+                <Box sx={{ pt: 1 }}>
+                  <Box
+                    component="h3"
+                    sx={{
+                      m: 0,
+                      mb: 1,
+                      fontSize: "0.9rem",
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.08,
+                      color: "text.secondary",
+                    }}
+                  >
+                    Status
+                  </Box>
+                  <StatusForm
+                    editingStatus={editingStatus}
+                    onSubmit={handleStatusSubmit}
+                    onCancelEdit={() => setEditingStatus(null)}
+                  />
+                  <Box sx={{ pt: 1 }}>
+                    <StatusList
+                      statuses={statuses}
+                      onEdit={setEditingStatus}
+                      onDelete={handleStatusDelete}
+                      newStatusId={latestStatusId}
+                    />
+                  </Box>
+                </Box>
               </Stack>
             </TabPanel>
           </Box>
