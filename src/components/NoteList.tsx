@@ -375,8 +375,8 @@ const NoteList = ({
   };
 
   const parsedTextFilters = useMemo(
-    () => parseTextFilters(filters.text),
-    [filters.text],
+    () => parseTextFilters(filters.text, selectMode),
+    [filters.text, selectMode],
   );
 
   const filteredNotes = useMemo(
@@ -453,7 +453,10 @@ const NoteList = ({
   }, [filteredNotes]);
 
   const globalIndexByNoteId = useMemo(
-    () => new Map(sortedNotes.map((note, index) => [note.id, index + 1])),
+    () =>
+      new Map(
+        sortedNotes.map((note, index) => [note.id, sortedNotes.length - index]),
+      ),
     [sortedNotes],
   );
 

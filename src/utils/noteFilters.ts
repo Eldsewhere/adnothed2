@@ -85,7 +85,10 @@ function toPositiveInt(value: string): number | null {
   return parsed;
 }
 
-export function parseTextFilters(rawText: string): ParsedTextFilters {
+export function parseTextFilters(
+  rawText: string,
+  allowIndexShorthand = false,
+): ParsedTextFilters {
   const parsed = { ...defaultParsedTextFilters };
   const queryParts: string[] = [];
   const parts = rawText.split(";");
@@ -103,6 +106,13 @@ export function parseTextFilters(rawText: string): ParsedTextFilters {
     }
 
     if (!segment.startsWith("/")) {
+      if (allowIndexShorthand) {
+        const indexMatch = segment.match(/^#(\d+)$/);
+        if (indexMatch) {
+          parsed.indexAt = toPositiveInt(indexMatch[1]);
+          continue;
+        }
+      }
       queryParts.push(segment.replace(/\s+/g, ""));
       continue;
     }
