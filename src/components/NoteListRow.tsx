@@ -1,4 +1,4 @@
-import { type MouseEvent } from "react";
+import { useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
@@ -14,6 +14,8 @@ import {
   mdiChevronDown,
   mdiClockOutline,
   mdiDotsVertical,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
   mdiLabelOff,
   mdiPin,
 } from "@mdi/js";
@@ -97,7 +99,18 @@ const NoteListRow = ({
 }: NoteListRowProps) => {
   const shouldUsePriorityDueDate =
     note.due !== undefined && (isToday(note.due) || isTomorrow(note.due));
-  const statusStyle = status ? getStatusTextStyle(status.format) : {};
+  const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+  const statusStyle =
+    status && status.format !== "spoiler"
+      ? getStatusTextStyle(status.format)
+      : {};
+  const isSpoilerStatus = status?.format === "spoiler";
+  const shouldHideSpoilerText = isSpoilerStatus && !isSpoilerVisible;
+
+  const maskSpoilerText = (value: string): string =>
+    Array.from(value)
+      .map((char) => (char === " " ? " " : "•"))
+      .join("");
 
   return (
     <Box
@@ -193,10 +206,53 @@ const NoteListRow = ({
               ...statusStyle,
             }}
           >
+            {isSpoilerStatus && (
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  verticalAlign: "middle",
+                  mr: 0.5,
+                }}
+              >
+                <Tooltip
+                  title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
+                  arrow
+                >
+                  <IconButton
+                    size="small"
+                    aria-label={
+                      isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"
+                    }
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      setIsSpoilerVisible((value) => !value);
+                    }}
+                    sx={{
+                      p: 0,
+                      minWidth: 20,
+                      width: 20,
+                      height: 20,
+                      color: "inherit",
+                    }}
+                  >
+                    <Icon
+                      path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
+                      size={0.7}
+                    />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
             {note.text.split("\n").map((row, rowIndex) => {
               const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
               const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
               const rowText = checkboxMatch?.[2] ?? row;
+              const visibleRowText = shouldHideSpoilerText
+                ? maskSpoilerText(rowText)
+                : rowText;
+
               return (
                 <Box
                   key={`${rowIndex}-${row}`}
@@ -231,7 +287,7 @@ const NoteListRow = ({
                       textDecoration: isChecked ? "line-through" : "none",
                     }}
                   >
-                    {splitTextByUrls(rowText).map((part, partIndex) =>
+                    {splitTextByUrls(visibleRowText).map((part, partIndex) =>
                       part.isUrl ? (
                         <Box
                           key={partIndex}

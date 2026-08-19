@@ -22,6 +22,7 @@ export type StatusFormat =
   | "underline"
   | "bold"
   | "strikethrough"
+  | "spoiler"
   | "red"
   | "orange"
   | "green";

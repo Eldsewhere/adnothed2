@@ -261,13 +261,15 @@ const StatusForm = ({
                         ? { fontWeight: 700 }
                         : option === "strikethrough"
                           ? { textDecoration: "line-through" }
-                          : option === "red"
-                            ? { color: colors.red[400] }
-                            : option === "orange"
-                              ? { color: colors.orange[400] }
-                              : option === "green"
-                                ? { color: colors.green[400] }
-                                : {};
+                          : option === "spoiler"
+                            ? { opacity: 0.6 }
+                            : option === "red"
+                              ? { color: colors.red[400] }
+                              : option === "orange"
+                                ? { color: colors.orange[400] }
+                                : option === "green"
+                                  ? { color: colors.green[400] }
+                                  : {};
 
                   return (
                     <MenuItem key={option} value={option}>

@@ -19,7 +19,8 @@ type StatusListRowProps = {
 };
 
 const StatusListRow = ({ status, isNewStatus, onOpenMenu }: StatusListRowProps) => {
-  const statusTextStyle = getStatusTextStyle(status.format);
+  const statusTextStyle =
+    status.format === "spoiler" ? {} : getStatusTextStyle(status.format);
 
   return (
     <TableRow
