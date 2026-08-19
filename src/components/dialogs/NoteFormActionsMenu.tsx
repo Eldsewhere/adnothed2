@@ -46,7 +46,7 @@ type QueryTemplate = {
 
 const queryTemplates: QueryTemplate[] = [
   {
-    label: "indexAt",
+    label: "index",
     command: "/index:number;",
     placeholder: "number",
     iconPath: mdiFormatListNumbered,
