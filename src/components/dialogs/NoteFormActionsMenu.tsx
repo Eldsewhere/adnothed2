@@ -23,6 +23,7 @@ import {
   mdiContentCopy,
   mdiContentPaste,
   mdiEmailOutline,
+  mdiEmoticonHappyOutline,
   mdiFormatLineSpacing,
   mdiFormatListBulleted,
   mdiFormatListNumbered,
@@ -164,6 +165,11 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiCalendar,
   },
   {
+    label: "status",
+    command: "/with:status;",
+    iconPath: mdiEmoticonHappyOutline,
+  },
+  {
     label: "priority",
     command: "/with:priority;",
     iconPath: mdiPin,
@@ -204,6 +210,7 @@ const querySubmenuGroups: Record<
     queryTemplates[21],
     queryTemplates[22],
     queryTemplates[23],
+    queryTemplates[24],
   ],
 };
 
@@ -397,10 +404,7 @@ const NoteFormActionsMenu = ({
             setFormatMenuAnchor(null);
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiCircleSmall} size={0.9} />
           </Box>
           Bullet
@@ -411,10 +415,7 @@ const NoteFormActionsMenu = ({
             setFormatMenuAnchor(null);
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiCheckboxBlankOutline} size={0.75} />
           </Box>
           Checkbox
@@ -434,10 +435,7 @@ const NoteFormActionsMenu = ({
             });
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiSelectAll} size={0.75} />
           </Box>
           Select
@@ -450,10 +448,7 @@ const NoteFormActionsMenu = ({
             requestAnimationFrame(() => textAreaRef.current?.focus());
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiCloseCircleOutline} size={0.75} />
           </Box>
           Clear
@@ -465,10 +460,7 @@ const NoteFormActionsMenu = ({
             closeQueryMenu();
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiContentCopy} size={0.75} />
           </Box>
           Copy
@@ -481,10 +473,7 @@ const NoteFormActionsMenu = ({
             closeQueryMenu();
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiContentPaste} size={0.75} />
           </Box>
           Paste
@@ -495,10 +484,7 @@ const NoteFormActionsMenu = ({
             setQueryMenuAnchor(event.currentTarget);
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiChevronRight} size={0.75} />
           </Box>
           Query
@@ -521,55 +507,37 @@ const NoteFormActionsMenu = ({
             setFormatMenuAnchor(null);
           }}
         >
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={queryTemplates[0].iconPath} size={0.75} />
           </Box>
           {queryTemplates[0].label}
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "count")}>
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiFormatText} size={0.75} />
           </Box>
           Count
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "length")}>
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiRayStartEnd} size={0.75} />
           </Box>
           Length
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "date")}>
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiCalendar} size={0.75} />
           </Box>
           Date
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "due")}>
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiCalendarClock} size={0.75} />
           </Box>
           Due
         </MenuItem>
         <MenuItem onClick={(event) => openQuerySubmenu(event, "with")}>
-          <Box
-            component="span"
-            sx={menuItemIconSx}
-          >
+          <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiFormatListBulleted} size={0.75} />
           </Box>
           With
@@ -598,10 +566,7 @@ const NoteFormActionsMenu = ({
                 setFormatMenuAnchor(null);
               }}
             >
-              <Box
-                component="span"
-                sx={menuItemIconSx}
-              >
+              <Box component="span" sx={menuItemIconSx}>
                 <Icon path={template.iconPath} size={0.75} />
               </Box>
               {template.label}

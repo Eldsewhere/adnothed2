@@ -401,6 +401,7 @@ const NoteList = ({
             note.due,
             note.labelId,
             note.pinned,
+            note.emoji,
           )
         ) {
           return false;

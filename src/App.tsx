@@ -1121,6 +1121,7 @@ function App() {
           note.due,
           note.labelId,
           note.pinned,
+          note.emoji,
         );
       }),
     [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
@@ -1150,6 +1151,7 @@ function App() {
             note.due,
             note.labelId,
             note.pinned,
+            note.emoji,
           )
         ) {
           return false;

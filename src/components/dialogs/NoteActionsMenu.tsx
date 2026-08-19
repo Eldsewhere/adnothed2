@@ -211,7 +211,7 @@ const NoteActionsMenu = ({
               >
                 <Icon path={mdiEmoticonOutline} size={0.7} />
               </Box>
-              React
+              Status
             </MenuItem>
             {note.due !== undefined && isDueTodayOrLater(note.due) && (
               <MenuItem

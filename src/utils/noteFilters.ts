@@ -41,6 +41,7 @@ export type ParsedTextFilters = {
   minDueDate: string | null;
   maxDueDate: string | null;
   withNumbers: boolean;
+  withEmoji: boolean;
   withUrl: boolean;
   withEmail: boolean;
   withBullets: boolean;
@@ -69,6 +70,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   minDueDate: null,
   maxDueDate: null,
   withNumbers: false,
+  withEmoji: false,
   withUrl: false,
   withEmail: false,
   withBullets: false,
@@ -201,6 +203,10 @@ export function parseTextFilters(
         parsed.withNumbers = true;
         continue;
       }
+      if (token === "status") {
+        parsed.withEmoji = true;
+        continue;
+      }
       if (token === "url") {
         parsed.withUrl = true;
         continue;
@@ -271,6 +277,7 @@ export function matchesTextFilters(
   due?: number,
   labelId: string | null = null,
   isPinned = false,
+  emoji?: string,
 ): boolean {
   if (
     parsed.query &&
@@ -362,6 +369,10 @@ export function matchesTextFilters(
   }
 
   if (parsed.withNumbers && !containsNumbers(text)) {
+    return false;
+  }
+
+  if (parsed.withEmoji && !emoji) {
     return false;
   }
 
