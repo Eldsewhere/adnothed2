@@ -60,7 +60,11 @@ type NoteListRowProps = {
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenOverflow: (noteId: string) => void;
-  onOpenActionsMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
+  onOpenActionsMenu: (
+    event: MouseEvent<HTMLElement>,
+    note: Note,
+    openStatusPicker?: boolean,
+  ) => void;
   setnoteTextRef: (element: HTMLElement | null) => void;
 };
 
@@ -296,17 +300,22 @@ const NoteListRow = ({
                 ? formatDueDate(note.due!)
                 : formatTimestamp(note.createdAt)}
               {note.emoji && (
-                <Tooltip title="Note status" aria-label={undefined} arrow>
+                <Tooltip title={status ? status.name : "Note status"} arrow>
                   <Box
                     component="span"
                     role="img"
-                    aria-label="Note status"
+                    aria-label={status ? status.name : "Note status"}
+                    onClick={(event: MouseEvent<HTMLElement>) => {
+                      event.stopPropagation();
+                      onOpenActionsMenu(event, note, true);
+                    }}
                     sx={{
                       ml: 0.5,
                       display: "inline-flex",
                       alignItems: "center",
                       fontSize: "0.85rem",
                       lineHeight: 1,
+                      cursor: "pointer",
                     }}
                   >
                     {note.emoji}

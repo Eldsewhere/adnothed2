@@ -105,6 +105,7 @@ const NoteList = ({
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
     note: Note;
+    openStatusPicker?: boolean;
   } | null>(null);
   const [overflowModalnoteId, setOverflowModalnoteId] = useState<string | null>(
     null,
@@ -609,8 +610,12 @@ const NoteList = ({
                   onOpenLabelMenu={openLabelMenu}
                   onToggleCheckbox={onToggleCheckbox}
                   onOpenOverflow={(id) => setOverflowModalnoteId(id)}
-                  onOpenActionsMenu={(event, note) =>
-                    setMenuAnchor({ el: event.currentTarget, note: note })
+                  onOpenActionsMenu={(event, note, openStatusPicker) =>
+                    setMenuAnchor({
+                      el: event.currentTarget,
+                      note,
+                      openStatusPicker,
+                    })
                   }
                   setnoteTextRef={(element) =>
                     updateOverflowState(note.id, element)
@@ -626,6 +631,7 @@ const NoteList = ({
           anchorEl={menuAnchor.el}
           note={menuAnchor.note}
           statuses={statuses}
+          openStatusPicker={menuAnchor.openStatusPicker}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
           isPinned={!!menuAnchor.note.pinned}
           onClose={() => setMenuAnchor(null)}

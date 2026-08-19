@@ -1,3 +1,4 @@
+import { colors } from "@mui/material";
 import type { StatusFormat } from "../types";
 
 export const STATUS_FORMAT_OPTIONS = [
@@ -40,11 +41,11 @@ export function getStatusTextStyle(format?: StatusFormat): {
     case "strikethrough":
       return { textDecoration: "line-through" };
     case "red":
-      return { color: "#f87171" };
+      return { color: colors.red[400] };
     case "orange":
-      return { color: "#fbbf24" };
+      return { color: colors.orange[400] };
     case "green":
-      return { color: "#4ade80" };
+      return { color: colors.green[400] };
     case "none":
     default:
       return {};

@@ -3,7 +3,9 @@ import { Controller, useForm } from "react-hook-form";
 import {
   Autocomplete,
   Box,
+  FormControl,
   IconButton,
+  InputLabel,
   Menu,
   MenuItem,
   Select,
@@ -272,30 +274,45 @@ const StatusForm = ({ editingStatus, onSubmit, onCancelEdit }: StatusFormProps) 
           name="format"
           control={control}
           render={({ field }) => (
-            <Select
-              {...field}
-              value={field.value || "none"}
-              size="small"
-              fullWidth
-              aria-label="Status format"
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: colors.blueGrey[500],
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: colors.blueGrey[500],
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: colors.blueGrey[500],
-                },
-              }}
-            >
-              {STATUS_FORMAT_OPTIONS.map((option) => (
-                <MenuItem key={option} value={option}>
-                  {STATUS_FORMAT_LABELS[option as StatusFormat]}
-                </MenuItem>
-              ))}
-            </Select>
+            <FormControl fullWidth size="small">
+              <InputLabel id="status-format-label">Text decoration</InputLabel>
+              <Select
+                {...field}
+                labelId="status-format-label"
+                id="status-format"
+                value={field.value || "none"}
+                label="Text decoration"
+                fullWidth
+                aria-label="Text decoration"
+              >
+                {STATUS_FORMAT_OPTIONS.map((option) => {
+                  const style =
+                    option === "underline"
+                      ? { textDecoration: "underline" }
+                      : option === "italic"
+                        ? { fontStyle: "italic" }
+                        : option === "bold"
+                          ? { fontWeight: 700 }
+                          : option === "strikethrough"
+                            ? { textDecoration: "line-through" }
+                            : option === "red"
+                              ? { color: colors.red[400] }
+                              : option === "orange"
+                                ? { color: colors.orange[400] }
+                                : option === "green"
+                                  ? { color: colors.green[400] }
+                                  : {};
+
+                  return (
+                    <MenuItem key={option} value={option}>
+                      <Box component="span" sx={style}>
+                        {STATUS_FORMAT_LABELS[option as StatusFormat]}
+                      </Box>
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
           )}
         />
         <Controller

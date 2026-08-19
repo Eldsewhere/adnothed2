@@ -24,6 +24,7 @@ import {
   mdiCalendar,
   mdiNoteText,
   mdiLabelMultiple,
+  mdiEmoticonOutline,
   mdiFileImport,
   mdiInformationOutline,
 } from "@mdi/js";
@@ -73,7 +74,7 @@ import {
 } from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
-type TabValue = "notes" | "labels";
+type TabValue = "notes" | "labels" | "statuses";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -1621,10 +1622,12 @@ function App() {
               }}
               onChange={(_event, newValue) => {
                 const normalized =
-                  newValue === "notes" || newValue === "labels"
+                  newValue === "notes" ||
+                  newValue === "labels" ||
+                  newValue === "statuses"
                     ? newValue
                     : (String(newValue) as TabValue);
-                if (normalized === "labels") {
+                if (normalized === "labels" || normalized === "statuses") {
                   setNoteFilters(emptyNoteFilters);
                   setSelectMode(false);
                 }
@@ -1697,6 +1700,41 @@ function App() {
                 id="tab-labels"
                 aria-controls="tabpanel-labels"
               />
+              {activeTab !== "notes" && (
+                <Tab
+                  value="statuses"
+                  label={
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          lineHeight: 1,
+                        }}
+                      >
+                        <Icon path={mdiEmoticonOutline} size={0.75} />
+                        <Box
+                          component="span"
+                          sx={{
+                            fontSize: "0.5rem",
+                            opacity: 0.8,
+                            mt: 0.15,
+                          }}
+                        >
+                          {statuses.length}
+                        </Box>
+                      </Box>
+                      <Box component="span">Status</Box>
+                    </Box>
+                  }
+                  id="tab-statuses"
+                  aria-controls="tabpanel-statuses"
+                />
+              )}
             </Tabs>
             {activeTab === "notes" && (
               <Stack direction="row" sx={{ alignItems: "center" }}>
@@ -1788,7 +1826,7 @@ function App() {
                 />
               </Stack>
             )}
-            {activeTab === "labels" && (
+            {(activeTab === "labels" || activeTab === "statuses") && (
               <>
                 <Tooltip title="Import/Export">
                   <IconButton
@@ -1987,34 +2025,22 @@ function App() {
                   onDelete={requestDeleteLabel}
                   newlabelId={latestlabelId}
                 />
+              </Stack>
+            </TabPanel>
+            <TabPanel value={activeTab} index="statuses">
+              <Stack spacing={2}>
+                <StatusForm
+                  editingStatus={editingStatus}
+                  onSubmit={handleStatusSubmit}
+                  onCancelEdit={() => setEditingStatus(null)}
+                />
                 <Box sx={{ pt: 1 }}>
-                  <Box
-                    component="h3"
-                    sx={{
-                      m: 0,
-                      mb: 1,
-                      fontSize: "0.9rem",
-                      fontWeight: 600,
-                      textTransform: "uppercase",
-                      letterSpacing: 0.08,
-                      color: "text.secondary",
-                    }}
-                  >
-                    Status
-                  </Box>
-                  <StatusForm
-                    editingStatus={editingStatus}
-                    onSubmit={handleStatusSubmit}
-                    onCancelEdit={() => setEditingStatus(null)}
+                  <StatusList
+                    statuses={statuses}
+                    onEdit={setEditingStatus}
+                    onDelete={handleStatusDelete}
+                    newStatusId={latestStatusId}
                   />
-                  <Box sx={{ pt: 1 }}>
-                    <StatusList
-                      statuses={statuses}
-                      onEdit={setEditingStatus}
-                      onDelete={handleStatusDelete}
-                      newStatusId={latestStatusId}
-                    />
-                  </Box>
                 </Box>
               </Stack>
             </TabPanel>

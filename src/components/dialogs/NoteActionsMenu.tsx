@@ -1,11 +1,10 @@
-import { useState, type MouseEvent } from "react";
+import { useEffect, useState, type MouseEvent } from "react";
 import {
-  Autocomplete,
   Box,
   Divider,
   Menu,
   MenuItem,
-  TextField,
+  colors,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
@@ -31,6 +30,7 @@ type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
   note: Note | null;
   statuses: Status[];
+  openStatusPicker?: boolean;
   hasUrl: boolean;
   isPinned: boolean;
   onClose: () => void;
@@ -84,6 +84,7 @@ const NoteActionsMenu = ({
   anchorEl,
   note,
   statuses,
+  openStatusPicker,
   hasUrl,
   isPinned,
   onClose,
@@ -111,6 +112,12 @@ const NoteActionsMenu = ({
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+
+  useEffect(() => {
+    if (openStatusPicker && anchorEl && note) {
+      setStatusMenuAnchor(anchorEl);
+    }
+  }, [anchorEl, note, openStatusPicker]);
 
   const closeSubmenus = () => {
     setShareMenuAnchor(null);
@@ -157,7 +164,7 @@ const NoteActionsMenu = ({
     <>
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl && note)}
+        open={Boolean(anchorEl && note) && !openStatusPicker}
         onClose={handleMenuClose}
       >
         {note && (
@@ -413,77 +420,47 @@ const NoteActionsMenu = ({
         anchorEl={statusMenuAnchor}
         open={Boolean(statusMenuAnchor)}
         onClose={() => setStatusMenuAnchor(null)}
-        slotProps={{
-          paper: {
-            sx: {
-              minWidth: 280,
-              p: 1,
-            },
-          },
-        }}
       >
-        <Box sx={{ minWidth: 248 }}>
-          <Autocomplete
-            autoFocus
-            options={statuses}
-            value={
-              note && note.emoji
-                ? statuses.find((status) => status.emoji === note.emoji) ?? null
-                : null
-            }
-            onChange={(_event, newValue) => {
-              selectStatus(newValue);
-              setStatusMenuAnchor(null);
+        <MenuItem
+          sx={{ color: colors.blueGrey[300] }}
+          onClick={() => selectStatus(null)}
+          autoFocus={!note?.emoji}
+          selected={!note?.emoji}
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              color: colors.blueGrey[300],
             }}
-            getOptionLabel={(option) => `${option.emoji} ${option.name}`}
-            isOptionEqualToValue={(option, value) => option.id === value.id}
-            clearOnEscape
-            noOptionsText="No saved statuses"
-            renderOption={(props, option) => (
-              <Box component="li" {...props} key={option.id}>
-                <Box
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    mr: 1,
-                    fontSize: "1.1rem",
-                  }}
-                >
-                  {option.emoji}
-                </Box>
-                {option.name}
-              </Box>
-            )}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                size="small"
-                label="Status"
-                placeholder={statuses.length ? "Choose status" : "No saved statuses"}
-                slotProps={{
-                  ...params.slotProps,
-                  input: {
-                    ...params.slotProps.input,
-                    startAdornment: note?.emoji ? (
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          mr: 1,
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {note.emoji}
-                      </Box>
-                    ) : null,
-                  },
-                }}
-              />
-            )}
-          />
-        </Box>
+          >
+            <Icon path={mdiEmoticonOutline} size={0.7} />
+          </Box>
+          {statuses.length === 0 ? "no statuses available" : "no status"}
+        </MenuItem>
+        {statuses.map((status) => (
+          <MenuItem
+            key={status.id}
+            onClick={() => selectStatus(status)}
+            autoFocus={Boolean(note?.emoji && note.emoji === status.emoji)}
+            selected={Boolean(note?.emoji && note.emoji === status.emoji)}
+          >
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mr: 1,
+                fontSize: "1.1rem",
+              }}
+            >
+              {status.emoji}
+            </Box>
+            {status.name}
+          </MenuItem>
+        ))}
       </Menu>
 
       <Menu
