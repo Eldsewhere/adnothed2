@@ -6,7 +6,7 @@ import {
   mdiCalendarClock,
   mdiClockOutline,
   mdiContentCopy,
-  mdiContentDuplicate,
+  mdiFilter,
   mdiLink,
   mdiMagnify,
   mdiNoteText,
@@ -341,9 +341,9 @@ const NoteActionsMenu = ({
                   px: 0.5,
                 }}
               >
-                <Icon path={mdiContentDuplicate} size={0.8} />
+                <Icon path={mdiFilter} size={0.8} />
               </Box>
-              Clone
+              Filter
             </MenuItem>
             <MenuItem
               onClick={() => {

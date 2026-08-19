@@ -78,7 +78,7 @@ const NoteForm = ({
     const nextValues = editingNote
       ? { labelId: editingNote.labelId ?? "", text: editingNote.text }
       : cloneNote
-        ? { labelId: cloneNote.labelId ?? "", text: cloneNote.text }
+        ? { labelId: "", text: cloneNote.text }
       : initialText
         ? { labelId: "", text: initialText }
         : emptyValues;
