@@ -38,6 +38,7 @@ const LabelListRow = ({
       width: 40,
       verticalAlign: "middle",
       opacity: isMenuOpen ? 0.5 : 1,
+      bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
     }}
   >
     <TableCell

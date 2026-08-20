@@ -239,13 +239,15 @@ const NoteListRow = ({
           isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
         borderColor: colors.grey[900],
         overflow: "hidden",
-        bgcolor: shouldHighlightRecentEdit
-          ? "rgba(76, 175, 80, 0.18)"
-          : isPriority
-            ? "#414d4b"
-            : dayIndex % 2 === 0
-              ? colors.blueGrey[900]
-              : colors.blueGrey[800],
+        bgcolor: isEditing
+          ? "rgba(255, 152, 0, 0.18)"
+          : shouldHighlightRecentEdit
+            ? "rgba(76, 175, 80, 0.18)"
+            : isPriority
+              ? "#414d4b"
+              : dayIndex % 2 === 0
+                ? colors.blueGrey[900]
+                : colors.blueGrey[800],
         transform: `translateX(${dragOffset}px)`,
         transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
         opacity: isMenuOpen ? 0.7 : 1,

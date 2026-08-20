@@ -42,6 +42,7 @@ const StatusListRow = ({
         width: 40,
         verticalAlign: "middle",
         opacity: isMenuOpen ? 0.5 : 1,
+        bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
       }}
     >
       <TableCell
@@ -54,7 +55,9 @@ const StatusListRow = ({
         </Tooltip>
       </TableCell>
       <TableCell sx={{ paddingY: 2, pl: 0, maxWidth: 0, width: "100%" }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+        <Box
+          sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}
+        >
           {isEditing && (
             <Tooltip title="Editing status" aria-label={undefined} arrow>
               <Box
