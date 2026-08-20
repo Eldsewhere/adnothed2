@@ -257,6 +257,9 @@ function App() {
       );
     },
   );
+  const topToolbarRef = useRef<HTMLDivElement | null>(null);
+  const notesActionsRef = useRef<HTMLDivElement | null>(null);
+  const [showStatusTabOnNotes, setShowStatusTabOnNotes] = useState(true);
 
   const [sharedText] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -1415,6 +1418,52 @@ function App() {
     ],
   );
 
+  useEffect(() => {
+    if (activeTab !== "notes") {
+      setShowStatusTabOnNotes(true);
+      return;
+    }
+
+    const updateShowStatusTabOnNotes = () => {
+      const container = topToolbarRef.current;
+      if (!container) {
+        setShowStatusTabOnNotes(true);
+        return;
+      }
+
+      const visibleTabs = Array.from(
+        container.querySelectorAll('[role="tab"]'),
+      ) as HTMLElement[];
+      const actionButtons = notesActionsRef.current
+        ? Array.from(notesActionsRef.current.querySelectorAll("button"))
+        : [];
+
+      const currentWidth =
+        visibleTabs.reduce((sum, tab) => sum + tab.offsetWidth, 0) +
+        actionButtons.reduce((sum, button) => sum + button.offsetWidth + 8, 0);
+      const estimatedStatusTabWidth = 96;
+
+      setShowStatusTabOnNotes(
+        container.clientWidth >= currentWidth + estimatedStatusTabWidth,
+      );
+    };
+
+    updateShowStatusTabOnNotes();
+
+    const observer = new ResizeObserver(updateShowStatusTabOnNotes);
+    const currentContainer = topToolbarRef.current;
+    if (currentContainer) {
+      observer.observe(currentContainer);
+    }
+
+    window.addEventListener("resize", updateShowStatusTabOnNotes);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", updateShowStatusTabOnNotes);
+    };
+  }, [activeTab, filteredNoteCount, labels.length, statuses.length]);
+
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of calendarFilteredNotes) {
@@ -1731,6 +1780,7 @@ function App() {
       <Box>
         <Paper sx={{ p: 1 }}>
           <Stack
+            ref={topToolbarRef}
             direction="row"
             sx={{ alignItems: "center", justifyContent: "space-between" }}
           >
@@ -1825,7 +1875,7 @@ function App() {
                 id="tab-labels"
                 aria-controls="tabpanel-labels"
               />
-              {activeTab !== "notes" && (
+              {(activeTab !== "notes" || showStatusTabOnNotes) && (
                 <Tab
                   value="statuses"
                   label={
@@ -1862,7 +1912,11 @@ function App() {
               )}
             </Tabs>
             {activeTab === "notes" && (
-              <Stack direction="row" sx={{ alignItems: "center" }}>
+              <Stack
+                ref={notesActionsRef}
+                direction="row"
+                sx={{ alignItems: "center" }}
+              >
                 {!hideTopBarInfoButton && (
                   <Tooltip title="Info tips">
                     <IconButton

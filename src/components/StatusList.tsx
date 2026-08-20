@@ -60,7 +60,7 @@ const StatusList = ({ statuses, onEdit, onDelete, newStatusId }: StatusListProps
     <Box>
       {orderedStatuses.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
-          <Box>No statuses added yet. Add a status to highlight and apply styles to notes.</Box>
+          <Box>No statuses added yet. Add a status to highlight or apply styles to notes.</Box>
         </Alert>
       ) : (
         <Box
