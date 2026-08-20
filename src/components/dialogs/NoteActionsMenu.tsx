@@ -459,7 +459,11 @@ const NoteActionsMenu = ({
                 {status.emoji}
               </Box>
               <Box component="span" sx={statusTextStyle}>
-                {status.name}
+                {status.format === "spoiler"
+                  ? [...status.name]
+                      .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
+                      .join("")
+                  : status.name}
               </Box>
             </MenuItem>
           );

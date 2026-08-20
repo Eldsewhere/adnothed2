@@ -51,7 +51,11 @@ const StatusListRow = ({ status, isNewStatus, onOpenMenu }: StatusListRowProps) 
               : {}),
           }}
         >
-          {status.name}
+          {status.format === "spoiler"
+            ? [...status.name].map((char, index) =>
+                `${index === 0 ? "" : "•"}${char}`,
+              ).join("")
+            : status.name}
         </Typography>
       </TableCell>
       <TableCell align="right" sx={{ verticalAlign: "middle", paddingY: 2 }}>

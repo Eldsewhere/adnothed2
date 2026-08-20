@@ -20,7 +20,7 @@ export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
   underline: "Underline",
   bold: "Bold",
   strikethrough: "Strikethrough",
-  spoiler: "Spoiler",
+  spoiler: "S•p•o•i•l•e•r",
   transparent: "Transparent",
   red: "Red",
   orange: "Orange",

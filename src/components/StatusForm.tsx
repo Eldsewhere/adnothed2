@@ -243,15 +243,15 @@ const StatusForm = ({
           control={control}
           render={({ field }) => (
             <FormControl fullWidth size="small">
-              <InputLabel id="status-format-label">Text decoration</InputLabel>
+              <InputLabel id="status-format-label">Note effect</InputLabel>
               <Select
                 {...field}
                 labelId="status-format-label"
                 id="status-format"
                 value={field.value || "none"}
-                label="Text decoration"
+                label="Note effect"
                 fullWidth
-                aria-label="Text decoration"
+                aria-label="Note effect"
               >
                 {STATUS_FORMAT_OPTIONS.map((option) => {
                   const style =
