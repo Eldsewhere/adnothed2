@@ -30,7 +30,7 @@ const HashtagBar = ({
     >
       {hashtags.length === 0 ? (
         <Box sx={{ color: colors.blueGrey[300], fontSize: "0.85rem" }}>
-          No hashtags yet
+          No hashtags
         </Box>
       ) : (
         <Box
