@@ -20,7 +20,7 @@ const HashtagChip = ({
   showDelete = false,
 }: HashtagChipProps) => (
   <Chip
-    label={`${tag} ${count !== undefined ? `(${count})` : ""}`}
+    label={`${tag} ${count !== undefined && count > 1 ? `(${count})` : ""}`}
     size="small"
     onClick={(event) => {
       event.stopPropagation();
