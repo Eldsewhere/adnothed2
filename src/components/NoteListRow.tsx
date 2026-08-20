@@ -331,7 +331,8 @@ const NoteListRow = ({
                       textDecoration: isChecked ? "line-through" : "none",
                     }}
                   >
-                    {!selectMode && /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
+                    {!selectMode &&
+                    /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
                       <HashtagChip
                         tag={visibleRowText.trim()}
                         selected={isHashtagActive(visibleRowText.trim())}
@@ -339,7 +340,10 @@ const NoteListRow = ({
                           onToggleHashtagInDraft?.(visibleRowText.trim());
                         }}
                         onDelete={() => {
-                          onRemoveHashtagFromNote?.(note, visibleRowText.trim());
+                          onRemoveHashtagFromNote?.(
+                            note,
+                            visibleRowText.trim(),
+                          );
                         }}
                         showDelete
                       />
