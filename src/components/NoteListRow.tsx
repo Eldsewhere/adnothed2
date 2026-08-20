@@ -105,7 +105,6 @@ const NoteListRow = ({
   onOpenActionsMenu,
   setnoteTextRef,
   filterText = "",
-  onToggleHashtagFilter,
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
