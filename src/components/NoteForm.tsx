@@ -86,9 +86,9 @@ const NoteForm = ({
         }
       : cloneNote
         ? { labelId: "", text: cloneNote.text }
-      : initialText
-        ? { labelId: "", text: initialText }
-        : emptyValues;
+        : initialText
+          ? { labelId: "", text: initialText }
+          : { labelId: "", text: textValue ?? "" };
 
     reset(nextValues);
     onNoteTextChange?.(nextValues.text);
@@ -101,6 +101,7 @@ const NoteForm = ({
     isEditing,
     cloneNote,
     initialText,
+    textValue,
     onFilterLabelChange,
     onFilterTextChange,
     onNoteTextChange,

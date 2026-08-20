@@ -2,7 +2,6 @@ import { useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
-  Chip,
   IconButton,
   Stack,
   Tooltip,
@@ -14,7 +13,6 @@ import {
   mdiBell,
   mdiChevronDown,
   mdiClockOutline,
-  mdiClose,
   mdiDotsVertical,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -30,6 +28,7 @@ import {
 } from "../utils/formatTimestamp";
 import { splitTextByUrls } from "../utils/textPatterns";
 import LabelIcon from "./ui/LabelIcon";
+import HashtagChip from "./HashtagChip";
 import { getStatusTextStyle } from "../utils/statusStyles";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
@@ -74,6 +73,7 @@ type NoteListRowProps = {
   filterText?: string;
   onFilterTextChange?: (value: string) => void;
   onToggleHashtagFilter?: (tag: string) => void;
+  onToggleHashtagInDraft?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
 };
@@ -106,6 +106,7 @@ const NoteListRow = ({
   setnoteTextRef,
   filterText = "",
   onToggleHashtagFilter,
+  onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
   const shouldUsePriorityDueDate =
@@ -136,46 +137,17 @@ const NoteListRow = ({
 
       const isActive = isHashtagActive(part);
       return (
-        <Chip
+        <HashtagChip
           key={`${part}-${index}`}
-          label={part}
-          size="small"
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggleHashtagFilter?.(part);
+          tag={part}
+          selected={isActive}
+          onClick={() => {
+            onToggleHashtagInDraft?.(part);
           }}
-          onDelete={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
+          onDelete={() => {
             onRemoveHashtagFromNote?.(note, part);
           }}
-          onMouseDown={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-          }}
-          deleteIcon={
-            <Tooltip title="Remove hashtag" aria-label={undefined}>
-              <Icon path={mdiClose} size={0.5} />
-            </Tooltip>
-          }
-          sx={{
-            height: 20,
-            ml: 0.25,
-            mr: 0.25,
-            p: 0.5,
-            borderRadius: 999,
-            bgcolor: isActive ? colors.lightGreen[400] : colors.blueGrey[700],
-            color: isActive ? colors.grey[900] : colors.grey[100],
-            ".MuiChip-label": {
-              px: 0.75,
-              fontSize: "0.7rem",
-            },
-            ".MuiChip-deleteIcon": {
-              color: isActive ? colors.grey[900] : colors.grey[100],
-              fontSize: "0.7rem",
-              margin: 0,
-            },
-          }}
+          showDelete
         />
       );
     });
@@ -361,44 +333,16 @@ const NoteListRow = ({
                     }}
                   >
                     {!selectMode && /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
-                      <Chip
-                        label={visibleRowText.trim()}
-                        size="small"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onToggleHashtagFilter?.(visibleRowText.trim());
+                      <HashtagChip
+                        tag={visibleRowText.trim()}
+                        selected={isHashtagActive(visibleRowText.trim())}
+                        onClick={() => {
+                          onToggleHashtagInDraft?.(visibleRowText.trim());
                         }}
-                        onDelete={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
+                        onDelete={() => {
                           onRemoveHashtagFromNote?.(note, visibleRowText.trim());
                         }}
-                        onMouseDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                        }}
-                        deleteIcon={<Icon path={mdiClose} size={0.5} />}
-                        sx={{
-                          height: 20,
-                          borderRadius: 999,
-                          bgcolor: isHashtagActive(visibleRowText.trim())
-                            ? colors.lightGreen[400]
-                            : colors.blueGrey[700],
-                          color: isHashtagActive(visibleRowText.trim())
-                            ? colors.grey[900]
-                            : colors.grey[100],
-                          ".MuiChip-label": {
-                            px: 0.75,
-                            fontSize: "0.7rem",
-                          },
-                          ".MuiChip-deleteIcon": {
-                            color: isHashtagActive(visibleRowText.trim())
-                              ? colors.grey[900]
-                              : colors.grey[100],
-                            fontSize: "0.7rem",
-                            margin: 0,
-                          },
-                        }}
+                        showDelete
                       />
                     ) : (
                       splitTextByUrls(visibleRowText).map((part, partIndex) =>

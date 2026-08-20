@@ -1123,25 +1123,24 @@ function App() {
     );
   }, []);
 
-  const appendHashtagToDraft = useCallback((tag: string) => {
+  const toggleHashtagInDraft = useCallback((tag: string) => {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
 
     setDraftNoteText((prev) => {
-      const existingTagSet = new Set(
-        (prev.match(/(?:^|\s)#[\w-]+/g) ?? []).map((token) =>
-          token.trim().toLowerCase(),
-        ),
+      const tokens = prev
+        .split(/\s+/)
+        .map((token) => token.trim())
+        .filter(Boolean);
+      const nextTokens = tokens.some((token) => token === normalizedTag)
+        ? tokens.filter((token) => token !== normalizedTag)
+        : [...tokens, normalizedTag];
+      const nextValue = nextTokens.join(" ");
+
+      setNoteFilters((current) =>
+        current.text === nextValue ? current : { ...current, text: nextValue },
       );
-      const normalizedTagValue = normalizedTag.toLowerCase();
-      const hasEquivalentTag =
-        existingTagSet.has(normalizedTagValue) ||
-        existingTagSet.has(normalizedTagValue.replace(/^#/, ""));
 
-      if (hasEquivalentTag) {
-        return prev;
-      }
-
-      return prev.trim() ? `${prev.trim()} ${normalizedTag}` : normalizedTag;
+      return nextValue;
     });
   }, []);
 
@@ -1255,6 +1254,23 @@ function App() {
     }
     setAvailableHashtags(Array.from(hashtags).sort((a, b) => a.localeCompare(b)));
   }, [notes]);
+
+  const hashtagSuggestions = useMemo(() => {
+    const currentTokenMatch = draftNoteText.match(/(?:^|\s)(#?[\w-]*)$/);
+    const typedTag = currentTokenMatch?.[1] ?? "";
+    const normalizedType = typedTag.startsWith("#")
+      ? typedTag.slice(1)
+      : typedTag;
+
+    if (!normalizedType) {
+      return availableHashtags;
+    }
+
+    return availableHashtags.filter((tag) => {
+      const label = tag.startsWith("#") ? tag.slice(1) : tag;
+      return label.toLowerCase().includes(normalizedType.toLowerCase());
+    });
+  }, [availableHashtags, draftNoteText]);
 
   useEffect(() => {
     refreshAvailableHashtags();
@@ -2010,10 +2026,9 @@ function App() {
                 </Box>
 
                 <HashtagBar
-                  hashtags={availableHashtags}
-                  activeFilterText={noteFilters.text}
-                  onToggleHashtagFilter={handleToggleHashtagFilter}
-                  onAppendHashtagToDraft={appendHashtagToDraft}
+                  hashtags={hashtagSuggestions}
+                  activeFilterText={draftNoteText}
+                  onToggleHashtagInDraft={toggleHashtagInDraft}
                 />
 
                 {selectMode && (
@@ -2065,6 +2080,7 @@ function App() {
                   onRefreshAvailableHashtags={refreshAvailableHashtags}
                   onFilterTextChange={handleFilterTextChange}
                   onToggleHashtagFilter={handleToggleHashtagFilter}
+                  onToggleHashtagInDraft={toggleHashtagInDraft}
                   onAppendHashtagToNote={handleAppendHashtagToNote}
                   onRemoveHashtagFromNote={(note, tag) => {
                     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
