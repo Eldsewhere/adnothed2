@@ -101,7 +101,6 @@ const NoteForm = ({
     isEditing,
     cloneNote,
     initialText,
-    textValue,
     onFilterLabelChange,
     onFilterTextChange,
     onNoteTextChange,

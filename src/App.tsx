@@ -1136,13 +1136,17 @@ function App() {
         : [...tokens, normalizedTag];
       const nextValue = nextTokens.join(" ");
 
-      setNoteFilters((current) =>
-        current.text === nextValue ? current : { ...current, text: nextValue },
-      );
+      if (editingNote === null) {
+        setNoteFilters((current) =>
+          current.text === nextValue
+            ? current
+            : { ...current, text: nextValue },
+        );
+      }
 
       return nextValue;
     });
-  }, []);
+  }, [editingNote]);
 
   const handleToggleHashtagFilter = useCallback((tag: string) => {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
@@ -1256,6 +1260,10 @@ function App() {
   }, [notes]);
 
   const hashtagSuggestions = useMemo(() => {
+    if (editingNote !== null) {
+      return availableHashtags;
+    }
+
     const currentTokenMatch = draftNoteText.match(/(?:^|\s)(#?[\w-]*)$/);
     const typedTag = currentTokenMatch?.[1] ?? "";
     const normalizedType = typedTag.startsWith("#")
@@ -1270,7 +1278,7 @@ function App() {
       const label = tag.startsWith("#") ? tag.slice(1) : tag;
       return label.toLowerCase().includes(normalizedType.toLowerCase());
     });
-  }, [availableHashtags, draftNoteText]);
+  }, [availableHashtags, draftNoteText, editingNote]);
 
   useEffect(() => {
     refreshAvailableHashtags();
