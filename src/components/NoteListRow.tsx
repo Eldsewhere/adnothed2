@@ -171,6 +171,11 @@ const NoteListRow = ({
     setDragOffset(0);
   };
 
+  const dragDirection = dragOffset < 0 ? "pin" : dragOffset > 0 ? "menu" : null;
+  const dragActionOpacity = dragDirection
+    ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
+    : 0;
+
   const handleRowPointerDown = (event: React.PointerEvent<HTMLElement>) => {
     if (selectMode || event.button !== 0) {
       return;
@@ -250,7 +255,7 @@ const NoteListRow = ({
                 : colors.blueGrey[800],
         transform: `translateX(${dragOffset}px)`,
         transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
-        opacity: isMenuOpen ? 0.7 : 1,
+        opacity: isMenuOpen ? 0.7 : dragDirection ? 0.72 : 1,
         touchAction: "pan-y",
         userSelect: "none",
       }}
@@ -260,6 +265,38 @@ const NoteListRow = ({
       onPointerLeave={resetDragState}
       onPointerCancel={resetDragState}
     >
+      {dragDirection && (
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: dragDirection === "pin" ? "flex-start" : "flex-end",
+            px: 1.5,
+            pointerEvents: "none",
+            opacity: dragActionOpacity,
+            transition: "opacity 0.12s ease",
+            zIndex: 1,
+          }}
+        >
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color:
+                dragDirection === "pin"
+                  ? colors.lightGreen[300]
+                  : colors.blue[300],
+              fontSize: "1.4rem",
+              lineHeight: 1,
+            }}
+          >
+            <Icon path={dragDirection === "pin" ? mdiPin : mdiDotsVertical} size={1} />
+          </Box>
+        </Box>
+      )}
       {selectMode && (
         <Checkbox
           size="small"
