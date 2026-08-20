@@ -24,15 +24,13 @@ import { countGraphemes } from "../utils/textLength";
 import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
-import HashtagAutocompletePopover from "./dialogs/HashtagAutocompletePopover";
 
 type NoteFormProps = {
   editingNote: Note | null;
   cloneNote?: Note | null;
   initialText?: string;
+  textValue?: string;
   labels: Label[];
-  availableHashtags?: string[];
-  onHashtagPickerOpen?: () => void;
   dueLabel?: string;
   dueFutureCount?: number;
   onDueDateClick?: () => void;
@@ -50,9 +48,8 @@ const NoteForm = ({
   editingNote,
   cloneNote,
   initialText,
+  textValue,
   labels,
-  availableHashtags = [],
-  onHashtagPickerOpen,
   dueLabel,
   dueFutureCount = 0,
   onDueDateClick,
@@ -77,8 +74,6 @@ const NoteForm = ({
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [hashtagMenuAnchor, setHashtagMenuAnchor] =
-    useState<HTMLElement | null>(null);
 
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const isEditing = editingNote !== null;
@@ -163,31 +158,6 @@ const NoteForm = ({
     setLabelMenuAnchor(null);
   };
 
-  const insertHashtag = (
-    tag: string,
-    currentValue: string,
-    onChange: (value: string) => void,
-  ) => {
-    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
-    const textArea = textAreaRef.current;
-    const start = textArea?.selectionStart ?? currentValue.length;
-    const end = textArea?.selectionEnd ?? currentValue.length;
-    const prefix = currentValue.slice(0, start);
-    const suffix = currentValue.slice(end);
-    const needsLeadingSpace =
-      prefix.length > 0 && !/\s$/.test(prefix) && !prefix.endsWith("#");
-    const nextValue =
-      prefix + (needsLeadingSpace ? " " : "") + normalizedTag + suffix;
-    onChange(nextValue);
-    setHashtagMenuAnchor(null);
-
-    requestAnimationFrame(() => {
-      textArea?.focus();
-      const cursor = start + (needsLeadingSpace ? normalizedTag.length + 1 : normalizedTag.length);
-      textArea?.setSelectionRange(cursor, cursor);
-    });
-  };
-
   return (
     <Box component="form" onSubmit={submit} noValidate>
       <Stack
@@ -222,7 +192,7 @@ const NoteForm = ({
                   <Box sx={{ position: "relative" }}>
                     <TextField
                       {...field}
-                      value={field.value}
+                      value={textValue ?? field.value}
                       onChange={(event) => {
                         handleTextChange(event.target.value);
                       }}
@@ -418,10 +388,6 @@ const NoteForm = ({
                                     onClearFilters();
                                   }}
                                   textAreaRef={textAreaRef}
-                                  onOpenHashtagMenu={(event) => {
-                                    onHashtagPickerOpen?.();
-                                    setHashtagMenuAnchor(event.currentTarget);
-                                  }}
                                 />
                                 <EmojiMenu
                                   value={text}
@@ -498,26 +464,6 @@ const NoteForm = ({
                                 </Tooltip>
                               </Stack>
                             </Box>
-                            {hashtagMenuAnchor && (
-                              <HashtagAutocompletePopover
-                                anchorEl={hashtagMenuAnchor}
-                                open={Boolean(hashtagMenuAnchor)}
-                                options={availableHashtags}
-                                excludeTags={
-                                  Array.from(
-                                    new Set(
-                                      (text.match(/(?:^|\s)#[\w-]+/g) ?? []).map(
-                                        (token) => token.trim(),
-                                      ),
-                                    ),
-                                  )
-                                }
-                                onClose={() => setHashtagMenuAnchor(null)}
-                                onSelect={(tag) => {
-                                  insertHashtag(tag, text, handleTextChange);
-                                }}
-                              />
-                            )}
                             {labelMenuAnchor && (
                               <LabelMenu
                                 onShowAllSelect={() => {

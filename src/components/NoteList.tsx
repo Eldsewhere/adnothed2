@@ -649,7 +649,6 @@ const NoteList = ({
           anchorEl={menuAnchor.el}
           note={menuAnchor.note}
           statuses={statuses}
-          availableHashtags={availableHashtags}
           onHashtagPickerOpen={onRefreshAvailableHashtags}
           openStatusPicker={menuAnchor.openStatusPicker}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}

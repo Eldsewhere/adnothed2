@@ -32,7 +32,6 @@ import {
   mdiLinkVariant,
   mdiNumeric,
   mdiPin,
-  mdiPound,
   mdiRayEndArrow,
   mdiRayStartArrow,
   mdiRayStartEnd,
@@ -228,7 +227,6 @@ type NoteFormActionsMenuProps = {
   onTextChange: (str: string) => void;
   onClear: () => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
-  onOpenHashtagMenu?: (event: MouseEvent<HTMLElement>) => void;
 };
 
 const NoteFormActionsMenu = ({
@@ -236,7 +234,6 @@ const NoteFormActionsMenu = ({
   onTextChange,
   onClear,
   textAreaRef,
-  onOpenHashtagMenu,
 }: NoteFormActionsMenuProps) => {
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
     null,
@@ -422,16 +419,6 @@ const NoteFormActionsMenu = ({
             <Icon path={mdiCheckboxBlankOutline} size={0.75} />
           </Box>
           Checkbox
-        </MenuItem>
-        <MenuItem
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            onOpenHashtagMenu?.(event);
-          }}
-        >
-          <Box component="span" sx={menuItemIconSx}>
-            <Icon path={mdiPound} size={0.75} />
-          </Box>
-          Hashtag
         </MenuItem>
         <Divider />
         <MenuItem

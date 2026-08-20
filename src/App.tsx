@@ -35,6 +35,7 @@ import StatusList from "./components/StatusList";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
+import HashtagBar from "./components/HashtagBar";
 import WeekdayPicker from "./components/WeekdayPicker";
 import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
@@ -1122,6 +1123,28 @@ function App() {
     );
   }, []);
 
+  const appendHashtagToDraft = useCallback((tag: string) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+
+    setDraftNoteText((prev) => {
+      const existingTagSet = new Set(
+        (prev.match(/(?:^|\s)#[\w-]+/g) ?? []).map((token) =>
+          token.trim().toLowerCase(),
+        ),
+      );
+      const normalizedTagValue = normalizedTag.toLowerCase();
+      const hasEquivalentTag =
+        existingTagSet.has(normalizedTagValue) ||
+        existingTagSet.has(normalizedTagValue.replace(/^#/, ""));
+
+      if (hasEquivalentTag) {
+        return prev;
+      }
+
+      return prev.trim() ? `${prev.trim()} ${normalizedTag}` : normalizedTag;
+    });
+  }, []);
+
   const handleToggleHashtagFilter = useCallback((tag: string) => {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
     setNoteFilters((prev) => {
@@ -1232,6 +1255,10 @@ function App() {
     }
     setAvailableHashtags(Array.from(hashtags).sort((a, b) => a.localeCompare(b)));
   }, [notes]);
+
+  useEffect(() => {
+    refreshAvailableHashtags();
+  }, [refreshAvailableHashtags]);
 
   const parsedTextFilters = useMemo(
     () => parseTextFilters(noteFilters.text),
@@ -1939,9 +1966,8 @@ function App() {
                   editingNote={editingNote}
                   cloneNote={cloneNote}
                   initialText={sharedText ?? undefined}
+                  textValue={draftNoteText}
                   labels={labels}
-                  availableHashtags={availableHashtags}
-                  onHashtagPickerOpen={refreshAvailableHashtags}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
@@ -1982,6 +2008,13 @@ function App() {
                     onSelect={handleWeekdayToggle}
                   />
                 </Box>
+
+                <HashtagBar
+                  hashtags={availableHashtags}
+                  activeFilterText={noteFilters.text}
+                  onToggleHashtagFilter={handleToggleHashtagFilter}
+                  onAppendHashtagToDraft={appendHashtagToDraft}
+                />
 
                 {selectMode && (
                   <SelectModeActions

@@ -1,16 +1,4 @@
-import { useState } from "react";
-import {
-  Autocomplete,
-  Box,
-  IconButton,
-  InputAdornment,
-  Popover,
-  TextField,
-  Tooltip,
-  colors,
-} from "@mui/material";
-import { Icon } from "@mdi/react";
-import { mdiCheckCircle, mdiPound } from "@mdi/js";
+import { Box, Button, Popover, Typography } from "@mui/material";
 
 type HashtagAutocompletePopoverProps = {
   anchorEl: HTMLElement | null;
@@ -29,8 +17,6 @@ const HashtagAutocompletePopover = ({
   onClose,
   onSelect,
 }: HashtagAutocompletePopoverProps) => {
-  const [hashtagInputValue, setHashtagInputValue] = useState("");
-  const [hashtagError, setHashtagError] = useState<string | null>(null);
   const normalizedExcludedTags = new Set(
     (excludeTags ?? []).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`)),
   );
@@ -38,37 +24,9 @@ const HashtagAutocompletePopover = ({
     (tag) => !normalizedExcludedTags.has(tag.startsWith("#") ? tag : `#${tag}`),
   );
 
-  const submitTag = () => {
-    const tag = hashtagInputValue.trim();
-    if (!tag) {
-      setHashtagError(null);
-      return;
-    }
-
-    if (/\s/.test(hashtagInputValue)) {
-      setHashtagError("Hashtags cannot have spaces");
-      return;
-    }
-
-    setHashtagError(null);
-    onSelect(tag);
-    setHashtagInputValue("");
-    onClose();
-  };
-
-  const handleAutocompleteSelect = (_event: unknown, value: string | null) => {
-    if (!value) {
-      return;
-    }
-
-    if (/\s/.test(value)) {
-      setHashtagError("Hashtags cannot have spaces");
-      return;
-    }
-
-    setHashtagError(null);
-    onSelect(value);
-    setHashtagInputValue("");
+  const handleSelect = (tag: string) => {
+    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+    onSelect(normalizedTag);
     onClose();
   };
 
@@ -76,108 +34,63 @@ const HashtagAutocompletePopover = ({
     <Popover
       anchorEl={anchorEl}
       open={open}
-      onClose={() => {
-        setHashtagInputValue("");
-        onClose();
-      }}
+      onClose={onClose}
       anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
       transformOrigin={{ vertical: "top", horizontal: "left" }}
       slotProps={{
         paper: {
           sx: {
-            minWidth: 240,
+            width: 260,
+            p: 1.5,
             bgcolor: "#263238",
             border: "1px solid #455a64",
-            overflow: "visible",
+            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.35)",
           },
         },
       }}
     >
-      <Box sx={{ p: 1, display: "flex", alignItems: "center", gap: 1 }}>
-        <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Autocomplete
-            options={filteredOptions}
-            autoHighlight
-            openOnFocus
-            freeSolo
-            disablePortal
-            filterOptions={(filteredOptions) => filteredOptions}
-            inputValue={hashtagInputValue}
-            onInputChange={(_event, newValue) => {
-              setHashtagInputValue(newValue);
-              if (hashtagError) {
-                setHashtagError(null);
-              }
-            }}
-            slotProps={{
-              listbox: {
-                sx: {
-                  minHeight: 96,
-                  maxHeight: 220,
-                  overflowY: "auto",
-                  scrollbarWidth: "none",
-                  "&::-webkit-scrollbar": {
-                    display: "none",
-                  },
-                },
-              },
-              popper: {
-                placement: "bottom-start",
-                modifiers: [
-                  {
-                    name: "offset",
-                    options: { offset: [0, 2] },
-                  },
-                ],
-              },
-            }}
-            onChange={handleAutocompleteSelect}
-            renderInput={(params) => {
-              const inputProps = (params as any).InputProps ?? {};
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+        <Typography variant="caption" sx={{ color: "#cbd5e1", fontWeight: 600 }}>
+          Choose hashtag
+        </Typography>
+        {filteredOptions.length === 0 ? (
+          <Typography variant="body2" sx={{ color: "#94a3b8" }}>
+            No hashtags available
+          </Typography>
+        ) : (
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {filteredOptions.map((tag) => {
+              const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
 
               return (
-                <TextField
-                  {...(params as any)}
-                  label="Hashtags"
+                <Button
+                  key={normalizedTag}
+                  variant="outlined"
                   size="small"
-                  autoFocus
-                  error={Boolean(hashtagError)}
-                  helperText={hashtagError ?? " "}
-                  InputProps={{
-                    ...inputProps,
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <Box sx={{ display: "flex" }}>
-                          <Icon path={mdiPound} size={0.7} />
-                        </Box>
-                      </InputAdornment>
-                    ),
+                  onClick={() => handleSelect(normalizedTag)}
+                  sx={{
+                    minWidth: 0,
+                    borderRadius: 999,
+                    borderColor: "#64748b",
+                    color: "#e2e8f0",
+                    backgroundColor: "rgba(148, 163, 184, 0.08)",
+                    px: 1.25,
+                    py: 0.5,
+                    textTransform: "none",
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                    "&:hover": {
+                      backgroundColor: "rgba(96, 165, 250, 0.12)",
+                      borderColor: "#93c5fd",
+                    },
                   }}
-                />
+                >
+                  {normalizedTag}
+                </Button>
               );
-            }}
-          />
-        </Box>
-        <Tooltip title="Submit hashtag">
-          <IconButton
-            type="button"
-            size="small"
-            aria-label="Submit hashtag"
-            onMouseDown={(event) => {
-              event.preventDefault();
-            }}
-            onClick={submitTag}
-            sx={{
-              color: colors.lightGreen[400],
-              flexShrink: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Icon path={mdiCheckCircle} size={0.7} />
-          </IconButton>
-        </Tooltip>
+            })}
+          </Box>
+        )}
       </Box>
     </Popover>
   );
