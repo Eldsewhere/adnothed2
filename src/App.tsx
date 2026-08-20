@@ -96,16 +96,23 @@ const SHORT_MONTHS = [
 ];
 const SHORT_MONTH_LOOKUP: Record<string, number> = {
   jan: 0,
+  fev: 1,
   feb: 1,
   mar: 2,
+  abr: 3,
   apr: 3,
+  mai: 4,
   may: 4,
   jun: 5,
   jul: 6,
+  ago: 7,
   aug: 7,
+  set: 8,
   sep: 8,
+  out: 9,
   oct: 9,
   nov: 10,
+  dez: 11,
   dec: 11,
 };
 
@@ -617,7 +624,7 @@ function App() {
     }
 
     const monthDateMatch =
-      /(^|[\s(])(\d{1,2})(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+      /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
         workingText,
       );
 
