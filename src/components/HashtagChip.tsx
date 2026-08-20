@@ -35,6 +35,13 @@ const HashtagChip = ({
           }
         : undefined
     }
+    onPointerDown={
+      showDelete
+        ? (event) => {
+            event.stopPropagation();
+          }
+        : undefined
+    }
     onMouseDown={
       showDelete
         ? (event) => {

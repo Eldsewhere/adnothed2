@@ -185,7 +185,11 @@ const NoteListRow = ({
     }
 
     const target = event.target as HTMLElement;
-    if (target.closest("button, input, a, label, .MuiCheckbox-root")) {
+    if (
+      target.closest(
+        "button, input, a, label, .MuiCheckbox-root, .MuiChip-root, [role='img']",
+      )
+    ) {
       return;
     }
 
@@ -560,6 +564,9 @@ const NoteListRow = ({
                     component="span"
                     role="img"
                     aria-label={status ? status.name : "Note status"}
+                    onPointerDown={(event) => {
+                      event.stopPropagation();
+                    }}
                     onClick={(event: MouseEvent<HTMLElement>) => {
                       event.stopPropagation();
                       onOpenActionsMenu(event, note, true);
