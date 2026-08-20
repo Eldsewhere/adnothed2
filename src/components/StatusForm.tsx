@@ -152,7 +152,7 @@ const StatusForm = ({
               <>
                 <TextField
                   {...field}
-                  label="Emoji"
+                  label="Status emoji"
                   size="small"
                   fullWidth
                   value={fieldDisplayValue}

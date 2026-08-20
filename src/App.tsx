@@ -24,9 +24,9 @@ import {
   mdiCalendar,
   mdiNoteText,
   mdiLabelMultiple,
-  mdiEmoticonOutline,
   mdiFileImport,
   mdiInformationOutline,
+  mdiMinusCircle,
 } from "@mdi/js";
 import LabelForm from "./components/LabelForm";
 import LabelList from "./components/LabelList";
@@ -1126,30 +1126,33 @@ function App() {
     );
   }, []);
 
-  const toggleHashtagInDraft = useCallback((tag: string) => {
-    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+  const toggleHashtagInDraft = useCallback(
+    (tag: string) => {
+      const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
 
-    setDraftNoteText((prev) => {
-      const tokens = prev
-        .split(/\s+/)
-        .map((token) => token.trim())
-        .filter(Boolean);
-      const nextTokens = tokens.some((token) => token === normalizedTag)
-        ? tokens.filter((token) => token !== normalizedTag)
-        : [...tokens, normalizedTag];
-      const nextValue = nextTokens.join(" ");
+      setDraftNoteText((prev) => {
+        const tokens = prev
+          .split(/\s+/)
+          .map((token) => token.trim())
+          .filter(Boolean);
+        const nextTokens = tokens.some((token) => token === normalizedTag)
+          ? tokens.filter((token) => token !== normalizedTag)
+          : [...tokens, normalizedTag];
+        const nextValue = nextTokens.join(" ");
 
-      if (editingNote === null) {
-        setNoteFilters((current) =>
-          current.text === nextValue
-            ? current
-            : { ...current, text: nextValue },
-        );
-      }
+        if (editingNote === null) {
+          setNoteFilters((current) =>
+            current.text === nextValue
+              ? current
+              : { ...current, text: nextValue },
+          );
+        }
 
-      return nextValue;
-    });
-  }, [editingNote]);
+        return nextValue;
+      });
+    },
+    [editingNote],
+  );
 
   const handleToggleHashtagFilter = useCallback((tag: string) => {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
@@ -1174,7 +1177,9 @@ function App() {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
 
     setNotes((prev) => {
-      const currentNote = prev.find((existingNote) => existingNote.id === note.id);
+      const currentNote = prev.find(
+        (existingNote) => existingNote.id === note.id,
+      );
       const sourceText = currentNote?.text ?? note.text;
       const existingTags = new Set(
         (sourceText.match(/(?:^|\s)#[\w-]+/g) ?? []).map((token) =>
@@ -1257,7 +1262,10 @@ function App() {
       for (const part of note.text.split(/\s+/)) {
         if (/^#\w[\w-]*$/.test(part)) {
           const existingCreatedAt = tagCreatedAt.get(part);
-          if (existingCreatedAt === undefined || note.createdAt > existingCreatedAt) {
+          if (
+            existingCreatedAt === undefined ||
+            note.createdAt > existingCreatedAt
+          ) {
             tagCreatedAt.set(part, note.createdAt);
           }
         }
@@ -1891,7 +1899,7 @@ function App() {
                           lineHeight: 1,
                         }}
                       >
-                        <Icon path={mdiEmoticonOutline} size={0.75} />
+                        <Icon path={mdiMinusCircle} size={0.75} />
                         <Box
                           component="span"
                           sx={{
