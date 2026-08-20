@@ -1,4 +1,4 @@
-import { useState, type MouseEvent } from "react";
+import { useRef, useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
@@ -114,6 +114,9 @@ const NoteListRow = ({
   const shouldUsePriorityDueDate =
     note.due !== undefined && (isToday(note.due) || isTomorrow(note.due));
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+  const [dragOffset, setDragOffset] = useState(0);
+  const dragStartXRef = useRef<number | null>(null);
+  const MENU_OPEN_DRAG_THRESHOLD = 80;
   const statusStyle =
     status && status.format !== "spoiler"
       ? getStatusTextStyle(status.format)
@@ -159,6 +162,55 @@ const NoteListRow = ({
       .map((char) => (char === " " ? " " : "•"))
       .join("");
 
+  const resetDragState = () => {
+    dragStartXRef.current = null;
+    setDragOffset(0);
+  };
+
+  const handleRowPointerDown = (event: React.PointerEvent<HTMLElement>) => {
+    if (selectMode || event.button !== 0) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest("button, input, a, label, .MuiCheckbox-root")) {
+      return;
+    }
+
+    dragStartXRef.current = event.clientX;
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleRowPointerMove = (event: React.PointerEvent<HTMLElement>) => {
+    if (dragStartXRef.current === null) {
+      return;
+    }
+
+    const deltaX = event.clientX - dragStartXRef.current;
+    if (deltaX <= 0) {
+      setDragOffset(0);
+      return;
+    }
+
+    setDragOffset(Math.min(deltaX, 120));
+  };
+
+  const handleRowPointerUp = (event: React.PointerEvent<HTMLElement>) => {
+    if (dragStartXRef.current === null) {
+      return;
+    }
+
+    const shouldOpenActions = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
+    resetDragState();
+
+    if (shouldOpenActions) {
+      const syntheticEvent = {
+        currentTarget: event.currentTarget,
+      } as unknown as MouseEvent<HTMLElement>;
+      onOpenActionsMenu(syntheticEvent, note);
+    }
+  };
+
   return (
     <Box
       key={note.id}
@@ -189,7 +241,16 @@ const NoteListRow = ({
             : dayIndex % 2 === 0
               ? colors.blueGrey[900]
               : colors.blueGrey[800],
+        transform: `translateX(${dragOffset}px)`,
+        transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
+        touchAction: "pan-y",
+        userSelect: "none",
       }}
+      onPointerDown={handleRowPointerDown}
+      onPointerMove={handleRowPointerMove}
+      onPointerUp={handleRowPointerUp}
+      onPointerLeave={resetDragState}
+      onPointerCancel={resetDragState}
     >
       {selectMode && (
         <Checkbox
