@@ -29,6 +29,7 @@ type NoteListProps = {
   filters: noteFiltersValue;
   mostRecentAddedNoteId: string | null;
   mostRecentEditedNoteId: string | null;
+  editingNoteId: string | null;
   dueDaysByDate?: Map<string, number>;
   noteCountsByDay?: Map<string, number>;
   onEdit: (note: Note) => void;
@@ -90,6 +91,7 @@ const NoteList = ({
   filters,
   mostRecentAddedNoteId,
   mostRecentEditedNoteId,
+  editingNoteId,
   dueDaysByDate,
   noteCountsByDay,
   onEdit,
@@ -597,6 +599,7 @@ const NoteList = ({
                 note.id === mostRecentEditedNoteId;
               const shouldHighlightRecentEdit =
                 isMostRecentAddedNote || isMostRecentlyEditedNote;
+              const isEditingThisNote = editingNoteId === note.id;
 
               return (
                 <NoteListRow
@@ -619,6 +622,7 @@ const NoteList = ({
                   selectedIds={selectedIds}
                   isOverflowing={overflowingnoteIds.has(note.id)}
                   isExpandable={expandablenoteIds.has(note.id)}
+                  isEditing={isEditingThisNote}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
                   onToggleSelect={onToggleSelect}
                   onOpenLabelMenu={openLabelMenu}

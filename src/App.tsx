@@ -1071,12 +1071,21 @@ function App() {
     setDatePopoverAnchor(null);
     setCloneNote(null);
     seteditingNote(note);
+    setDraftNoteText(note.text);
+  };
+
+  const handleCancelEditNote = () => {
+    setDraftNoteText("");
+    setDraftDueDate(null);
+    setCloneNote(null);
+    seteditingNote(null);
   };
 
   const handleCloneNote = (note: Note) => {
     setDatePopoverAnchor(null);
     seteditingNote(null);
     setCloneNote(note);
+    setDraftNoteText(note.text);
   };
 
   const handleNoteDueChange = (note: Note, due: number | null) => {
@@ -2090,7 +2099,7 @@ function App() {
                   dueFutureCount={dueFutureCount}
                   onDueDateClick={openWeekPickerDueDialog}
                   onSubmit={handleNoteSubmit}
-                  onCancelEdit={() => seteditingNote(null)}
+                  onCancelEdit={handleCancelEditNote}
                   onFilterTextChange={handleFilterTextChange}
                   onFilterLabelChange={handleFilterLabelChange}
                   onClearFilters={handleClearFilters}
@@ -2165,6 +2174,7 @@ function App() {
                   filters={noteFilters}
                   mostRecentAddedNoteId={recentlyAddednoteId}
                   mostRecentEditedNoteId={recentlyEditednoteId}
+                  editingNoteId={editingNote?.id ?? null}
                   dueDaysByDate={dueCountByDay}
                   noteCountsByDay={noteCountByDay}
                   onEdit={handleEditNote}

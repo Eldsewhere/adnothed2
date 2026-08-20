@@ -77,6 +77,7 @@ const NoteForm = ({
 
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const isEditing = editingNote !== null;
+  const wasEditingRef = useRef(false);
 
   useEffect(() => {
     const nextValues = editingNote
@@ -106,6 +107,31 @@ const NoteForm = ({
     onNoteTextChange,
     reset,
   ]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      wasEditingRef.current = false;
+      return;
+    }
+
+    if (wasEditingRef.current) {
+      return;
+    }
+
+    wasEditingRef.current = true;
+    const frame = window.requestAnimationFrame(() => {
+      const textarea = textAreaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      const end = textarea.value.length;
+      textarea.setSelectionRange(end, end);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isEditing]);
 
   const stripDueTimeForValidation = (value: string) => {
     const cleaned = value

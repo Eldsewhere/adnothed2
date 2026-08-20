@@ -17,6 +17,7 @@ import {
   mdiEyeOffOutline,
   mdiEyeOutline,
   mdiLabelOff,
+  mdiPencil,
   mdiPin,
 } from "@mdi/js";
 import dayjs from "dayjs";
@@ -58,6 +59,7 @@ type NoteListRowProps = {
   selectedIds: Set<string>;
   isOverflowing: boolean;
   isExpandable: boolean;
+  isEditing: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
@@ -97,6 +99,7 @@ const NoteListRow = ({
   selectedIds,
   isOverflowing,
   isExpandable,
+  isEditing,
   shouldHighlightRecentEdit,
   onToggleSelect,
   onOpenLabelMenu,
@@ -484,6 +487,20 @@ const NoteListRow = ({
                     }}
                   >
                     <Icon path={mdiPin} size={0.6} />
+                  </Box>
+                </Tooltip>
+              )}
+              {isEditing && (
+                <Tooltip title="Editing note" aria-label={undefined} arrow>
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      display: "inline-flex",
+                      color: colors.orange[300],
+                    }}
+                  >
+                    <Icon path={mdiPencil} size={0.5} />
                   </Box>
                 </Tooltip>
               )}
