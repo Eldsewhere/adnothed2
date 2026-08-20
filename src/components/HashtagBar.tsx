@@ -3,12 +3,14 @@ import HashtagChip from "./HashtagChip";
 
 type HashtagBarProps = {
   hashtags: string[];
+  hashtagCounts?: Record<string, number>;
   activeFilterText: string;
   onToggleHashtagInDraft: (tag: string) => void;
 };
 
 const HashtagBar = ({
   hashtags,
+  hashtagCounts = {},
   activeFilterText,
   onToggleHashtagInDraft,
 }: HashtagBarProps) => {
@@ -47,12 +49,14 @@ const HashtagBar = ({
           {hashtags.map((tag) => {
             const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
             const isActive = activeTagSet.has(normalizedTag);
+            const count = hashtagCounts[normalizedTag] ?? 0;
 
             return (
               <HashtagChip
                 key={normalizedTag}
                 tag={normalizedTag}
                 selected={isActive}
+                count={count}
                 onClick={() => {
                   onToggleHashtagInDraft(tag);
                 }}

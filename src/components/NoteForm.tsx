@@ -184,9 +184,11 @@ const NoteForm = ({
                 };
                 const text = field.value;
 
-                const noteFieldLabel = dueLabel
-                  ? `Note, due ${dueLabel}`
-                  : "Note";
+                const noteFieldLabel = isEditing
+                  ? "Editing note"
+                  : dueLabel
+                    ? `Note, due ${dueLabel}`
+                    : "Note";
 
                 return (
                   <Box sx={{ position: "relative" }}>

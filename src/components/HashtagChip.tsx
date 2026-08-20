@@ -1,10 +1,11 @@
-import { Chip, Tooltip, colors } from "@mui/material";
+import { Badge, Chip, Tooltip, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiClose } from "@mdi/js";
 
 type HashtagChipProps = {
   tag: string;
   selected: boolean;
+  count?: number;
   onClick: () => void;
   onDelete?: () => void;
   showDelete?: boolean;
@@ -13,12 +14,13 @@ type HashtagChipProps = {
 const HashtagChip = ({
   tag,
   selected,
+  count,
   onClick,
   onDelete,
   showDelete = false,
 }: HashtagChipProps) => (
   <Chip
-    label={tag}
+    label={`${tag} ${count !== undefined ? `(${count})` : ""}`}
     size="small"
     onClick={(event) => {
       event.stopPropagation();

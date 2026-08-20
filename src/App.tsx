@@ -1140,7 +1140,11 @@ function App() {
           : [...tokens, normalizedTag];
         const nextValue = nextTokens.join(" ");
 
-        if (editingNote === null) {
+        if (editingNote !== null) {
+          seteditingNote((current) =>
+            current ? { ...current, text: nextValue } : current,
+          );
+        } else {
           setNoteFilters((current) =>
             current.text === nextValue
               ? current
@@ -1254,6 +1258,25 @@ function App() {
   );
 
   const [availableHashtags, setAvailableHashtags] = useState<string[]>([]);
+  const hashtagCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+
+    for (const note of notes) {
+      for (const part of note.text.split(/\s+/)) {
+        if (!/^#\w[\w-]*$/.test(part)) {
+          continue;
+        }
+
+        counts.set(part, (counts.get(part) ?? 0) + 1);
+      }
+    }
+
+    return Object.fromEntries(
+      [...counts.entries()].sort(
+        (a, b) => b[1] - a[1] || a[0].localeCompare(b[0]),
+      ),
+    );
+  }, [notes]);
 
   const refreshAvailableHashtags = useCallback(() => {
     const tagCreatedAt = new Map<string, number>();
@@ -2106,6 +2129,7 @@ function App() {
 
                 <HashtagBar
                   hashtags={hashtagSuggestions}
+                  hashtagCounts={hashtagCounts}
                   activeFilterText={draftNoteText}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                 />
