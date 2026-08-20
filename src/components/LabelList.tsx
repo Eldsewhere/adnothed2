@@ -93,6 +93,7 @@ const LabelList = ({
                     key={label.id}
                     label={label}
                     isNewLabel={label.id === newlabelId}
+                    isMenuOpen={menuState.label?.id === label.id}
                     onOpenMenu={handleOpenMenu}
                   />
                 ))}

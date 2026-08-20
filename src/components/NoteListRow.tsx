@@ -60,6 +60,7 @@ type NoteListRowProps = {
   isOverflowing: boolean;
   isExpandable: boolean;
   isEditing: boolean;
+  isMenuOpen?: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
@@ -101,6 +102,7 @@ const NoteListRow = ({
   isOverflowing,
   isExpandable,
   isEditing,
+  isMenuOpen = false,
   shouldHighlightRecentEdit,
   onToggleSelect,
   onOpenLabelMenu,
@@ -246,6 +248,7 @@ const NoteListRow = ({
               : colors.blueGrey[800],
         transform: `translateX(${dragOffset}px)`,
         transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
+        opacity: isMenuOpen ? 0.7 : 1,
         touchAction: "pan-y",
         userSelect: "none",
       }}

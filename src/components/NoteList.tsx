@@ -623,6 +623,7 @@ const NoteList = ({
                   isOverflowing={overflowingnoteIds.has(note.id)}
                   isExpandable={expandablenoteIds.has(note.id)}
                   isEditing={isEditingThisNote}
+                  isMenuOpen={menuAnchor?.note.id === note.id}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
                   onToggleSelect={onToggleSelect}
                   onOpenLabelMenu={openLabelMenu}

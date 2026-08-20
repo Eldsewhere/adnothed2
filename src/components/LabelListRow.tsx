@@ -15,12 +15,14 @@ import LabelIcon from "./ui/LabelIcon";
 type LabelListRowProps = {
   label: Label;
   isNewLabel: boolean;
+  isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, label: Label) => void;
 };
 
 const LabelListRow = ({
   label,
   isNewLabel,
+  isMenuOpen = false,
   onOpenMenu,
 }: LabelListRowProps) => (
   <TableRow
@@ -32,6 +34,7 @@ const LabelListRow = ({
       flexShrink: 0,
       width: 40,
       verticalAlign: "middle",
+      opacity: isMenuOpen ? 0.5 : 1,
     }}
   >
     <TableCell

@@ -81,6 +81,7 @@ const StatusList = ({ statuses, onEdit, onDelete, newStatusId }: StatusListProps
                     key={status.id}
                     status={status}
                     isNewStatus={status.id === newStatusId}
+                    isMenuOpen={menuState.status?.id === status.id}
                     onOpenMenu={handleOpenMenu}
                   />
                 ))}

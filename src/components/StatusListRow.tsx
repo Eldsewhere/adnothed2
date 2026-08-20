@@ -15,10 +15,16 @@ import { getStatusTextStyle } from "../utils/statusStyles";
 type StatusListRowProps = {
   status: Status;
   isNewStatus: boolean;
+  isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, status: Status) => void;
 };
 
-const StatusListRow = ({ status, isNewStatus, onOpenMenu }: StatusListRowProps) => {
+const StatusListRow = ({
+  status,
+  isNewStatus,
+  isMenuOpen = false,
+  onOpenMenu,
+}: StatusListRowProps) => {
   const statusTextStyle =
     status.format === "spoiler" ? {} : getStatusTextStyle(status.format);
 
@@ -32,9 +38,12 @@ const StatusListRow = ({ status, isNewStatus, onOpenMenu }: StatusListRowProps) 
         flexShrink: 0,
         width: 40,
         verticalAlign: "middle",
+        opacity: isMenuOpen ? 0.5 : 1,
       }}
     >
-      <TableCell sx={{ paddingY: 2, flexShrink: 0, width: 40, verticalAlign: "middle" }}>
+      <TableCell
+        sx={{ paddingY: 2, flexShrink: 0, width: 40, verticalAlign: "middle" }}
+      >
         <Tooltip title={`${status.emoji} ${status.name}`}>
           <Typography component="span" sx={{ fontSize: "1.2rem" }}>
             {status.emoji}
@@ -52,9 +61,9 @@ const StatusListRow = ({ status, isNewStatus, onOpenMenu }: StatusListRowProps) 
           }}
         >
           {status.format === "spoiler"
-            ? [...status.name].map((char, index) =>
-                `${index === 0 ? "" : "•"}${char}`,
-              ).join("")
+            ? [...status.name]
+                .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
+                .join("")
             : status.name}
         </Typography>
       </TableCell>
