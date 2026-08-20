@@ -172,8 +172,9 @@ const NoteListRow = ({
     setDragOffset(0);
   };
 
-  const dragDirection = dragOffset < 0 ? "pin" : dragOffset > 0 ? "menu" : null;
-  const dragActionIcon = dragDirection === "pin" ? (note.pinned ? mdiPinOff : mdiPin) : mdiDotsVertical;
+  const dragDirection = dragOffset < 0 ? "menu" : dragOffset > 0 ? "pin" : null;
+  const dragActionIcon =
+    dragDirection === "pin" ? (note.pinned ? mdiPinOff : mdiPin) : mdiDotsVertical;
   const dragActionOpacity = dragDirection
     ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
     : 0;
@@ -206,20 +207,20 @@ const NoteListRow = ({
       return;
     }
 
-    const shouldPin = dragOffset < -MENU_OPEN_DRAG_THRESHOLD;
-    const shouldOpenActions = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
+    const shouldOpenActions = dragOffset < -MENU_OPEN_DRAG_THRESHOLD;
+    const shouldPin = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
     resetDragState();
-
-    if (shouldPin) {
-      onPin(note);
-      return;
-    }
 
     if (shouldOpenActions) {
       const syntheticEvent = {
         currentTarget: event.currentTarget,
       } as unknown as MouseEvent<HTMLElement>;
       onOpenActionsMenu(syntheticEvent, note);
+      return;
+    }
+
+    if (shouldPin) {
+      onPin(note);
     }
   };
 
@@ -262,7 +263,7 @@ const NoteListRow = ({
             inset: 0,
             display: "flex",
             alignItems: "center",
-            justifyContent: dragDirection === "pin" ? "flex-end" : "flex-start",
+            justifyContent: dragDirection === "pin" ? "flex-start" : "flex-end",
             px: 1.5,
             pointerEvents: "none",
             opacity: dragActionOpacity,
