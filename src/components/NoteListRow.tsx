@@ -19,6 +19,7 @@ import {
   mdiLabelOff,
   mdiPencil,
   mdiPin,
+  mdiPinOff,
 } from "@mdi/js";
 import dayjs from "dayjs";
 import type { Label, Note, Status } from "../types";
@@ -172,6 +173,7 @@ const NoteListRow = ({
   };
 
   const dragDirection = dragOffset < 0 ? "pin" : dragOffset > 0 ? "menu" : null;
+  const dragActionIcon = dragDirection === "pin" ? (note.pinned ? mdiPinOff : mdiPin) : mdiDotsVertical;
   const dragActionOpacity = dragDirection
     ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
     : 0;
@@ -274,13 +276,15 @@ const NoteListRow = ({
               justifyContent: "center",
               color:
                 dragDirection === "pin"
-                  ? colors.lightGreen[300]
+                  ? note.pinned
+                    ? colors.orange[300]
+                    : colors.lightGreen[300]
                   : colors.blue[300],
               fontSize: "1.4rem",
               lineHeight: 1,
             }}
           >
-            <Icon path={dragDirection === "pin" ? mdiPin : mdiDotsVertical} size={1} />
+            <Icon path={dragActionIcon} size={1} />
           </Box>
         </Box>
       )}
