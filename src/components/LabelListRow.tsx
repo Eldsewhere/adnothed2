@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import {
+  Box,
   IconButton,
   TableCell,
   TableRow,
@@ -8,13 +9,14 @@ import {
   colors,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiDotsVertical } from "@mdi/js";
+import { mdiDotsVertical, mdiPencil } from "@mdi/js";
 import type { Label } from "../types";
 import LabelIcon from "./ui/LabelIcon";
 
 type LabelListRowProps = {
   label: Label;
   isNewLabel: boolean;
+  isEditing?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, label: Label) => void;
 };
@@ -22,6 +24,7 @@ type LabelListRowProps = {
 const LabelListRow = ({
   label,
   isNewLabel,
+  isEditing = false,
   isMenuOpen = false,
   onOpenMenu,
 }: LabelListRowProps) => (
@@ -57,14 +60,32 @@ const LabelListRow = ({
         width: "100%",
       }}
     >
-      <Typography
-        noWrap
-        sx={{
-          color: isNewLabel ? colors.lightGreen[400] : "inherit",
-        }}
-      >
-        {label.name}
-      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+        {isEditing && (
+          <Tooltip title="Editing label" aria-label={undefined} arrow>
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                color: colors.orange[300],
+                flexShrink: 0,
+              }}
+            >
+              <Icon path={mdiPencil} size={0.7} />
+            </Box>
+          </Tooltip>
+        )}
+        <Typography
+          noWrap
+          sx={{
+            color: isNewLabel ? colors.lightGreen[400] : "inherit",
+            flex: 1,
+            minWidth: 0,
+          }}
+        >
+          {label.name}
+        </Typography>
+      </Box>
     </TableCell>
     <TableCell
       align="right"

@@ -2272,6 +2272,7 @@ function App() {
                 />
                 <LabelList
                   labels={labels}
+                  editingLabelId={editingLabel?.id ?? null}
                   onEdit={setEditingLabel}
                   onDelete={requestDeleteLabel}
                   newlabelId={latestlabelId}
@@ -2288,6 +2289,7 @@ function App() {
                 <Box sx={{ pt: 1 }}>
                   <StatusList
                     statuses={statuses}
+                    editingStatusId={editingStatus?.id ?? null}
                     onEdit={setEditingStatus}
                     onDelete={handleStatusDelete}
                     newStatusId={latestStatusId}

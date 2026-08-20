@@ -1,5 +1,6 @@
 import type { MouseEvent } from "react";
 import {
+  Box,
   IconButton,
   TableCell,
   TableRow,
@@ -8,13 +9,14 @@ import {
   colors,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiDotsVertical } from "@mdi/js";
+import { mdiDotsVertical, mdiPencil } from "@mdi/js";
 import type { Status } from "../types";
 import { getStatusTextStyle } from "../utils/statusStyles";
 
 type StatusListRowProps = {
   status: Status;
   isNewStatus: boolean;
+  isEditing?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, status: Status) => void;
 };
@@ -22,6 +24,7 @@ type StatusListRowProps = {
 const StatusListRow = ({
   status,
   isNewStatus,
+  isEditing = false,
   isMenuOpen = false,
   onOpenMenu,
 }: StatusListRowProps) => {
@@ -51,21 +54,39 @@ const StatusListRow = ({
         </Tooltip>
       </TableCell>
       <TableCell sx={{ paddingY: 2, pl: 0, maxWidth: 0, width: "100%" }}>
-        <Typography
-          noWrap
-          sx={{
-            ...statusTextStyle,
-            ...(isNewStatus
-              ? { color: statusTextStyle.color ?? colors.lightGreen[400] }
-              : {}),
-          }}
-        >
-          {status.format === "spoiler"
-            ? [...status.name]
-                .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
-                .join("")
-            : status.name}
-        </Typography>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
+          {isEditing && (
+            <Tooltip title="Editing status" aria-label={undefined} arrow>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  color: colors.orange[300],
+                  flexShrink: 0,
+                }}
+              >
+                <Icon path={mdiPencil} size={0.7} />
+              </Box>
+            </Tooltip>
+          )}
+          <Typography
+            noWrap
+            sx={{
+              ...statusTextStyle,
+              ...(isNewStatus
+                ? { color: statusTextStyle.color ?? colors.lightGreen[400] }
+                : {}),
+              flex: 1,
+              minWidth: 0,
+            }}
+          >
+            {status.format === "spoiler"
+              ? [...status.name]
+                  .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
+                  .join("")
+              : status.name}
+          </Typography>
+        </Box>
       </TableCell>
       <TableCell align="right" sx={{ verticalAlign: "middle", paddingY: 2 }}>
         <Tooltip title="Actions">

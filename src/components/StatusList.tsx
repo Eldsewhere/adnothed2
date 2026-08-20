@@ -16,12 +16,19 @@ import StatusListRow from "./StatusListRow";
 
 type StatusListProps = {
   statuses: Status[];
+  editingStatusId?: string | null;
   onEdit: (status: Status) => void;
   onDelete: (status: Status) => void;
   newStatusId?: string | null;
 };
 
-const StatusList = ({ statuses, onEdit, onDelete, newStatusId }: StatusListProps) => {
+const StatusList = ({
+  statuses,
+  editingStatusId = null,
+  onEdit,
+  onDelete,
+  newStatusId,
+}: StatusListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
     status: Status | null;
@@ -81,6 +88,7 @@ const StatusList = ({ statuses, onEdit, onDelete, newStatusId }: StatusListProps
                     key={status.id}
                     status={status}
                     isNewStatus={status.id === newStatusId}
+                    isEditing={status.id === editingStatusId}
                     isMenuOpen={menuState.status?.id === status.id}
                     onOpenMenu={handleOpenMenu}
                   />

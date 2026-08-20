@@ -16,6 +16,7 @@ import LabelListRow from "./LabelListRow";
 
 type LabelListProps = {
   labels: Label[];
+  editingLabelId?: string | null;
   onEdit: (label: Label) => void;
   onDelete: (label: Label) => void;
   newlabelId?: string | null;
@@ -23,6 +24,7 @@ type LabelListProps = {
 
 const LabelList = ({
   labels,
+  editingLabelId = null,
   onEdit,
   onDelete,
   newlabelId,
@@ -93,6 +95,7 @@ const LabelList = ({
                     key={label.id}
                     label={label}
                     isNewLabel={label.id === newlabelId}
+                    isEditing={label.id === editingLabelId}
                     isMenuOpen={menuState.label?.id === label.id}
                     onOpenMenu={handleOpenMenu}
                   />
