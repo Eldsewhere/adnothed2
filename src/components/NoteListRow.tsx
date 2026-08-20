@@ -65,6 +65,7 @@ type NoteListRowProps = {
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenOverflow: (noteId: string) => void;
+  onPin: (note: Note) => void;
   onOpenActionsMenu: (
     event: MouseEvent<HTMLElement>,
     note: Note,
@@ -105,6 +106,7 @@ const NoteListRow = ({
   onOpenLabelMenu,
   onToggleCheckbox,
   onOpenOverflow,
+  onPin,
   onOpenActionsMenu,
   setnoteTextRef,
   filterText = "",
@@ -187,12 +189,7 @@ const NoteListRow = ({
     }
 
     const deltaX = event.clientX - dragStartXRef.current;
-    if (deltaX <= 0) {
-      setDragOffset(0);
-      return;
-    }
-
-    setDragOffset(Math.min(deltaX, 120));
+    setDragOffset(Math.max(-120, Math.min(deltaX, 120)));
   };
 
   const handleRowPointerUp = (event: React.PointerEvent<HTMLElement>) => {
@@ -200,8 +197,14 @@ const NoteListRow = ({
       return;
     }
 
+    const shouldPin = dragOffset < -MENU_OPEN_DRAG_THRESHOLD;
     const shouldOpenActions = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
     resetDragState();
+
+    if (shouldPin) {
+      onPin(note);
+      return;
+    }
 
     if (shouldOpenActions) {
       const syntheticEvent = {
