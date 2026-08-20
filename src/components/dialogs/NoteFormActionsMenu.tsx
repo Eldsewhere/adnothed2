@@ -28,6 +28,7 @@ import {
   mdiFormatListBulleted,
   mdiFormatListNumbered,
   mdiFormatText,
+  mdiPound,
   mdiLabelMultiple,
   mdiLinkVariant,
   mdiNumeric,
@@ -160,6 +161,11 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiCheckboxBlankOutline,
   },
   {
+    label: "hashtags",
+    command: "/with:hashtags;",
+    iconPath: mdiPound,
+  },
+  {
     label: "due date",
     command: "/with:due;",
     iconPath: mdiCalendar,
@@ -211,6 +217,7 @@ const querySubmenuGroups: Record<
     queryTemplates[22],
     queryTemplates[23],
     queryTemplates[24],
+    queryTemplates[25],
   ],
 };
 
