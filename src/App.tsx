@@ -1248,15 +1248,24 @@ function App() {
   const [availableHashtags, setAvailableHashtags] = useState<string[]>([]);
 
   const refreshAvailableHashtags = useCallback(() => {
-    const hashtags = new Set<string>();
-    for (const note of notes) {
+    const tagCreatedAt = new Map<string, number>();
+
+    for (const note of [...notes].sort((a, b) => b.createdAt - a.createdAt)) {
       for (const part of note.text.split(/\s+/)) {
         if (/^#\w[\w-]*$/.test(part)) {
-          hashtags.add(part);
+          const existingCreatedAt = tagCreatedAt.get(part);
+          if (existingCreatedAt === undefined || note.createdAt > existingCreatedAt) {
+            tagCreatedAt.set(part, note.createdAt);
+          }
         }
       }
     }
-    setAvailableHashtags(Array.from(hashtags).sort((a, b) => a.localeCompare(b)));
+
+    setAvailableHashtags(
+      Array.from(tagCreatedAt.entries())
+        .sort(([, a], [, b]) => b - a)
+        .map(([tag]) => tag),
+    );
   }, [notes]);
 
   const hashtagSuggestions = useMemo(() => {
