@@ -1,4 +1,4 @@
-import { Badge, Chip, Tooltip, colors } from "@mui/material";
+import { Chip, Tooltip, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiClose } from "@mdi/js";
 
