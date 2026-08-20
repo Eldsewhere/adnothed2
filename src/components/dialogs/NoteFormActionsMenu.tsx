@@ -427,6 +427,32 @@ const NoteFormActionsMenu = ({
           </Box>
           Checkbox
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            const el = textAreaRef.current;
+            const currentValue = value;
+            const start = el?.selectionStart ?? currentValue.length;
+            const end = el?.selectionEnd ?? currentValue.length;
+            const nextValue =
+              currentValue.slice(0, start) + "#" + currentValue.slice(end);
+            onTextChange(nextValue);
+            setFormatMenuAnchor(null);
+
+            requestAnimationFrame(() => {
+              if (!el) {
+                return;
+              }
+              el.focus();
+              const cursor = start + 1;
+              el.setSelectionRange(cursor, cursor);
+            });
+          }}
+        >
+          <Box component="span" sx={menuItemIconSx}>
+            <Icon path={mdiPound} size={0.75} />
+          </Box>
+          Hashtag
+        </MenuItem>
         <Divider />
         <MenuItem
           onClick={() => {
