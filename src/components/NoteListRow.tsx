@@ -294,8 +294,23 @@ const NoteListRow = ({
             display: "flex",
             alignItems: "center",
             minWidth: 0,
+            gap: 0.5,
           }}
         >
+          {isEditing && (
+            <Tooltip title="Editing note" aria-label={undefined} arrow>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  color: colors.orange[300],
+                  flexShrink: 0,
+                }}
+              >
+                <Icon path={mdiPencil} size={0.6} />
+              </Box>
+            </Tooltip>
+          )}
           <Typography
             component="div"
             ref={setnoteTextRef}
@@ -548,20 +563,6 @@ const NoteListRow = ({
                     }}
                   >
                     <Icon path={mdiPin} size={0.6} />
-                  </Box>
-                </Tooltip>
-              )}
-              {isEditing && (
-                <Tooltip title="Editing note" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      color: colors.orange[300],
-                    }}
-                  >
-                    <Icon path={mdiPencil} size={0.5} />
                   </Box>
                 </Tooltip>
               )}
