@@ -244,18 +244,6 @@ const NoteListRow = ({
           isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
         borderColor: colors.grey[900],
         overflow: "hidden",
-        bgcolor: isEditing
-          ? "rgba(255, 152, 0, 0.18)"
-          : shouldHighlightRecentEdit
-            ? "rgba(76, 175, 80, 0.18)"
-            : isPriority
-              ? "#414d4b"
-              : dayIndex % 2 === 0
-                ? colors.blueGrey[900]
-                : colors.blueGrey[800],
-        transform: `translateX(${dragOffset}px)`,
-        transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
-        opacity: isMenuOpen ? 0.7 : dragDirection ? 0.72 : 1,
         touchAction: "pan-y",
         userSelect: "none",
       }}
@@ -272,12 +260,11 @@ const NoteListRow = ({
             inset: 0,
             display: "flex",
             alignItems: "center",
-            justifyContent: dragDirection === "pin" ? "flex-start" : "flex-end",
+            justifyContent: dragDirection === "pin" ? "flex-end" : "flex-start",
             px: 1.5,
             pointerEvents: "none",
             opacity: dragActionOpacity,
             transition: "opacity 0.12s ease",
-            zIndex: 1,
           }}
         >
           <Box
@@ -297,6 +284,27 @@ const NoteListRow = ({
           </Box>
         </Box>
       )}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          width: "100%",
+          height: "100%",
+          px: 1,
+          bgcolor: isEditing
+            ? "rgba(255, 152, 0, 0.18)"
+            : shouldHighlightRecentEdit
+              ? "rgba(76, 175, 80, 0.18)"
+              : isPriority
+                ? "#414d4b"
+                : dayIndex % 2 === 0
+                  ? colors.blueGrey[900]
+                  : colors.blueGrey[800],
+          transform: `translateX(${dragOffset}px)`,
+          transition: dragStartXRef.current ? "none" : "transform 0.2s ease",
+          opacity: isMenuOpen ? 0.7 : 1,
+        }}
+      >
       {selectMode && (
         <Checkbox
           size="small"
@@ -661,6 +669,7 @@ const NoteListRow = ({
             <Icon path={mdiDotsVertical} size={0.8} />
           </IconButton>
         </Tooltip>
+      </Box>
       </Box>
     </Box>
   );
