@@ -67,7 +67,7 @@ const SelectModeActions = ({
   >
     <Stack
       direction="row"
-      spacing={1}
+      spacing={0.5}
       sx={{
         alignItems: "center",
         minWidth: "max-content",
