@@ -1119,6 +1119,18 @@ function App() {
     setRecentlyEditedNoteId(note.id);
   };
 
+  const handleNoteArchive = (note: Note) => {
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, archived: !Boolean(existingNote.archived) }
+          : existingNote,
+      ),
+    );
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+  };
+
   const handleNoteEmojiChange = (note: Note, emoji: string | null) => {
     setNotes((prev) =>
       prev.map((existingNote) =>
@@ -1379,6 +1391,7 @@ function App() {
           note.labelId,
           note.pinned,
           note.emoji,
+          note.archived,
         );
       }),
     [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
@@ -1409,6 +1422,7 @@ function App() {
             note.labelId,
             note.pinned,
             note.emoji,
+            note.archived,
           )
         ) {
           return false;
@@ -2194,6 +2208,7 @@ function App() {
                   onToggleCheckbox={handleNoteToggleCheckbox}
                   onDueChange={handleNoteDueChange}
                   onPin={handleNotePin}
+                  onArchive={handleNoteArchive}
                   onEmojiChange={handleNoteEmojiChange}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
                   availableHashtags={availableHashtags}

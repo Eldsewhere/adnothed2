@@ -47,6 +47,7 @@ export type ParsedTextFilters = {
   withBullets: boolean;
   withCheckboxes: boolean;
   withDueDate: boolean;
+  withArchived: boolean;
   withPriority: boolean;
   withLabel: boolean;
   withHashtags: boolean;
@@ -77,6 +78,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withBullets: false,
   withCheckboxes: false,
   withDueDate: false,
+  withArchived: false,
   withPriority: false,
   withLabel: false,
   withHashtags: false,
@@ -229,6 +231,10 @@ export function parseTextFilters(
         parsed.withDueDate = true;
         continue;
       }
+      if (token === "archived" || token === "archive") {
+        parsed.withArchived = true;
+        continue;
+      }
       if (token === "priority") {
         parsed.withPriority = true;
         continue;
@@ -284,6 +290,7 @@ export function matchesTextFilters(
   labelId: string | null = null,
   isPinned = false,
   emoji?: string,
+  isArchived = false,
 ): boolean {
   if (
     parsed.query &&
@@ -407,6 +414,10 @@ export function matchesTextFilters(
     if (due === undefined || due < todayUnix) {
       return false;
     }
+  }
+
+  if (parsed.withArchived && !isArchived) {
+    return false;
   }
 
   if (parsed.withPriority && !isPinned && !isDueTodayOrTomorrow(due)) {

@@ -12,6 +12,7 @@ import {
 import { Icon } from "@mdi/react";
 
 import {
+  mdiArchiveOutline,
   mdiCalendar,
   mdiCalendarClock,
   mdiCalendarEnd,
@@ -185,6 +186,11 @@ const queryTemplates: QueryTemplate[] = [
     command: "/with:label;",
     iconPath: mdiLabelMultiple,
   },
+  {
+    label: "archived",
+    command: "/with:archived;",
+    iconPath: mdiArchiveOutline,
+  },
 ];
 
 const querySubmenuGroups: Record<
@@ -218,6 +224,7 @@ const querySubmenuGroups: Record<
     queryTemplates[23],
     queryTemplates[24],
     queryTemplates[25],
+    queryTemplates[26],
   ],
 };
 

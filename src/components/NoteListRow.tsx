@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
+  mdiArchive,
   mdiBell,
   mdiChevronDown,
   mdiClockOutline,
@@ -627,6 +628,20 @@ const NoteListRow = ({
                     }}
                   >
                     <Icon path={mdiPin} size={0.6} />
+                  </Box>
+                </Tooltip>
+              )}
+              {note.archived && (
+                <Tooltip title="Archived" aria-label={undefined} arrow>
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.5,
+                      display: "inline-flex",
+                      color: colors.red[300],
+                    }}
+                  >
+                    <Icon path={mdiArchive} size={0.6} />
                   </Box>
                 </Tooltip>
               )}

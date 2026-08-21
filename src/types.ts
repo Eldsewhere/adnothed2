@@ -50,6 +50,7 @@ export type Note = {
   hasNotification?: boolean;
   due?: number;
   pinned?: boolean;
+  archived?: boolean;
   updatedAt?: number;
 };
 

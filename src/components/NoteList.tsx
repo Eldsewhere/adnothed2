@@ -44,6 +44,7 @@ type NoteListProps = {
   onLabelChange: (note: Note, labelId: string | null) => void;
   onDueChange: (note: Note, due: number | null) => void;
   onPin: (note: Note) => void;
+  onArchive: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   selectMode: boolean;
   selectedIds: Set<string>;
@@ -104,6 +105,7 @@ const NoteList = ({
   onLabelChange,
   onDueChange,
   onPin,
+  onArchive,
   onEmojiChange,
   selectMode,
   selectedIds,
@@ -165,6 +167,8 @@ const NoteList = ({
     const todayUnix = today.unix();
     const dayAfterTomorrowUnix = today.add(2, "day").unix();
     return [...notes].sort((a, b) => {
+      if (a.archived !== b.archived) return a.archived ? 1 : -1;
+
       const aPinned = a.pinned ? 1 : 0;
       const bPinned = b.pinned ? 1 : 0;
       if (aPinned !== bPinned) return bPinned - aPinned;
@@ -430,6 +434,7 @@ const NoteList = ({
             note.labelId,
             note.pinned,
             note.emoji,
+            note.archived,
           )
         ) {
           return false;
@@ -665,6 +670,7 @@ const NoteList = ({
           onClose={() => setMenuAnchor(null)}
           onNotify={handleNotify}
           onPin={onPin}
+          onArchive={onArchive}
           onEmojiChange={onEmojiChange}
           onComplete={(note) => onDueChange(note, null)}
           onCopy={handleCopy}

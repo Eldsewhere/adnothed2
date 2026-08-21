@@ -2,6 +2,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { Box, Divider, Menu, MenuItem, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
+  mdiArchive,
   mdiBell,
   mdiCalendarClock,
   mdiClockOutline,
@@ -32,6 +33,7 @@ type NoteActionsMenuProps = {
   onClose: () => void;
   onNotify: (note: Note) => void;
   onPin: (note: Note) => void;
+  onArchive: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   onComplete: (note: Note) => void;
   onCopy: (note: Note) => void;
@@ -87,6 +89,7 @@ const NoteActionsMenu = ({
   onClose,
   onNotify,
   onPin,
+  onArchive,
   onEmojiChange,
   onComplete,
   onCopy,
@@ -205,6 +208,26 @@ const NoteActionsMenu = ({
                 <Icon path={isPinned ? mdiPinOff : mdiPin} size={0.7} />
               </Box>
               {isPinned ? "Unpin" : "Pin"}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onArchive(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiArchive} size={0.7} />
+              </Box>
+              {note.archived ? "Unarchive" : "Archive"}
             </MenuItem>
             <MenuItem
               onClick={(event: MouseEvent<HTMLElement>) =>
