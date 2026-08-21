@@ -12,6 +12,7 @@ import {
   mdiFilter,
   mdiLink,
   mdiMagnify,
+  mdiMinusCircle,
   mdiNoteText,
   mdiOpenInNew,
   mdiPencil,
@@ -248,7 +249,7 @@ const NoteActionsMenu = ({
                   px: 0.5,
                 }}
               >
-                <Icon path={mdiEmoticonOutline} size={0.7} />
+                <Icon path={mdiMinusCircle} size={0.7} />
               </Box>
               Status
             </MenuItem>

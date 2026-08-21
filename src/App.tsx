@@ -989,6 +989,12 @@ function App() {
     }
   };
 
+  const clearSelectMode = () => {
+    setSelectMode(false);
+    setSelectedNoteIds(new Set());
+    setBulkStatusAnchor(null);
+  };
+
   const toggleSelectMode = () => {
     setSelectMode((prev) => !prev);
     setSelectedNoteIds(new Set());
@@ -1901,9 +1907,9 @@ function App() {
                   newValue === "statuses"
                     ? newValue
                     : (String(newValue) as TabValue);
-                if (normalized === "labels" || normalized === "statuses") {
+                if (normalized !== "notes") {
                   setNoteFilters(emptyNoteFilters);
-                  setSelectMode(false);
+                  clearSelectMode();
                 }
                 setActiveTab(normalized);
               }}

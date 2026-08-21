@@ -5,8 +5,8 @@ import {
   mdiArchiveArrowDown,
   mdiArchiveArrowUp,
   mdiCancel,
-  mdiEmoticonOutline,
   mdiFolderMove,
+  mdiMinusCircle,
   mdiPin,
   mdiPinOff,
   mdiShareVariant,
@@ -83,7 +83,10 @@ const SelectModeActions = ({
         disabled={selectedCount === 0}
         onClick={onArchiveToggleClick}
       >
-        <Icon path={allSelectedArchived ? mdiArchiveArrowUp : mdiArchiveArrowDown} size={0.9} />
+        <Icon
+          path={allSelectedArchived ? mdiArchiveArrowUp : mdiArchiveArrowDown}
+          size={0.9}
+        />
       </IconButton>
     </Tooltip>
     <Tooltip
@@ -96,7 +99,7 @@ const SelectModeActions = ({
         disabled={selectedCount === 0}
         onClick={onStatusClick}
       >
-        <Icon path={mdiEmoticonOutline} size={0.9} />
+        <Icon path={mdiMinusCircle} size={0.9} />
       </IconButton>
     </Tooltip>
     <Tooltip
