@@ -1203,6 +1203,28 @@ function App() {
       const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
 
       setDraftNoteText((prev) => {
+        const trailingHashtagMatch = /(^|\s)(#[\w-]*)$/.exec(prev);
+
+        if (trailingHashtagMatch) {
+          const inputBeforeTag = prev.slice(0, trailingHashtagMatch.index);
+          const leadingWhitespace = trailingHashtagMatch[1] ?? "";
+          const nextValue = `${inputBeforeTag}${leadingWhitespace}${normalizedTag}`;
+
+          if (editingNote !== null) {
+            seteditingNote((current) =>
+              current ? { ...current, text: nextValue } : current,
+            );
+          } else {
+            setNoteFilters((current) =>
+              current.text === nextValue
+                ? current
+                : { ...current, text: nextValue },
+            );
+          }
+
+          return nextValue;
+        }
+
         const tokens = prev
           .split(/\s+/)
           .map((token) => token.trim())
