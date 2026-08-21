@@ -2322,10 +2322,15 @@ function App() {
                   onRemoveHashtagFromNote={(note, tag) => {
                     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
                     const nextText = note.text
-                      .split(/\s+/)
-                      .filter((part) => part !== normalizedTag)
-                      .join(" ")
-                      .trim();
+                      .split("\n")
+                      .map((line) =>
+                        line
+                          .split(/\s+/)
+                          .filter((part) => part !== normalizedTag)
+                          .join(" ")
+                          .trim(),
+                      )
+                      .join("\n");
                     if (nextText !== note.text) {
                       setNotes((prev) =>
                         prev.map((existing) =>
