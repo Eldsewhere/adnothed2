@@ -45,14 +45,16 @@ const HashtagBar = ({
             whiteSpace: "nowrap",
             pb: 0.25,
             pr: 0.5,
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": {
-              display: "none",
+            "@media (max-width: 600px)": {
+              scrollbarWidth: "none",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
+              "&::-webkit-scrollbar-thumb": {
+                display: "none",
+              },
+              "-ms-overflow-style": "none",
             },
-            "&::-webkit-scrollbar-thumb": {
-              display: "none",
-            },
-            "-ms-overflow-style": "none",
           }}
         >
           {hashtags.map((tag) => {

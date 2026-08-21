@@ -36,14 +36,16 @@ const WeekdayPicker = ({
         overflowX: "auto",
         overflowY: "visible",
         py: 1,
-        scrollbarWidth: "none",
-        "&::-webkit-scrollbar": {
-          display: "none",
+        "@media (max-width: 600px)": {
+          scrollbarWidth: "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            display: "none",
+          },
+          "-ms-overflow-style": "none",
         },
-        "&::-webkit-scrollbar-thumb": {
-          display: "none",
-        },
-        "-ms-overflow-style": "none",
       }}
     >
       <Box
