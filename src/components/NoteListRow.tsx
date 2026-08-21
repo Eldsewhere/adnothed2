@@ -240,7 +240,6 @@ const NoteListRow = ({
         display: "flex",
         alignItems: "center",
         borderBottom: isPriorityBoundary ? "6px solid " : "3px solid",
-        paddingX: 1,
         borderTopLeftRadius:
           isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
         borderTopRightRadius:
@@ -327,7 +326,7 @@ const NoteListRow = ({
           display: "flex",
           alignItems: "center",
           flexShrink: 0,
-          pr: 1,
+          pr: 0.1,
         }}
       >
         <Tooltip title={label ? label.name : "Assign a label"} arrow>
