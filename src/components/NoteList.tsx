@@ -19,7 +19,12 @@ import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
-import { mdiDownload, mdiInformationOutline } from "@mdi/js";
+import {
+  mdiChevronDown,
+  mdiChevronUp,
+  mdiDownload,
+  mdiInformationOutline,
+} from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 type NoteListProps = {
@@ -62,6 +67,7 @@ type NoteListProps = {
 
 const ROW_HEIGHT = 80;
 const EXPANDED_ROW_HEIGHT = 128;
+const ARCHIVED_SECTION_HEADER_HEIGHT = 36;
 const OVERSCAN = 6;
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
@@ -138,6 +144,8 @@ const NoteList = ({
     el: HTMLElement;
     note: Note;
   } | null>(null);
+  const [archivedSectionExpanded, setArchivedSectionExpanded] =
+    useState(true);
   const [dueDateDialogNote, setdueDateDialogNote] = useState<Note | null>(null);
   const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
   const [dueHour12, setDueHour12] = useState<number>(12);
@@ -503,13 +511,75 @@ const NoteList = ({
     [sortedNotes],
   );
 
-  const rowHeights = filteredNotes.map((note) =>
-    overflowingnoteIds.has(note.id) ? EXPANDED_ROW_HEIGHT : ROW_HEIGHT,
+  const archivedSectionRange = useMemo(() => {
+    const firstIndex = filteredNotes.findIndex(
+      (note) => note.archived && !isPriorityNote(note),
+    );
+    if (firstIndex === -1) {
+      return null;
+    }
+    const lastIndex = filteredNotes.findLastIndex(
+      (note) => note.archived && !isPriorityNote(note),
+    );
+    return { firstIndex, lastIndex };
+  }, [filteredNotes]);
+
+  const archivedSectionCount = archivedSectionRange
+    ? archivedSectionRange.lastIndex - archivedSectionRange.firstIndex + 1
+    : 0;
+
+  const displayItems = useMemo(() => {
+    if (!archivedSectionRange) {
+      return filteredNotes.map((note, index) => ({
+        type: "note" as const,
+        key: `note-${note.id}`,
+        note,
+        index,
+      }));
+    }
+
+    const items: Array<{
+      type: "header" | "note";
+      key: string;
+      note?: Note;
+      index?: number;
+    }> = [];
+
+    filteredNotes.forEach((note, index) => {
+      const isArchivedNonPriority = note.archived && !isPriorityNote(note);
+      if (index === archivedSectionRange.firstIndex) {
+        items.push({
+          type: "header",
+          key: "archived-section-header",
+        });
+      }
+      if (!archivedSectionExpanded && isArchivedNonPriority) {
+        return;
+      }
+      items.push({
+        type: "note",
+        key: `note-${note.id}`,
+        note,
+        index,
+      });
+    });
+
+    return items;
+  }, [archivedSectionExpanded, archivedSectionRange, filteredNotes]);
+
+  const rowHeights = displayItems.map((item) =>
+    item.type === "header"
+      ? ARCHIVED_SECTION_HEADER_HEIGHT
+      : overflowingnoteIds.has(item.note!.id)
+        ? EXPANDED_ROW_HEIGHT
+        : ROW_HEIGHT,
   );
+
   const rowOffsets = rowHeights.reduce<number[]>((offsets, height) => {
     offsets.push((offsets.at(-1) ?? 0) + height);
     return offsets;
   }, []);
+
   const totalHeight = rowOffsets.at(-1) ?? 0;
   const firstVisibleIndex = rowHeights.findIndex(
     (height, index) => rowOffsets[index] - height > scrollTop,
@@ -519,15 +589,15 @@ const NoteList = ({
   );
   const startIndex = Math.max(
     0,
-    (firstVisibleIndex === -1 ? filteredNotes.length : firstVisibleIndex) -
+    (firstVisibleIndex === -1 ? displayItems.length : firstVisibleIndex) -
       OVERSCAN,
   );
   const endIndex = Math.min(
-    filteredNotes.length,
-    (lastVisibleIndex === -1 ? filteredNotes.length : lastVisibleIndex + 1) +
+    displayItems.length,
+    (lastVisibleIndex === -1 ? displayItems.length : lastVisibleIndex + 1) +
       OVERSCAN,
   );
-  const visibleNotes = filteredNotes.slice(startIndex, endIndex);
+  const visibleNotes = displayItems.slice(startIndex, endIndex);
 
   return (
     <Box>
@@ -578,8 +648,56 @@ const NoteList = ({
           }}
         >
           <Box sx={{ height: totalHeight, position: "relative" }}>
-            {visibleNotes.map((note, i) => {
+            {visibleNotes.map((item, i) => {
               const index = startIndex + i;
+
+              if (item.type === "header") {
+                return (
+                  <Box
+                    key={item.key}
+                    sx={{
+                      position: "absolute",
+                      top: rowOffsets[index] - rowHeights[index],
+                      left: 0,
+                      right: 0,
+                      height: rowHeights[index],
+                      display: "flex",
+                      alignItems: "center",
+                      px: 1.5,
+                      borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      backgroundColor: "rgba(255,255,255,0.03)",
+                    }}
+                  >
+                    <Box
+                      component="button"
+                      type="button"
+                      onClick={() => setArchivedSectionExpanded((value) => !value)}
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 0.5,
+                        background: "transparent",
+                        border: "none",
+                        color: "inherit",
+                        cursor: "pointer",
+                        fontSize: "0.82rem",
+                        fontWeight: 700,
+                        letterSpacing: 0.4,
+                        textTransform: "uppercase",
+                        p: 0,
+                      }}
+                    >
+                      <Icon
+                        path={archivedSectionExpanded ? mdiChevronUp : mdiChevronDown}
+                        size={0.7}
+                      />
+                      Archived ({archivedSectionCount})
+                    </Box>
+                  </Box>
+                );
+              }
+
+              const note = item.note!;
               const label = note.labelId
                 ? labelsById.get(note.labelId)
                 : undefined;
@@ -588,24 +706,21 @@ const NoteList = ({
               const globalIndex = globalIndexByNoteId.get(note.id);
 
               const isPrioritary = isPriorityNote(note);
-              const previousNote = filteredNotes[index - 1];
-              const nextNote = filteredNotes[index + 1];
+              const previousNote = filteredNotes[item.index! - 1];
+              const nextNote = filteredNotes[item.index! + 1];
               const isPriorityGroupStart =
-                isPrioritary &&
-                (!previousNote || !isPriorityNote(previousNote));
+                isPrioritary && (!previousNote || !isPriorityNote(previousNote));
               const isPriorityGroupEnd =
                 isPrioritary && (!nextNote || !isPriorityNote(nextNote));
               const isNonPriorityGroupStart =
-                !isPrioritary &&
-                (!previousNote || isPriorityNote(previousNote));
+                !isPrioritary && (!previousNote || isPriorityNote(previousNote));
               const isNonPriorityGroupEnd =
                 !isPrioritary && (!nextNote || isPriorityNote(nextNote));
-              const isLastNote = index === filteredNotes.length - 1;
+              const isLastNote = item.index === filteredNotes.length - 1;
               const isPriorityBoundary =
                 isPrioritary && (!nextNote || !isPriorityNote(nextNote));
               const isMostRecentAddedNote =
-                mostRecentAddedNoteId !== null &&
-                note.id === mostRecentAddedNoteId;
+                mostRecentAddedNoteId !== null && note.id === mostRecentAddedNoteId;
               const isMostRecentlyEditedNote =
                 mostRecentEditedNoteId !== null &&
                 note.id === mostRecentEditedNoteId;
