@@ -118,7 +118,7 @@ export function parseTextFilters(
           continue;
         }
       }
-      queryParts.push(segment.replace(/\s+/g, ""));
+      queryParts.push(segment.replace(/\s+/g, " ").trim());
       continue;
     }
 
