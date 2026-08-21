@@ -9,7 +9,7 @@ export const STATUS_FORMAT_OPTIONS = [
   "spoiler",
   "transparent",
   "red",
-  "orange",
+  "amber",
   "green",
 ] as const;
 
@@ -23,7 +23,7 @@ export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
   spoiler: "S•p•o•i•l•e•r",
   transparent: "Transparent",
   red: "Red",
-  orange: "Amber",
+  amber: "Amber",
   green: "Green",
 };
 
@@ -50,7 +50,7 @@ export function getStatusTextStyle(format?: StatusFormat): {
       return { opacity: 0.2 };
     case "red":
       return { color: colors.red[400] };
-    case "orange":
+    case "amber":
       return { color: colors.amber[400] };
     case "green":
       return { color: colors.green[400] };

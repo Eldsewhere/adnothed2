@@ -265,7 +265,7 @@ const StatusForm = ({
                             ? { opacity: 0.2 }
                             : option === "red"
                               ? { color: colors.red[400] }
-                              : option === "orange"
+                              : option === "amber"
                                 ? { color: colors.orange[400] }
                                 : option === "green"
                                   ? { color: colors.green[400] }

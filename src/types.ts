@@ -25,7 +25,7 @@ export type StatusFormat =
   | "spoiler"
   | "transparent"
   | "red"
-  | "orange"
+  | "amber"
   | "green";
 
 export type Status = {
