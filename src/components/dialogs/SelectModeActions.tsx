@@ -43,13 +43,25 @@ const SelectModeActions = ({
       width: "100%",
       overflowX: "auto",
       overflowY: "hidden",
-      scrollbarWidth: "thin",
-      "&::-webkit-scrollbar": {
-        height: 6,
+      "@media (max-width: 600px)": {
+        scrollbarWidth: "none",
+        "&::-webkit-scrollbar": {
+          display: "none",
+        },
+        "&::-webkit-scrollbar-thumb": {
+          display: "none",
+        },
+        "-ms-overflow-style": "none",
       },
-      "&::-webkit-scrollbar-thumb": {
-        backgroundColor: "rgba(255,255,255,0.2)",
-        borderRadius: 999,
+      "@media (min-width: 601px)": {
+        scrollbarWidth: "thin",
+        "&::-webkit-scrollbar": {
+          height: 6,
+        },
+        "&::-webkit-scrollbar-thumb": {
+          backgroundColor: "rgba(255,255,255,0.2)",
+          borderRadius: 999,
+        },
       },
     }}
   >
