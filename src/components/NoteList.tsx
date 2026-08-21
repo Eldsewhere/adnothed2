@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button, Divider } from "@mui/material";
+import { Box, Alert, Button, Divider, Tooltip } from "@mui/material";
 import type {
   Label,
   Note,
@@ -668,31 +668,40 @@ const NoteList = ({
                       backgroundColor: "rgba(255,255,255,0.03)",
                     }}
                   >
-                    <Box
-                      component="button"
-                      type="button"
-                      onClick={() => setArchivedSectionExpanded((value) => !value)}
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        background: "transparent",
-                        border: "none",
-                        color: "inherit",
-                        cursor: "pointer",
-                        fontSize: "0.82rem",
-                        fontWeight: 700,
-                        letterSpacing: 0.4,
-                        textTransform: "uppercase",
-                        p: 0,
-                      }}
+                    <Tooltip
+                      title={
+                        archivedSectionExpanded
+                          ? "Collapse archived notes"
+                          : "Expand archived notes"
+                      }
+                      arrow
                     >
-                      <Icon
-                        path={archivedSectionExpanded ? mdiChevronUp : mdiChevronDown}
-                        size={0.7}
-                      />
-                      Archived ({archivedSectionCount})
-                    </Box>
+                      <Box
+                        component="button"
+                        type="button"
+                        onClick={() => setArchivedSectionExpanded((value) => !value)}
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 0.5,
+                          background: "transparent",
+                          border: "none",
+                          color: "inherit",
+                          cursor: "pointer",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          letterSpacing: 0.4,
+                          textTransform: "uppercase",
+                          p: 0,
+                        }}
+                      >
+                        <Icon
+                          path={archivedSectionExpanded ? mdiChevronUp : mdiChevronDown}
+                          size={0.7}
+                        />
+                        Archived ({archivedSectionCount})
+                      </Box>
+                    </Tooltip>
                   </Box>
                 );
               }
