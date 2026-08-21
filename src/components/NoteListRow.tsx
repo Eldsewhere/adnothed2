@@ -11,6 +11,7 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiArchive,
+  mdiArchiveArrowUp,
   mdiBell,
   mdiChevronDown,
   mdiClockOutline,
@@ -69,6 +70,7 @@ type NoteListRowProps = {
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenOverflow: (noteId: string) => void;
   onPin: (note: Note) => void;
+  onArchive: (note: Note) => void;
   onOpenActionsMenu: (
     event: MouseEvent<HTMLElement>,
     note: Note,
@@ -111,6 +113,7 @@ const NoteListRow = ({
   onToggleCheckbox,
   onOpenOverflow,
   onPin,
+  onArchive,
   onOpenActionsMenu,
   setnoteTextRef,
   filterText = "",
@@ -176,9 +179,11 @@ const NoteListRow = ({
   const dragDirection = dragOffset < 0 ? "menu" : dragOffset > 0 ? "pin" : null;
   const dragActionIcon =
     dragDirection === "pin"
-      ? note.pinned
-        ? mdiPinOff
-        : mdiPin
+      ? note.archived
+        ? mdiArchiveArrowUp
+        : note.pinned
+          ? mdiPinOff
+          : mdiPin
       : mdiDotsVertical;
   const dragActionOpacity = dragDirection
     ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
@@ -229,6 +234,10 @@ const NoteListRow = ({
     }
 
     if (shouldPin) {
+      if (note.archived) {
+        onArchive(note);
+        return;
+      }
       onPin(note);
     }
   };

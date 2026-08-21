@@ -2,7 +2,8 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { Box, Divider, Menu, MenuItem, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiArchive,
+  mdiArchiveArrowDown,
+  mdiArchiveArrowUp,
   mdiBell,
   mdiCalendarClock,
   mdiClockOutline,
@@ -225,7 +226,10 @@ const NoteActionsMenu = ({
                   px: 0.5,
                 }}
               >
-                <Icon path={mdiArchive} size={0.7} />
+                <Icon
+                  path={note.archived ? mdiArchiveArrowUp : mdiArchiveArrowDown}
+                  size={0.7}
+                />
               </Box>
               {note.archived ? "Unarchive" : "Archive"}
             </MenuItem>
