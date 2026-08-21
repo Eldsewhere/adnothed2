@@ -11,6 +11,8 @@ import {
   Box,
   colors,
   IconButton,
+  Menu,
+  MenuItem,
   Paper,
   Snackbar,
   Stack,
@@ -22,6 +24,7 @@ import { Icon } from "@mdi/react";
 import {
   mdiCheckboxMultipleMarked,
   mdiCalendar,
+  mdiEmoticonOutline,
   mdiNoteText,
   mdiLabelMultiple,
   mdiFileImport,
@@ -75,6 +78,7 @@ import {
 } from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
+import { getStatusTextStyle } from "./utils/statusStyles";
 type TabValue = "notes" | "labels" | "statuses";
 
 const BULLET_PREFIX = "• ";
@@ -225,6 +229,8 @@ function App() {
     fileName: string;
     parseError: string | null;
   } | null>(null);
+  const [bulkStatusAnchor, setBulkStatusAnchor] =
+    useState<HTMLElement | null>(null);
   const [noteStorageInfoOpen, setNoteStorageInfoOpen] = useState(false);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
@@ -1027,6 +1033,38 @@ function App() {
         selectednoteIds.has(note.id) ? { ...note, pinned: shouldPin } : note,
       ),
     );
+  };
+
+  const handleBulkArchiveToggle = () => {
+    if (selectednoteIds.size === 0) {
+      return;
+    }
+
+    const selectedNotes = notes.filter((note) => selectednoteIds.has(note.id));
+    const shouldArchive = !selectedNotes.every((note) => note.archived);
+
+    setNotes((prev) =>
+      prev.map((note) =>
+        selectednoteIds.has(note.id)
+          ? { ...note, archived: shouldArchive }
+          : note,
+      ),
+    );
+  };
+
+  const handleBulkStatusChange = (emoji: string | null) => {
+    if (selectednoteIds.size === 0) {
+      return;
+    }
+
+    setNotes((prev) =>
+      prev.map((note) =>
+        selectednoteIds.has(note.id)
+          ? { ...note, emoji: emoji ?? undefined }
+          : note,
+      ),
+    );
+    setBulkStatusAnchor(null);
   };
 
   const handleBulkShareText = async () => {
@@ -2174,10 +2212,19 @@ function App() {
                         return note?.pinned === true;
                       })
                     }
+                    allSelectedArchived={
+                      selectednoteIds.size > 0 &&
+                      [...selectednoteIds].every((id) => {
+                        const note = notes.find((item) => item.id === id);
+                        return note?.archived === true;
+                      })
+                    }
                     onLabelClick={(event) =>
                       setbulkLabelAnchor(event.currentTarget)
                     }
                     onPinToggleClick={handleBulkPinToggle}
+                    onArchiveToggleClick={handleBulkArchiveToggle}
+                    onStatusClick={(event) => setBulkStatusAnchor(event.currentTarget)}
                     onShareTextClick={() => {
                       void handleBulkShareText();
                     }}
@@ -2188,6 +2235,55 @@ function App() {
                     }}
                   />
                 )}
+                <Menu
+                  anchorEl={bulkStatusAnchor}
+                  open={Boolean(bulkStatusAnchor)}
+                  onClose={() => setBulkStatusAnchor(null)}
+                >
+                  <MenuItem
+                    onClick={() => handleBulkStatusChange(null)}
+                    selected={
+                      selectednoteIds.size > 0 &&
+                      [...selectednoteIds].every(
+                        (id) => !notes.find((item) => item.id === id)?.emoji,
+                      )
+                    }
+                  >
+                    <Box
+                      component="span"
+                      sx={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        mr: 1,
+                        color: colors.blueGrey[300],
+                      }}
+                    >
+                      <Icon path={mdiEmoticonOutline} size={0.7} />
+                    </Box>
+                    {statuses.length === 0 ? "no statuses available" : "no status"}
+                  </MenuItem>
+                  {statuses.map((status) => (
+                    <MenuItem
+                      key={status.id}
+                      onClick={() => handleBulkStatusChange(status.emoji)}
+                    >
+                      <Box
+                        component="span"
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          mr: 1,
+                          fontSize: "1.1rem",
+                        }}
+                      >
+                        {status.emoji}
+                      </Box>
+                      <Box component="span" sx={getStatusTextStyle(status.format)}>
+                        {status.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Menu>
                 <NoteList
                   notes={notes}
                   labels={labels}
