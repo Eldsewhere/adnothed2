@@ -707,6 +707,7 @@ const NoteList = ({
               note: overflowModalNote,
             })
           }
+          onRemoveHashtagFromNote={onRemoveHashtagFromNote}
         />
       )}
       {labelMenuAnchor && (

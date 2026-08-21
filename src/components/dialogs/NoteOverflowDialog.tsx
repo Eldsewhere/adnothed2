@@ -16,6 +16,7 @@ import { Icon } from "@mdi/react";
 import { mdiClose, mdiDotsVertical, mdiLabelOff } from "@mdi/js";
 import type { Label, Note } from "../../types";
 import LabelIcon from "../ui/LabelIcon";
+import HashtagChip from "../HashtagChip";
 
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
@@ -26,6 +27,7 @@ type NoteOverflowDialogProps = {
   onClose: () => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenActionsMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
+  onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
 };
 
 const NoteOverflowDialog = ({
@@ -35,6 +37,7 @@ const NoteOverflowDialog = ({
   onClose,
   onToggleCheckbox,
   onOpenActionsMenu,
+  onRemoveHashtagFromNote,
 }: NoteOverflowDialogProps) => {
   if (!note) {
     return null;
@@ -145,7 +148,22 @@ const NoteOverflowDialog = ({
                     textDecoration: isChecked ? "line-through" : "none",
                   }}
                 >
-                  {rowText}
+                  {rowText.split(/(#\w[\w-]*\b)/g).map((part, partIndex) => {
+                    if (!/^#\w[\w-]*$/.test(part)) {
+                      return <span key={`${part}-${partIndex}`}>{part}</span>;
+                    }
+
+                    return (
+                      <HashtagChip
+                        key={`${part}-${partIndex}`}
+                        tag={part}
+                        selected={false}
+                        onClick={() => undefined}
+                        showDelete={Boolean(onRemoveHashtagFromNote)}
+                        onDelete={() => onRemoveHashtagFromNote?.(note, part)}
+                      />
+                    );
+                  })}
                 </Typography>
               </Box>
             );
