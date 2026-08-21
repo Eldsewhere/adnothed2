@@ -167,7 +167,14 @@ const NoteList = ({
     const todayUnix = today.unix();
     const dayAfterTomorrowUnix = today.add(2, "day").unix();
     return [...notes].sort((a, b) => {
-      if (a.archived !== b.archived) return a.archived ? 1 : -1;
+      const aPriority = isPriorityNote(a);
+      const bPriority = isPriorityNote(b);
+      if (aPriority !== bPriority) return aPriority ? -1 : 1;
+
+      if (a.archived !== b.archived) {
+        if (aPriority || bPriority) return 0;
+        return a.archived ? 1 : -1;
+      }
 
       const aPinned = a.pinned ? 1 : 0;
       const bPinned = b.pinned ? 1 : 0;

@@ -175,7 +175,11 @@ const NoteListRow = ({
 
   const dragDirection = dragOffset < 0 ? "menu" : dragOffset > 0 ? "pin" : null;
   const dragActionIcon =
-    dragDirection === "pin" ? (note.pinned ? mdiPinOff : mdiPin) : mdiDotsVertical;
+    dragDirection === "pin"
+      ? note.pinned
+        ? mdiPinOff
+        : mdiPin
+      : mdiDotsVertical;
   const dragActionOpacity = dragDirection
     ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
     : 0;
@@ -314,388 +318,393 @@ const NoteListRow = ({
           opacity: isMenuOpen ? 0.7 : 1,
         }}
       >
-      {selectMode && (
-        <Checkbox
-          size="small"
-          checked={selectedIds.has(note.id)}
-          onChange={() => onToggleSelect(note.id)}
-          sx={{ p: 0.5, mr: 0.5 }}
-        />
-      )}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          flexShrink: 0,
-          pr: 0.1,
-        }}
-      >
-        <Tooltip title={label ? label.name : "Assign a label"} arrow>
-          <IconButton
-            aria-label={`Change label for ${note.text}`}
+        {selectMode && (
+          <Checkbox
             size="small"
-            onClick={(event: MouseEvent<HTMLElement>) =>
-              onOpenLabelMenu(event, note)
-            }
-            sx={{
-              p: 0.5,
-              color: label ? "inherit" : colors.blueGrey[500],
-            }}
-          >
-            {label ? (
-              <LabelIcon icon={label.icon} color={label.color} size={0.8} />
-            ) : (
-              <Icon path={mdiLabelOff} size={0.8} />
-            )}
-          </IconButton>
-        </Tooltip>
-      </Box>
-      <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+            checked={selectedIds.has(note.id)}
+            onChange={() => onToggleSelect(note.id)}
+            sx={{ p: 0.5, mr: 0.5 }}
+          />
+        )}
         <Box
           sx={{
             display: "flex",
             alignItems: "center",
-            minWidth: 0,
-            gap: 0.5,
+            flexShrink: 0,
+            pr: 0.1,
           }}
         >
-          {isEditing && (
-            <Tooltip title="Editing note" aria-label={undefined} arrow>
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  color: colors.orange[300],
-                  flexShrink: 0,
-                }}
-              >
-                <Icon path={mdiPencil} size={0.6} />
-              </Box>
-            </Tooltip>
-          )}
-          <Typography
-            component="div"
-            ref={setnoteTextRef}
-            data-note-text-id={note.id}
-            sx={{
-              flex: 1,
-              minWidth: 0,
-              textAlign: "left",
-              whiteSpace: "pre-wrap",
-              overflow: "hidden",
-              overflowWrap: "anywhere",
-              wordBreak: "break-word",
-              display: "-webkit-box",
-              WebkitLineClamp: isOverflowing ? 4 : 2,
-              WebkitBoxOrient: "vertical",
-              ...statusStyle,
-            }}
-          >
-            {isSpoilerStatus && (
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  verticalAlign: "middle",
-                  mr: 0.5,
-                }}
-              >
-                <Tooltip
-                  title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
-                  arrow
-                >
-                  <IconButton
-                    size="small"
-                    aria-label={
-                      isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"
-                    }
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setIsSpoilerVisible((value) => !value);
-                    }}
-                    sx={{
-                      p: 0,
-                      minWidth: 20,
-                      width: 20,
-                      height: 20,
-                      color: "inherit",
-                    }}
-                  >
-                    <Icon
-                      path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
-                      size={0.7}
-                    />
-                  </IconButton>
-                </Tooltip>
-              </Box>
-            )}
-            {note.text.split("\n").map((row, rowIndex) => {
-              const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
-              const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
-              const rowText = checkboxMatch?.[2] ?? row;
-              const visibleRowText = shouldHideSpoilerText
-                ? maskSpoilerText(rowText)
-                : rowText;
-
-              return (
-                <Box
-                  key={`${rowIndex}-${row}`}
-                  component="span"
-                  sx={{ display: "inline" }}
-                >
-                  {checkboxMatch && (
-                    <Checkbox
-                      slotProps={{
-                        input: {
-                          "aria-labelledby": `note-text-${note.id}-row-${rowIndex}`,
-                        },
-                      }}
-                      checked={isChecked}
-                      onChange={() => onToggleCheckbox(note, rowIndex)}
-                      size="small"
-                      sx={{
-                        p: 0,
-                        mr: 0.25,
-                        verticalAlign: "text-bottom",
-                      }}
-                    />
-                  )}
-                  <Box
-                    id={
-                      checkboxMatch
-                        ? `note-text-${note.id}-row-${rowIndex}`
-                        : undefined
-                    }
-                    component="span"
-                    sx={{
-                      textDecoration: isChecked ? "line-through" : "none",
-                    }}
-                  >
-                    {!selectMode &&
-                    /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
-                      <HashtagChip
-                        tag={visibleRowText.trim()}
-                        selected={isHashtagActive(visibleRowText.trim())}
-                        onClick={() => {
-                          onToggleHashtagInDraft?.(visibleRowText.trim());
-                        }}
-                        onDelete={() => {
-                          onRemoveHashtagFromNote?.(
-                            note,
-                            visibleRowText.trim(),
-                          );
-                        }}
-                        showDelete
-                      />
-                    ) : (
-                      splitTextByUrls(visibleRowText).map((part, partIndex) =>
-                        part.isUrl ? (
-                          <Box
-                            key={partIndex}
-                            component="a"
-                            href={part.value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            sx={{
-                              color: "info.main",
-                              textDecoration: "underline",
-                              wordBreak: "break-word",
-                            }}
-                          >
-                            {part.value}
-                          </Box>
-                        ) : (
-                          renderTextWithHashtags(part.value)
-                        ),
-                      )
-                    )}
-                  </Box>
-                  {rowIndex < note.text.split("\n").length - 1 && <br />}
-                </Box>
-              );
-            })}
-          </Typography>
-          {isExpandable && (
-            <Tooltip title="Expand note" arrow>
-              <IconButton
-                aria-label={`Expand ${note.text}`}
-                size="small"
-                onClick={() => onOpenOverflow(note.id)}
-                sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
-              >
-                <Icon path={mdiChevronDown} size={0.7} />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Box>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <Stack
-            sx={{
-              justifyContent: "space-between",
-              flexDirection: "row",
-              width: "100%",
-            }}
-          >
-            <Typography
-              variant="caption"
-              color="text.secondary"
+          <Tooltip title={label ? label.name : "Assign a label"} arrow>
+            <IconButton
+              aria-label={`Change label for ${note.text}`}
+              size="small"
+              onClick={(event: MouseEvent<HTMLElement>) =>
+                onOpenLabelMenu(event, note)
+              }
               sx={{
-                textAlign: "left",
-                display: "flex",
-                alignItems: "center",
-                color: shouldUsePriorityDueDate
-                  ? colors.orange[300]
-                  : isToday(note.createdAt) ||
-                      note.pinned ||
-                      (note.due !== undefined &&
-                        (isToday(note.due) || isTomorrow(note.due))) ||
-                      note.hasNotification
-                    ? colors.lightGreen[400]
-                    : colors.blueGrey[300],
+                p: 0.5,
+                color: label ? "inherit" : colors.blueGrey[500],
               }}
             >
-              {shouldUsePriorityDueDate
-                ? formatDueDate(note.due!)
-                : formatTimestamp(note.createdAt)}
-              {note.emoji && (
-                <Tooltip title={status ? status.name : "Note status"} arrow>
-                  <Box
-                    component="span"
-                    role="img"
-                    aria-label={status ? status.name : "Note status"}
-                    onPointerDown={(event) => {
-                      event.stopPropagation();
-                    }}
-                    onClick={(event: MouseEvent<HTMLElement>) => {
-                      event.stopPropagation();
-                      onOpenActionsMenu(event, note, true);
-                    }}
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      fontSize: "0.85rem",
-                      lineHeight: 1,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {note.emoji}
-                  </Box>
-                </Tooltip>
+              {label ? (
+                <LabelIcon icon={label.icon} color={label.color} size={0.8} />
+              ) : (
+                <Icon path={mdiLabelOff} size={0.8} />
               )}
-              {shouldUsePriorityDueDate && (
-                <Tooltip title="Due date" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      color: colors.orange[300],
-                    }}
-                  >
-                    <Icon path={mdiClockOutline} size={0.5} />
-                  </Box>
-                </Tooltip>
-              )}
-              {note.hasNotification && (
-                <Tooltip title="Notified" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      color: shouldUsePriorityDueDate
-                        ? colors.orange[300]
-                        : colors.lightGreen[400],
-                    }}
-                  >
-                    <Icon path={mdiBell} size={0.5} />
-                  </Box>
-                </Tooltip>
-              )}
-              {note.pinned && (
-                <Tooltip title="Pinned" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      color: shouldUsePriorityDueDate
-                        ? colors.orange[300]
-                        : colors.lightGreen[400],
-                    }}
-                  >
-                    <Icon path={mdiPin} size={0.6} />
-                  </Box>
-                </Tooltip>
-              )}
-              {note.archived && (
-                <Tooltip title="Archived" aria-label={undefined} arrow>
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.5,
-                      display: "inline-flex",
-                      color: colors.red[300],
-                    }}
-                  >
-                    <Icon path={mdiArchive} size={0.6} />
-                  </Box>
-                </Tooltip>
-              )}
-            </Typography>
-            {selectMode && globalIndex !== undefined ? (
-              <Typography
-                variant="caption"
-                sx={{
-                  textAlign: "right",
-                  display: "block",
-                  color: colors.blueGrey[300],
-                }}
-              >
-                #{globalIndex}
-              </Typography>
-            ) : !shouldUsePriorityDueDate &&
-              note.due !== undefined &&
-              (isToday(note.due) ||
-                isTomorrow(note.due) ||
-                note.due >= dayjs().unix()) ? (
-              <Typography
-                variant="caption"
-                sx={{
-                  textAlign: "right",
-                  display: "block",
-                  color: colors.orange[300],
-                }}
-              >
-                {formatDueDate(note.due)}
-              </Typography>
-            ) : null}
-          </Stack>
+            </IconButton>
+          </Tooltip>
         </Box>
-      </Box>
-      <Box
-        sx={{
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <Tooltip title="Actions">
-          <IconButton
-            aria-label={`Actions for ${note.text}`}
-            size="small"
-            onClick={(event: MouseEvent<HTMLElement>) =>
-              onOpenActionsMenu(event, note)
-            }
-            disabled={selectMode}
+        <Box sx={{ flex: 1, minWidth: 0, px: 1, textAlign: "left" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              minWidth: 0,
+              gap: 0.5,
+            }}
           >
-            <Icon path={mdiDotsVertical} size={0.8} />
-          </IconButton>
-        </Tooltip>
-      </Box>
+            {isEditing && (
+              <Tooltip title="Editing note" aria-label={undefined} arrow>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    color: colors.orange[300],
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon path={mdiPencil} size={0.6} />
+                </Box>
+              </Tooltip>
+            )}
+            <Typography
+              component="div"
+              ref={setnoteTextRef}
+              data-note-text-id={note.id}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                textAlign: "left",
+                whiteSpace: "pre-wrap",
+                overflow: "hidden",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+                display: "-webkit-box",
+                WebkitLineClamp: isOverflowing ? 4 : 2,
+                WebkitBoxOrient: "vertical",
+                ...statusStyle,
+              }}
+            >
+              {isSpoilerStatus && (
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    verticalAlign: "middle",
+                    mr: 0.5,
+                  }}
+                >
+                  <Tooltip
+                    title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
+                    arrow
+                  >
+                    <IconButton
+                      size="small"
+                      aria-label={
+                        isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"
+                      }
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setIsSpoilerVisible((value) => !value);
+                      }}
+                      sx={{
+                        p: 0,
+                        minWidth: 20,
+                        width: 20,
+                        height: 20,
+                        color: "inherit",
+                      }}
+                    >
+                      <Icon
+                        path={
+                          isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline
+                        }
+                        size={0.7}
+                      />
+                    </IconButton>
+                  </Tooltip>
+                </Box>
+              )}
+              {note.text.split("\n").map((row, rowIndex) => {
+                const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
+                const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
+                const rowText = checkboxMatch?.[2] ?? row;
+                const visibleRowText = shouldHideSpoilerText
+                  ? maskSpoilerText(rowText)
+                  : rowText;
+
+                return (
+                  <Box
+                    key={`${rowIndex}-${row}`}
+                    component="span"
+                    sx={{ display: "inline" }}
+                  >
+                    {checkboxMatch && (
+                      <Checkbox
+                        slotProps={{
+                          input: {
+                            "aria-labelledby": `note-text-${note.id}-row-${rowIndex}`,
+                          },
+                        }}
+                        checked={isChecked}
+                        onChange={() => onToggleCheckbox(note, rowIndex)}
+                        size="small"
+                        sx={{
+                          p: 0,
+                          mr: 0.25,
+                          verticalAlign: "text-bottom",
+                        }}
+                      />
+                    )}
+                    <Box
+                      id={
+                        checkboxMatch
+                          ? `note-text-${note.id}-row-${rowIndex}`
+                          : undefined
+                      }
+                      component="span"
+                      sx={{
+                        textDecoration: isChecked ? "line-through" : "none",
+                      }}
+                    >
+                      {!selectMode &&
+                      /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
+                        <HashtagChip
+                          tag={visibleRowText.trim()}
+                          selected={isHashtagActive(visibleRowText.trim())}
+                          onClick={() => {
+                            onToggleHashtagInDraft?.(visibleRowText.trim());
+                          }}
+                          onDelete={() => {
+                            onRemoveHashtagFromNote?.(
+                              note,
+                              visibleRowText.trim(),
+                            );
+                          }}
+                          showDelete
+                        />
+                      ) : (
+                        splitTextByUrls(visibleRowText).map(
+                          (part, partIndex) =>
+                            part.isUrl ? (
+                              <Box
+                                key={partIndex}
+                                component="a"
+                                href={part.value}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                sx={{
+                                  color: "info.main",
+                                  textDecoration: "underline",
+                                  wordBreak: "break-word",
+                                }}
+                              >
+                                {part.value}
+                              </Box>
+                            ) : (
+                              renderTextWithHashtags(part.value)
+                            ),
+                        )
+                      )}
+                    </Box>
+                    {rowIndex < note.text.split("\n").length - 1 && <br />}
+                  </Box>
+                );
+              })}
+            </Typography>
+            {isExpandable && (
+              <Tooltip title="Expand note" arrow>
+                <IconButton
+                  aria-label={`Expand ${note.text}`}
+                  size="small"
+                  onClick={() => onOpenOverflow(note.id)}
+                  sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
+                >
+                  <Icon path={mdiChevronDown} size={0.7} />
+                </IconButton>
+              </Tooltip>
+            )}
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Stack
+              sx={{
+                justifyContent: "space-between",
+                flexDirection: "row",
+                width: "100%",
+              }}
+            >
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{
+                  textAlign: "left",
+                  display: "flex",
+                  alignItems: "center",
+                  color: note.archived
+                    ? colors.red[300]
+                    : shouldUsePriorityDueDate
+                      ? colors.orange[300]
+                      : isToday(note.createdAt) ||
+                          note.pinned ||
+                          (note.due !== undefined &&
+                            (isToday(note.due) || isTomorrow(note.due))) ||
+                          note.hasNotification
+                        ? colors.lightGreen[400]
+                        : colors.blueGrey[300],
+                }}
+              >
+                {shouldUsePriorityDueDate
+                  ? formatDueDate(note.due!)
+                  : formatTimestamp(note.createdAt)}
+                {note.archived && (
+                  <Tooltip title="Archived" aria-label={undefined} arrow>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        color: colors.red[300],
+                      }}
+                    >
+                      <Icon path={mdiArchive} size={0.6} />
+                    </Box>
+                  </Tooltip>
+                )}
+                {note.emoji && (
+                  <Tooltip title={status ? status.name : "Note status"} arrow>
+                    <Box
+                      component="span"
+                      role="img"
+                      aria-label={status ? status.name : "Note status"}
+                      onPointerDown={(event) => {
+                        event.stopPropagation();
+                      }}
+                      onClick={(event: MouseEvent<HTMLElement>) => {
+                        event.stopPropagation();
+                        onOpenActionsMenu(event, note, true);
+                      }}
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        fontSize: "0.85rem",
+                        lineHeight: 1,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {note.emoji}
+                    </Box>
+                  </Tooltip>
+                )}
+                {shouldUsePriorityDueDate && (
+                  <Tooltip title="Due date" aria-label={undefined} arrow>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        alignItems: "center",
+                        color: colors.orange[300],
+                      }}
+                    >
+                      <Icon path={mdiClockOutline} size={0.5} />
+                    </Box>
+                  </Tooltip>
+                )}
+                {note.hasNotification && (
+                  <Tooltip title="Notified" aria-label={undefined} arrow>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        color: shouldUsePriorityDueDate
+                          ? colors.orange[300]
+                          : colors.lightGreen[400],
+                      }}
+                    >
+                      <Icon path={mdiBell} size={0.5} />
+                    </Box>
+                  </Tooltip>
+                )}
+                {note.pinned && (
+                  <Tooltip title="Pinned" aria-label={undefined} arrow>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        color: shouldUsePriorityDueDate
+                          ? colors.orange[300]
+                          : colors.lightGreen[400],
+                      }}
+                    >
+                      <Icon path={mdiPin} size={0.6} />
+                    </Box>
+                  </Tooltip>
+                )}
+              </Typography>
+              {selectMode && globalIndex !== undefined ? (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    textAlign: "right",
+                    display: "block",
+                    color: colors.blueGrey[300],
+                  }}
+                >
+                  #{globalIndex}
+                </Typography>
+              ) : !shouldUsePriorityDueDate &&
+                note.due !== undefined &&
+                (isToday(note.due) ||
+                  isTomorrow(note.due) ||
+                  note.due >= dayjs().unix()) ? (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    textAlign: "right",
+                    display: "block",
+                    color: colors.orange[300],
+                  }}
+                >
+                  {formatDueDate(note.due)}
+                </Typography>
+              ) : null}
+            </Stack>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          <Tooltip title="Actions">
+            <IconButton
+              aria-label={`Actions for ${note.text}`}
+              size="small"
+              onClick={(event: MouseEvent<HTMLElement>) =>
+                onOpenActionsMenu(event, note)
+              }
+              disabled={selectMode}
+            >
+              <Icon path={mdiDotsVertical} size={0.8} />
+            </IconButton>
+          </Tooltip>
+        </Box>
       </Box>
     </Box>
   );
