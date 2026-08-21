@@ -612,6 +612,9 @@ const NoteList = ({
               const shouldHighlightRecentEdit =
                 isMostRecentAddedNote || isMostRecentlyEditedNote;
               const isEditingThisNote = editingNoteId === note.id;
+              const isThisNoteMenuOpen =
+                menuAnchor?.note.id === note.id ||
+                labelMenuAnchor?.note.id === note.id;
 
               return (
                 <NoteListRow
@@ -635,7 +638,7 @@ const NoteList = ({
                   isOverflowing={overflowingnoteIds.has(note.id)}
                   isExpandable={expandablenoteIds.has(note.id)}
                   isEditing={isEditingThisNote}
-                  isMenuOpen={menuAnchor?.note.id === note.id}
+                  isMenuOpen={isThisNoteMenuOpen}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
                   onToggleSelect={onToggleSelect}
                   onOpenLabelMenu={openLabelMenu}

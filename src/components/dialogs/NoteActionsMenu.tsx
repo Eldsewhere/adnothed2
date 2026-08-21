@@ -444,7 +444,12 @@ const NoteActionsMenu = ({
       <Menu
         anchorEl={statusMenuAnchor}
         open={Boolean(statusMenuAnchor)}
-        onClose={() => setStatusMenuAnchor(null)}
+        onClose={() => {
+          setStatusMenuAnchor(null);
+          if (openStatusPicker) {
+            onClose();
+          }
+        }}
       >
         <MenuItem
           sx={{ color: colors.blueGrey[300] }}
