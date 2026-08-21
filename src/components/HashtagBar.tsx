@@ -38,12 +38,21 @@ const HashtagBar = ({
         <Box
           sx={{
             display: "flex",
-            flexWrap: "wrap",
+            flexWrap: "nowrap",
             gap: 0.75,
-            maxHeight: 132,
-            overflowY: "auto",
-            pr: 0.5,
+            overflowX: "auto",
+            overflowY: "hidden",
+            whiteSpace: "nowrap",
             pb: 0.25,
+            pr: 0.5,
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": {
+              display: "none",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              display: "none",
+            },
+            "-ms-overflow-style": "none",
           }}
         >
           {hashtags.map((tag) => {
