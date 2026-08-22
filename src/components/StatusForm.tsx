@@ -2,9 +2,7 @@ import { useEffect, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   Box,
-  FormControl,
   IconButton,
-  InputLabel,
   Menu,
   MenuItem,
   Select,
@@ -242,45 +240,65 @@ const StatusForm = ({
           name="format"
           control={control}
           render={({ field }) => (
-            <FormControl fullWidth size="small">
-              <InputLabel id="status-format-label">Note effect</InputLabel>
-              <Select
-                {...field}
-                labelId="status-format-label"
-                id="status-format"
-                value={field.value || "none"}
-                label="Note effect"
-                fullWidth
-                aria-label="Note effect"
-              >
-                {STATUS_FORMAT_OPTIONS.map((option) => {
-                  const style =
-                    option === "underline"
-                      ? { textDecoration: "underline" }
-                      : option === "bold"
-                        ? { fontWeight: 700 }
-                        : option === "strikethrough"
-                          ? { textDecoration: "line-through" }
-                          : option === "transparent"
-                            ? { opacity: 0.2 }
-                            : option === "red"
-                              ? { color: colors.red[400] }
-                              : option === "amber"
-                                ? { color: colors.orange[400] }
-                                : option === "green"
-                                  ? { color: colors.green[400] }
-                                  : {};
+            <Select
+              {...field}
+              labelId="status-format-label"
+              id="status-format"
+              value={field.value || "none"}
+              displayEmpty
+              size="small"
+              fullWidth
+              aria-label="Note effect"
+              renderValue={(selected) => {
+                const selectedValue =
+                  selected && selected !== "none"
+                    ? STATUS_FORMAT_LABELS[selected as StatusFormat]
+                    : "No note effect";
+                return (
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    {selectedValue}
+                  </Box>
+                );
+              }}
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+                "&:hover .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  borderColor: colors.blueGrey[500],
+                },
+              }}
+            >
+              {STATUS_FORMAT_OPTIONS.map((option) => {
+                const style =
+                  option === "underline"
+                    ? { textDecoration: "underline" }
+                    : option === "bold"
+                      ? { fontWeight: 700 }
+                      : option === "strikethrough"
+                        ? { textDecoration: "line-through" }
+                        : option === "transparent"
+                          ? { opacity: 0.2 }
+                          : option === "red"
+                            ? { color: colors.red[400] }
+                            : option === "amber"
+                              ? { color: colors.orange[400] }
+                              : option === "green"
+                                ? { color: colors.green[400] }
+                                : {};
 
-                  return (
-                    <MenuItem key={option} value={option}>
-                      <Box component="span" sx={style}>
-                        {STATUS_FORMAT_LABELS[option as StatusFormat]}
-                      </Box>
-                    </MenuItem>
-                  );
-                })}
-              </Select>
-            </FormControl>
+                return (
+                  <MenuItem key={option} value={option}>
+                    <Box component="span" sx={style}>
+                      {STATUS_FORMAT_LABELS[option as StatusFormat]}
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </Select>
           )}
         />
         <Controller

@@ -16,7 +16,7 @@ export const STATUS_FORMAT_OPTIONS = [
 export type StatusFormatOption = (typeof STATUS_FORMAT_OPTIONS)[number];
 
 export const STATUS_FORMAT_LABELS: Record<StatusFormatOption, string> = {
-  none: "None",
+  none: "No note effect",
   underline: "Underline",
   bold: "Bold",
   strikethrough: "Strikethrough",
