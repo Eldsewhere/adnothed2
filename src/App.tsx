@@ -423,21 +423,189 @@ function App() {
     setConfirmImportOpen(true);
   };
 
+  const applyImportedState = (next: {
+    labels: Label[];
+    statuses: Status[];
+    notes: Note[];
+    fileName: string;
+    parseError?: string | null;
+  }) => {
+    setLabels(next.labels);
+    setStatuses(next.statuses ?? []);
+    setNotes(next.notes);
+    setStorageFileName(next.fileName);
+    setStorageReady(true);
+    setActiveTab("notes");
+    if (next.parseError) {
+      setNotificationSeverity("error");
+      setNotification(next.parseError);
+      return;
+    }
+    setNotificationSeverity("success");
+    setNotification(`Imported ${next.fileName}`);
+  };
+
   const confirmImport = () => {
     if (!pendingImport) {
       setConfirmImportOpen(false);
       return;
     }
-    setLabels(pendingImport.labels);
-    setStatuses(pendingImport.statuses ?? []);
-    setNotes(pendingImport.notes);
-    setStorageFileName(pendingImport.fileName);
-    setStorageReady(true);
-    setActiveTab("notes");
-    setNotificationSeverity("success");
-    setNotification(`Imported ${pendingImport.fileName}`);
+    applyImportedState(pendingImport);
     setPendingImport(null);
     setConfirmImportOpen(false);
+  };
+
+  const handleImportFromGoogleDrive = async () => {
+    try {
+      if (!import.meta.env.VITE_GOOGLE_CLIENT_ID) {
+        setNotificationSeverity("error");
+        setNotification(
+          "Google Drive import is not configured. Set VITE_GOOGLE_CLIENT_ID in your environment.",
+        );
+        return;
+      }
+
+      const googleAccounts = window.google?.accounts;
+      const googleOauth2 = googleAccounts?.oauth2;
+      if (!googleOauth2) {
+        setNotificationSeverity("error");
+        setNotification("Google Drive authentication is not available yet.");
+        return;
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const existingScript = document.querySelector(
+          'script[src="https://accounts.google.com/gsi/client"]',
+        );
+
+        if (existingScript) {
+          if (window.google?.accounts?.oauth2) {
+            resolve();
+            return;
+          }
+          existingScript.addEventListener("load", () => resolve(), {
+            once: true,
+          });
+          existingScript.addEventListener(
+            "error",
+            () => reject(new Error("Failed to load Google Identity Services.")),
+            { once: true },
+          );
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = "https://accounts.google.com/gsi/client";
+        script.async = true;
+        script.defer = true;
+        script.onload = () => resolve();
+        script.onerror = () => {
+          reject(new Error("Failed to load Google Identity Services."));
+        };
+        document.head.appendChild(script);
+      });
+
+      const accessToken = await new Promise<string>((resolve, reject) => {
+        const tokenClient = googleOauth2.initTokenClient({
+          client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+          scope: "https://www.googleapis.com/auth/drive.file",
+          callback: (response) => {
+            if (response.error) {
+              reject(new Error(response.error));
+              return;
+            }
+            if (!response.access_token) {
+              reject(new Error("Google Drive access token was not returned."));
+              return;
+            }
+            resolve(response.access_token);
+          },
+        });
+        tokenClient.requestAccessToken();
+      });
+
+      const driveHeaders = {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      };
+
+      const folderResponse = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent("name='adnothed' and mimeType='application/vnd.google-apps.folder' and trashed=false")}&spaces=drive&fields=files(id,name)`,
+        { headers: driveHeaders },
+      );
+
+      if (!folderResponse.ok) {
+        const errorText = await folderResponse.text();
+        throw new Error(
+          `Google Drive folder lookup failed: ${folderResponse.status} ${folderResponse.statusText}${errorText ? ` - ${errorText}` : ""}`,
+        );
+      }
+
+      const folderData = (await folderResponse.json()) as {
+        files?: Array<{ id: string; name: string }>;
+      };
+      const folderId = folderData.files?.[0]?.id;
+      if (!folderId) {
+        throw new Error("No adnothed folder was found in Google Drive.");
+      }
+
+      const filesResponse = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=${encodeURIComponent(`'${folderId}' in parents and trashed=false and mimeType='application/json'`)}&orderBy=modifiedTime desc&fields=files(id,name,modifiedTime)`,
+        { headers: driveHeaders },
+      );
+
+      if (!filesResponse.ok) {
+        const errorText = await filesResponse.text();
+        throw new Error(
+          `Google Drive file lookup failed: ${filesResponse.status} ${filesResponse.statusText}${errorText ? ` - ${errorText}` : ""}`,
+        );
+      }
+
+      const filesData = (await filesResponse.json()) as {
+        files?: Array<{ id: string; name: string }>;
+      };
+      const latestFile = filesData.files?.[0];
+      if (!latestFile) {
+        throw new Error(
+          "No JSON backup files were found in the adnothed Google Drive folder.",
+        );
+      }
+
+      const importResponse = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${latestFile.id}?alt=media`,
+        { headers: driveHeaders },
+      );
+
+      if (!importResponse.ok) {
+        const errorText = await importResponse.text();
+        throw new Error(
+          `Google Drive file download failed: ${importResponse.status} ${importResponse.statusText}${errorText ? ` - ${errorText}` : ""}`,
+        );
+      }
+
+      const raw = await importResponse.text();
+      const parsed = JSON.parse(raw) as {
+        labels?: Label[];
+        statuses?: Status[];
+        notes?: Note[];
+      };
+      const imported = {
+        labels: parsed.labels ?? [],
+        statuses: parsed.statuses ?? [],
+        notes: parsed.notes ?? [],
+        fileName: latestFile.name,
+      };
+      applyImportedState(imported);
+      setNotificationSeverity("success");
+      setNotification(`Imported ${latestFile.name} from Google Drive`);
+    } catch (error) {
+      setNotificationSeverity("error");
+      setNotification(
+        error instanceof Error
+          ? error.message
+          : "Failed to import from Google Drive.",
+      );
+    }
   };
 
   const handleExportJson = () => {
@@ -2168,6 +2336,9 @@ function App() {
                   onClose={() => setLabelsActionsAnchor(null)}
                   onImport={() => {
                     void selectImportFile();
+                  }}
+                  onImportFromGoogleDrive={() => {
+                    void handleImportFromGoogleDrive();
                   }}
                   labels={labels}
                   notes={notes}

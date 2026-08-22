@@ -45,7 +45,11 @@ const STORAGE_KEY = "adnothed-local-storage";
 const FILE_NAME_STORAGE_KEY = `${STORAGE_KEY}:fileName`;
 const GOOGLE_DRIVE_STORAGE_KEY = "adnothed-google-drive-enabled";
 
-const emptyPersistedState: PersistedState = { labels: [], statuses: [], notes: [] };
+const emptyPersistedState: PersistedState = {
+  labels: [],
+  statuses: [],
+  notes: [],
+};
 const emptyAppState: { labels: Label[]; statuses: Status[]; notes: Note[] } = {
   labels: [],
   statuses: [],
@@ -244,7 +248,7 @@ function stripTransientNoteFields<T extends Note>(note: T): T {
   return rest as T;
 }
 
-function deserializeState(state: PersistedState): {
+export function deserializeState(state: PersistedState): {
   labels: Label[];
   statuses: Status[];
   notes: Note[];

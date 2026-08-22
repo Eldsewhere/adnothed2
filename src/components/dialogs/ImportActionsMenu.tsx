@@ -13,6 +13,7 @@ type ImportActionsMenuProps = {
   anchorEl: HTMLElement | null;
   onClose: () => void;
   onImport: () => void;
+  onImportFromGoogleDrive?: () => void;
   onExport: () => void;
   labels: Label[];
   notes: Note[];
@@ -26,6 +27,7 @@ const ImportActionsMenu = ({
   anchorEl,
   onClose,
   onImport,
+  onImportFromGoogleDrive,
   onExport,
   labels,
   notes,
@@ -41,23 +43,38 @@ const ImportActionsMenu = ({
       onClose={onClose}
     >
       {showGoogleDriveBackup && (
-        <Suspense
-          fallback={
-            <MenuItem disabled>
-              <Icon path={mdiGoogleDrive} size={0.8} />
-              <Box component="span" sx={{ ml: 1 }}>
-                Backup to GDrive
-              </Box>
-            </MenuItem>
-          }
-        >
-          <GoogleDriveBackupMenuItem
-            onClose={onClose}
-            onNotify={onNotify}
-            labels={labels}
-            notes={notes}
-          />
-        </Suspense>
+        <>
+          <Suspense
+            fallback={
+              <MenuItem disabled>
+                <Icon path={mdiGoogleDrive} size={0.8} />
+                <Box component="span" sx={{ ml: 1 }}>
+                  Backup to GDrive
+                </Box>
+              </MenuItem>
+            }
+          >
+            <GoogleDriveBackupMenuItem
+              onClose={onClose}
+              onNotify={onNotify}
+              labels={labels}
+              notes={notes}
+            />
+          </Suspense>
+          <MenuItem
+            onClick={() => {
+              onClose();
+              if (onImportFromGoogleDrive) {
+                void onImportFromGoogleDrive();
+              }
+            }}
+          >
+            <Icon path={mdiGoogleDrive} size={0.8} />
+            <Box component="span" sx={{ ml: 1 }}>
+              Import from GDrive
+            </Box>
+          </MenuItem>
+        </>
       )}
       <MenuItem
         onClick={() => {

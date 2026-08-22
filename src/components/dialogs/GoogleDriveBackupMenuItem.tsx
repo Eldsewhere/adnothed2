@@ -178,7 +178,11 @@ const GoogleDriveBackupMenuItem = ({
         throw new Error("Google Drive folder ID was not available.");
       }
 
-      const payload = serializeState({ labels, statuses: statuses ?? [], notes });
+      const payload = serializeState({
+        labels,
+        statuses: statuses ?? [],
+        notes,
+      });
       const now = new Date();
       const pad = (n: number) => String(n).padStart(2, "0");
       const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
@@ -232,7 +236,9 @@ const GoogleDriveBackupMenuItem = ({
     } catch (error) {
       onNotify(
         "error",
-        error instanceof Error ? error.message : "Failed to upload to Google Drive.",
+        error instanceof Error
+          ? error.message
+          : "Failed to upload to Google Drive.",
       );
     }
   };
