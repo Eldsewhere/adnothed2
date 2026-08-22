@@ -1988,6 +1988,7 @@ function App() {
       ...prev,
       date: nextFilter.date,
       endDate: nextFilter.endDate,
+      weekday: null,
       dueDate: "",
       hasDue: false,
     }));
