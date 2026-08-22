@@ -98,8 +98,6 @@ const NoteListRow = ({
   isPriorityBoundary,
   isPriorityGroupStart,
   isPriorityGroupEnd,
-  isNonPriorityGroupStart,
-  isNonPriorityGroupEnd,
   dayIndex,
   selectMode,
   globalIndex,

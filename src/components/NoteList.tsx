@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button, Divider, Tooltip, colors } from "@mui/material";
+import { Box, Alert, Button, Tooltip, colors } from "@mui/material";
 import type {
   Label,
   Note,
@@ -831,7 +831,6 @@ const NoteList = ({
 
               if (item.type === "header") {
                 const isArchivedHeader = item.key === "archived-section-header";
-                const isNotesHeader = item.key === "notes-section-header";
                 const isExpanded = isArchivedHeader
                   ? archivedSectionExpanded
                   : notesSectionExpanded;

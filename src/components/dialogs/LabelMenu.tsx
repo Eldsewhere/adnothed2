@@ -7,6 +7,7 @@ import { Icon } from "@mdi/react";
 type LabelMenuProps = {
   anchorEl: HTMLElement | null;
   labels: Label[];
+  labelCounts?: Map<string, number> | Record<string, number>;
   onClose: () => void;
   onSelect: (labelId: string | null) => void;
   selected?: string | null;
@@ -16,6 +17,7 @@ type LabelMenuProps = {
 const LabelMenu = ({
   anchorEl,
   labels,
+  labelCounts: _labelCounts,
   onClose,
   onSelect,
   selected,
