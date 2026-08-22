@@ -726,9 +726,19 @@ const NoteList = ({
                   filters.labelId !== NO_LABEL_FILTER_VALUE
                     ? labelsById.get(filters.labelId)
                     : undefined;
+                const activeDateRangeLabel =
+                  item.key === "notes-section-header"
+                    ? [filters.date, filters.endDate]
+                        .filter(Boolean)
+                        .join(" → ") || null
+                    : null;
                 const hasStartOrEndDateFilter =
                   item.key === "notes-section-header" &&
                   Boolean(filters.date || filters.endDate);
+                const activeDueDateLabel =
+                  item.key === "notes-section-header"
+                    ? filters.weekday || filters.dueDate || null
+                    : null;
                 const hasDueDateFilter =
                   item.key === "notes-section-header" &&
                   Boolean(
@@ -814,7 +824,14 @@ const NoteList = ({
                           </Tooltip>
                         )}
                         {hasStartOrEndDateFilter && (
-                          <Tooltip title="Date range filter" arrow>
+                          <Tooltip
+                            title={
+                              activeDateRangeLabel
+                                ? `Date range filter: ${activeDateRangeLabel}`
+                                : "Date range filter"
+                            }
+                            arrow
+                          >
                             <Box
                               sx={{
                                 display: "inline-flex",
@@ -827,7 +844,14 @@ const NoteList = ({
                           </Tooltip>
                         )}
                         {hasDueDateFilter && (
-                          <Tooltip title="Due date filter" arrow>
+                          <Tooltip
+                            title={
+                              activeDueDateLabel
+                                ? `Due date filter: ${activeDueDateLabel}`
+                                : "Due date filter"
+                            }
+                            arrow
+                          >
                             <Box
                               sx={{
                                 display: "inline-flex",
