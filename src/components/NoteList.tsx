@@ -786,28 +786,12 @@ const NoteList = ({
               )}
             </Box>
           </Box>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              px: 1.5,
-              py: 1.25,
-              color: "text.secondary",
-              backgroundColor: "rgba(96, 165, 250, 0.08)",
-              borderLeft: "3px solid rgba(96, 165, 250, 0.6)",
-            }}
-          >
-            <Icon path={mdiInformationOutline} size={0.85} color="info.main" />
-            <Box sx={{ fontSize: "0.85rem", fontWeight: 500 }}>
-              {sortedNotes.length === 0
-                ? "No notes added yet"
-                : "No notes match the current filters"}
-            </Box>
-          </Box>
-          <Box
-            sx={{ mt: 0.5, display: "flex", gap: 1, flexWrap: "wrap", px: 1.5 }}
-          >
+          <Alert severity="info">
+            {sortedNotes.length === 0
+              ? "No notes added yet"
+              : "No notes match the current filters"}
+          </Alert>
+          <Box sx={{ mt: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
             {onInfoTips && (
               <Button
                 startIcon={<Icon path={mdiInformationOutline} size={0.9} />}
