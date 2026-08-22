@@ -20,6 +20,7 @@ import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import {
+  mdiCalendar,
   mdiCalendarClock,
   mdiChevronDown,
   mdiChevronUp,
@@ -725,6 +726,9 @@ const NoteList = ({
                   filters.labelId !== NO_LABEL_FILTER_VALUE
                     ? labelsById.get(filters.labelId)
                     : undefined;
+                const hasStartOrEndDateFilter =
+                  item.key === "notes-section-header" &&
+                  Boolean(filters.date || filters.endDate);
                 const hasDueDateFilter =
                   item.key === "notes-section-header" &&
                   Boolean(
@@ -778,7 +782,9 @@ const NoteList = ({
                         {label} ({count})
                       </Box>
                     </Tooltip>
-                    {(selectedLabel || hasDueDateFilter) && (
+                    {(selectedLabel ||
+                      hasStartOrEndDateFilter ||
+                      hasDueDateFilter) && (
                       <Box
                         sx={{
                           display: "inline-flex",
@@ -804,6 +810,19 @@ const NoteList = ({
                                 color={selectedLabel.color}
                                 size={0.65}
                               />
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {hasStartOrEndDateFilter && (
+                          <Tooltip title="Date range filter" arrow>
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Icon path={mdiCalendar} size={0.7} />
                             </Box>
                           </Tooltip>
                         )}
