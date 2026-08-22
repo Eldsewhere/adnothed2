@@ -33,7 +33,6 @@ export const PersistedStatusSchema = z.object({
 export const PersistedNoteSchema = z.object({
   icon: z.string().nullable().optional(),
   text: z.string(),
-  emotion: z.string().optional(),
   emoji: z.string().optional(),
   time: z.number(),
   due: z.number().nullable().optional(),

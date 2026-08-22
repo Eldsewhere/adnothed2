@@ -474,14 +474,6 @@ function App() {
         return;
       }
 
-      const googleAccounts = window.google?.accounts;
-      const googleOauth2 = googleAccounts?.oauth2;
-      if (!googleOauth2) {
-        setNotificationSeverity("error");
-        setNotification("Google Drive authentication is not available yet.");
-        return;
-      }
-
       await new Promise<void>((resolve, reject) => {
         const existingScript = document.querySelector(
           'script[src="https://accounts.google.com/gsi/client"]',
@@ -513,6 +505,14 @@ function App() {
         };
         document.head.appendChild(script);
       });
+
+      const googleAccounts = window.google?.accounts;
+      const googleOauth2 = googleAccounts?.oauth2;
+      if (!googleOauth2) {
+        setNotificationSeverity("error");
+        setNotification("Google Drive authentication is not available yet.");
+        return;
+      }
 
       const accessToken = await new Promise<string>((resolve, reject) => {
         const tokenClient = googleOauth2.initTokenClient({
