@@ -378,7 +378,7 @@ export async function openPersistedStateFile(
 
   try {
     const raw = await file.text();
-    const parseResult = parseState(raw);
+    const parseResult = parsePersistedState(raw);
     const state = deserializeState(parseResult.state);
     const serialized = serializeState(state);
     setStoredValue(JSON.stringify(serialized));
@@ -403,7 +403,7 @@ export async function loadPersistedState(): Promise<{
   try {
     const raw = getStoredValue();
     const fileName = await getPersistedFileName();
-    const parseResult = parseState(raw);
+    const parseResult = parsePersistedState(raw);
     return {
       ...deserializeState(parseResult.state),
       fileName,
