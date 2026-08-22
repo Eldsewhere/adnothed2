@@ -2158,7 +2158,7 @@ function App() {
                           mt: 0.15,
                         }}
                       >
-                        {filteredNoteCount}
+                        {sortedNotes.length}
                       </Box>
                     </Box>
                     <Box component="span">Notes</Box>
