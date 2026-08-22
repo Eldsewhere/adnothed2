@@ -2402,6 +2402,7 @@ function App() {
                   cloneNote={cloneNote}
                   initialText={sharedText ?? undefined}
                   textValue={draftNoteText}
+                  filterLabelId={noteFilters.labelId}
                   labels={labels}
                   dueLabel={futureDueLabel}
                   dueFutureCount={dueFutureCount}

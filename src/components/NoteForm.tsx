@@ -30,6 +30,7 @@ type NoteFormProps = {
   cloneNote?: Note | null;
   initialText?: string;
   textValue?: string;
+  filterLabelId?: string;
   labels: Label[];
   dueLabel?: string;
   dueFutureCount?: number;
@@ -49,6 +50,7 @@ const NoteForm = ({
   cloneNote,
   initialText,
   textValue,
+  filterLabelId = "",
   labels,
   dueLabel,
   dueFutureCount = 0,
@@ -88,8 +90,8 @@ const NoteForm = ({
       : cloneNote
         ? { labelId: "", text: cloneNote.text }
         : initialText
-          ? { labelId: "", text: initialText }
-          : { labelId: "", text: textValue ?? "" };
+          ? { labelId: filterLabelId, text: initialText }
+          : { labelId: filterLabelId, text: textValue ?? "" };
 
     reset(nextValues);
     onNoteTextChange?.(nextValues.text);
@@ -102,10 +104,12 @@ const NoteForm = ({
     isEditing,
     cloneNote,
     initialText,
+    filterLabelId,
     onFilterLabelChange,
     onFilterTextChange,
     onNoteTextChange,
     reset,
+    textValue,
   ]);
 
   useEffect(() => {
