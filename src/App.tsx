@@ -2351,6 +2351,7 @@ function App() {
                     setConfirmImportOpen(true);
                   }}
                   labels={labels}
+                  statuses={statuses}
                   notes={notes}
                   onNotify={(severity, message) => {
                     setNotificationSeverity(severity);
