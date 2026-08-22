@@ -650,18 +650,122 @@ const NoteList = ({
   return (
     <Box>
       {filteredNotes.length === 0 ? (
-        <>
-          <Alert severity="info" sx={{ textAlign: "left" }}>
-            {sortedNotes.length === 0 ? (
-              <>
-                <Box>No notes added yet</Box>
-              </>
-            ) : (
-              "No notes match the current filters"
-            )}
-          </Alert>
-          <Divider sx={{ mt: 2 }} />
-          <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
+        <Box
+          ref={containerRef}
+          onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+          sx={{
+            height: "100vh",
+            minHeight: 200,
+            overflowY: "auto",
+            position: "relative",
+          }}
+        >
+          <Box
+            sx={{
+              position: "relative",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              px: 1.5,
+              py: 0.75,
+              borderBottom: "1px solid rgba(255,255,255,0.08)",
+              backgroundColor: "rgba(255,255,255,0.03)",
+            }}
+          >
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
+                fontSize: "0.82rem",
+                fontWeight: 700,
+                letterSpacing: 0.4,
+                textTransform: "uppercase",
+              }}
+            >
+              <Icon path={mdiChevronDown} size={0.7} />
+              Notes (0)
+            </Box>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 0.75,
+              }}
+            >
+              {filters.labelId && filters.labelId !== NO_LABEL_FILTER_VALUE && (
+                <Tooltip
+                  title={`Label filter: ${labelsById.get(filters.labelId)?.name ?? "Selected label"}`}
+                  arrow
+                >
+                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                    <LabelIcon
+                      icon={
+                        labelsById.get(filters.labelId)?.icon ?? {
+                          name: "",
+                          label: "Label",
+                          path: mdiInformationOutline,
+                        }
+                      }
+                      color={labelsById.get(filters.labelId)?.color}
+                      size={0.65}
+                    />
+                  </Box>
+                </Tooltip>
+              )}
+              {(filters.date || filters.endDate) && (
+                <Tooltip
+                  title={
+                    [filters.date, filters.endDate]
+                      .filter(Boolean)
+                      .join(" → ") || "Date range filter"
+                  }
+                  arrow
+                >
+                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                    <Icon path={mdiCalendar} size={0.7} />
+                  </Box>
+                </Tooltip>
+              )}
+              {(filters.dueDate ||
+                filters.hasDue ||
+                filters.weekday !== null) && (
+                <Tooltip
+                  title={
+                    filters.weekday || filters.dueDate || "Due date filter"
+                  }
+                  arrow
+                >
+                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                    <Icon path={mdiCalendarClock} size={0.7} />
+                  </Box>
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              px: 1.5,
+              py: 1.25,
+              color: "text.secondary",
+              backgroundColor: "rgba(96, 165, 250, 0.08)",
+              borderLeft: "3px solid rgba(96, 165, 250, 0.6)",
+            }}
+          >
+            <Icon path={mdiInformationOutline} size={0.85} color="info.main" />
+            <Box sx={{ fontSize: "0.85rem", fontWeight: 500 }}>
+              {sortedNotes.length === 0
+                ? "No notes added yet"
+                : "No notes match the current filters"}
+            </Box>
+          </Box>
+          <Box
+            sx={{ mt: 0.5, display: "flex", gap: 1, flexWrap: "wrap", px: 1.5 }}
+          >
             {onInfoTips && (
               <Button
                 startIcon={<Icon path={mdiInformationOutline} size={0.9} />}
@@ -683,7 +787,7 @@ const NoteList = ({
               </Button>
             )}
           </Box>
-        </>
+        </Box>
       ) : (
         <Box
           ref={containerRef}
