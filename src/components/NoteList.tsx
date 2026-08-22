@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button, Divider, Tooltip } from "@mui/material";
+import { Box, Alert, Button, Divider, Tooltip, colors } from "@mui/material";
 import type {
   Label,
   Note,
@@ -997,6 +997,7 @@ const NoteList = ({
                                 border: "none",
                                 p: 0,
                                 cursor: "pointer",
+                                color: colors.blue[200],
                               }}
                             >
                               <Icon path={mdiCalendar} size={0.7} />
@@ -1024,6 +1025,7 @@ const NoteList = ({
                                 border: "none",
                                 p: 0,
                                 cursor: "pointer",
+                                color: colors.orange[400],
                               }}
                             >
                               <Icon path={mdiCalendarClock} size={0.7} />
