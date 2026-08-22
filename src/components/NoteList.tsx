@@ -26,6 +26,7 @@ import {
   mdiInformationOutline,
 } from "@mdi/js";
 import { Icon } from "@mdi/react";
+import LabelIcon from "./ui/LabelIcon";
 
 type NoteListProps = {
   notes: Note[];
@@ -717,6 +718,13 @@ const NoteList = ({
                   ? () => setArchivedSectionExpanded((value) => !value)
                   : () => setNotesSectionExpanded((value) => !value);
 
+                const selectedLabel =
+                  item.key === "notes-section-header" &&
+                  filters.labelId &&
+                  filters.labelId !== NO_LABEL_FILTER_VALUE
+                    ? labelsById.get(filters.labelId)
+                    : undefined;
+
                 return (
                   <Box
                     key={item.key}
@@ -728,6 +736,7 @@ const NoteList = ({
                       height: rowHeights[index],
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "space-between",
                       px: 1.5,
                       borderBottom: "1px solid rgba(255,255,255,0.08)",
                       borderRadius: 0,
@@ -761,6 +770,26 @@ const NoteList = ({
                         {label} ({count})
                       </Box>
                     </Tooltip>
+                    {selectedLabel && (
+                      <Tooltip
+                        title={`Label filter: ${selectedLabel.name}`}
+                        arrow
+                      >
+                        <Box
+                          sx={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
+                          <LabelIcon
+                            icon={selectedLabel.icon}
+                            color={selectedLabel.color}
+                            size={0.65}
+                          />
+                        </Box>
+                      </Tooltip>
+                    )}
                   </Box>
                 );
               }
