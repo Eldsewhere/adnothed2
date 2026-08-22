@@ -74,7 +74,6 @@ const LabelList = ({
       ) : (
         <Box
           sx={{
-            maxHeight: "100vh",
             overflowY: "auto",
             minHeight: 0,
             bgcolor: colors.blueGrey[900],
@@ -96,7 +95,9 @@ const LabelList = ({
                   <LabelListRow
                     key={label.id}
                     label={label}
-                    count={notes.filter((note) => note.labelId === label.id).length}
+                    count={
+                      notes.filter((note) => note.labelId === label.id).length
+                    }
                     isNewLabel={label.id === newlabelId}
                     isEditing={label.id === editingLabelId}
                     isMenuOpen={menuState.label?.id === label.id}

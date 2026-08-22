@@ -69,12 +69,14 @@ const StatusList = ({
     <Box>
       {orderedStatuses.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
-          <Box>No statuses added yet. Add a status to highlight or apply styles to notes.</Box>
+          <Box>
+            No statuses added yet. Add a status to highlight or apply styles to
+            notes.
+          </Box>
         </Alert>
       ) : (
         <Box
           sx={{
-            maxHeight: "100vh",
             overflowY: "auto",
             minHeight: 0,
             bgcolor: colors.blueGrey[900],
@@ -83,13 +85,18 @@ const StatusList = ({
           }}
         >
           <TableContainer sx={{ overflow: "hidden" }}>
-            <Table size="small" sx={{ borderCollapse: "collapse", borderSpacing: 0 }}>
+            <Table
+              size="small"
+              sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
+            >
               <TableBody>
                 {orderedStatuses.map((status) => (
                   <StatusListRow
                     key={status.id}
                     status={status}
-                    count={notes.filter((note) => note.emoji === status.emoji).length}
+                    count={
+                      notes.filter((note) => note.emoji === status.emoji).length
+                    }
                     isNewStatus={status.id === newStatusId}
                     isEditing={status.id === editingStatusId}
                     isMenuOpen={menuState.status?.id === status.id}
@@ -109,13 +116,31 @@ const StatusList = ({
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
         <MenuItem onClick={handleMenuEdit}>
-          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
             <Icon path={mdiPencil} size={0.7} />
           </Box>
           Edit
         </MenuItem>
         <MenuItem onClick={handleMenuDelete}>
-          <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1, py: 1, px: 0.5 }}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
             <Icon path={mdiTrashCanOutline} size={0.7} />
           </Box>
           Delete
