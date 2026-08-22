@@ -1417,6 +1417,8 @@ function App() {
             seteditingNote((current) =>
               current ? { ...current, text: nextValue } : current,
             );
+          } else {
+            handleFilterTextChange(nextValue);
           }
 
           return nextValue;
@@ -1434,12 +1436,14 @@ function App() {
           seteditingNote((current) =>
             current ? { ...current, text: nextValue } : current,
           );
+        } else {
+          handleFilterTextChange(nextValue);
         }
 
         return nextValue;
       });
     },
-    [editingNote],
+    [editingNote, handleFilterTextChange],
   );
 
   const handleAppendHashtagToNote = useCallback((note: Note, tag: string) => {
