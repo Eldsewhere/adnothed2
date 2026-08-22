@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button, Tooltip, colors } from "@mui/material";
+import { Box, Alert, Button } from "@mui/material";
 import type {
   Label,
   Note,
@@ -19,17 +19,9 @@ import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
-import {
-  mdiCalendar,
-  mdiCalendarClock,
-  mdiChevronDown,
-  mdiChevronUp,
-  mdiDownload,
-  mdiInformationOutline,
-} from "@mdi/js";
+import { mdiDownload, mdiInformationOutline } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import LabelIcon from "./ui/LabelIcon";
-import { getLabelColorSwatch } from "../utils/labelColors";
+import NoteListAccordionHeader from "./NoteListAccordionHeader";
 
 type NoteListProps = {
   notes: Note[];
@@ -79,40 +71,6 @@ const EXPANDED_ROW_HEIGHT = 128;
 const ARCHIVED_SECTION_HEADER_HEIGHT = 36;
 const OVERSCAN = 6;
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
-const FILTER_CLEAR_BUTTON_SX = {
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  position: "relative",
-  overflow: "visible",
-  background: "transparent",
-  border: "none",
-  p: 0,
-  cursor: "pointer",
-  color: "rgba(255,255,255,0.82)",
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    left: "50%",
-    top: "50%",
-    width: "120%",
-    height: 1.5,
-    backgroundColor: "currentColor",
-    transform: "translate(-50%, -50%) rotate(-45deg)",
-    borderRadius: 999,
-    pointerEvents: "none",
-    display: "block",
-    zIndex: 0,
-  },
-  "&:hover": {
-    color: "rgba(255,255,255,1)",
-  },
-  "& svg, & .MuiAvatar-root": {
-    position: "relative",
-    zIndex: 1,
-    color: "inherit",
-  },
-};
 
 const getSearchQuery = (text: string): string =>
   text
@@ -704,101 +662,33 @@ const NoteList = ({
           <Box
             sx={{
               position: "relative",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              px: 1.5,
-              py: 0.75,
-              borderBottom: "1px solid rgba(255,255,255,0.08)",
-              backgroundColor: "rgba(255,255,255,0.03)",
+              height: 36,
             }}
           >
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.5,
-                fontSize: "0.82rem",
-                fontWeight: 700,
-                letterSpacing: 0.4,
-                textTransform: "uppercase",
-              }}
-            >
-              <Icon path={mdiChevronDown} size={0.7} />
-              Notes (0)
-            </Box>
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.75,
-              }}
-            >
-              {filters.labelId && filters.labelId !== NO_LABEL_FILTER_VALUE && (
-                <Tooltip
-                  title={`Label filter: ${labelsById.get(filters.labelId)?.name ?? "Selected label"}`}
-                  arrow
-                >
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={onClearLabelFilter}
-                    sx={FILTER_CLEAR_BUTTON_SX}
-                  >
-                    <LabelIcon
-                      icon={
-                        labelsById.get(filters.labelId)?.icon ?? {
-                          name: "",
-                          label: "Label",
-                          path: mdiInformationOutline,
-                        }
-                      }
-                      color={labelsById.get(filters.labelId)?.color}
-                      size={0.65}
-                    />
-                  </Box>
-                </Tooltip>
+            <NoteListAccordionHeader
+              label="Notes"
+              count={0}
+              isExpanded={false}
+              tooltip="Notes"
+              onToggle={() => {}}
+              selectedLabel={
+                filters.labelId && filters.labelId !== NO_LABEL_FILTER_VALUE
+                  ? labelsById.get(filters.labelId)
+                  : undefined
+              }
+              onClearLabelFilter={onClearLabelFilter}
+              hasStartOrEndDateFilter={Boolean(filters.date || filters.endDate)}
+              activeDateRangeLabel={
+                [filters.date, filters.endDate].filter(Boolean).join(" → ") ||
+                null
+              }
+              onClearDateRangeFilter={onClearDateRangeFilter}
+              hasDueDateFilter={Boolean(
+                filters.dueDate || filters.hasDue || filters.weekday !== null,
               )}
-              {(filters.date || filters.endDate) && (
-                <Tooltip
-                  title={
-                    [filters.date, filters.endDate]
-                      .filter(Boolean)
-                      .join(" → ") || "Date range filter"
-                  }
-                  arrow
-                >
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={onClearDateRangeFilter}
-                    sx={FILTER_CLEAR_BUTTON_SX}
-                  >
-                    <Icon path={mdiCalendar} size={0.7} />
-                  </Box>
-                </Tooltip>
-              )}
-              {(filters.dueDate ||
-                filters.hasDue ||
-                filters.weekday !== null) && (
-                <Tooltip
-                  title={
-                    filters.weekday || filters.dueDate || "Due date filter"
-                  }
-                  arrow
-                >
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={onClearDueDateFilter}
-                    sx={FILTER_CLEAR_BUTTON_SX}
-                  >
-                    <Icon path={mdiCalendarClock} size={0.7} />
-                  </Box>
-                </Tooltip>
-              )}
-            </Box>
+              activeDueDateLabel={filters.weekday || filters.dueDate || null}
+              onClearDueDateFilter={onClearDueDateFilter}
+            />
           </Box>
           <Alert severity="info">
             {sortedNotes.length === 0
@@ -899,122 +789,23 @@ const NoteList = ({
                       left: 0,
                       right: 0,
                       height: rowHeights[index],
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      px: 1.5,
-                      borderBottom: "1px solid rgba(255,255,255,0.08)",
-                      borderRadius: 0,
-                      backgroundColor: "rgba(255,255,255,0.03)",
                     }}
                   >
-                    <Tooltip title={tooltip} arrow>
-                      <Box
-                        component="button"
-                        type="button"
-                        onClick={onToggle}
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 0.5,
-                          background: "transparent",
-                          border: "none",
-                          color: "inherit",
-                          cursor: "pointer",
-                          fontSize: "0.82rem",
-                          fontWeight: 700,
-                          letterSpacing: 0.4,
-                          textTransform: "uppercase",
-                          p: 0,
-                        }}
-                      >
-                        <Icon
-                          path={isExpanded ? mdiChevronUp : mdiChevronDown}
-                          size={0.7}
-                        />
-                        {label} ({count})
-                      </Box>
-                    </Tooltip>
-                    {(selectedLabel ||
-                      hasStartOrEndDateFilter ||
-                      hasDueDateFilter) && (
-                      <Box
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          gap: 0.75,
-                        }}
-                      >
-                        {selectedLabel && (
-                          <Tooltip
-                            title={`Label filter: ${selectedLabel.name}`}
-                            arrow
-                          >
-                            <Box
-                              component="button"
-                              type="button"
-                              onClick={onClearLabelFilter}
-                              sx={{
-                                ...FILTER_CLEAR_BUTTON_SX,
-                                color: getLabelColorSwatch(selectedLabel.color)
-                                  .background,
-                              }}
-                            >
-                              <LabelIcon
-                                icon={selectedLabel.icon}
-                                color={selectedLabel.color}
-                                size={0.65}
-                              />
-                            </Box>
-                          </Tooltip>
-                        )}
-                        {hasStartOrEndDateFilter && (
-                          <Tooltip
-                            title={
-                              activeDateRangeLabel
-                                ? `Date range filter: ${activeDateRangeLabel}`
-                                : "Date range filter"
-                            }
-                            arrow
-                          >
-                            <Box
-                              component="button"
-                              type="button"
-                              onClick={onClearDateRangeFilter}
-                              sx={{
-                                ...FILTER_CLEAR_BUTTON_SX,
-                                color: colors.blue[200],
-                              }}
-                            >
-                              <Icon path={mdiCalendar} size={0.7} />
-                            </Box>
-                          </Tooltip>
-                        )}
-                        {hasDueDateFilter && (
-                          <Tooltip
-                            title={
-                              activeDueDateLabel
-                                ? `Due date filter: ${activeDueDateLabel}`
-                                : "Due date filter"
-                            }
-                            arrow
-                          >
-                            <Box
-                              component="button"
-                              type="button"
-                              onClick={onClearDueDateFilter}
-                              sx={{
-                                ...FILTER_CLEAR_BUTTON_SX,
-                                color: colors.orange[400],
-                              }}
-                            >
-                              <Icon path={mdiCalendarClock} size={0.7} />
-                            </Box>
-                          </Tooltip>
-                        )}
-                      </Box>
-                    )}
+                    <NoteListAccordionHeader
+                      label={label}
+                      count={count}
+                      isExpanded={isExpanded}
+                      tooltip={tooltip}
+                      onToggle={onToggle}
+                      selectedLabel={selectedLabel}
+                      onClearLabelFilter={onClearLabelFilter}
+                      hasStartOrEndDateFilter={hasStartOrEndDateFilter}
+                      activeDateRangeLabel={activeDateRangeLabel}
+                      onClearDateRangeFilter={onClearDateRangeFilter}
+                      hasDueDateFilter={hasDueDateFilter}
+                      activeDueDateLabel={activeDueDateLabel}
+                      onClearDueDateFilter={onClearDueDateFilter}
+                    />
                   </Box>
                 );
               }
