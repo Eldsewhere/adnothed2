@@ -20,6 +20,7 @@ import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import {
+  mdiCalendarClock,
   mdiChevronDown,
   mdiChevronUp,
   mdiDownload,
@@ -724,6 +725,13 @@ const NoteList = ({
                   filters.labelId !== NO_LABEL_FILTER_VALUE
                     ? labelsById.get(filters.labelId)
                     : undefined;
+                const hasDueDateFilter =
+                  item.key === "notes-section-header" &&
+                  Boolean(
+                    filters.dueDate ||
+                    filters.hasDue ||
+                    filters.weekday !== null,
+                  );
 
                 return (
                   <Box
@@ -770,25 +778,49 @@ const NoteList = ({
                         {label} ({count})
                       </Box>
                     </Tooltip>
-                    {selectedLabel && (
-                      <Tooltip
-                        title={`Label filter: ${selectedLabel.name}`}
-                        arrow
+                    {(selectedLabel || hasDueDateFilter) && (
+                      <Box
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 0.75,
+                        }}
                       >
-                        <Box
-                          sx={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <LabelIcon
-                            icon={selectedLabel.icon}
-                            color={selectedLabel.color}
-                            size={0.65}
-                          />
-                        </Box>
-                      </Tooltip>
+                        {selectedLabel && (
+                          <Tooltip
+                            title={`Label filter: ${selectedLabel.name}`}
+                            arrow
+                          >
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <LabelIcon
+                                icon={selectedLabel.icon}
+                                color={selectedLabel.color}
+                                size={0.65}
+                              />
+                            </Box>
+                          </Tooltip>
+                        )}
+                        {hasDueDateFilter && (
+                          <Tooltip title="Due date filter" arrow>
+                            <Box
+                              sx={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                              }}
+                            >
+                              <Icon path={mdiCalendarClock} size={0.7} />
+                            </Box>
+                          </Tooltip>
+                        )}
+                      </Box>
                     )}
                   </Box>
                 );
