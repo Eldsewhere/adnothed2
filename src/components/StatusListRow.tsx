@@ -15,6 +15,7 @@ import { getStatusTextStyle } from "../utils/statusStyles";
 
 type StatusListRowProps = {
   status: Status;
+  count: number;
   isNewStatus: boolean;
   isEditing?: boolean;
   isMenuOpen?: boolean;
@@ -23,6 +24,7 @@ type StatusListRowProps = {
 
 const StatusListRow = ({
   status,
+  count,
   isNewStatus,
   isEditing = false,
   isMenuOpen = false,
@@ -90,6 +92,19 @@ const StatusListRow = ({
               : status.name}
           </Typography>
         </Box>
+      </TableCell>
+      <TableCell
+        align="right"
+        sx={{
+          verticalAlign: "middle",
+          paddingY: 2,
+          color: colors.blueGrey[300],
+          width: 60,
+        }}
+      >
+        <Typography variant="caption" sx={{ fontWeight: 600 }}>
+          {count}
+        </Typography>
       </TableCell>
       <TableCell align="right" sx={{ verticalAlign: "middle", paddingY: 2 }}>
         <Tooltip title="Actions">

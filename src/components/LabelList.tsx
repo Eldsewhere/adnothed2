@@ -11,11 +11,12 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiPencil, mdiTrashCanOutline } from "@mdi/js";
-import type { Label } from "../types";
+import type { Label, Note } from "../types";
 import LabelListRow from "./LabelListRow";
 
 type LabelListProps = {
   labels: Label[];
+  notes: Note[];
   editingLabelId?: string | null;
   onEdit: (label: Label) => void;
   onDelete: (label: Label) => void;
@@ -24,6 +25,7 @@ type LabelListProps = {
 
 const LabelList = ({
   labels,
+  notes,
   editingLabelId = null,
   onEdit,
   onDelete,
@@ -94,6 +96,7 @@ const LabelList = ({
                   <LabelListRow
                     key={label.id}
                     label={label}
+                    count={notes.filter((note) => note.labelId === label.id).length}
                     isNewLabel={label.id === newlabelId}
                     isEditing={label.id === editingLabelId}
                     isMenuOpen={menuState.label?.id === label.id}

@@ -30,6 +30,7 @@ import { Icon } from "@mdi/react";
 type NoteListProps = {
   notes: Note[];
   labels: Label[];
+  labelCounts?: Map<string, number> | Record<string, number>;
   statuses: Status[];
   filters: noteFiltersValue;
   mostRecentAddedNoteId: string | null;
@@ -96,6 +97,7 @@ const isPriorityNote = (note: Note): boolean =>
 const NoteList = ({
   notes,
   labels,
+  labelCounts,
   statuses,
   filters,
   mostRecentAddedNoteId,
@@ -903,6 +905,7 @@ const NoteList = ({
         <LabelMenu
           anchorEl={labelMenuAnchor.el}
           labels={labels}
+          labelCounts={labelCounts}
           onClose={closeLabelMenu}
           onSelect={(val) => handleLabelSelect(val)}
           selected={labelMenuAnchor?.note.labelId}

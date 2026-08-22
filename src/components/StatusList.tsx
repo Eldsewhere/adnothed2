@@ -11,11 +11,12 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiPencil, mdiTrashCanOutline } from "@mdi/js";
-import type { Status } from "../types";
+import type { Note, Status } from "../types";
 import StatusListRow from "./StatusListRow";
 
 type StatusListProps = {
   statuses: Status[];
+  notes: Note[];
   editingStatusId?: string | null;
   onEdit: (status: Status) => void;
   onDelete: (status: Status) => void;
@@ -24,6 +25,7 @@ type StatusListProps = {
 
 const StatusList = ({
   statuses,
+  notes,
   editingStatusId = null,
   onEdit,
   onDelete,
@@ -87,6 +89,7 @@ const StatusList = ({
                   <StatusListRow
                     key={status.id}
                     status={status}
+                    count={notes.filter((note) => note.emoji === status.emoji).length}
                     isNewStatus={status.id === newStatusId}
                     isEditing={status.id === editingStatusId}
                     isMenuOpen={menuState.status?.id === status.id}

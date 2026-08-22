@@ -15,6 +15,7 @@ import LabelIcon from "./ui/LabelIcon";
 
 type LabelListRowProps = {
   label: Label;
+  count: number;
   isNewLabel: boolean;
   isEditing?: boolean;
   isMenuOpen?: boolean;
@@ -23,6 +24,7 @@ type LabelListRowProps = {
 
 const LabelListRow = ({
   label,
+  count,
   isNewLabel,
   isEditing = false,
   isMenuOpen = false,
@@ -87,6 +89,19 @@ const LabelListRow = ({
           {label.name}
         </Typography>
       </Box>
+    </TableCell>
+    <TableCell
+      align="right"
+      sx={{
+        verticalAlign: "middle",
+        paddingY: 2,
+        color: colors.blueGrey[300],
+        width: 60,
+      }}
+    >
+      <Typography variant="caption" sx={{ fontWeight: 600 }}>
+        {count}
+      </Typography>
     </TableCell>
     <TableCell
       align="right"
