@@ -68,6 +68,9 @@ type NoteListProps = {
   onToggleHashtagInDraft?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
+  onClearLabelFilter?: () => void;
+  onClearDateRangeFilter?: () => void;
+  onClearDueDateFilter?: () => void;
 };
 
 const ROW_HEIGHT = 80;
@@ -133,6 +136,9 @@ const NoteList = ({
   onToggleHashtagInDraft,
   onAppendHashtagToNote,
   onRemoveHashtagFromNote,
+  onClearLabelFilter,
+  onClearDateRangeFilter,
+  onClearDueDateFilter,
 }: NoteListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
@@ -699,7 +705,19 @@ const NoteList = ({
                   title={`Label filter: ${labelsById.get(filters.labelId)?.name ?? "Selected label"}`}
                   arrow
                 >
-                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={onClearLabelFilter}
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "transparent",
+                      border: "none",
+                      p: 0,
+                      cursor: "pointer",
+                    }}
+                  >
                     <LabelIcon
                       icon={
                         labelsById.get(filters.labelId)?.icon ?? {
@@ -723,7 +741,19 @@ const NoteList = ({
                   }
                   arrow
                 >
-                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={onClearDateRangeFilter}
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "transparent",
+                      border: "none",
+                      p: 0,
+                      cursor: "pointer",
+                    }}
+                  >
                     <Icon path={mdiCalendar} size={0.7} />
                   </Box>
                 </Tooltip>
@@ -737,7 +767,19 @@ const NoteList = ({
                   }
                   arrow
                 >
-                  <Box sx={{ display: "inline-flex", alignItems: "center" }}>
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={onClearDueDateFilter}
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      background: "transparent",
+                      border: "none",
+                      p: 0,
+                      cursor: "pointer",
+                    }}
+                  >
                     <Icon path={mdiCalendarClock} size={0.7} />
                   </Box>
                 </Tooltip>
@@ -913,10 +955,17 @@ const NoteList = ({
                             arrow
                           >
                             <Box
+                              component="button"
+                              type="button"
+                              onClick={onClearLabelFilter}
                               sx={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                background: "transparent",
+                                border: "none",
+                                p: 0,
+                                cursor: "pointer",
                               }}
                             >
                               <LabelIcon
@@ -937,10 +986,17 @@ const NoteList = ({
                             arrow
                           >
                             <Box
+                              component="button"
+                              type="button"
+                              onClick={onClearDateRangeFilter}
                               sx={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                background: "transparent",
+                                border: "none",
+                                p: 0,
+                                cursor: "pointer",
                               }}
                             >
                               <Icon path={mdiCalendar} size={0.7} />
@@ -957,10 +1013,17 @@ const NoteList = ({
                             arrow
                           >
                             <Box
+                              component="button"
+                              type="button"
+                              onClick={onClearDueDateFilter}
                               sx={{
                                 display: "inline-flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                background: "transparent",
+                                border: "none",
+                                p: 0,
+                                cursor: "pointer",
                               }}
                             >
                               <Icon path={mdiCalendarClock} size={0.7} />

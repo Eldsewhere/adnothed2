@@ -1511,6 +1511,23 @@ function App() {
     );
   }, []);
 
+  const handleClearLabelFilter = useCallback(() => {
+    setNoteFilters((prev) => ({ ...prev, labelId: "" }));
+  }, []);
+
+  const handleClearDateRangeFilter = useCallback(() => {
+    setNoteFilters((prev) => ({ ...prev, date: "", endDate: "" }));
+  }, []);
+
+  const handleClearDueDateFilter = useCallback(() => {
+    setNoteFilters((prev) => ({
+      ...prev,
+      dueDate: "",
+      hasDue: false,
+      weekday: null,
+    }));
+  }, []);
+
   const handleClearFilters = useCallback(() => {
     setNoteFilters(emptyNoteFilters);
     setSelectMode(false);
@@ -2553,6 +2570,9 @@ function App() {
                   onToggleHashtagFilter={handleToggleHashtagFilter}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                   onAppendHashtagToNote={handleAppendHashtagToNote}
+                  onClearLabelFilter={handleClearLabelFilter}
+                  onClearDateRangeFilter={handleClearDateRangeFilter}
+                  onClearDueDateFilter={handleClearDueDateFilter}
                   onRemoveHashtagFromNote={(note, tag) => {
                     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
                     const nextText = note.text
