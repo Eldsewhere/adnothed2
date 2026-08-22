@@ -270,7 +270,7 @@ export function deserializeState(state: PersistedState): {
   };
 }
 
-function parseState(raw: string | null): ParseResult {
+export function parsePersistedState(raw: string | null): ParseResult {
   if (!raw) {
     return { state: emptyPersistedState, error: null };
   }

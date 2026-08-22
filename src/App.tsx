@@ -59,10 +59,12 @@ import type {
 import dayjs, { type Dayjs } from "dayjs";
 import {
   DEFAULT_FILE_NAME,
+  deserializeState,
   enableGoogleDriveFromQuery,
   getPersistedFileName,
   loadPersistedState,
   openPersistedStateFile,
+  parsePersistedState,
   savePersistedState,
   serializeState,
 } from "./utils/storage";
@@ -593,15 +595,18 @@ function App() {
       }
 
       const raw = await importResponse.text();
-      const parsed = JSON.parse(raw) as {
-        labels?: Label[];
-        statuses?: Status[];
-        notes?: Note[];
-      };
+      const parsedState = parsePersistedState(raw);
+      if (parsedState.error) {
+        setNotificationSeverity("error");
+        setNotification(parsedState.error);
+        return;
+      }
+
+      const importedState = deserializeState(parsedState.state);
       const imported = {
-        labels: parsed.labels ?? [],
-        statuses: parsed.statuses ?? [],
-        notes: parsed.notes ?? [],
+        labels: importedState.labels,
+        statuses: importedState.statuses,
+        notes: importedState.notes,
         fileName: latestFile.name,
       };
       applyImportedState(imported);
