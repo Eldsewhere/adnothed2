@@ -454,6 +454,7 @@ const NoteList = ({
             note.pinned,
             note.emoji,
             note.archived,
+            note.completed,
           )
         ) {
           return false;

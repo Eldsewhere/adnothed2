@@ -17,6 +17,7 @@ import {
   mdiCalendarClock,
   mdiCalendarEnd,
   mdiCalendarStart,
+  mdiCheckCircleOutline,
   mdiCheckboxBlankOutline,
   mdiChevronRight,
   mdiCircleSmall,
@@ -187,6 +188,11 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiLabelMultiple,
   },
   {
+    label: "completed",
+    command: "/with:completed;",
+    iconPath: mdiCheckCircleOutline,
+  },
+  {
     label: "archived",
     command: "/with:archived;",
     iconPath: mdiArchiveOutline,
@@ -225,6 +231,7 @@ const querySubmenuGroups: Record<
     queryTemplates[24],
     queryTemplates[25],
     queryTemplates[26],
+    queryTemplates[27],
   ],
 };
 

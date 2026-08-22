@@ -121,7 +121,12 @@ const NoteListRow = ({
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
+  const shouldDisplayDueDateForMeta =
+    !note.archived &&
+    note.due !== undefined &&
+    (note.completed || isToday(note.due) || isTomorrow(note.due));
   const shouldUsePriorityDueDate =
+    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     (isToday(note.due) || isTomorrow(note.due));
@@ -581,12 +586,12 @@ const NoteListRow = ({
                   component="span"
                   sx={{
                     textDecoration:
-                      note.completed && shouldUsePriorityDueDate
+                      note.completed && shouldDisplayDueDateForMeta
                         ? "line-through"
                         : "none",
                   }}
                 >
-                  {shouldUsePriorityDueDate
+                  {shouldDisplayDueDateForMeta
                     ? formatDueDate(note.due!)
                     : formatTimestamp(note.createdAt)}
                 </Box>
@@ -605,7 +610,15 @@ const NoteListRow = ({
                   </Tooltip>
                 )}
                 {note.completed && (
-                  <Tooltip title="Completed" aria-label={undefined} arrow>
+                  <Tooltip
+                    title={
+                      note.due !== undefined
+                        ? `Completed: ${formatDueDate(note.due)}`
+                        : "Completed"
+                    }
+                    aria-label={undefined}
+                    arrow
+                  >
                     <Box
                       component="span"
                       sx={{
@@ -707,7 +720,8 @@ const NoteListRow = ({
                 note.due !== undefined &&
                 (isToday(note.due) ||
                   isTomorrow(note.due) ||
-                  note.due >= dayjs().unix()) ? (
+                  note.due >= dayjs().unix() ||
+                  note.archived) ? (
                 <Typography
                   variant="caption"
                   sx={{

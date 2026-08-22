@@ -1653,6 +1653,7 @@ function App() {
           note.pinned,
           note.emoji,
           note.archived,
+          note.completed,
         );
       }),
     [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
@@ -1684,6 +1685,7 @@ function App() {
             note.pinned,
             note.emoji,
             note.archived,
+            note.completed,
           )
         ) {
           return false;

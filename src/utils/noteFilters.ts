@@ -48,6 +48,7 @@ export type ParsedTextFilters = {
   withCheckboxes: boolean;
   withDueDate: boolean;
   withArchived: boolean;
+  withCompleted: boolean;
   withPriority: boolean;
   withLabel: boolean;
   withHashtags: boolean;
@@ -79,6 +80,7 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withCheckboxes: false,
   withDueDate: false,
   withArchived: false,
+  withCompleted: false,
   withPriority: false,
   withLabel: false,
   withHashtags: false,
@@ -235,6 +237,10 @@ export function parseTextFilters(
         parsed.withArchived = true;
         continue;
       }
+      if (token === "completed") {
+        parsed.withCompleted = true;
+        continue;
+      }
       if (token === "priority") {
         parsed.withPriority = true;
         continue;
@@ -291,6 +297,7 @@ export function matchesTextFilters(
   isPinned = false,
   emoji?: string,
   isArchived = false,
+  isCompleted = false,
 ): boolean {
   if (
     parsed.query &&
@@ -417,6 +424,10 @@ export function matchesTextFilters(
   }
 
   if (parsed.withArchived && !isArchived) {
+    return false;
+  }
+
+  if (parsed.withCompleted && !isCompleted) {
     return false;
   }
 
