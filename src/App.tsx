@@ -2308,7 +2308,8 @@ function App() {
                       noteFilters.date ||
                       noteFilters.endDate ||
                       noteFilters.dueDate ||
-                      noteFilters.hasDue
+                      noteFilters.hasDue ||
+                      noteFilters.weekday !== null
                         ? "primary"
                         : "default"
                     }

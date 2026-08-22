@@ -29,6 +29,7 @@ import {
 } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import LabelIcon from "./ui/LabelIcon";
+import { getLabelColorSwatch } from "../utils/labelColors";
 
 type NoteListProps = {
   notes: Note[];
@@ -78,6 +79,40 @@ const EXPANDED_ROW_HEIGHT = 128;
 const ARCHIVED_SECTION_HEADER_HEIGHT = 36;
 const OVERSCAN = 6;
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
+const FILTER_CLEAR_BUTTON_SX = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  position: "relative",
+  overflow: "visible",
+  background: "transparent",
+  border: "none",
+  p: 0,
+  cursor: "pointer",
+  color: "rgba(255,255,255,0.82)",
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    left: "50%",
+    top: "50%",
+    width: "120%",
+    height: 1.5,
+    backgroundColor: "currentColor",
+    transform: "translate(-50%, -50%) rotate(-45deg)",
+    borderRadius: 999,
+    pointerEvents: "none",
+    display: "block",
+    zIndex: 0,
+  },
+  "&:hover": {
+    color: "rgba(255,255,255,1)",
+  },
+  "& svg, & .MuiAvatar-root": {
+    position: "relative",
+    zIndex: 1,
+    color: "inherit",
+  },
+};
 
 const getSearchQuery = (text: string): string =>
   text
@@ -709,14 +744,7 @@ const NoteList = ({
                     component="button"
                     type="button"
                     onClick={onClearLabelFilter}
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      background: "transparent",
-                      border: "none",
-                      p: 0,
-                      cursor: "pointer",
-                    }}
+                    sx={FILTER_CLEAR_BUTTON_SX}
                   >
                     <LabelIcon
                       icon={
@@ -745,14 +773,7 @@ const NoteList = ({
                     component="button"
                     type="button"
                     onClick={onClearDateRangeFilter}
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      background: "transparent",
-                      border: "none",
-                      p: 0,
-                      cursor: "pointer",
-                    }}
+                    sx={FILTER_CLEAR_BUTTON_SX}
                   >
                     <Icon path={mdiCalendar} size={0.7} />
                   </Box>
@@ -771,14 +792,7 @@ const NoteList = ({
                     component="button"
                     type="button"
                     onClick={onClearDueDateFilter}
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      background: "transparent",
-                      border: "none",
-                      p: 0,
-                      cursor: "pointer",
-                    }}
+                    sx={FILTER_CLEAR_BUTTON_SX}
                   >
                     <Icon path={mdiCalendarClock} size={0.7} />
                   </Box>
@@ -942,13 +956,9 @@ const NoteList = ({
                               type="button"
                               onClick={onClearLabelFilter}
                               sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "transparent",
-                                border: "none",
-                                p: 0,
-                                cursor: "pointer",
+                                ...FILTER_CLEAR_BUTTON_SX,
+                                color: getLabelColorSwatch(selectedLabel.color)
+                                  .background,
                               }}
                             >
                               <LabelIcon
@@ -973,13 +983,7 @@ const NoteList = ({
                               type="button"
                               onClick={onClearDateRangeFilter}
                               sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "transparent",
-                                border: "none",
-                                p: 0,
-                                cursor: "pointer",
+                                ...FILTER_CLEAR_BUTTON_SX,
                                 color: colors.blue[200],
                               }}
                             >
@@ -1001,13 +1005,7 @@ const NoteList = ({
                               type="button"
                               onClick={onClearDueDateFilter}
                               sx={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                background: "transparent",
-                                border: "none",
-                                p: 0,
-                                cursor: "pointer",
+                                ...FILTER_CLEAR_BUTTON_SX,
                                 color: colors.orange[400],
                               }}
                             >
