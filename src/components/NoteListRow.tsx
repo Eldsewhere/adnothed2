@@ -81,7 +81,6 @@ type NoteListRowProps = {
   availableHashtags?: string[];
   filterText?: string;
   onFilterTextChange?: (value: string) => void;
-  onToggleHashtagFilter?: (tag: string) => void;
   onToggleHashtagInDraft?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
@@ -137,16 +136,6 @@ const NoteListRow = ({
     status && status.format !== "spoiler"
       ? getStatusTextStyle(status.format)
       : {};
-  const activeHashtagSet = new Set(
-    (filterText || "")
-      .split(/\s+/)
-      .map((token) => token.trim())
-      .filter(Boolean),
-  );
-  const isHashtagActive = (tag: string) => {
-    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
-    return activeHashtagSet.has(normalizedTag);
-  };
   const isSpoilerStatus = status?.format === "spoiler";
   const shouldHideSpoilerText = isSpoilerStatus && !isSpoilerVisible;
 
@@ -156,12 +145,11 @@ const NoteListRow = ({
         return <span key={`${part}-${index}`}>{part}</span>;
       }
 
-      const isActive = isHashtagActive(part);
       return (
         <HashtagChip
           key={`${part}-${index}`}
           tag={part}
-          selected={isActive}
+          selected={false}
           onClick={() => {
             onToggleHashtagInDraft?.(part);
           }}
@@ -494,7 +482,7 @@ const NoteListRow = ({
                       /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
                         <HashtagChip
                           tag={visibleRowText.trim()}
-                          selected={isHashtagActive(visibleRowText.trim())}
+                          selected={false}
                           onClick={() => {
                             onToggleHashtagInDraft?.(visibleRowText.trim());
                           }}

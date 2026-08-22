@@ -1424,10 +1424,14 @@ function App() {
           .split(/\s+/)
           .map((token) => token.trim())
           .filter(Boolean);
-        const nextTokens = tokens.some((token) => token === normalizedTag)
-          ? tokens.filter((token) => token !== normalizedTag)
-          : [...tokens, normalizedTag];
-        const nextValue = nextTokens.join(" ");
+
+        if (tokens.includes(normalizedTag)) {
+          return prev;
+        }
+
+        const nextValue = prev.trim().length
+          ? `${prev.trimEnd()} ${normalizedTag}`
+          : normalizedTag;
 
         if (editingNote !== null) {
           seteditingNote((current) =>
@@ -1446,25 +1450,6 @@ function App() {
     },
     [editingNote],
   );
-
-  const handleToggleHashtagFilter = useCallback((tag: string) => {
-    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
-    setNoteFilters((prev) => {
-      const tokens = prev.text
-        .split(/\s+/)
-        .map((token) => token.trim())
-        .filter(Boolean);
-      const hasTag = tokens.includes(normalizedTag);
-      const nextTokens = hasTag
-        ? tokens.filter((token) => token !== normalizedTag)
-        : [...tokens, normalizedTag];
-
-      return {
-        ...prev,
-        text: nextTokens.join(" "),
-      };
-    });
-  }, []);
 
   const handleAppendHashtagToNote = useCallback((note: Note, tag: string) => {
     const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
@@ -2449,7 +2434,6 @@ function App() {
                 <HashtagBar
                   hashtags={hashtagSuggestions}
                   hashtagCounts={hashtagCounts}
-                  activeFilterText={draftNoteText}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                 />
 
@@ -2569,7 +2553,6 @@ function App() {
                   availableHashtags={availableHashtags}
                   onRefreshAvailableHashtags={refreshAvailableHashtags}
                   onFilterTextChange={handleFilterTextChange}
-                  onToggleHashtagFilter={handleToggleHashtagFilter}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                   onAppendHashtagToNote={handleAppendHashtagToNote}
                   onClearLabelFilter={handleClearLabelFilter}

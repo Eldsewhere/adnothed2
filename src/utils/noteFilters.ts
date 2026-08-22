@@ -51,7 +51,6 @@ export type ParsedTextFilters = {
   withCompleted: boolean;
   withPriority: boolean;
   withLabel: boolean;
-  withHashtags: boolean;
 };
 
 const defaultParsedTextFilters: ParsedTextFilters = {
@@ -83,7 +82,6 @@ const defaultParsedTextFilters: ParsedTextFilters = {
   withCompleted: false,
   withPriority: false,
   withLabel: false,
-  withHashtags: false,
 };
 
 function toPositiveInt(value: string): number | null {
@@ -249,10 +247,6 @@ export function parseTextFilters(
         parsed.withLabel = true;
         continue;
       }
-      if (token === "hashtags") {
-        parsed.withHashtags = true;
-        continue;
-      }
     }
 
     // Unknown slash commands are ignored so mistyped command drafts do not filter.
@@ -412,10 +406,6 @@ export function matchesTextFilters(
   }
 
   if (parsed.withCheckboxes && !text.includes("[]") && !text.includes("[x]")) {
-    return false;
-  }
-
-  if (parsed.withHashtags && !/(?:^|\s)#[\w-]+/.test(text)) {
     return false;
   }
 

@@ -67,6 +67,7 @@ const NoteForm = ({
     handleSubmit,
     reset,
     setError,
+    setValue,
     formState: { errors },
   } = useForm<NoteFormValues>({
     defaultValues: initialText
@@ -109,6 +110,15 @@ const NoteForm = ({
     onNoteTextChange,
     reset,
   ]);
+
+  useEffect(() => {
+    if (editingNote || cloneNote || initialText !== undefined) {
+      return;
+    }
+
+    setValue("text", textValue ?? "");
+    setValue("labelId", filterLabelId ?? "");
+  }, [cloneNote, editingNote, filterLabelId, initialText, setValue, textValue]);
 
   useEffect(() => {
     if (!isEditing) {
@@ -220,7 +230,7 @@ const NoteForm = ({
                   <Box sx={{ position: "relative" }}>
                     <TextField
                       {...field}
-                      value={field.value}
+                      value={textValue ?? field.value}
                       onChange={(event) => {
                         handleTextChange(event.target.value);
                       }}

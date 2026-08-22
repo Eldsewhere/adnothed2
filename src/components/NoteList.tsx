@@ -57,7 +57,6 @@ type NoteListProps = {
   availableHashtags?: string[];
   onRefreshAvailableHashtags?: () => void;
   onFilterTextChange?: (value: string) => void;
-  onToggleHashtagFilter?: (tag: string) => void;
   onToggleHashtagInDraft?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
@@ -125,7 +124,6 @@ const NoteList = ({
   availableHashtags = [],
   onRefreshAvailableHashtags,
   onFilterTextChange,
-  onToggleHashtagFilter,
   onToggleHashtagInDraft,
   onAppendHashtagToNote,
   onRemoveHashtagFromNote,
@@ -892,7 +890,6 @@ const NoteList = ({
                   availableHashtags={availableHashtags}
                   filterText={filters.text}
                   onFilterTextChange={onFilterTextChange}
-                  onToggleHashtagFilter={onToggleHashtagFilter}
                   onToggleHashtagInDraft={onToggleHashtagInDraft}
                   onAppendHashtagToNote={onAppendHashtagToNote}
                   onRemoveHashtagFromNote={onRemoveHashtagFromNote}
