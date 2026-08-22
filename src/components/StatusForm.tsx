@@ -81,6 +81,28 @@ const buildStatusEmojiOptions = (): StatusEmojiOption[] => {
 
 const statusEmojiOptions = buildStatusEmojiOptions();
 
+const getStatusFormatStyle = (option: StatusFormat | "none") => {
+  switch (option) {
+    case "underline":
+      return { textDecoration: "underline" };
+    case "bold":
+      return { fontWeight: 700 };
+    case "strikethrough":
+      return { textDecoration: "line-through" };
+    case "transparent":
+      return { opacity: 0.2 };
+    case "red":
+      return { color: colors.red[400] };
+    case "amber":
+      return { color: colors.orange[400] };
+    case "green":
+      return { color: colors.green[400] };
+    case "none":
+    default:
+      return {};
+  }
+};
+
 const emptyValues: StatusFormValues = { name: "", emoji: "", format: "none" };
 
 const StatusForm = ({
@@ -250,13 +272,24 @@ const StatusForm = ({
               fullWidth
               aria-label="Note effect"
               renderValue={(selected) => {
-                const selectedValue =
-                  selected && selected !== "none"
-                    ? STATUS_FORMAT_LABELS[selected as StatusFormat]
-                    : "No note effect";
+                if (!selected || selected === "none") {
+                  return (
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      No note effect
+                    </Box>
+                  );
+                }
+
+                const value = STATUS_FORMAT_LABELS[selected as StatusFormat];
                 return (
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    {selectedValue}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      ...getStatusFormatStyle(selected as StatusFormat),
+                    }}
+                  >
+                    {value}
                   </Box>
                 );
               }}
@@ -272,32 +305,13 @@ const StatusForm = ({
                 },
               }}
             >
-              {STATUS_FORMAT_OPTIONS.map((option) => {
-                const style =
-                  option === "underline"
-                    ? { textDecoration: "underline" }
-                    : option === "bold"
-                      ? { fontWeight: 700 }
-                      : option === "strikethrough"
-                        ? { textDecoration: "line-through" }
-                        : option === "transparent"
-                          ? { opacity: 0.2 }
-                          : option === "red"
-                            ? { color: colors.red[400] }
-                            : option === "amber"
-                              ? { color: colors.orange[400] }
-                              : option === "green"
-                                ? { color: colors.green[400] }
-                                : {};
-
-                return (
-                  <MenuItem key={option} value={option}>
-                    <Box component="span" sx={style}>
-                      {STATUS_FORMAT_LABELS[option as StatusFormat]}
-                    </Box>
-                  </MenuItem>
-                );
-              })}
+              {STATUS_FORMAT_OPTIONS.map((option) => (
+                <MenuItem key={option} value={option}>
+                  <Box component="span" sx={getStatusFormatStyle(option)}>
+                    {STATUS_FORMAT_LABELS[option as StatusFormat]}
+                  </Box>
+                </MenuItem>
+              ))}
             </Select>
           )}
         />
