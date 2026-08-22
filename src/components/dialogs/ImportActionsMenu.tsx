@@ -46,12 +46,20 @@ const ImportActionsMenu = ({
         <>
           <Suspense
             fallback={
-              <MenuItem disabled>
-                <Icon path={mdiGoogleDrive} size={0.8} />
-                <Box component="span" sx={{ ml: 1 }}>
-                  Backup to GDrive
-                </Box>
-              </MenuItem>
+              <>
+                <MenuItem disabled>
+                  <Icon path={mdiGoogleDrive} size={0.8} />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    Backup to GDrive
+                  </Box>
+                </MenuItem>
+                <MenuItem disabled>
+                  <Icon path={mdiGoogleDrive} size={0.8} />
+                  <Box component="span" sx={{ ml: 1 }}>
+                    Import from GDrive
+                  </Box>
+                </MenuItem>
+              </>
             }
           >
             <GoogleDriveBackupMenuItem
@@ -60,20 +68,20 @@ const ImportActionsMenu = ({
               labels={labels}
               notes={notes}
             />
+            <MenuItem
+              onClick={() => {
+                onClose();
+                if (onImportFromGoogleDrive) {
+                  void onImportFromGoogleDrive();
+                }
+              }}
+            >
+              <Icon path={mdiGoogleDrive} size={0.8} />
+              <Box component="span" sx={{ ml: 1 }}>
+                Import from GDrive
+              </Box>
+            </MenuItem>
           </Suspense>
-          <MenuItem
-            onClick={() => {
-              onClose();
-              if (onImportFromGoogleDrive) {
-                void onImportFromGoogleDrive();
-              }
-            }}
-          >
-            <Icon path={mdiGoogleDrive} size={0.8} />
-            <Box component="span" sx={{ ml: 1 }}>
-              Import from GDrive
-            </Box>
-          </MenuItem>
         </>
       )}
       <MenuItem
