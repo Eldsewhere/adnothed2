@@ -728,6 +728,7 @@ const NoteList = ({
                       alignItems: "center",
                       px: 1.5,
                       borderBottom: "1px solid rgba(255,255,255,0.08)",
+                      borderRadius: 0,
                       backgroundColor: "rgba(255,255,255,0.03)",
                     }}
                   >
@@ -751,7 +752,10 @@ const NoteList = ({
                           p: 0,
                         }}
                       >
-                        <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.7} />
+                        <Icon
+                          path={isExpanded ? mdiChevronUp : mdiChevronDown}
+                          size={0.7}
+                        />
                         {label} ({count})
                       </Box>
                     </Tooltip>

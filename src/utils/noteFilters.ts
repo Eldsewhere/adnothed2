@@ -338,7 +338,10 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.yearMonth !== null && !noteDate.startsWith(`${parsed.yearMonth}-`)) {
+  if (
+    parsed.yearMonth !== null &&
+    !noteDate.startsWith(`${parsed.yearMonth}-`)
+  ) {
     return false;
   }
 

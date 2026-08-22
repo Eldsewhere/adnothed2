@@ -263,14 +263,7 @@ const NoteListRow = ({
         display: "flex",
         alignItems: "center",
         borderBottom: isPriorityBoundary ? "6px solid " : "3px solid",
-        borderTopLeftRadius:
-          isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
-        borderTopRightRadius:
-          isPriorityGroupStart || isNonPriorityGroupStart ? 8 : 0,
-        borderBottomLeftRadius:
-          isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
-        borderBottomRightRadius:
-          isPriorityGroupEnd || isNonPriorityGroupEnd || isLastNote ? 12 : 0,
+        borderRadius: 0,
         borderColor: colors.grey[900],
         overflow: "hidden",
         touchAction: "pan-y",
