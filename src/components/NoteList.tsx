@@ -147,6 +147,7 @@ const NoteList = ({
     el: HTMLElement;
     note: Note;
   } | null>(null);
+  const [notesSectionExpanded, setNotesSectionExpanded] = useState(true);
   const [archivedSectionExpanded, setArchivedSectionExpanded] = useState(true);
   const [dueDateDialogNote, setdueDateDialogNote] = useState<Note | null>(null);
   const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
@@ -516,6 +517,23 @@ const NoteList = ({
     [sortedNotes],
   );
 
+  const notesSectionRange = useMemo(() => {
+    const firstIndex = filteredNotes.findIndex(
+      (note) => !note.archived && !isPriorityNote(note),
+    );
+    if (firstIndex === -1) {
+      return null;
+    }
+    const lastIndex = filteredNotes.findLastIndex(
+      (note) => !note.archived && !isPriorityNote(note),
+    );
+    return { firstIndex, lastIndex };
+  }, [filteredNotes]);
+
+  const notesSectionCount = notesSectionRange
+    ? notesSectionRange.lastIndex - notesSectionRange.firstIndex + 1
+    : 0;
+
   const archivedSectionRange = useMemo(() => {
     const firstIndex = filteredNotes.findIndex(
       (note) => note.archived && !isPriorityNote(note),
@@ -534,7 +552,10 @@ const NoteList = ({
     : 0;
 
   const displayItems = useMemo(() => {
-    if (!archivedSectionRange) {
+    const hasNotesSection = notesSectionRange !== null;
+    const hasArchivedSection = archivedSectionRange !== null;
+
+    if (!hasNotesSection && !hasArchivedSection) {
       return filteredNotes.map((note, index) => ({
         type: "note" as const,
         key: `note-${note.id}`,
@@ -551,12 +572,23 @@ const NoteList = ({
     }> = [];
 
     filteredNotes.forEach((note, index) => {
+      const isNotesSectionNonPriority = !note.archived && !isPriorityNote(note);
       const isArchivedNonPriority = note.archived && !isPriorityNote(note);
-      if (index === archivedSectionRange.firstIndex) {
+
+      if (notesSectionRange && index === notesSectionRange.firstIndex) {
+        items.push({
+          type: "header",
+          key: "notes-section-header",
+        });
+      }
+      if (archivedSectionRange && index === archivedSectionRange.firstIndex) {
         items.push({
           type: "header",
           key: "archived-section-header",
         });
+      }
+      if (!notesSectionExpanded && isNotesSectionNonPriority) {
+        return;
       }
       if (!archivedSectionExpanded && isArchivedNonPriority) {
         return;
@@ -570,7 +602,13 @@ const NoteList = ({
     });
 
     return items;
-  }, [archivedSectionExpanded, archivedSectionRange, filteredNotes]);
+  }, [
+    archivedSectionExpanded,
+    archivedSectionRange,
+    filteredNotes,
+    notesSectionExpanded,
+    notesSectionRange,
+  ]);
 
   const rowHeights = displayItems.map((item) =>
     item.type === "header"
@@ -657,6 +695,26 @@ const NoteList = ({
               const index = startIndex + i;
 
               if (item.type === "header") {
+                const isArchivedHeader = item.key === "archived-section-header";
+                const isNotesHeader = item.key === "notes-section-header";
+                const isExpanded = isArchivedHeader
+                  ? archivedSectionExpanded
+                  : notesSectionExpanded;
+                const count = isArchivedHeader
+                  ? archivedSectionCount
+                  : notesSectionCount;
+                const label = isArchivedHeader ? "Archived" : "Notes";
+                const tooltip = isArchivedHeader
+                  ? archivedSectionExpanded
+                    ? "Collapse archived notes"
+                    : "Expand archived notes"
+                  : notesSectionExpanded
+                    ? "Collapse notes"
+                    : "Expand notes";
+                const onToggle = isArchivedHeader
+                  ? () => setArchivedSectionExpanded((value) => !value)
+                  : () => setNotesSectionExpanded((value) => !value);
+
                 return (
                   <Box
                     key={item.key}
@@ -673,20 +731,11 @@ const NoteList = ({
                       backgroundColor: "rgba(255,255,255,0.03)",
                     }}
                   >
-                    <Tooltip
-                      title={
-                        archivedSectionExpanded
-                          ? "Collapse archived notes"
-                          : "Expand archived notes"
-                      }
-                      arrow
-                    >
+                    <Tooltip title={tooltip} arrow>
                       <Box
                         component="button"
                         type="button"
-                        onClick={() =>
-                          setArchivedSectionExpanded((value) => !value)
-                        }
+                        onClick={onToggle}
                         sx={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -702,15 +751,8 @@ const NoteList = ({
                           p: 0,
                         }}
                       >
-                        <Icon
-                          path={
-                            archivedSectionExpanded
-                              ? mdiChevronUp
-                              : mdiChevronDown
-                          }
-                          size={0.7}
-                        />
-                        Archived ({archivedSectionCount})
+                        <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.7} />
+                        {label} ({count})
                       </Box>
                     </Tooltip>
                   </Box>
