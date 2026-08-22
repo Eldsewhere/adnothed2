@@ -49,6 +49,7 @@ export type Note = {
   emoji?: string;
   hasNotification?: boolean;
   due?: number;
+  completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
   updatedAt?: number;

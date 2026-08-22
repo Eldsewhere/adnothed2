@@ -24,6 +24,7 @@ type PersistedNote = {
   emoji?: string;
   time: number;
   due?: number | null;
+  completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
 };
@@ -148,6 +149,7 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
       createdAt,
       ...(note.emoji ? { emoji: note.emoji } : {}),
       ...(note.due !== undefined && note.due !== null ? { due: note.due } : {}),
+      ...(note.completed ? { completed: true } : {}),
       ...(note.pinned ? { pinned: note.pinned } : {}),
       ...(note.archived ? { archived: note.archived } : {}),
     });
@@ -162,6 +164,7 @@ function toPersistedNote(note: {
   emoji?: string;
   time: number;
   due?: number | null;
+  completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
 }): PersistedNote {
@@ -173,6 +176,7 @@ function toPersistedNote(note: {
     ...(note.emoji ? { emoji: note.emoji } : {}),
     time: normalizeCreatedAt(note.time),
     ...(note.due !== undefined ? { due: note.due } : {}),
+    ...(note.completed ? { completed: true } : {}),
     ...(note.pinned ? { pinned: note.pinned } : {}),
     ...(note.archived ? { archived: true } : {}),
   };
@@ -211,14 +215,23 @@ export function serializeState(state: {
       format: status.format,
     })),
     notes: state.notes.map((note) => {
-      const { labelId, text, emoji, createdAt, due, pinned, archived } =
-        stripTransientNoteFields(note);
+      const {
+        labelId,
+        text,
+        emoji,
+        createdAt,
+        due,
+        completed,
+        pinned,
+        archived,
+      } = stripTransientNoteFields(note);
       return toPersistedNote({
         icon: labelId,
         text,
         emoji,
         time: createdAt,
         due,
+        completed,
         pinned,
         archived,
       });

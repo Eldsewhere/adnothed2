@@ -253,28 +253,30 @@ const NoteActionsMenu = ({
               </Box>
               Status
             </MenuItem>
-            {note.due !== undefined && isDueTodayOrLater(note.due) && (
-              <MenuItem
-                onClick={() => {
-                  onComplete(note);
-                  handleMenuClose();
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    mr: 1,
-                    py: 1,
-                    px: 0.5,
+            {note.due !== undefined &&
+              !note.completed &&
+              isDueTodayOrLater(note.due) && (
+                <MenuItem
+                  onClick={() => {
+                    onComplete(note);
+                    handleMenuClose();
                   }}
                 >
-                  <Icon path={mdiClockOutline} size={0.7} />
-                </Box>
-                Complete
-              </MenuItem>
-            )}
+                  <Box
+                    component="span"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      mr: 1,
+                      py: 1,
+                      px: 0.5,
+                    }}
+                  >
+                    <Icon path={mdiClockOutline} size={0.7} />
+                  </Box>
+                  Complete
+                </MenuItem>
+              )}
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {

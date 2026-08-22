@@ -37,6 +37,7 @@ export const PersistedNoteSchema = z.object({
   emoji: z.string().optional(),
   time: z.number(),
   due: z.number().nullable().optional(),
+  completed: z.boolean().optional(),
   pinned: z.boolean().optional(),
   archived: z.boolean().optional(),
 });

@@ -229,8 +229,9 @@ function App() {
     fileName: string;
     parseError: string | null;
   } | null>(null);
-  const [bulkStatusAnchor, setBulkStatusAnchor] =
-    useState<HTMLElement | null>(null);
+  const [bulkStatusAnchor, setBulkStatusAnchor] = useState<HTMLElement | null>(
+    null,
+  );
   const [noteStorageInfoOpen, setNoteStorageInfoOpen] = useState(false);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
@@ -1143,7 +1144,19 @@ function App() {
     setNotes((prev) =>
       prev.map((existingNote) =>
         existingNote.id === note.id
-          ? { ...existingNote, due: due ?? undefined }
+          ? { ...existingNote, due: due ?? undefined, completed: false }
+          : existingNote,
+      ),
+    );
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+  };
+
+  const handleNoteComplete = (note: Note) => {
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, completed: true }
           : existingNote,
       ),
     );
@@ -1623,7 +1636,8 @@ function App() {
   const dueFutureCount = useMemo(() => {
     const todayUnix = today.unix();
     return notes.filter(
-      (note) => note.due !== undefined && note.due >= todayUnix,
+      (note) =>
+        !note.completed && note.due !== undefined && note.due >= todayUnix,
     ).length;
   }, [notes, today]);
 
@@ -1648,7 +1662,7 @@ function App() {
   const dueCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of notes) {
-      if (note.due === undefined) {
+      if (note.completed || note.due === undefined) {
         continue;
       }
       const dueDay = dayjs.unix(note.due).startOf("day");
@@ -2252,7 +2266,9 @@ function App() {
                     }
                     onPinToggleClick={handleBulkPinToggle}
                     onArchiveToggleClick={handleBulkArchiveToggle}
-                    onStatusClick={(event) => setBulkStatusAnchor(event.currentTarget)}
+                    onStatusClick={(event) =>
+                      setBulkStatusAnchor(event.currentTarget)
+                    }
                     onShareTextClick={() => {
                       void handleBulkShareText();
                     }}
@@ -2288,7 +2304,9 @@ function App() {
                     >
                       <Icon path={mdiEmoticonOutline} size={0.7} />
                     </Box>
-                    {statuses.length === 0 ? "no statuses available" : "no status"}
+                    {statuses.length === 0
+                      ? "no statuses available"
+                      : "no status"}
                   </MenuItem>
                   {statuses.map((status) => (
                     <MenuItem
@@ -2306,7 +2324,10 @@ function App() {
                       >
                         {status.emoji}
                       </Box>
-                      <Box component="span" sx={getStatusTextStyle(status.format)}>
+                      <Box
+                        component="span"
+                        sx={getStatusTextStyle(status.format)}
+                      >
                         {status.name}
                       </Box>
                     </MenuItem>
@@ -2331,6 +2352,7 @@ function App() {
                   onAddCheckboxes={handleNoteAddCheckboxes}
                   onToggleCheckbox={handleNoteToggleCheckbox}
                   onDueChange={handleNoteDueChange}
+                  onComplete={handleNoteComplete}
                   onPin={handleNotePin}
                   onArchive={handleNoteArchive}
                   onEmojiChange={handleNoteEmojiChange}

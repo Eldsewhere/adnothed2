@@ -48,6 +48,7 @@ type NoteListProps = {
   onNotify: (note: Note) => void;
   onLabelChange: (note: Note, labelId: string | null) => void;
   onDueChange: (note: Note, due: number | null) => void;
+  onComplete: (note: Note) => void;
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
@@ -88,8 +89,9 @@ function isTomorrow(date: number): boolean {
 }
 
 const isPriorityNote = (note: Note): boolean =>
-  note.pinned ||
-  (note.due !== undefined && (isToday(note.due) || isTomorrow(note.due)));
+  !note.completed &&
+  (note.pinned ||
+    (note.due !== undefined && (isToday(note.due) || isTomorrow(note.due))));
 
 const NoteList = ({
   notes,
@@ -110,6 +112,7 @@ const NoteList = ({
   onNotify,
   onLabelChange,
   onDueChange,
+  onComplete,
   onPin,
   onArchive,
   onEmojiChange,
@@ -144,8 +147,7 @@ const NoteList = ({
     el: HTMLElement;
     note: Note;
   } | null>(null);
-  const [archivedSectionExpanded, setArchivedSectionExpanded] =
-    useState(true);
+  const [archivedSectionExpanded, setArchivedSectionExpanded] = useState(true);
   const [dueDateDialogNote, setdueDateDialogNote] = useState<Note | null>(null);
   const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
   const [dueHour12, setDueHour12] = useState<number>(12);
@@ -189,10 +191,12 @@ const NoteList = ({
       if (aPinned !== bPinned) return bPinned - aPinned;
 
       const aIsDueSoon =
+        !a.completed &&
         a.due !== undefined &&
         a.due >= todayUnix &&
         a.due < dayAfterTomorrowUnix;
       const bIsDueSoon =
+        !b.completed &&
         b.due !== undefined &&
         b.due >= todayUnix &&
         b.due < dayAfterTomorrowUnix;
@@ -679,7 +683,9 @@ const NoteList = ({
                       <Box
                         component="button"
                         type="button"
-                        onClick={() => setArchivedSectionExpanded((value) => !value)}
+                        onClick={() =>
+                          setArchivedSectionExpanded((value) => !value)
+                        }
                         sx={{
                           display: "inline-flex",
                           alignItems: "center",
@@ -696,7 +702,11 @@ const NoteList = ({
                         }}
                       >
                         <Icon
-                          path={archivedSectionExpanded ? mdiChevronUp : mdiChevronDown}
+                          path={
+                            archivedSectionExpanded
+                              ? mdiChevronUp
+                              : mdiChevronDown
+                          }
                           size={0.7}
                         />
                         Archived ({archivedSectionCount})
@@ -718,18 +728,21 @@ const NoteList = ({
               const previousNote = filteredNotes[item.index! - 1];
               const nextNote = filteredNotes[item.index! + 1];
               const isPriorityGroupStart =
-                isPrioritary && (!previousNote || !isPriorityNote(previousNote));
+                isPrioritary &&
+                (!previousNote || !isPriorityNote(previousNote));
               const isPriorityGroupEnd =
                 isPrioritary && (!nextNote || !isPriorityNote(nextNote));
               const isNonPriorityGroupStart =
-                !isPrioritary && (!previousNote || isPriorityNote(previousNote));
+                !isPrioritary &&
+                (!previousNote || isPriorityNote(previousNote));
               const isNonPriorityGroupEnd =
                 !isPrioritary && (!nextNote || isPriorityNote(nextNote));
               const isLastNote = item.index === filteredNotes.length - 1;
               const isPriorityBoundary =
                 isPrioritary && (!nextNote || !isPriorityNote(nextNote));
               const isMostRecentAddedNote =
-                mostRecentAddedNoteId !== null && note.id === mostRecentAddedNoteId;
+                mostRecentAddedNoteId !== null &&
+                note.id === mostRecentAddedNoteId;
               const isMostRecentlyEditedNote =
                 mostRecentEditedNoteId !== null &&
                 note.id === mostRecentEditedNoteId;
@@ -747,7 +760,9 @@ const NoteList = ({
                   height={rowHeights[index]}
                   note={note}
                   label={label}
-                  status={note.emoji ? statusByEmoji.get(note.emoji) : undefined}
+                  status={
+                    note.emoji ? statusByEmoji.get(note.emoji) : undefined
+                  }
                   isPriority={isPrioritary}
                   isLastNote={isLastNote}
                   isPriorityBoundary={isPriorityBoundary}
@@ -807,7 +822,7 @@ const NoteList = ({
           onPin={onPin}
           onArchive={onArchive}
           onEmojiChange={onEmojiChange}
-          onComplete={(note) => onDueChange(note, null)}
+          onComplete={onComplete}
           onCopy={handleCopy}
           onClone={handleClone}
           onShareText={handleShare}

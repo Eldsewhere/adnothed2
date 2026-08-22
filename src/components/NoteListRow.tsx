@@ -14,6 +14,7 @@ import {
   mdiArchiveArrowUp,
   mdiBell,
   mdiChevronDown,
+  mdiClockCheckOutline,
   mdiClockOutline,
   mdiDotsVertical,
   mdiEyeOffOutline,
@@ -121,7 +122,9 @@ const NoteListRow = ({
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
   const shouldUsePriorityDueDate =
-    note.due !== undefined && (isToday(note.due) || isTomorrow(note.due));
+    !note.completed &&
+    note.due !== undefined &&
+    (isToday(note.due) || isTomorrow(note.due));
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
@@ -567,15 +570,26 @@ const NoteListRow = ({
                       : isToday(note.createdAt) ||
                           note.pinned ||
                           (note.due !== undefined &&
+                            !note.completed &&
                             (isToday(note.due) || isTomorrow(note.due))) ||
                           note.hasNotification
                         ? colors.lightGreen[400]
                         : colors.blueGrey[300],
                 }}
               >
-                {shouldUsePriorityDueDate
-                  ? formatDueDate(note.due!)
-                  : formatTimestamp(note.createdAt)}
+                <Box
+                  component="span"
+                  sx={{
+                    textDecoration:
+                      note.completed && shouldUsePriorityDueDate
+                        ? "line-through"
+                        : "none",
+                  }}
+                >
+                  {shouldUsePriorityDueDate
+                    ? formatDueDate(note.due!)
+                    : formatTimestamp(note.createdAt)}
+                </Box>
                 {note.archived && (
                   <Tooltip title="Archived" aria-label={undefined} arrow>
                     <Box
@@ -587,6 +601,20 @@ const NoteListRow = ({
                       }}
                     >
                       <Icon path={mdiArchive} size={0.6} />
+                    </Box>
+                  </Tooltip>
+                )}
+                {note.completed && (
+                  <Tooltip title="Completed" aria-label={undefined} arrow>
+                    <Box
+                      component="span"
+                      sx={{
+                        ml: 0.5,
+                        display: "inline-flex",
+                        color: colors.lightGreen[400],
+                      }}
+                    >
+                      <Icon path={mdiClockCheckOutline} size={0.6} />
                     </Box>
                   </Tooltip>
                 )}
@@ -686,6 +714,7 @@ const NoteListRow = ({
                     textAlign: "right",
                     display: "block",
                     color: colors.orange[300],
+                    textDecoration: note.completed ? "line-through" : "none",
                   }}
                 >
                   {formatDueDate(note.due)}
