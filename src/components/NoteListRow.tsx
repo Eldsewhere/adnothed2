@@ -123,8 +123,9 @@ const NoteListRow = ({
 }: NoteListRowProps) => {
   const shouldDisplayDueDateForMeta =
     !note.archived &&
+    !note.completed &&
     note.due !== undefined &&
-    (note.completed || isToday(note.due) || isTomorrow(note.due));
+    (isToday(note.due) || isTomorrow(note.due));
   const shouldUsePriorityDueDate =
     !note.archived &&
     !note.completed &&
