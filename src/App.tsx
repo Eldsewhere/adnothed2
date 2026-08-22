@@ -229,6 +229,8 @@ function App() {
     fileName: string;
     parseError: string | null;
   } | null>(null);
+  const [pendingGoogleDriveImport, setPendingGoogleDriveImport] =
+    useState(false);
   const [bulkStatusAnchor, setBulkStatusAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -446,6 +448,13 @@ function App() {
   };
 
   const confirmImport = () => {
+    if (pendingGoogleDriveImport) {
+      setPendingGoogleDriveImport(false);
+      setConfirmImportOpen(false);
+      void handleImportFromGoogleDrive();
+      return;
+    }
+
     if (!pendingImport) {
       setConfirmImportOpen(false);
       return;
@@ -2338,7 +2347,8 @@ function App() {
                     void selectImportFile();
                   }}
                   onImportFromGoogleDrive={() => {
-                    void handleImportFromGoogleDrive();
+                    setPendingGoogleDriveImport(true);
+                    setConfirmImportOpen(true);
                   }}
                   labels={labels}
                   notes={notes}
@@ -2711,9 +2721,11 @@ function App() {
         <ConfirmImportDialog
           open={confirmImportOpen}
           pendingImport={pendingImport}
+          source={pendingGoogleDriveImport ? "google-drive" : "json"}
           onClose={() => {
             setConfirmImportOpen(false);
             setPendingImport(null);
+            setPendingGoogleDriveImport(false);
           }}
           onConfirm={confirmImport}
         />

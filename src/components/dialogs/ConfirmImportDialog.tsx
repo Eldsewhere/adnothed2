@@ -16,6 +16,7 @@ type ConfirmImportDialogProps = {
     fileName: string;
     parseError: string | null;
   } | null;
+  source?: "json" | "google-drive";
   onClose: () => void;
   onConfirm: () => void;
 };
@@ -23,16 +24,23 @@ type ConfirmImportDialogProps = {
 const ConfirmImportDialog = ({
   open,
   pendingImport,
+  source = "json",
   onClose,
   onConfirm,
 }: ConfirmImportDialogProps) => (
   <Dialog open={open} onClose={onClose}>
-    <DialogTitle>Import JSON file</DialogTitle>
+    <DialogTitle>
+      {source === "google-drive"
+        ? "Import from Google Drive"
+        : "Import JSON file"}
+    </DialogTitle>
     <DialogContent>
       <DialogContentText>
-        {pendingImport?.fileName
-          ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app`
-          : "Importing a JSON file will replace all current labels and notes in the app"}
+        {source === "google-drive"
+          ? "Importing from Google Drive will replace all current labels and notes in the app"
+          : pendingImport?.fileName
+            ? `Importing "${pendingImport.fileName}" will replace all current labels and notes in the app`
+            : "Importing a JSON file will replace all current labels and notes in the app"}
       </DialogContentText>
     </DialogContent>
     <DialogActions>
@@ -40,7 +48,7 @@ const ConfirmImportDialog = ({
         Cancel
       </Button>
       <Button variant="contained" onClick={onConfirm}>
-        Import
+        {source === "google-drive" ? "Continue" : "Import"}
       </Button>
     </DialogActions>
   </Dialog>
