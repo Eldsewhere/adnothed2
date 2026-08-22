@@ -101,7 +101,6 @@ const NoteForm = ({
     }
   }, [
     editingNote,
-    isEditing,
     cloneNote,
     initialText,
     filterLabelId,
@@ -109,7 +108,6 @@ const NoteForm = ({
     onFilterTextChange,
     onNoteTextChange,
     reset,
-    textValue,
   ]);
 
   useEffect(() => {
@@ -156,9 +154,7 @@ const NoteForm = ({
 
   const submit = handleSubmit((values) => {
     const remainingText = stripDueTimeForValidation(values.text);
-    const nonHashtagText = remainingText
-      .replace(/(?:^|\s)#[\w-]+/g, "")
-      .trim();
+    const nonHashtagText = remainingText.replace(/(?:^|\s)#[\w-]+/g, "").trim();
 
     if (!remainingText || !nonHashtagText) {
       setError("text", {
@@ -218,13 +214,13 @@ const NoteForm = ({
                   ? "Editing note"
                   : dueLabel
                     ? `Note, due ${dueLabel}`
-                    : "Note";
+                    : "Create or filter note";
 
                 return (
                   <Box sx={{ position: "relative" }}>
                     <TextField
                       {...field}
-                      value={textValue ?? field.value}
+                      value={field.value}
                       onChange={(event) => {
                         handleTextChange(event.target.value);
                       }}
