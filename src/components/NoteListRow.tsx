@@ -177,6 +177,16 @@ const NoteListRow = ({
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
+  const isScheduledStatus =
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor || isPriority);
+  const noteIconColor = note.archived
+    ? colors.red[300]
+    : isScheduledStatus
+      ? colors.orange[300]
+      : colors.lightGreen[400];
   const checkboxProgress = getCheckboxProgress(note.text);
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -636,9 +646,7 @@ const NoteListRow = ({
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 0.25,
-                      color: shouldUseFutureDueDateTextColor || shouldUsePriorityDueDate
-                        ? colors.orange[300]
-                        : colors.lightGreen[400],
+                      color: noteIconColor,
                     }}
                   >
                     <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
@@ -674,7 +682,7 @@ const NoteListRow = ({
                       sx={{
                         ml: 0.5,
                         display: "inline-flex",
-                        color: colors.orange[400],
+                        color: noteIconColor,
                       }}
                     >
                       <Icon path={mdiClockCheckOutline} size={0.6} />
@@ -721,7 +729,7 @@ const NoteListRow = ({
                         ml: 0.5,
                         display: "inline-flex",
                         alignItems: "center",
-                        color: colors.orange[300],
+                        color: noteIconColor,
                       }}
                     >
                       <Icon path={mdiClockOutline} size={0.5} />
@@ -735,9 +743,7 @@ const NoteListRow = ({
                       sx={{
                         ml: 0.5,
                         display: "inline-flex",
-                        color: shouldUsePriorityDueDate
-                          ? colors.orange[300]
-                          : colors.lightGreen[400],
+                        color: noteIconColor,
                       }}
                     >
                       <Icon path={mdiBell} size={0.5} />
@@ -751,9 +757,7 @@ const NoteListRow = ({
                       sx={{
                         ml: 0.5,
                         display: "inline-flex",
-                        color: shouldUsePriorityDueDate
-                          ? colors.orange[300]
-                          : colors.lightGreen[400],
+                        color: noteIconColor,
                       }}
                     >
                       <Icon path={mdiPin} size={0.6} />
