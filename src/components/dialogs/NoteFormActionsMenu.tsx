@@ -248,6 +248,9 @@ type NoteFormActionsMenuProps = {
   onTextChange: (str: string) => void;
   onClear: () => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
+  onDateFilterClick: (event: MouseEvent<HTMLElement>) => void;
+  hasDateFilter: boolean;
+  dateFilterDisabled: boolean;
 };
 
 const NoteFormActionsMenu = ({
@@ -255,6 +258,9 @@ const NoteFormActionsMenu = ({
   onTextChange,
   onClear,
   textAreaRef,
+  onDateFilterClick,
+  hasDateFilter,
+  dateFilterDisabled,
 }: NoteFormActionsMenuProps) => {
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
     null,
@@ -468,6 +474,16 @@ const NoteFormActionsMenu = ({
           Hashtag
         </MenuItem>
         <Divider />
+        <MenuItem
+          disabled={dateFilterDisabled}
+          onClick={onDateFilterClick}
+          selected={hasDateFilter}
+        >
+          <Box component="span" sx={menuItemIconSx}>
+            <Icon path={mdiCalendar} size={0.75} />
+          </Box>
+          Filter by date
+        </MenuItem>
         <MenuItem
           onClick={() => {
             setFormatMenuAnchor(null);

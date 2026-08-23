@@ -118,7 +118,6 @@ const LabelMenu = ({
             labels={labels}
             notes={management.notes}
             editingLabelId={management.editingLabel?.id ?? null}
-            onEdit={management.onEdit}
             onEdit={(label) => {
               management.onEdit(label);
               setIsLabelFormOpen(true);

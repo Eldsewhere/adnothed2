@@ -62,6 +62,7 @@ type NoteListProps = {
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
+  onToggleSelectMode: () => void;
   onInfoTips?: () => void;
   onInstall?: () => void;
   availableHashtags?: string[];
@@ -142,6 +143,7 @@ const NoteList = ({
   selectMode,
   selectedIds,
   onToggleSelect,
+  onToggleSelectMode,
   onInfoTips,
   onInstall,
   availableHashtags = [],
@@ -778,6 +780,10 @@ const NoteList = ({
               onClearDueDateFilter={onClearDueDateFilter}
               hasTextFilter={hasTextFilter}
               onClearTextFilter={onClearTextFilter}
+              selectMode={selectMode}
+              selectedCount={selectedIds.size}
+              onToggleSelectMode={onToggleSelectMode}
+              selectDisabled
             />
           </Box>
           <Alert severity="info">
@@ -913,6 +919,14 @@ const NoteList = ({
                       onClearDueDateFilter={onClearDueDateFilter}
                       hasTextFilter={hasTextFilter}
                       onClearTextFilter={onClearTextFilter}
+                      selectMode={selectMode}
+                      selectedCount={selectedIds.size}
+                      onToggleSelectMode={
+                        item.key === "notes-section-header"
+                          ? onToggleSelectMode
+                          : undefined
+                      }
+                      selectDisabled={notes.length === 0}
                     />
                   </Box>
                 );

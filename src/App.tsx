@@ -26,9 +26,7 @@ import {
   mdiCalendar,
   mdiEmoticonOutline,
   mdiNoteText,
-  mdiFileImport,
   mdiInformationOutline,
-  mdiMinusCircle,
 } from "@mdi/js";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
@@ -37,7 +35,6 @@ import HashtagBar from "./components/HashtagBar";
 import WeekdayPicker from "./components/WeekdayPicker";
 import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
-import LabelsActionsMenu from "./components/dialogs/ImportActionsMenu";
 import BulkLabelMenu from "./components/dialogs/LabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
@@ -212,8 +209,6 @@ function App() {
   const [bulkLabelAnchor, setbulkLabelAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [labelsActionsAnchor, setLabelsActionsAnchor] =
-    useState<HTMLElement | null>(null);
   const [confirmDeleteLabel, setconfirmDeleteLabel] = useState<Label | null>(
     null,
   );
@@ -273,7 +268,6 @@ function App() {
   );
   const topToolbarRef = useRef<HTMLDivElement | null>(null);
   const notesActionsRef = useRef<HTMLDivElement | null>(null);
-  const [showStatusTabOnNotes, setShowStatusTabOnNotes] = useState(true);
 
   const [sharedText] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
@@ -404,24 +398,6 @@ function App() {
 
     savePersistedState({ labels, statuses, notes }, storageFileName);
   }, [labels, statuses, notes, storageReady, storageFileName]);
-
-  useEffect(() => {
-    if (!storageReady) {
-      setActiveTab("notes");
-    }
-  }, [storageReady]);
-
-  const selectImportFile = async () => {
-    const result = await openPersistedStateFile(storageFileName);
-    if (!result) return;
-    if (result.parseError) {
-      setNotificationSeverity("error");
-      setNotification(result.parseError);
-      return;
-    }
-    setPendingImport(result);
-    setConfirmImportOpen(true);
-  };
 
   const applyImportedState = (next: {
     labels: Label[];
@@ -616,29 +592,6 @@ function App() {
           : "Failed to import from Google Drive.",
       );
     }
-  };
-
-  const handleExportJson = () => {
-    const payload = serializeState({ labels, statuses, notes });
-    // filename format: adnothed-state_YYYY-MM-DD_HH-MM.json
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const ts = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
-      now.getDate(),
-    )}_${pad(now.getHours())}-${pad(now.getMinutes())}`;
-    const baseName = "adnothed-state";
-    const downloadName = `${baseName}_${ts}.json`;
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = downloadName;
-    link.click();
-    setNotificationSeverity("success");
-    setNotification(`Exported ${downloadName}`);
-    URL.revokeObjectURL(url);
   };
 
   const handleSubmit = (
@@ -1756,52 +1709,6 @@ function App() {
     ],
   );
 
-  useEffect(() => {
-    if (activeTab !== "notes") {
-      setShowStatusTabOnNotes(true);
-      return;
-    }
-
-    const updateShowStatusTabOnNotes = () => {
-      const container = topToolbarRef.current;
-      if (!container) {
-        setShowStatusTabOnNotes(true);
-        return;
-      }
-
-      const visibleTabs = Array.from(
-        container.querySelectorAll('[role="tab"]'),
-      ) as HTMLElement[];
-      const actionButtons = notesActionsRef.current
-        ? Array.from(notesActionsRef.current.querySelectorAll("button"))
-        : [];
-
-      const currentWidth =
-        visibleTabs.reduce((sum, tab) => sum + tab.offsetWidth, 0) +
-        actionButtons.reduce((sum, button) => sum + button.offsetWidth + 8, 0);
-      const estimatedStatusTabWidth = 96;
-
-      setShowStatusTabOnNotes(
-        container.clientWidth >= currentWidth + estimatedStatusTabWidth,
-      );
-    };
-
-    updateShowStatusTabOnNotes();
-
-    const observer = new ResizeObserver(updateShowStatusTabOnNotes);
-    const currentContainer = topToolbarRef.current;
-    if (currentContainer) {
-      observer.observe(currentContainer);
-    }
-
-    window.addEventListener("resize", updateShowStatusTabOnNotes);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", updateShowStatusTabOnNotes);
-    };
-  }, [activeTab, filteredNoteCount, labels.length, statuses.length]);
-
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of calendarFilteredNotes) {
@@ -2122,7 +2029,11 @@ function App() {
           <Stack
             ref={topToolbarRef}
             direction="row"
-            sx={{ alignItems: "center", justifyContent: "space-between" }}
+            sx={{
+              alignItems: "center",
+              display: "none",
+              justifyContent: "space-between",
+            }}
           >
             <Tabs
               value={activeTab}
@@ -2298,6 +2209,22 @@ function App() {
                   onFilterLabelChange={handleFilterLabelChange}
                   onClearFilters={handleClearFilters}
                   onNoteTextChange={setDraftNoteText}
+                  onDateFilterClick={(event) => {
+                    setPendingDateFilter({
+                      date: noteFilters.date,
+                      endDate: noteFilters.endDate,
+                    });
+                    setDatePickerMode("start");
+                    setDatePopoverAnchor(event.currentTarget);
+                  }}
+                  hasDateFilter={Boolean(
+                    noteFilters.date ||
+                      noteFilters.endDate ||
+                      noteFilters.dueDate ||
+                      noteFilters.hasDue ||
+                      noteFilters.weekday !== null,
+                  )}
+                  dateFilterDisabled={notes.length === 0 || selectMode}
                   labelManagement={{
                     notes,
                     editingLabel,
@@ -2547,6 +2474,7 @@ function App() {
                   selectMode={selectMode}
                   selectedIds={selectednoteIds}
                   onToggleSelect={toggleNoteSelected}
+                  onToggleSelectMode={toggleSelectMode}
                   onInstall={installPrompt ? handleInstall : undefined}
                 />
               </Stack>

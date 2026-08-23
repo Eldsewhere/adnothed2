@@ -1,8 +1,9 @@
-import { Box, Tooltip, colors } from "@mui/material";
+import { Badge, Box, IconButton, Tooltip, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiCalendar,
   mdiCalendarClock,
+  mdiCheckboxMultipleMarked,
   mdiChevronDown,
   mdiChevronUp,
   mdiFilter,
@@ -62,6 +63,10 @@ type NoteListAccordionHeaderProps = {
   onClearDueDateFilter?: () => void;
   hasTextFilter?: boolean;
   onClearTextFilter?: () => void;
+  selectMode?: boolean;
+  selectedCount?: number;
+  onToggleSelectMode?: () => void;
+  selectDisabled?: boolean;
 };
 
 const NoteListAccordionHeader = ({
@@ -80,6 +85,10 @@ const NoteListAccordionHeader = ({
   onClearDueDateFilter,
   hasTextFilter = false,
   onClearTextFilter,
+  selectMode = false,
+  selectedCount = 0,
+  onToggleSelectMode,
+  selectDisabled = false,
 }: NoteListAccordionHeaderProps) => (
   <Box
     sx={{
@@ -121,7 +130,8 @@ const NoteListAccordionHeader = ({
         {label} ({count})
       </Box>
     </Tooltip>
-    {(selectedLabel ||
+    {(onToggleSelectMode ||
+      selectedLabel ||
       hasStartOrEndDateFilter ||
       hasDueDateFilter ||
       hasTextFilter) && (
@@ -133,6 +143,39 @@ const NoteListAccordionHeader = ({
           gap: 0.75,
         }}
       >
+        {onToggleSelectMode && (
+          <Tooltip
+            title={selectMode ? "Cancel select mode" : "Select multiple notes"}
+            arrow
+          >
+            <span>
+              <IconButton
+                aria-label="Toggle select mode"
+                color={selectMode ? "primary" : "default"}
+                size="small"
+                onClick={onToggleSelectMode}
+                disabled={selectDisabled}
+              >
+                <Badge
+                  badgeContent={selectedCount}
+                  color="primary"
+                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      backgroundColor: "primary",
+                      color: colors.grey[900],
+                      minWidth: 12,
+                      height: 12,
+                      fontSize: "0.5rem",
+                    },
+                  }}
+                >
+                  <Icon path={mdiCheckboxMultipleMarked} size={0.8} />
+                </Badge>
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
         {selectedLabel && (
           <Tooltip title={`Remove label filter: ${selectedLabel.name}`} arrow>
             <Box

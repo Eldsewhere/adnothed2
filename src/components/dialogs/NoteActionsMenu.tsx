@@ -22,7 +22,6 @@ import {
   mdiTrashCanOutline,
 } from "@mdi/js";
 import type { Note, Status, StatusFormValues } from "../../types";
-import { getStatusTextStyle } from "../../utils/statusStyles";
 import StatusForm from "../StatusForm";
 import StatusList from "../StatusList";
 
