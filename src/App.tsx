@@ -57,7 +57,6 @@ import {
 import {
   emptyNoteFilters,
   matchesTextFilters,
-  NO_LABEL_FILTER_VALUE,
   parseTextFilters,
 } from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
@@ -1557,14 +1556,7 @@ function App() {
           }
         }
 
-        if (noteFilters.labelId === NO_LABEL_FILTER_VALUE) {
-          if (note.labelId !== null) {
-            return false;
-          }
-        } else if (
-          noteFilters.labelId &&
-          note.labelId !== noteFilters.labelId
-        ) {
+        if (noteFilters.labelId && note.labelId !== noteFilters.labelId) {
           return false;
         }
 

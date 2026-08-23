@@ -8,11 +8,7 @@ import type {
   StatusFormValues,
 } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
-import {
-  matchesTextFilters,
-  NO_LABEL_FILTER_VALUE,
-  parseTextFilters,
-} from "../utils/noteFilters";
+import { matchesTextFilters, parseTextFilters } from "../utils/noteFilters";
 import { getFirstUrl } from "../utils/textPatterns";
 import dayjs, { type Dayjs } from "dayjs";
 import DueDateDialog from "./dialogs/DueDateDialog";
@@ -481,11 +477,7 @@ const NoteList = ({
   const filteredNotes = useMemo(
     () =>
       sortedNotes.filter((note, index) => {
-        if (filters.labelId === NO_LABEL_FILTER_VALUE) {
-          if (note.labelId !== null) {
-            return false;
-          }
-        } else if (filters.labelId && note.labelId !== filters.labelId) {
+        if (filters.labelId && note.labelId !== filters.labelId) {
           return false;
         }
         if (
@@ -766,11 +758,8 @@ const NoteList = ({
               tooltip="Notes"
               onToggle={() => {}}
               selectedLabel={
-                filters.labelId && filters.labelId !== NO_LABEL_FILTER_VALUE
-                  ? labelsById.get(filters.labelId)
-                  : undefined
+                filters.labelId ? labelsById.get(filters.labelId) : undefined
               }
-              hasNoLabelFilter={filters.labelId === NO_LABEL_FILTER_VALUE}
               onClearLabelFilter={onClearLabelFilter}
               hasStartOrEndDateFilter={Boolean(filters.date || filters.endDate)}
               activeDateRangeLabel={
@@ -874,14 +863,9 @@ const NoteList = ({
                     : () => setNotesSectionExpanded((value) => !value);
 
                 const selectedLabel =
-                  item.key === "notes-section-header" &&
-                  filters.labelId &&
-                  filters.labelId !== NO_LABEL_FILTER_VALUE
+                  item.key === "notes-section-header" && filters.labelId
                     ? labelsById.get(filters.labelId)
                     : undefined;
-                const hasNoLabelFilter =
-                  item.key === "notes-section-header" &&
-                  filters.labelId === NO_LABEL_FILTER_VALUE;
                 const activeDateRangeLabel =
                   item.key === "notes-section-header"
                     ? [filters.date, filters.endDate]
@@ -921,7 +905,6 @@ const NoteList = ({
                       tooltip={tooltip}
                       onToggle={onToggle}
                       selectedLabel={selectedLabel}
-                      hasNoLabelFilter={hasNoLabelFilter}
                       onClearLabelFilter={onClearLabelFilter}
                       hasStartOrEndDateFilter={hasStartOrEndDateFilter}
                       activeDateRangeLabel={activeDateRangeLabel}

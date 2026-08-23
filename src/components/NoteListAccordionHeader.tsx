@@ -16,7 +16,6 @@ import {
   mdiChevronDown,
   mdiChevronUp,
   mdiFilter,
-  mdiLabelOff,
 } from "@mdi/js";
 import type { Label } from "../types";
 import LabelIcon from "./ui/LabelIcon";
@@ -64,7 +63,6 @@ type NoteListAccordionHeaderProps = {
   tooltip: string;
   onToggle: () => void;
   selectedLabel?: Label;
-  hasNoLabelFilter?: boolean;
   onClearLabelFilter?: () => void;
   hasStartOrEndDateFilter?: boolean;
   activeDateRangeLabel?: string | null;
@@ -90,7 +88,6 @@ const NoteListAccordionHeader = ({
   tooltip,
   onToggle,
   selectedLabel,
-  hasNoLabelFilter = false,
   onClearLabelFilter,
   hasStartOrEndDateFilter = false,
   activeDateRangeLabel = null,
@@ -110,7 +107,6 @@ const NoteListAccordionHeader = ({
 }: NoteListAccordionHeaderProps) => {
   const hasFilterButtons = Boolean(
     selectedLabel ||
-    hasNoLabelFilter ||
     hasStartOrEndDateFilter ||
     hasDueDateFilter ||
     hasTextFilter,
@@ -191,21 +187,6 @@ const NoteListAccordionHeader = ({
                     color={selectedLabel.color}
                     size={0.65}
                   />
-                </Box>
-              </Tooltip>
-            )}
-            {hasNoLabelFilter && (
-              <Tooltip title="Remove no label filter" arrow>
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={onClearLabelFilter}
-                  sx={{
-                    ...FILTER_CLEAR_BUTTON_SX,
-                    color: colors.blueGrey[300],
-                  }}
-                >
-                  <Icon path={mdiLabelOff} size={0.7} />
                 </Box>
               </Tooltip>
             )}

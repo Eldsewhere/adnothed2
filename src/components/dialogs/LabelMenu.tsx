@@ -102,7 +102,7 @@ const LabelMenu = ({
               p: 2,
               textAlign: "left",
               width: "100%",
-              ...(selected === null && {
+              ...((selected === null || selected === "") && {
                 bgcolor: "action.selected",
               }),
             }}
@@ -182,7 +182,7 @@ const LabelMenu = ({
             px: 2,
             textAlign: "left",
             width: "100%",
-            ...(selected === null && {
+            ...((selected === null || selected === "") && {
               bgcolor: "action.selected",
             }),
           }}

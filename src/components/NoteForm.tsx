@@ -18,7 +18,6 @@ import {
   mdiLabelMultiple,
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
-import { NO_LABEL_FILTER_VALUE } from "../utils/noteFilters";
 import { countGraphemes } from "../utils/textLength";
 import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
@@ -509,11 +508,10 @@ const NoteForm = ({
                                 selected={activelabelId}
                                 management={labelManagement}
                                 onSelect={(val) => {
-                                  field.onChange(val ?? "");
+                                  const nextValue = val ?? "";
+                                  field.onChange(nextValue);
                                   if (!isEditing) {
-                                    onFilterLabelChange(
-                                      val ?? NO_LABEL_FILTER_VALUE,
-                                    );
+                                    onFilterLabelChange(nextValue);
                                   }
                                   closeLabelMenu();
                                 }}
