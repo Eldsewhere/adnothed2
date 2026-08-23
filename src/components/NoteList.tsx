@@ -5,6 +5,7 @@ import type {
   Note,
   NoteFilters as noteFiltersValue,
   Status,
+  StatusFormValues,
 } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import {
@@ -49,6 +50,15 @@ type NoteListProps = {
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
+  statusManagement: {
+    notes: Note[];
+    editingStatus: Status | null;
+    onSubmit: (values: StatusFormValues) => boolean | void;
+    onCancelEdit: () => void;
+    onEdit: (status: Status) => void;
+    onDelete: (status: Status) => void;
+    newStatusId?: string | null;
+  };
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -128,6 +138,7 @@ const NoteList = ({
   onPin,
   onArchive,
   onEmojiChange,
+  statusManagement,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -1015,6 +1026,7 @@ const NoteList = ({
           onPin={onPin}
           onArchive={onArchive}
           onEmojiChange={onEmojiChange}
+          statusManagement={statusManagement}
           onComplete={onComplete}
           onCopy={handleCopy}
           onClone={handleClone}

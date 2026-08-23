@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { Box, Divider, Menu, MenuItem, colors } from "@mui/material";
+import { Box, Button, ButtonBase, Divider, Menu, MenuItem, Popover, Stack, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowDown,
@@ -21,8 +21,10 @@ import {
   mdiShareVariant,
   mdiTrashCanOutline,
 } from "@mdi/js";
-import type { Note, Status } from "../../types";
+import type { Note, Status, StatusFormValues } from "../../types";
 import { getStatusTextStyle } from "../../utils/statusStyles";
+import StatusForm from "../StatusForm";
+import StatusList from "../StatusList";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
@@ -37,6 +39,15 @@ type NoteActionsMenuProps = {
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
+  statusManagement: {
+    notes: Note[];
+    editingStatus: Status | null;
+    onSubmit: (values: StatusFormValues) => boolean | void;
+    onCancelEdit: () => void;
+    onEdit: (status: Status) => void;
+    onDelete: (status: Status) => void;
+    newStatusId?: string | null;
+  };
   onComplete: (note: Note) => void;
   onCopy: (note: Note) => void;
   onClone: (note: Note) => void;
@@ -93,6 +104,7 @@ const NoteActionsMenu = ({
   onPin,
   onArchive,
   onEmojiChange,
+  statusManagement,
   onComplete,
   onCopy,
   onClone,
@@ -114,6 +126,7 @@ const NoteActionsMenu = ({
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [isStatusFormOpen, setIsStatusFormOpen] = useState(false);
 
   useEffect(() => {
     if (openStatusPicker && anchorEl && note) {
@@ -443,67 +456,59 @@ const NoteActionsMenu = ({
           </>
         )}
       </Menu>
-      <Menu
+      <Popover
         anchorEl={statusMenuAnchor}
         open={Boolean(statusMenuAnchor)}
         onClose={() => {
           setStatusMenuAnchor(null);
+          setIsStatusFormOpen(false);
           if (openStatusPicker) {
             onClose();
           }
         }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <MenuItem
-          sx={{ color: colors.blueGrey[300] }}
-          onClick={() => selectStatus(null)}
-          autoFocus={!note?.emoji}
-          selected={!note?.emoji}
-        >
-          <Box
-            component="span"
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              mr: 1,
-              color: colors.blueGrey[300],
-            }}
+        <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1 }}>
+          {isStatusFormOpen || statusManagement.editingStatus ? (
+            <StatusForm
+              editingStatus={statusManagement.editingStatus}
+              onSubmit={(values) => {
+                const result = statusManagement.onSubmit(values);
+                if (result !== false) setIsStatusFormOpen(false);
+                return result;
+              }}
+              onCancelEdit={() => {
+                statusManagement.onCancelEdit();
+                setIsStatusFormOpen(false);
+              }}
+            />
+          ) : (
+            <Button onClick={() => setIsStatusFormOpen(true)}>Create status</Button>
+          )}
+          <ButtonBase
+            onClick={() => selectStatus(null)}
+            sx={{ alignItems: "center", bgcolor: colors.blueGrey[900], borderBottom: "3px solid", borderColor: colors.grey[900], borderRadius: 1, color: colors.blueGrey[300], display: "flex", justifyContent: "flex-start", minHeight: 40, px: 2, textAlign: "left", width: "100%", ...(!note?.emoji && { bgcolor: "action.selected" }) }}
           >
-            <Icon path={mdiEmoticonOutline} size={0.7} />
-          </Box>
-          {statuses.length === 0 ? "no statuses available" : "no status"}
-        </MenuItem>
-        {statuses.map((status) => {
-          const statusTextStyle = getStatusTextStyle(status.format);
-
-          return (
-            <MenuItem
-              key={status.id}
-              onClick={() => selectStatus(status)}
-              autoFocus={Boolean(note?.emoji && note.emoji === status.emoji)}
-              selected={Boolean(note?.emoji && note.emoji === status.emoji)}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  fontSize: "1.1rem",
-                }}
-              >
-                {status.emoji}
-              </Box>
-              <Box component="span" sx={statusTextStyle}>
-                {status.format === "spoiler"
-                  ? [...status.name]
-                      .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
-                      .join("")
-                  : status.name}
-              </Box>
-            </MenuItem>
-          );
-        })}
-      </Menu>
+            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+              <Icon path={mdiEmoticonOutline} size={0.7} />
+            </Box>
+            No status
+          </ButtonBase>
+          <StatusList
+            statuses={statuses}
+            notes={statusManagement.notes}
+            editingStatusId={statusManagement.editingStatus?.id ?? null}
+            onEdit={(status) => {
+              statusManagement.onEdit(status);
+              setIsStatusFormOpen(true);
+            }}
+            onDelete={statusManagement.onDelete}
+            newStatusId={statusManagement.newStatusId}
+            onSelect={selectStatus}
+          />
+        </Stack>
+      </Popover>
 
       <Menu
         anchorEl={shareMenuAnchor}

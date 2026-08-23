@@ -21,6 +21,7 @@ type StatusListProps = {
   onEdit: (status: Status) => void;
   onDelete: (status: Status) => void;
   newStatusId?: string | null;
+  onSelect?: (status: Status) => void;
 };
 
 const StatusList = ({
@@ -30,6 +31,7 @@ const StatusList = ({
   onEdit,
   onDelete,
   newStatusId,
+  onSelect,
 }: StatusListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
@@ -101,6 +103,7 @@ const StatusList = ({
                     isEditing={status.id === editingStatusId}
                     isMenuOpen={menuState.status?.id === status.id}
                     onOpenMenu={handleOpenMenu}
+                    onSelect={onSelect}
                   />
                 ))}
               </TableBody>

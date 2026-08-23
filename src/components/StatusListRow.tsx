@@ -20,6 +20,7 @@ type StatusListRowProps = {
   isEditing?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, status: Status) => void;
+  onSelect?: (status: Status) => void;
 };
 
 const StatusListRow = ({
@@ -29,6 +30,7 @@ const StatusListRow = ({
   isEditing = false,
   isMenuOpen = false,
   onOpenMenu,
+  onSelect,
 }: StatusListRowProps) => {
   const statusTextStyle =
     status.format === "spoiler" ? {} : getStatusTextStyle(status.format);
@@ -46,6 +48,8 @@ const StatusListRow = ({
         opacity: isMenuOpen ? 0.5 : 1,
         bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
       }}
+      hover={Boolean(onSelect)}
+      onClick={() => onSelect?.(status)}
     >
       <TableCell
         sx={{ paddingY: 2, flexShrink: 0, width: 40, verticalAlign: "middle" }}
@@ -111,7 +115,10 @@ const StatusListRow = ({
           <IconButton
             aria-label={`Open actions for ${status.name}`}
             size="small"
-            onClick={(event) => onOpenMenu(event, status)}
+            onClick={(event) => {
+              event.stopPropagation();
+              onOpenMenu(event, status);
+            }}
           >
             <Icon path={mdiDotsVertical} size={0.8} />
           </IconButton>

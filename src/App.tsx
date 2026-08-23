@@ -30,8 +30,6 @@ import {
   mdiInformationOutline,
   mdiMinusCircle,
 } from "@mdi/js";
-import StatusForm from "./components/StatusForm";
-import StatusList from "./components/StatusList";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
@@ -79,7 +77,7 @@ import {
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
 import { getStatusTextStyle } from "./utils/statusStyles";
-type TabValue = "notes" | "statuses";
+type TabValue = "notes";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -2138,10 +2136,7 @@ function App() {
                 },
               }}
               onChange={(_event, newValue) => {
-                const normalized =
-                  newValue === "notes" || newValue === "statuses"
-                    ? newValue
-                    : (String(newValue) as TabValue);
+                const normalized = newValue === "notes" ? newValue : "notes";
                 if (normalized !== "notes") {
                   setNoteFilters(emptyNoteFilters);
                   clearSelectMode();
@@ -2182,41 +2177,6 @@ function App() {
                 id="tab-notes"
                 aria-controls="tabpanel-notes"
               />
-              {(activeTab !== "notes" || showStatusTabOnNotes) && (
-                <Tab
-                  value="statuses"
-                  label={
-                    <Box
-                      sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
-                    >
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          lineHeight: 1,
-                        }}
-                      >
-                        <Icon path={mdiMinusCircle} size={0.75} />
-                        <Box
-                          component="span"
-                          sx={{
-                            fontSize: "0.5rem",
-                            opacity: 0.8,
-                            mt: 0.15,
-                          }}
-                        >
-                          {statuses.length}
-                        </Box>
-                      </Box>
-                      <Box component="span">Status</Box>
-                    </Box>
-                  }
-                  id="tab-statuses"
-                  aria-controls="tabpanel-statuses"
-                />
-              )}
             </Tabs>
             {activeTab === "notes" && (
               <Stack
@@ -2312,46 +2272,6 @@ function App() {
                   setDatePickerMode={setDatePickerMode}
                 />
               </Stack>
-            )}
-            {activeTab === "statuses" && (
-              <>
-                <Tooltip title="Import/Export">
-                  <IconButton
-                    aria-label="Import/Export"
-                    aria-controls={
-                      labelsActionsAnchor ? "labels-actions-menu" : undefined
-                    }
-                    aria-haspopup="true"
-                    aria-expanded={labelsActionsAnchor ? "true" : undefined}
-                    onClick={(event) =>
-                      setLabelsActionsAnchor(event.currentTarget)
-                    }
-                  >
-                    <Icon path={mdiFileImport} size={0.9} />
-                  </IconButton>
-                </Tooltip>
-                <LabelsActionsMenu
-                  anchorEl={labelsActionsAnchor}
-                  onClose={() => setLabelsActionsAnchor(null)}
-                  onImport={() => {
-                    void selectImportFile();
-                  }}
-                  onImportFromGoogleDrive={() => {
-                    setPendingGoogleDriveImport(true);
-                    setConfirmImportOpen(true);
-                  }}
-                  labels={labels}
-                  statuses={statuses}
-                  notes={notes}
-                  onNotify={(severity, message) => {
-                    setNotificationSeverity(severity);
-                    setNotification(message);
-                  }}
-                  onExport={() => {
-                    handleExportJson();
-                  }}
-                />
-              </>
             )}
           </Stack>
           <NoteStorageInfoDialog
@@ -2540,6 +2460,15 @@ function App() {
                   onPin={handleNotePin}
                   onArchive={handleNoteArchive}
                   onEmojiChange={handleNoteEmojiChange}
+                  statusManagement={{
+                    notes,
+                    editingStatus,
+                    onSubmit: handleStatusSubmit,
+                    onCancelEdit: () => setEditingStatus(null),
+                    onEdit: setEditingStatus,
+                    onDelete: handleStatusDelete,
+                    newStatusId: latestStatusId,
+                  }}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
                   availableHashtags={availableHashtags}
                   onRefreshAvailableHashtags={refreshAvailableHashtags}
@@ -2620,25 +2549,6 @@ function App() {
                   onToggleSelect={toggleNoteSelected}
                   onInstall={installPrompt ? handleInstall : undefined}
                 />
-              </Stack>
-            </TabPanel>
-            <TabPanel value={activeTab} index="statuses">
-              <Stack spacing={2}>
-                <StatusForm
-                  editingStatus={editingStatus}
-                  onSubmit={handleStatusSubmit}
-                  onCancelEdit={() => setEditingStatus(null)}
-                />
-                <Box sx={{ pt: 1 }}>
-                  <StatusList
-                    statuses={statuses}
-                    notes={notes}
-                    editingStatusId={editingStatus?.id ?? null}
-                    onEdit={setEditingStatus}
-                    onDelete={handleStatusDelete}
-                    newStatusId={latestStatusId}
-                  />
-                </Box>
               </Stack>
             </TabPanel>
           </Box>
