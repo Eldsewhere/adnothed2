@@ -177,32 +177,26 @@ const NoteListRow = ({
   };
 
   const isPastDueDate =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isBefore(dayjs().startOf("day"));
   const isFutureDueDate =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
   const shouldDisplayDueDateForMeta =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
   const shouldUsePriorityDueDate =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     (isToday(note.due) || isTomorrow(note.due));
   const shouldUseFutureDueDateTextColor =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     isFutureDueDate;
   const shouldShowDueDateIcon =
-    !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
