@@ -40,9 +40,6 @@ type NoteFormProps = {
   onFilterLabelChange: (value: string) => void;
   onClearFilters: () => void;
   onNoteTextChange?: (value: string) => void;
-  onDateFilterClick: (event: MouseEvent<HTMLElement>) => void;
-  hasDateFilter: boolean;
-  dateFilterDisabled: boolean;
   labelManagement: {
     notes: Note[];
     editingLabel: Label | null;
@@ -75,9 +72,6 @@ const NoteForm = ({
   onFilterLabelChange,
   onClearFilters,
   onNoteTextChange,
-  onDateFilterClick,
-  hasDateFilter,
-  dateFilterDisabled,
   labelManagement,
 }: NoteFormProps) => {
   const {
@@ -424,9 +418,6 @@ const NoteForm = ({
                                     onClearFilters();
                                   }}
                                   textAreaRef={textAreaRef}
-                                  onDateFilterClick={onDateFilterClick}
-                                  hasDateFilter={hasDateFilter}
-                                  dateFilterDisabled={dateFilterDisabled}
                                 />
                                 <EmojiMenu
                                   value={text}

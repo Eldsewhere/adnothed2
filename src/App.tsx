@@ -7,33 +7,23 @@ import React, {
 } from "react";
 import {
   Alert,
-  Badge,
   Box,
   colors,
-  IconButton,
   Menu,
   MenuItem,
   Paper,
   Snackbar,
   Stack,
-  Tab,
-  Tabs,
-  Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiCheckboxMultipleMarked,
-  mdiCalendar,
   mdiEmoticonOutline,
-  mdiNoteText,
-  mdiInformationOutline,
 } from "@mdi/js";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
 import HashtagBar from "./components/HashtagBar";
 import WeekdayPicker from "./components/WeekdayPicker";
-import TabPanel from "./components/ui/TabPanel";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
 import BulkLabelMenu from "./components/dialogs/LabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
@@ -56,10 +46,8 @@ import {
   enableGoogleDriveFromQuery,
   getPersistedFileName,
   loadPersistedState,
-  openPersistedStateFile,
   parsePersistedState,
   savePersistedState,
-  serializeState,
 } from "./utils/storage";
 import {
   type AppNotificationResult,
@@ -74,11 +62,8 @@ import {
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
 import { getStatusTextStyle } from "./utils/statusStyles";
-type TabValue = "notes";
-
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
-const HIDE_TOP_BAR_INFO_STORAGE_KEY = "adnothed-hide-topbar-info";
 const SHORT_MONTHS = [
   "Ene",
   "Feb",
@@ -182,7 +167,6 @@ function toggleBulletRows(text: string): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<TabValue>("notes");
   const [labels, setLabels] = useState<Label[]>([]);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
   const [statuses, setStatuses] = useState<Status[]>([]);
@@ -256,19 +240,6 @@ function App() {
   >(0);
   const [installPrompt, setInstallPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-  const [hideTopBarInfoButton, setHideTopBarInfoButton] = useState<boolean>(
-    () => {
-      if (typeof window === "undefined") {
-        return false;
-      }
-      return (
-        window.localStorage.getItem(HIDE_TOP_BAR_INFO_STORAGE_KEY) === "true"
-      );
-    },
-  );
-  const topToolbarRef = useRef<HTMLDivElement | null>(null);
-  const notesActionsRef = useRef<HTMLDivElement | null>(null);
-
   const [sharedText] = useState<string | null>(() => {
     const params = new URLSearchParams(window.location.search);
     const text = params.get("text");
@@ -333,10 +304,6 @@ function App() {
   };
 
   const handleNeverShowInfoTipsAgain = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(HIDE_TOP_BAR_INFO_STORAGE_KEY, "true");
-    }
-    setHideTopBarInfoButton(true);
     setNoteStorageInfoOpen(false);
   };
 
@@ -381,7 +348,6 @@ function App() {
         setNotification(persistedState.parseError);
       }
       setStorageReady(true);
-      setActiveTab("notes");
       isInitializingRef.current = false;
     }
 
@@ -411,7 +377,6 @@ function App() {
     setNotes(next.notes);
     setStorageFileName(next.fileName);
     setStorageReady(true);
-    setActiveTab("notes");
     if (next.parseError) {
       setNotificationSeverity("error");
       setNotification(next.parseError);
@@ -1123,12 +1088,6 @@ function App() {
     }
   };
 
-  const clearSelectMode = () => {
-    setSelectMode(false);
-    setSelectedNoteIds(new Set());
-    setBulkStatusAnchor(null);
-  };
-
   const toggleSelectMode = () => {
     setSelectMode((prev) => !prev);
     setSelectedNoteIds(new Set());
@@ -1626,89 +1585,6 @@ function App() {
     [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
   );
 
-  const filteredNoteCount = useMemo(
-    () =>
-      sortedNotes.filter((note, index) => {
-        if (noteFilters.labelId === NO_LABEL_FILTER_VALUE) {
-          if (note.labelId !== null) {
-            return false;
-          }
-        } else if (
-          noteFilters.labelId &&
-          note.labelId !== noteFilters.labelId
-        ) {
-          return false;
-        }
-
-        if (
-          !matchesTextFilters(
-            note.text,
-            note.createdAt,
-            index,
-            sortedNotes.length,
-            parsedTextFilters,
-            note.due,
-            note.labelId,
-            note.pinned,
-            note.emoji,
-            note.archived,
-            note.completed,
-          )
-        ) {
-          return false;
-        }
-
-        const noteDate = formatDate(note.createdAt);
-        const hasStartDate =
-          noteFilters.date.length === 10 && dateRegex.test(noteFilters.date);
-        const hasEndDate =
-          noteFilters.endDate.length === 10 &&
-          dateRegex.test(noteFilters.endDate);
-
-        if (hasStartDate && noteDate < noteFilters.date.trim()) {
-          return false;
-        }
-        if (hasEndDate && noteDate > noteFilters.endDate.trim()) {
-          return false;
-        }
-        if (noteFilters.dueDate) {
-          if (!note.due || formatDate(note.due) !== noteFilters.dueDate) {
-            return false;
-          }
-        }
-        if (noteFilters.weekday !== null) {
-          const noteCreatedDate = formatDate(note.createdAt);
-          const noteDueDate =
-            note.due !== undefined ? formatDate(note.due) : null;
-          if (
-            noteCreatedDate !== noteFilters.weekday &&
-            noteDueDate !== noteFilters.weekday
-          ) {
-            return false;
-          }
-        }
-        if (noteFilters.hasDue) {
-          const todayUnix = dayjs().startOf("day").unix();
-          if (note.due === undefined || note.due < todayUnix) {
-            return false;
-          }
-        }
-
-        return true;
-      }).length,
-    [
-      noteFilters.labelId,
-      noteFilters.date,
-      noteFilters.dueDate,
-      noteFilters.endDate,
-      noteFilters.hasDue,
-      noteFilters.weekday,
-      noteFilters.text,
-      parsedTextFilters,
-      sortedNotes,
-    ],
-  );
-
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of calendarFilteredNotes) {
@@ -2026,172 +1902,12 @@ function App() {
     <main>
       <Box>
         <Paper sx={{ p: 1 }}>
-          <Stack
-            ref={topToolbarRef}
-            direction="row"
-            sx={{
-              alignItems: "center",
-              display: "none",
-              justifyContent: "space-between",
-            }}
-          >
-            <Tabs
-              value={activeTab}
-              sx={{
-                minHeight: 36,
-                "& .MuiTab-root": {
-                  minWidth: 0,
-                  px: 1.5,
-                  py: 0,
-                  minHeight: 40,
-                },
-              }}
-              onChange={(_event, newValue) => {
-                const normalized = newValue === "notes" ? newValue : "notes";
-                if (normalized !== "notes") {
-                  setNoteFilters(emptyNoteFilters);
-                  clearSelectMode();
-                }
-                setActiveTab(normalized);
-              }}
-            >
-              <Tab
-                value="notes"
-                label={
-                  <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        lineHeight: 1,
-                      }}
-                    >
-                      <Icon path={mdiNoteText} size={0.75} />
-                      <Box
-                        component="span"
-                        sx={{
-                          fontSize: "0.5rem",
-                          opacity: 0.8,
-                          mt: 0.15,
-                        }}
-                      >
-                        {sortedNotes.length}
-                      </Box>
-                    </Box>
-                    <Box component="span">Notes</Box>
-                  </Box>
-                }
-                id="tab-notes"
-                aria-controls="tabpanel-notes"
-              />
-            </Tabs>
-            {activeTab === "notes" && (
-              <Stack
-                ref={notesActionsRef}
-                direction="row"
-                sx={{ alignItems: "center" }}
-              >
-                {!hideTopBarInfoButton && (
-                  <Tooltip title="Info tips">
-                    <IconButton
-                      aria-label="Info tips"
-                      color="default"
-                      onClick={() => setNoteStorageInfoOpen(true)}
-                    >
-                      <Icon path={mdiInformationOutline} size={0.9} />
-                    </IconButton>
-                  </Tooltip>
-                )}
-                <Tooltip
-                  title={
-                    selectMode ? "Cancel select mode" : "Select multiple notes"
-                  }
-                >
-                  <IconButton
-                    aria-label="Toggle select mode"
-                    color={selectMode ? "primary" : "default"}
-                    onClick={toggleSelectMode}
-                    disabled={notes.length === 0}
-                  >
-                    <Badge
-                      badgeContent={selectednoteIds.size}
-                      color="primary"
-                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                      sx={{
-                        "& .MuiBadge-badge": {
-                          backgroundColor: "primary",
-                          color: colors.grey[900],
-                          minWidth: 12,
-                          height: 12,
-                          fontSize: "0.5rem",
-                        },
-                      }}
-                    >
-                      <Icon path={mdiCheckboxMultipleMarked} size={0.9} />
-                    </Badge>
-                  </IconButton>
-                </Tooltip>
-                <Tooltip title="Filter by date">
-                  <IconButton
-                    aria-label="Filter by date"
-                    color={
-                      isDatePopoverOpen ||
-                      noteFilters.date ||
-                      noteFilters.endDate ||
-                      noteFilters.dueDate ||
-                      noteFilters.hasDue ||
-                      noteFilters.weekday !== null
-                        ? "primary"
-                        : "default"
-                    }
-                    onClick={(event) => {
-                      if (isDatePopoverOpen) {
-                        setDatePopoverAnchor(null);
-                        return;
-                      }
-                      setPendingDateFilter({
-                        date: noteFilters.date,
-                        endDate: noteFilters.endDate,
-                      });
-                      setDatePickerMode("start");
-                      setDatePopoverAnchor(event.currentTarget);
-                    }}
-                    disabled={notes.length === 0 || selectMode}
-                  >
-                    <Icon path={mdiCalendar} size={0.9} />
-                  </IconButton>
-                </Tooltip>
-                <DateFilterPopover
-                  open={isDatePopoverOpen}
-                  anchorEl={datePopoverAnchor}
-                  onClose={() => setDatePopoverAnchor(null)}
-                  datePickerMode={datePickerMode}
-                  titleRangeSuffix={titleRangeSuffix}
-                  activeStartDate={activeStartDate}
-                  activeEndDate={activeEndDate}
-                  pendingDateFilter={pendingDateFilter}
-                  setPendingDateFilter={setPendingDateFilter}
-                  applyDateFilter={applyDateFilter}
-                  clearDateFilter={clearDateFilter}
-                  filteredMinDate={filteredMinDate}
-                  noteCountsByDay={noteCountsByDay}
-                  today={today}
-                  setDatePickerMode={setDatePickerMode}
-                />
-              </Stack>
-            )}
-          </Stack>
           <NoteStorageInfoDialog
             open={noteStorageInfoOpen}
             onClose={() => setNoteStorageInfoOpen(false)}
             onNeverShowAgain={handleNeverShowInfoTipsAgain}
           />
           <Box sx={{ pt: 2 }}>
-            <TabPanel value={activeTab} index="notes">
               <Stack spacing={1}>
                 <NoteForm
                   editingNote={editingNote}
@@ -2209,22 +1925,6 @@ function App() {
                   onFilterLabelChange={handleFilterLabelChange}
                   onClearFilters={handleClearFilters}
                   onNoteTextChange={setDraftNoteText}
-                  onDateFilterClick={(event) => {
-                    setPendingDateFilter({
-                      date: noteFilters.date,
-                      endDate: noteFilters.endDate,
-                    });
-                    setDatePickerMode("start");
-                    setDatePopoverAnchor(event.currentTarget);
-                  }}
-                  hasDateFilter={Boolean(
-                    noteFilters.date ||
-                      noteFilters.endDate ||
-                      noteFilters.dueDate ||
-                      noteFilters.hasDue ||
-                      noteFilters.weekday !== null,
-                  )}
-                  dateFilterDisabled={notes.length === 0 || selectMode}
                   labelManagement={{
                     notes,
                     editingLabel,
@@ -2234,6 +1934,23 @@ function App() {
                     onDelete: requestDeleteLabel,
                     newLabelId: latestlabelId,
                   }}
+                />
+                <DateFilterPopover
+                  open={isDatePopoverOpen}
+                  anchorEl={datePopoverAnchor}
+                  onClose={() => setDatePopoverAnchor(null)}
+                  datePickerMode={datePickerMode}
+                  titleRangeSuffix={titleRangeSuffix}
+                  activeStartDate={activeStartDate}
+                  activeEndDate={activeEndDate}
+                  pendingDateFilter={pendingDateFilter}
+                  setPendingDateFilter={setPendingDateFilter}
+                  applyDateFilter={applyDateFilter}
+                  clearDateFilter={clearDateFilter}
+                  filteredMinDate={filteredMinDate}
+                  noteCountsByDay={noteCountsByDay}
+                  today={today}
+                  setDatePickerMode={setDatePickerMode}
                 />
                 <Box
                   ref={weekPickerRef}
@@ -2475,10 +2192,24 @@ function App() {
                   selectedIds={selectednoteIds}
                   onToggleSelect={toggleNoteSelected}
                   onToggleSelectMode={toggleSelectMode}
+                  onOpenDateFilter={(event) => {
+                    setPendingDateFilter({
+                      date: noteFilters.date,
+                      endDate: noteFilters.endDate,
+                    });
+                    setDatePickerMode("start");
+                    setDatePopoverAnchor(event.currentTarget);
+                  }}
+                  hasDateFilter={Boolean(
+                    noteFilters.date ||
+                      noteFilters.endDate ||
+                      noteFilters.dueDate ||
+                      noteFilters.hasDue ||
+                      noteFilters.weekday !== null,
+                  )}
                   onInstall={installPrompt ? handleInstall : undefined}
                 />
               </Stack>
-            </TabPanel>
           </Box>
         </Paper>
         {weekPickerDueDialogOpen && (

@@ -63,6 +63,8 @@ type NoteListProps = {
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
   onToggleSelectMode: () => void;
+  onOpenDateFilter: (event: MouseEvent<HTMLElement>) => void;
+  hasDateFilter: boolean;
   onInfoTips?: () => void;
   onInstall?: () => void;
   availableHashtags?: string[];
@@ -144,6 +146,8 @@ const NoteList = ({
   selectedIds,
   onToggleSelect,
   onToggleSelectMode,
+  onOpenDateFilter,
+  hasDateFilter,
   onInfoTips,
   onInstall,
   availableHashtags = [],
@@ -784,6 +788,9 @@ const NoteList = ({
               selectedCount={selectedIds.size}
               onToggleSelectMode={onToggleSelectMode}
               selectDisabled
+              onOpenDateFilter={onOpenDateFilter}
+              hasDateFilter={hasDateFilter}
+              dateFilterDisabled
             />
           </Box>
           <Alert severity="info">
@@ -926,6 +933,13 @@ const NoteList = ({
                           ? onToggleSelectMode
                           : undefined
                       }
+                      onOpenDateFilter={
+                        item.key === "notes-section-header"
+                          ? onOpenDateFilter
+                          : undefined
+                      }
+                      hasDateFilter={hasDateFilter}
+                      dateFilterDisabled={notes.length === 0 || selectMode}
                       selectDisabled={notes.length === 0}
                     />
                   </Box>

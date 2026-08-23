@@ -1,4 +1,11 @@
-import { Badge, Box, IconButton, Tooltip, colors } from "@mui/material";
+import {
+  Badge,
+  Box,
+  IconButton,
+  Tooltip,
+  colors,
+} from "@mui/material";
+import type { MouseEvent } from "react";
 import { Icon } from "@mdi/react";
 import {
   mdiCalendar,
@@ -67,6 +74,9 @@ type NoteListAccordionHeaderProps = {
   selectedCount?: number;
   onToggleSelectMode?: () => void;
   selectDisabled?: boolean;
+  onOpenDateFilter?: (event: MouseEvent<HTMLElement>) => void;
+  hasDateFilter?: boolean;
+  dateFilterDisabled?: boolean;
 };
 
 const NoteListAccordionHeader = ({
@@ -89,6 +99,9 @@ const NoteListAccordionHeader = ({
   selectedCount = 0,
   onToggleSelectMode,
   selectDisabled = false,
+  onOpenDateFilter,
+  hasDateFilter = false,
+  dateFilterDisabled = false,
 }: NoteListAccordionHeaderProps) => (
   <Box
     sx={{
@@ -131,6 +144,7 @@ const NoteListAccordionHeader = ({
       </Box>
     </Tooltip>
     {(onToggleSelectMode ||
+      onOpenDateFilter ||
       selectedLabel ||
       hasStartOrEndDateFilter ||
       hasDueDateFilter ||
@@ -172,6 +186,21 @@ const NoteListAccordionHeader = ({
                 >
                   <Icon path={mdiCheckboxMultipleMarked} size={0.8} />
                 </Badge>
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+        {onOpenDateFilter && (
+          <Tooltip title="Filter by date" arrow>
+            <span>
+              <IconButton
+                aria-label="Filter by date"
+                color={hasDateFilter ? "primary" : "default"}
+                size="small"
+                onClick={onOpenDateFilter}
+                disabled={dateFilterDisabled}
+              >
+                <Icon path={mdiCalendar} size={0.8} />
               </IconButton>
             </span>
           </Tooltip>
