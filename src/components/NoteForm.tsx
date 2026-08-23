@@ -363,58 +363,38 @@ const NoteForm = ({
                                 </Tooltip>
                                 {onDueDateClick && (
                                   <Tooltip title="Schedule note" arrow>
-                                    <Badge
-                                      badgeContent={dueFutureCount}
-                                      invisible={dueFutureCount === 0}
-                                      anchorOrigin={{
-                                        vertical: "bottom",
-                                        horizontal: "right",
-                                      }}
+                                    <IconButton
+                                      aria-label="Schedule note"
+                                      size="small"
+                                      onClick={onDueDateClick}
                                       sx={{
-                                        "& .MuiBadge-badge": {
-                                          backgroundColor: colors.orange[400],
-                                          color: colors.grey[900],
-                                          minWidth: 12,
-                                          height: 12,
-                                          fontSize: "0.5rem",
-                                          bottom: 4,
-                                          right: 4,
+                                        border: "none",
+                                        color: dueLabel
+                                          ? colors.orange[300]
+                                          : colors.blueGrey[200],
+                                        borderRadius: 1,
+                                        minWidth: 32,
+                                        width: 32,
+                                        height: 32,
+                                        p: 0,
+                                        boxShadow: "none",
+                                        "&:hover": {
+                                          backgroundColor: dueLabel
+                                            ? "rgba(255, 152, 0, 0.2)"
+                                            : "rgba(148, 163, 184, 0.12)",
                                         },
                                       }}
                                     >
-                                      <IconButton
-                                        aria-label="Schedule note"
-                                        size="small"
-                                        onClick={onDueDateClick}
-                                        sx={{
-                                          border: "none",
-                                          color: dueLabel
-                                            ? colors.orange[300]
-                                            : colors.blueGrey[200],
-                                          borderRadius: 1,
-                                          minWidth: 32,
-                                          width: 32,
-                                          height: 32,
-                                          p: 0,
-                                          boxShadow: "none",
-                                          "&:hover": {
-                                            backgroundColor: dueLabel
-                                              ? "rgba(255, 152, 0, 0.2)"
-                                              : "rgba(148, 163, 184, 0.12)",
-                                          },
+                                      <Icon
+                                        path={mdiCalendarClock}
+                                        style={{
+                                          fill: dueLabel
+                                            ? "rgba(255, 152, 0, 0.14)"
+                                            : "transparent",
                                         }}
-                                      >
-                                        <Icon
-                                          path={mdiCalendarClock}
-                                          style={{
-                                            fill: dueLabel
-                                              ? "rgba(255, 152, 0, 0.14)"
-                                              : "transparent",
-                                          }}
-                                          size={0.8}
-                                        />
-                                      </IconButton>
-                                    </Badge>
+                                        size={0.8}
+                                      />
+                                    </IconButton>
                                   </Tooltip>
                                 )}
                                 <NoteFormActionsMenu
