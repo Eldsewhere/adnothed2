@@ -9,7 +9,7 @@ import {
   Tooltip,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import type { Label, Note, NoteFormValues } from "../types";
+import type { Label, LabelFormValues, Note, NoteFormValues } from "../types";
 import {
   mdiCalendarClock,
   mdiCancel,
@@ -40,6 +40,19 @@ type NoteFormProps = {
   onFilterLabelChange: (value: string) => void;
   onClearFilters: () => void;
   onNoteTextChange?: (value: string) => void;
+  labelManagement: {
+    notes: Note[];
+    editingLabel: Label | null;
+    onSubmit: (
+      values: LabelFormValues & {
+        icon: NonNullable<LabelFormValues["icon"]>;
+      },
+    ) => void | boolean;
+    onCancelEdit: () => void;
+    onEdit: (label: Label) => void;
+    onDelete: (label: Label) => void;
+    newLabelId?: string | null;
+  };
 };
 
 const emptyValues: NoteFormValues = { labelId: "", text: "" };
@@ -59,6 +72,7 @@ const NoteForm = ({
   onFilterLabelChange,
   onClearFilters,
   onNoteTextChange,
+  labelManagement,
 }: NoteFormProps) => {
   const {
     control,
@@ -493,6 +507,7 @@ const NoteForm = ({
                                 onClose={closeLabelMenu}
                                 labels={labels}
                                 selected={activelabelId}
+                                management={labelManagement}
                                 onSelect={(val) => {
                                   field.onChange(val ?? "");
                                   if (!isEditing) {

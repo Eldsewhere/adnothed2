@@ -20,6 +20,7 @@ type LabelListRowProps = {
   isEditing?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, label: Label) => void;
+  onSelect?: (label: Label) => void;
 };
 
 const LabelListRow = ({
@@ -29,6 +30,7 @@ const LabelListRow = ({
   isEditing = false,
   isMenuOpen = false,
   onOpenMenu,
+  onSelect,
 }: LabelListRowProps) => (
   <TableRow
     key={label.id}
@@ -42,6 +44,8 @@ const LabelListRow = ({
       opacity: isMenuOpen ? 0.5 : 1,
       bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
     }}
+    onClick={() => onSelect?.(label)}
+    hover={Boolean(onSelect)}
   >
     <TableCell
       sx={{
@@ -114,7 +118,10 @@ const LabelListRow = ({
         <IconButton
           aria-label={`Open actions for ${label.name}`}
           size="small"
-          onClick={(event) => onOpenMenu(event, label)}
+          onClick={(event) => {
+            event.stopPropagation();
+            onOpenMenu(event, label);
+          }}
         >
           <Icon path={mdiDotsVertical} size={0.8} />
         </IconButton>

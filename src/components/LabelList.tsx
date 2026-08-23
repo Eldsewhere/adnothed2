@@ -21,6 +21,7 @@ type LabelListProps = {
   onEdit: (label: Label) => void;
   onDelete: (label: Label) => void;
   newlabelId?: string | null;
+  onSelect?: (label: Label) => void;
 };
 
 const LabelList = ({
@@ -30,6 +31,7 @@ const LabelList = ({
   onEdit,
   onDelete,
   newlabelId,
+  onSelect,
 }: LabelListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
@@ -102,6 +104,7 @@ const LabelList = ({
                     isEditing={label.id === editingLabelId}
                     isMenuOpen={menuState.label?.id === label.id}
                     onOpenMenu={handleOpenMenu}
+                    onSelect={onSelect}
                   />
                 ))}
               </TableBody>

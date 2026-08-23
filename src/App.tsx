@@ -26,13 +26,10 @@ import {
   mdiCalendar,
   mdiEmoticonOutline,
   mdiNoteText,
-  mdiLabelMultiple,
   mdiFileImport,
   mdiInformationOutline,
   mdiMinusCircle,
 } from "@mdi/js";
-import LabelForm from "./components/LabelForm";
-import LabelList from "./components/LabelList";
 import StatusForm from "./components/StatusForm";
 import StatusList from "./components/StatusList";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
@@ -52,6 +49,7 @@ import NoteStorageInfoDialog from "./components/dialogs/NoteStorageInfoDialog";
 import type {
   BeforeInstallPromptEvent,
   Label,
+  LabelFormValues,
   Note,
   Status,
   StatusFormValues,
@@ -81,7 +79,7 @@ import {
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
 import { getStatusTextStyle } from "./utils/statusStyles";
-type TabValue = "notes" | "labels" | "statuses";
+type TabValue = "notes" | "statuses";
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -411,7 +409,7 @@ function App() {
 
   useEffect(() => {
     if (!storageReady) {
-      setActiveTab("labels");
+      setActiveTab("notes");
     }
   }, [storageReady]);
 
@@ -645,9 +643,11 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  const handleSubmit: React.ComponentProps<typeof LabelForm>["onSubmit"] = (
-    values,
-  ) => {
+  const handleSubmit = (
+    values: LabelFormValues & {
+      icon: NonNullable<LabelFormValues["icon"]>;
+    },
+  ): boolean | void => {
     const iconName = values.icon.name;
 
     // ensure the icon is unique across labels
@@ -2139,9 +2139,7 @@ function App() {
               }}
               onChange={(_event, newValue) => {
                 const normalized =
-                  newValue === "notes" ||
-                  newValue === "labels" ||
-                  newValue === "statuses"
+                  newValue === "notes" || newValue === "statuses"
                     ? newValue
                     : (String(newValue) as TabValue);
                 if (normalized !== "notes") {
@@ -2183,39 +2181,6 @@ function App() {
                 }
                 id="tab-notes"
                 aria-controls="tabpanel-notes"
-              />
-              <Tab
-                value="labels"
-                label={
-                  <Box
-                    sx={{ display: "flex", alignItems: "center", gap: 0.75 }}
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        lineHeight: 1,
-                      }}
-                    >
-                      <Icon path={mdiLabelMultiple} size={0.75} />
-                      <Box
-                        component="span"
-                        sx={{
-                          fontSize: "0.5rem",
-                          opacity: 0.8,
-                          mt: 0.15,
-                        }}
-                      >
-                        {labels.length}
-                      </Box>
-                    </Box>
-                    <Box component="span">Labels</Box>
-                  </Box>
-                }
-                id="tab-labels"
-                aria-controls="tabpanel-labels"
               />
               {(activeTab !== "notes" || showStatusTabOnNotes) && (
                 <Tab
@@ -2348,7 +2313,7 @@ function App() {
                 />
               </Stack>
             )}
-            {(activeTab === "labels" || activeTab === "statuses") && (
+            {activeTab === "statuses" && (
               <>
                 <Tooltip title="Import/Export">
                   <IconButton
@@ -2413,6 +2378,15 @@ function App() {
                   onFilterLabelChange={handleFilterLabelChange}
                   onClearFilters={handleClearFilters}
                   onNoteTextChange={setDraftNoteText}
+                  labelManagement={{
+                    notes,
+                    editingLabel,
+                    onSubmit: handleSubmit,
+                    onCancelEdit: () => setEditingLabel(null),
+                    onEdit: setEditingLabel,
+                    onDelete: requestDeleteLabel,
+                    newLabelId: latestlabelId,
+                  }}
                 />
                 <Box
                   ref={weekPickerRef}
@@ -2645,23 +2619,6 @@ function App() {
                   selectedIds={selectednoteIds}
                   onToggleSelect={toggleNoteSelected}
                   onInstall={installPrompt ? handleInstall : undefined}
-                />
-              </Stack>
-            </TabPanel>
-            <TabPanel value={activeTab} index="labels">
-              <Stack spacing={2}>
-                <LabelForm
-                  editingLabel={editingLabel}
-                  onSubmit={handleSubmit}
-                  onCancelEdit={() => setEditingLabel(null)}
-                />
-                <LabelList
-                  labels={labels}
-                  notes={notes}
-                  editingLabelId={editingLabel?.id ?? null}
-                  onEdit={setEditingLabel}
-                  onDelete={requestDeleteLabel}
-                  newlabelId={latestlabelId}
                 />
               </Stack>
             </TabPanel>
