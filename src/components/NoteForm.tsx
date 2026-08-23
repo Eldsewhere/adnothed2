@@ -362,7 +362,7 @@ const NoteForm = ({
                                   </IconButton>
                                 </Tooltip>
                                 {onDueDateClick && (
-                                  <Tooltip title="Set due date" arrow>
+                                  <Tooltip title="Schedule note" arrow>
                                     <Badge
                                       badgeContent={dueFutureCount}
                                       invisible={dueFutureCount === 0}
@@ -383,7 +383,7 @@ const NoteForm = ({
                                       }}
                                     >
                                       <IconButton
-                                        aria-label="Set note due date"
+                                        aria-label="Schedule note"
                                         size="small"
                                         onClick={onDueDateClick}
                                         sx={{

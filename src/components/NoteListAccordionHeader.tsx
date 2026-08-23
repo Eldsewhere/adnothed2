@@ -170,8 +170,8 @@ const NoteListAccordionHeader = ({
           <Tooltip
             title={
               activeDueDateLabel
-                ? `Remove due date filter: ${activeDueDateLabel}`
-                : "Remode due date filter"
+                ? `Remove schedule note filter: ${activeDueDateLabel}`
+                : "Remove schedule note filter"
             }
             arrow
           >

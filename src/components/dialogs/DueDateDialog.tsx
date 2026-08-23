@@ -170,7 +170,7 @@ const DueDateDialog = ({
   noteCountsByDay,
   startDate,
   endDate,
-  title = "Set due date",
+  title = "Schedule note",
 }: DueDateDialogProps) => {
   const today = useMemo(() => dayjs().startOf("day"), []);
   const resolvedDueDaysByDate = dueDaysByDate ?? new Map<string, number>();
@@ -334,9 +334,9 @@ const DueDateDialog = ({
         )}
         <Box sx={{ flex: 1 }} />
         {showRemoveButton && onRemove && (
-          <Tooltip title="Remove due date">
+          <Tooltip title="Remove schedule note">
             <IconButton
-              aria-label="Remove due date"
+              aria-label="Remove schedule note"
               color="error"
               onClick={onRemove}
             >
@@ -344,9 +344,9 @@ const DueDateDialog = ({
             </IconButton>
           </Tooltip>
         )}
-        <Tooltip title="Save due date">
+        <Tooltip title="Save schedule note">
           <IconButton
-            aria-label="Save due date"
+            aria-label="Save schedule note"
             onClick={onSave}
             color="primary"
             sx={{ color: colors.lightGreen[400] }}

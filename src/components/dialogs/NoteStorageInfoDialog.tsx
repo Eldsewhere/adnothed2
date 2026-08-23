@@ -40,7 +40,7 @@ const NoteStorageInfoDialog = ({
         </Alert>
         <Alert severity="info" sx={{ textAlign: "left" }}>
           When writing a note, write a date in the format 20Jan and time in the
-          format 12h30 or 12:30 to set a due date and time. If you add g at the
+          format 12h30 or 12:30 to set a scheduled note and time. If you add g at the
           end like 12h30g it will also open Google Calendar on submitting
         </Alert>
         <Alert severity="info" sx={{ textAlign: "left" }}>

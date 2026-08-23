@@ -2694,7 +2694,7 @@ function App() {
             showRemoveButton={Boolean(draftDueDate || noteFilters.weekday)}
             dueDaysByDate={dueCountByDay}
             noteCountsByDay={noteCountByDay}
-            title="Set due date"
+            title="Schedule note"
           />
         )}
         <Snackbar

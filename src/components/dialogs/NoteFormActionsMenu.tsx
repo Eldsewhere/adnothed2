@@ -168,7 +168,7 @@ const queryTemplates: QueryTemplate[] = [
     iconPath: mdiPound,
   },
   {
-    label: "due date",
+    label: "scheduled",
     command: "/with:due;",
     iconPath: mdiCalendar,
   },

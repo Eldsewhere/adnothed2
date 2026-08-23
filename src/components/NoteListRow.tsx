@@ -663,7 +663,7 @@ const NoteListRow = ({
                 {shouldShowDueDateIcon && (
                   <Tooltip
                     title={
-                      shouldUsePriorityDueDate ? "Due date" : "Future due date"
+                      shouldUsePriorityDueDate ? "Scheduled" : "Scheduled date"
                     }
                     aria-label={undefined}
                     arrow

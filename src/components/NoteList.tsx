@@ -800,7 +800,7 @@ const NoteList = ({
                 const label = isArchivedHeader
                   ? "Archived"
                   : isFutureDueHeader
-                    ? "Future due"
+                    ? "Scheduled"
                     : "Notes";
                 const tooltip = isArchivedHeader
                   ? archivedSectionExpanded
@@ -808,8 +808,8 @@ const NoteList = ({
                     : "Expand archived notes"
                   : isFutureDueHeader
                     ? futureDueSectionExpanded
-                      ? "Collapse future due notes"
-                      : "Expand future due notes"
+                      ? "Collapse scheduled notes"
+                      : "Expand scheduled notes"
                     : notesSectionExpanded
                       ? "Collapse notes"
                       : "Expand notes";
@@ -1047,7 +1047,7 @@ const NoteList = ({
           showRemoveButton={dueDateDialogNote.due !== undefined}
           dueDaysByDate={dueDaysByDate ?? new Map()}
           noteCountsByDay={noteCountsByDay ?? new Map()}
-          title="Set due date"
+          title="Schedule note"
         />
       )}
     </Box>
