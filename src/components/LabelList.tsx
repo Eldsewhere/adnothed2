@@ -10,7 +10,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiPencil, mdiTrashCanOutline } from "@mdi/js";
+import { mdiCheck, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
 import type { Label, Note } from "../types";
 import LabelListRow from "./LabelListRow";
 
@@ -51,6 +51,13 @@ const LabelList = ({
     setMenuState({ anchorEl: null, label: null });
   };
 
+  const handleMenuSelect = () => {
+    if (menuState.label && onSelect) {
+      onSelect(menuState.label);
+    }
+    handleCloseMenu();
+  };
+
   const handleMenuEdit = () => {
     if (menuState.label) {
       onEdit(menuState.label);
@@ -70,7 +77,7 @@ const LabelList = ({
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <Box>
+    <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
       {orderedLabels.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
           <Box> No labels added yet. Add labels to filter notes together</Box>
@@ -78,16 +85,29 @@ const LabelList = ({
       ) : (
         <Box
           sx={{
-            overflowY: "auto",
+            flex: 1,
+            maxHeight: "calc(100vh - 220px)",
             minHeight: 0,
+            overflowY: "auto",
             bgcolor: colors.blueGrey[900],
             borderRadius: 2,
-            overflow: "hidden",
+            scrollbarWidth: "thin",
+            "&::-webkit-scrollbar": {
+              width: 8,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(148, 163, 184, 0.45)",
+              borderRadius: 999,
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "rgba(15, 23, 42, 0.2)",
+            },
           }}
         >
           <TableContainer
             sx={{
-              overflow: "hidden",
+              overflowY: "auto",
+              overflowX: "hidden",
             }}
           >
             <Table
@@ -122,6 +142,21 @@ const LabelList = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
+        <MenuItem onClick={handleMenuSelect}>
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiCheck} size={0.7} />
+          </Box>
+          Select
+        </MenuItem>
         <MenuItem onClick={handleMenuEdit}>
           <Box
             component="span"

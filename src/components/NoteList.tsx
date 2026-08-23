@@ -754,10 +754,21 @@ const NoteList = ({
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: "100vh",
+            maxHeight: "calc(100vh - 240px)",
             minHeight: 200,
             overflowY: "auto",
             position: "relative",
+            scrollbarWidth: "thin",
+            "&::-webkit-scrollbar": {
+              width: 8,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(148, 163, 184, 0.45)",
+              borderRadius: 999,
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "rgba(15, 23, 42, 0.2)",
+            },
           }}
         >
           <Box
@@ -831,10 +842,21 @@ const NoteList = ({
           ref={containerRef}
           onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
           sx={{
-            height: "100vh",
+            maxHeight: "calc(100vh - 240px)",
             minHeight: 200,
             overflowY: "auto",
             position: "relative",
+            scrollbarWidth: "thin",
+            "&::-webkit-scrollbar": {
+              width: 8,
+            },
+            "&::-webkit-scrollbar-thumb": {
+              backgroundColor: "rgba(148, 163, 184, 0.45)",
+              borderRadius: 999,
+            },
+            "&::-webkit-scrollbar-track": {
+              backgroundColor: "rgba(15, 23, 42, 0.2)",
+            },
           }}
         >
           <Box sx={{ height: totalHeight, position: "relative" }}>

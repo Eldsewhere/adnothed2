@@ -20,8 +20,11 @@ const SelectionPopover = ({
     sx={{
       width: "100%",
       height: "100%",
+      minHeight: 0,
       boxSizing: "border-box",
       backgroundColor: colors.grey[900],
+      display: "flex",
+      flexDirection: "column",
     }}
   >
     <Box
@@ -62,7 +65,19 @@ const SelectionPopover = ({
       </IconButton>
     </Box>
 
-    <Box sx={{ px: 1.5, pb: 1.5, pt: 1.5 }}>{children}</Box>
+    <Box
+      sx={{
+        px: 1.5,
+        pb: 1.5,
+        pt: 1.5,
+        display: "flex",
+        flexDirection: "column",
+        flex: 1,
+        minHeight: 0,
+      }}
+    >
+      {children}
+    </Box>
   </Stack>
 );
 
