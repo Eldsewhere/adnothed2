@@ -74,6 +74,17 @@ type NoteListProps = {
   onClearDueDateFilter?: () => void;
   hasTextFilter?: boolean;
   onClearTextFilter?: () => void;
+  labelManagement?: {
+    notes: Note[];
+    editingLabel: Label | null;
+    onSubmit: (
+      values: { name: string; icon: NonNullable<LabelFormValues["icon"]>; color: string },
+    ) => void | boolean;
+    onCancelEdit: () => void;
+    onEdit: (label: Label) => void;
+    onDelete: (label: Label) => void;
+    newLabelId?: string | null;
+  };
 };
 
 const ROW_HEIGHT = 80;
@@ -152,6 +163,7 @@ const NoteList = ({
   onToggleHashtagInDraft,
   onAppendHashtagToNote,
   onRemoveHashtagFromNote,
+  labelManagement,
   onClearLabelFilter,
   onClearDateRangeFilter,
   onClearDueDateFilter,
@@ -1083,6 +1095,11 @@ const NoteList = ({
           onClose={closeLabelMenu}
           onSelect={(val) => handleLabelSelect(val)}
           selected={labelMenuAnchor?.note.labelId}
+          onCreateLabel={labelManagement ? () => {
+            labelManagement.onCancelEdit();
+            closeLabelMenu();
+          } : undefined}
+          management={labelManagement}
         />
       )}
       {dueDateDialogNote && (

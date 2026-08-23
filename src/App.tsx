@@ -2132,6 +2132,15 @@ function App() {
                   onFilterTextChange={handleFilterTextChange}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                   onAppendHashtagToNote={handleAppendHashtagToNote}
+                  labelManagement={{
+                    notes,
+                    editingLabel,
+                    onSubmit: handleSubmit,
+                    onCancelEdit: () => setEditingLabel(null),
+                    onEdit: setEditingLabel,
+                    onDelete: requestDeleteLabel,
+                    newLabelId: latestlabelId,
+                  }}
                   onClearLabelFilter={handleClearLabelFilter}
                   onClearDateRangeFilter={handleClearDateRangeFilter}
                   onClearDueDateFilter={handleClearDueDateFilter}
