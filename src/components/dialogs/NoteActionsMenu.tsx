@@ -593,6 +593,7 @@ const NoteActionsMenu = ({
                 justifyContent: "flex-start",
                 minHeight: 40,
                 p: 2,
+                 mb: 0.5,
                 textAlign: "left",
                 width: "100%",
                 ...(!note?.emoji && { bgcolor: "action.selected" }),

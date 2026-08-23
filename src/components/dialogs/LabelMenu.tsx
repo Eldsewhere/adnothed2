@@ -193,6 +193,7 @@ const LabelMenu = ({
                 justifyContent: "flex-start",
                 minHeight: 36,
                 p: 2,
+                mb: 0.5,
                 textAlign: "left",
                 width: "100%",
                 ...((selected === null || selected === "") && {
