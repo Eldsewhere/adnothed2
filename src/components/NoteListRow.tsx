@@ -10,13 +10,8 @@ import {
 } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
-  mdiArchive,
   mdiArchiveArrowUp,
-  mdiBell,
-  mdiCheckboxMarkedOutline,
   mdiChevronDown,
-  mdiClockCheckOutline,
-  mdiClockOutline,
   mdiDotsVertical,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -34,6 +29,7 @@ import {
 } from "../utils/formatTimestamp";
 import { splitTextByUrls } from "../utils/textPatterns";
 import LabelIcon from "./ui/LabelIcon";
+import NoteTimestampMetaIcons from "./ui/NoteTimestampMetaIcons";
 import HashtagChip from "./HashtagChip";
 import { getStatusTextStyle } from "../utils/statusStyles";
 
@@ -635,132 +631,16 @@ const NoteListRow = ({
                     ? formatDueDate(note.due!)
                     : formatTimestamp(note.createdAt)}
                 </Box>
-                {checkboxProgress && (
-                  <Box
-                    component="span"
-                    sx={{
-                      ml: 0.75,
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.25,
-                      color: noteIconColor,
-                    }}
-                  >
-                    <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
-                    <Box component="span">{checkboxProgress.percentage}%</Box>
-                  </Box>
-                )}
-                {note.archived && (
-                  <Tooltip title="Archived" aria-label={undefined} arrow>
-                    <Box
-                      component="span"
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        color: colors.red[300],
-                      }}
-                    >
-                      <Icon path={mdiArchive} size={0.6} />
-                    </Box>
-                  </Tooltip>
-                )}
-                {shouldShowCompleteIcon && (
-                  <Tooltip
-                    title={
-                      note.due !== undefined
-                        ? `Completed: ${formatDueDate(note.due)}`
-                        : "Completed"
-                    }
-                    aria-label={undefined}
-                    arrow
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        color: noteIconColor,
-                      }}
-                    >
-                      <Icon path={mdiClockCheckOutline} size={0.6} />
-                    </Box>
-                  </Tooltip>
-                )}
-                {note.emoji && (
-                  <Tooltip title={status ? status.name : "Note status"} arrow>
-                    <Box
-                      component="span"
-                      role="img"
-                      aria-label={status ? status.name : "Note status"}
-                      onPointerDown={(event) => {
-                        event.stopPropagation();
-                      }}
-                      onClick={(event: MouseEvent<HTMLElement>) => {
-                        event.stopPropagation();
-                        onOpenActionsMenu(event, note, true);
-                      }}
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        fontSize: "0.85rem",
-                        lineHeight: 1,
-                        cursor: "pointer",
-                      }}
-                    >
-                      {note.emoji}
-                    </Box>
-                  </Tooltip>
-                )}
-                {shouldShowDueDateIcon && (
-                  <Tooltip
-                    title={
-                      shouldUsePriorityDueDate ? "Scheduled" : "Scheduled date"
-                    }
-                    aria-label={undefined}
-                    arrow
-                  >
-                    <Box
-                      component="span"
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        alignItems: "center",
-                        color: noteIconColor,
-                      }}
-                    >
-                      <Icon path={mdiClockOutline} size={0.5} />
-                    </Box>
-                  </Tooltip>
-                )}
-                {note.hasNotification && (
-                  <Tooltip title="Notified" aria-label={undefined} arrow>
-                    <Box
-                      component="span"
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        color: noteIconColor,
-                      }}
-                    >
-                      <Icon path={mdiBell} size={0.5} />
-                    </Box>
-                  </Tooltip>
-                )}
-                {note.pinned && (
-                  <Tooltip title="Pinned" aria-label={undefined} arrow>
-                    <Box
-                      component="span"
-                      sx={{
-                        ml: 0.5,
-                        display: "inline-flex",
-                        color: noteIconColor,
-                      }}
-                    >
-                      <Icon path={mdiPin} size={0.6} />
-                    </Box>
-                  </Tooltip>
-                )}
+                <NoteTimestampMetaIcons
+                  note={note}
+                  status={status}
+                  noteIconColor={noteIconColor}
+                  checkboxProgress={checkboxProgress}
+                  shouldShowCompleteIcon={shouldShowCompleteIcon}
+                  shouldShowDueDateIcon={shouldShowDueDateIcon}
+                  shouldUsePriorityDueDate={shouldUsePriorityDueDate}
+                  onOpenActionsMenu={onOpenActionsMenu}
+                />
               </Typography>
               {selectMode && globalIndex !== undefined ? (
                 <Typography
