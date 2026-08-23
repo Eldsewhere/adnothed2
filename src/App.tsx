@@ -1508,8 +1508,14 @@ function App() {
     }));
   }, []);
 
+  const handleClearTextFilter = useCallback(() => {
+    setDraftNoteText("");
+    setNoteFilters((prev) => ({ ...prev, text: "" }));
+  }, []);
+
   const handleClearFilters = useCallback(() => {
     setNoteFilters(emptyNoteFilters);
+    setDraftNoteText("");
     setSelectMode(false);
     setSelectedNoteIds(new Set());
     setPendingDateFilter(emptyNoteFilters);
@@ -2540,6 +2546,8 @@ function App() {
                   labels={labels}
                   statuses={statuses}
                   filters={noteFilters}
+                  hasTextFilter={Boolean(draftNoteText.trim() || noteFilters.text.trim())}
+                  onClearTextFilter={handleClearTextFilter}
                   mostRecentAddedNoteId={recentlyAddednoteId}
                   mostRecentEditedNoteId={recentlyEditednoteId}
                   editingNoteId={editingNote?.id ?? null}

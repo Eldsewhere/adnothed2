@@ -5,6 +5,7 @@ import {
   mdiCalendarClock,
   mdiChevronDown,
   mdiChevronUp,
+  mdiFilter,
 } from "@mdi/js";
 import type { Label } from "../types";
 import LabelIcon from "./ui/LabelIcon";
@@ -59,6 +60,8 @@ type NoteListAccordionHeaderProps = {
   hasDueDateFilter?: boolean;
   activeDueDateLabel?: string | null;
   onClearDueDateFilter?: () => void;
+  hasTextFilter?: boolean;
+  onClearTextFilter?: () => void;
 };
 
 const NoteListAccordionHeader = ({
@@ -75,6 +78,8 @@ const NoteListAccordionHeader = ({
   hasDueDateFilter = false,
   activeDueDateLabel = null,
   onClearDueDateFilter,
+  hasTextFilter = false,
+  onClearTextFilter,
 }: NoteListAccordionHeaderProps) => (
   <Box
     sx={{
@@ -116,7 +121,10 @@ const NoteListAccordionHeader = ({
         {label} ({count})
       </Box>
     </Tooltip>
-    {(selectedLabel || hasStartOrEndDateFilter || hasDueDateFilter) && (
+    {(selectedLabel ||
+      hasStartOrEndDateFilter ||
+      hasDueDateFilter ||
+      hasTextFilter) && (
       <Box
         sx={{
           display: "inline-flex",
@@ -185,6 +193,21 @@ const NoteListAccordionHeader = ({
               }}
             >
               <Icon path={mdiCalendarClock} size={0.7} />
+            </Box>
+          </Tooltip>
+        )}
+        {hasTextFilter && (
+          <Tooltip title={"Remove note text filter"} arrow>
+            <Box
+              component="button"
+              type="button"
+              onClick={onClearTextFilter}
+              sx={{
+                ...FILTER_CLEAR_BUTTON_SX,
+                color: colors.teal[200],
+              }}
+            >
+              <Icon path={mdiFilter} size={0.7} />
             </Box>
           </Tooltip>
         )}

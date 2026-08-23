@@ -63,6 +63,8 @@ type NoteListProps = {
   onClearLabelFilter?: () => void;
   onClearDateRangeFilter?: () => void;
   onClearDueDateFilter?: () => void;
+  hasTextFilter?: boolean;
+  onClearTextFilter?: () => void;
 };
 
 const ROW_HEIGHT = 80;
@@ -140,6 +142,8 @@ const NoteList = ({
   onClearLabelFilter,
   onClearDateRangeFilter,
   onClearDueDateFilter,
+  hasTextFilter = false,
+  onClearTextFilter,
 }: NoteListProps) => {
   const [menuAnchor, setMenuAnchor] = useState<{
     el: HTMLElement;
@@ -739,6 +743,8 @@ const NoteList = ({
               )}
               activeDueDateLabel={filters.weekday || filters.dueDate || null}
               onClearDueDateFilter={onClearDueDateFilter}
+              hasTextFilter={hasTextFilter}
+              onClearTextFilter={onClearTextFilter}
             />
           </Box>
           <Alert severity="info">
@@ -872,6 +878,8 @@ const NoteList = ({
                       hasDueDateFilter={hasDueDateFilter}
                       activeDueDateLabel={activeDueDateLabel}
                       onClearDueDateFilter={onClearDueDateFilter}
+                      hasTextFilter={hasTextFilter}
+                      onClearTextFilter={onClearTextFilter}
                     />
                   </Box>
                 );
