@@ -103,22 +103,28 @@ const LabelMenu = ({
           },
         }}
       >
-        <SelectionPopover title="Labels" count={labels.length} onClose={onClose}>
-          <Button
-            startIcon={<Icon path={mdiPlus} size={0.7} />}
-            variant="outlined"
-            onClick={() => {
-              management.onCancelEdit();
-              setIsLabelFormOpen(true);
-            }}
-            sx={{
-              width: "100%",
-              justifyContent: "center",
-              mb: 1,
-            }}
-          >
-            Create label
-          </Button>
+        <SelectionPopover
+          title="Labels"
+          count={labels.length}
+          onClose={onClose}
+        >
+          {!showLabelForm && (
+            <Button
+              startIcon={<Icon path={mdiPlus} size={0.7} />}
+              variant="outlined"
+              onClick={() => {
+                management.onCancelEdit();
+                setIsLabelFormOpen(true);
+              }}
+              sx={{
+                width: "100%",
+                justifyContent: "center",
+                mb: 1,
+              }}
+            >
+              Create label
+            </Button>
+          )}
           {showLabelForm ? (
             <LabelForm
               editingLabel={management.editingLabel}
@@ -149,7 +155,7 @@ const LabelMenu = ({
               justifyContent: "flex-start",
               minHeight: 36,
               p: 2,
-              mb: 0.5,
+              my: 0.5,
               textAlign: "left",
               width: "100%",
               ...((selected === null || selected === "") && {

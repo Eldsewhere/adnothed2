@@ -518,17 +518,19 @@ const NoteActionsMenu = ({
             }
           }}
         >
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => setIsStatusFormOpen(true)}
-            sx={{
-              justifyContent: "center",
-              mb: 1,
-            }}
-          >
-            Create status
-          </Button>
+          {!isStatusFormOpen && !statusManagement.editingStatus && (
+            <Button
+              fullWidth
+              variant="outlined"
+              onClick={() => setIsStatusFormOpen(true)}
+              sx={{
+                justifyContent: "center",
+                mb: 1,
+              }}
+            >
+              Create status
+            </Button>
+          )}
           {isStatusFormOpen || statusManagement.editingStatus ? (
             <StatusForm
               editingStatus={statusManagement.editingStatus}
@@ -556,7 +558,7 @@ const NoteActionsMenu = ({
               justifyContent: "flex-start",
               minHeight: 40,
               p: 2,
-              mb: 0.5,
+              my: 0.5,
               textAlign: "left",
               width: "100%",
               ...(!note?.emoji && { bgcolor: "action.selected" }),
@@ -566,7 +568,7 @@ const NoteActionsMenu = ({
               component="span"
               sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              <Icon path={mdiEmoticonOutline} size={0.7} />
+              <Icon path={mdiMinusCircle} size={0.7} />
             </Box>
             No status
           </ButtonBase>

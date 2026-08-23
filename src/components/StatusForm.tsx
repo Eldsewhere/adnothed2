@@ -146,7 +146,7 @@ const StatusForm = ({
   });
 
   return (
-    <Box component="form" onSubmit={submit} noValidate>
+    <Box component="form" onSubmit={submit} noValidate sx={{ mb: 2 }}>
       <Stack direction="column" sx={{ gap: 1, width: "100%" }}>
         <Controller
           name="emoji"
