@@ -8,10 +8,10 @@ import React, {
 import {
   Alert,
   Box,
+  ButtonBase,
   colors,
-  Menu,
-  MenuItem,
   Paper,
+  Popover,
   Snackbar,
   Stack,
 } from "@mui/material";
@@ -23,6 +23,7 @@ import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
 import HashtagBar from "./components/HashtagBar";
+import StatusList from "./components/StatusList";
 import WeekdayPicker from "./components/WeekdayPicker";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
 import BulkLabelMenu from "./components/dialogs/LabelMenu";
@@ -61,7 +62,6 @@ import {
 } from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
-import { getStatusTextStyle } from "./utils/statusStyles";
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
 const SHORT_MONTHS = [
@@ -2025,60 +2025,58 @@ function App() {
                     }}
                   />
                 )}
-                <Menu
+                <Popover
                   anchorEl={bulkStatusAnchor}
                   open={Boolean(bulkStatusAnchor)}
                   onClose={() => setBulkStatusAnchor(null)}
+                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                  transformOrigin={{ vertical: "top", horizontal: "left" }}
                 >
-                  <MenuItem
-                    onClick={() => handleBulkStatusChange(null)}
-                    selected={
-                      selectednoteIds.size > 0 &&
-                      [...selectednoteIds].every(
-                        (id) => !notes.find((item) => item.id === id)?.emoji,
-                      )
-                    }
-                  >
-                    <Box
-                      component="span"
+                  <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1.5 }}>
+                    <ButtonBase
+                      onClick={() => {
+                        handleBulkStatusChange(null);
+                        setBulkStatusAnchor(null);
+                      }}
                       sx={{
-                        display: "inline-flex",
                         alignItems: "center",
-                        mr: 1,
+                        bgcolor: colors.blueGrey[900],
+                        borderBottom: "3px solid",
+                        borderColor: colors.grey[900],
+                        borderRadius: 1,
                         color: colors.blueGrey[300],
+                        cursor: "pointer",
+                        display: "flex",
+                        justifyContent: "flex-start",
+                        minHeight: 36,
+                        px: 2,
+                        textAlign: "left",
+                        width: "100%",
+                        ...(selectednoteIds.size > 0 &&
+                          [...selectednoteIds].every(
+                            (id) => !notes.find((item) => item.id === id)?.emoji,
+                          ) && {
+                            bgcolor: "action.selected",
+                          }),
                       }}
                     >
-                      <Icon path={mdiEmoticonOutline} size={0.7} />
-                    </Box>
-                    {statuses.length === 0
-                      ? "no statuses available"
-                      : "no status"}
-                  </MenuItem>
-                  {statuses.map((status) => (
-                    <MenuItem
-                      key={status.id}
-                      onClick={() => handleBulkStatusChange(status.emoji)}
-                    >
-                      <Box
-                        component="span"
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          mr: 1,
-                          fontSize: "1.1rem",
-                        }}
-                      >
-                        {status.emoji}
+                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+                        <Icon path={mdiEmoticonOutline} size={0.7} />
                       </Box>
-                      <Box
-                        component="span"
-                        sx={getStatusTextStyle(status.format)}
-                      >
-                        {status.name}
-                      </Box>
-                    </MenuItem>
-                  ))}
-                </Menu>
+                      {statuses.length === 0 ? "no statuses available" : "no status"}
+                    </ButtonBase>
+                    <StatusList
+                      statuses={statuses}
+                      notes={notes}
+                      onEdit={() => undefined}
+                      onDelete={() => undefined}
+                      onSelect={(status) => {
+                        handleBulkStatusChange(status.emoji);
+                        setBulkStatusAnchor(null);
+                      }}
+                    />
+                  </Stack>
+                </Popover>
                 <NoteList
                   notes={notes}
                   labels={labels}
