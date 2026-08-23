@@ -530,6 +530,7 @@ const NoteActionsMenu = ({
             statuses={statuses}
             notes={statusManagement.notes}
             editingStatusId={statusManagement.editingStatus?.id ?? null}
+            selectedStatusEmoji={note?.emoji ?? null}
             onEdit={(status) => {
               statusManagement.onEdit(status);
               setIsStatusFormOpen(true);

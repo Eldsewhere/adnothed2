@@ -116,6 +116,7 @@ const LabelMenu = ({
             labels={labels}
             notes={management.notes}
             editingLabelId={management.editingLabel?.id ?? null}
+            selectedLabelId={selected ?? null}
             onEdit={(label) => {
               management.onEdit(label);
               setIsLabelFormOpen(true);

@@ -2068,6 +2068,29 @@ function App() {
                     <StatusList
                       statuses={statuses}
                       notes={notes}
+                      selectedStatusEmoji={
+                        selectednoteIds.size > 0
+                          ? [...selectednoteIds].reduce<string | null>(
+                              (current, id) => {
+                                const note = notes.find((item) => item.id === id);
+                                if (!note) return current;
+                                if (current === null) return note.emoji ?? null;
+                                return current === note.emoji ? current : "__mixed__";
+                              },
+                              null,
+                            ) === "__mixed__"
+                            ? null
+                            : [...selectednoteIds].reduce<string | null>(
+                                (current, id) => {
+                                  const note = notes.find((item) => item.id === id);
+                                  if (!note) return current;
+                                  if (current === null) return note.emoji ?? null;
+                                  return current === note.emoji ? current : "__mixed__";
+                                },
+                                null,
+                              )
+                          : null
+                      }
                       onEdit={() => undefined}
                       onDelete={() => undefined}
                       onSelect={(status) => {

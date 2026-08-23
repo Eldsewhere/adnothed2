@@ -18,6 +18,7 @@ type LabelListProps = {
   labels: Label[];
   notes: Note[];
   editingLabelId?: string | null;
+  selectedLabelId?: string | null;
   onEdit: (label: Label) => void;
   onDelete: (label: Label) => void;
   newlabelId?: string | null;
@@ -28,6 +29,7 @@ const LabelList = ({
   labels,
   notes,
   editingLabelId = null,
+  selectedLabelId = null,
   onEdit,
   onDelete,
   newlabelId,
@@ -102,6 +104,7 @@ const LabelList = ({
                     }
                     isNewLabel={label.id === newlabelId}
                     isEditing={label.id === editingLabelId}
+                    isSelected={selectedLabelId === label.id}
                     isMenuOpen={menuState.label?.id === label.id}
                     onOpenMenu={handleOpenMenu}
                     onSelect={onSelect}

@@ -18,6 +18,7 @@ type StatusListProps = {
   statuses: Status[];
   notes: Note[];
   editingStatusId?: string | null;
+  selectedStatusEmoji?: string | null;
   onEdit: (status: Status) => void;
   onDelete: (status: Status) => void;
   newStatusId?: string | null;
@@ -28,6 +29,7 @@ const StatusList = ({
   statuses,
   notes,
   editingStatusId = null,
+  selectedStatusEmoji = null,
   onEdit,
   onDelete,
   newStatusId,
@@ -101,6 +103,7 @@ const StatusList = ({
                     }
                     isNewStatus={status.id === newStatusId}
                     isEditing={status.id === editingStatusId}
+                    isSelected={selectedStatusEmoji === status.emoji}
                     isMenuOpen={menuState.status?.id === status.id}
                     onOpenMenu={handleOpenMenu}
                     onSelect={onSelect}

@@ -18,6 +18,7 @@ type LabelListRowProps = {
   count: number;
   isNewLabel: boolean;
   isEditing?: boolean;
+  isSelected?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, label: Label) => void;
   onSelect?: (label: Label) => void;
@@ -28,6 +29,7 @@ const LabelListRow = ({
   count,
   isNewLabel,
   isEditing = false,
+  isSelected = false,
   isMenuOpen = false,
   onOpenMenu,
   onSelect,
@@ -42,7 +44,11 @@ const LabelListRow = ({
       verticalAlign: "middle",
       opacity: isMenuOpen ? 0.5 : 1,
       cursor: onSelect ? "pointer" : "default",
-      bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
+      bgcolor: isSelected
+        ? "action.selected"
+        : isEditing
+          ? "rgba(255, 152, 0, 0.18)"
+          : undefined,
     }}
     onClick={() => onSelect?.(label)}
     hover={Boolean(onSelect)}

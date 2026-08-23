@@ -18,6 +18,7 @@ type StatusListRowProps = {
   count: number;
   isNewStatus: boolean;
   isEditing?: boolean;
+  isSelected?: boolean;
   isMenuOpen?: boolean;
   onOpenMenu: (event: MouseEvent<HTMLElement>, status: Status) => void;
   onSelect?: (status: Status) => void;
@@ -28,6 +29,7 @@ const StatusListRow = ({
   count,
   isNewStatus,
   isEditing = false,
+  isSelected = false,
   isMenuOpen = false,
   onOpenMenu,
   onSelect,
@@ -46,7 +48,11 @@ const StatusListRow = ({
         verticalAlign: "middle",
         opacity: isMenuOpen ? 0.5 : 1,
         cursor: onSelect ? "pointer" : "default",
-        bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
+        bgcolor: isSelected
+          ? "action.selected"
+          : isEditing
+            ? "rgba(255, 152, 0, 0.18)"
+            : undefined,
       }}
       hover={Boolean(onSelect)}
       onClick={() => onSelect?.(status)}
