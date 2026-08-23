@@ -530,7 +530,13 @@ const NoteList = ({
   const dayIndexByDate = useMemo(() => {
     const map = new Map<string, number>();
     const dates = [
-      ...new Set(filteredNotes.map((note) => formatDate(note.createdAt))),
+      ...new Set(
+        filteredNotes.map((note) =>
+          isFutureDueNote(note) && note.due !== undefined
+            ? formatDate(note.due)
+            : formatDate(note.createdAt),
+        ),
+      ),
     ];
     dates.sort((a, b) => b.localeCompare(a));
     dates.forEach((date, index) => map.set(date, index));
@@ -889,8 +895,11 @@ const NoteList = ({
               const label = note.labelId
                 ? labelsById.get(note.labelId)
                 : undefined;
-              const dayIndex =
-                dayIndexByDate.get(formatDate(note.createdAt)) ?? 0;
+              const zebraDate =
+                isFutureDueNote(note) && note.due !== undefined
+                  ? formatDate(note.due)
+                  : formatDate(note.createdAt);
+              const dayIndex = dayIndexByDate.get(zebraDate) ?? 0;
               const globalIndex = globalIndexByNoteId.get(note.id);
 
               const isPrioritary = isPriorityNote(note);
