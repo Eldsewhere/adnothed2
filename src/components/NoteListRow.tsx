@@ -117,16 +117,22 @@ const NoteListRow = ({
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
+  const isPastDueDate =
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    dayjs.unix(note.due).isBefore(dayjs().startOf("day"));
   const shouldDisplayDueDateForMeta =
     !note.archived &&
     !note.completed &&
     note.due !== undefined &&
-    (isToday(note.due) || isTomorrow(note.due));
+    (isToday(note.due) || isTomorrow(note.due) || isPastDueDate);
   const shouldUsePriorityDueDate =
     !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     (isToday(note.due) || isTomorrow(note.due));
+  const shouldShowCompleteIcon = note.completed || isPastDueDate;
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
@@ -591,7 +597,7 @@ const NoteListRow = ({
                     </Box>
                   </Tooltip>
                 )}
-                {note.completed && (
+                {shouldShowCompleteIcon && (
                   <Tooltip
                     title={
                       note.due !== undefined
@@ -606,7 +612,7 @@ const NoteListRow = ({
                       sx={{
                         ml: 0.5,
                         display: "inline-flex",
-                        color: colors.lightGreen[400],
+                        color: colors.orange[400],
                       }}
                     >
                       <Icon path={mdiClockCheckOutline} size={0.6} />
