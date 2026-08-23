@@ -1,7 +1,9 @@
 import {
   Badge,
   Box,
+  Divider,
   IconButton,
+  Stack,
   Tooltip,
   colors,
 } from "@mui/material";
@@ -27,7 +29,7 @@ const FILTER_CLEAR_BUTTON_SX = {
   overflow: "visible",
   background: "transparent",
   border: "none",
-  p: 0,
+  px: 0,
   cursor: "pointer",
   color: "rgba(255,255,255,0.82)",
   "&::after": {
@@ -102,190 +104,213 @@ const NoteListAccordionHeader = ({
   onOpenDateFilter,
   hasDateFilter = false,
   dateFilterDisabled = false,
-}: NoteListAccordionHeaderProps) => (
-  <Box
-    sx={{
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      height: "100%",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      px: 1.5,
-      borderBottom: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: 0,
-      backgroundColor: "rgba(255,255,255,0.03)",
-    }}
-  >
-    <Tooltip title={tooltip} arrow>
-      <Box
-        component="button"
-        type="button"
-        onClick={onToggle}
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 0.5,
-          background: "transparent",
-          border: "none",
-          color: "inherit",
-          cursor: "pointer",
-          fontSize: "0.82rem",
-          fontWeight: 700,
-          letterSpacing: 0.4,
-          textTransform: "uppercase",
-          p: 0,
-        }}
-      >
-        <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.7} />
-        {label} ({count})
-      </Box>
-    </Tooltip>
-    {(onToggleSelectMode ||
-      onOpenDateFilter ||
-      selectedLabel ||
-      hasStartOrEndDateFilter ||
-      hasDueDateFilter ||
-      hasTextFilter) && (
-      <Box
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 0.75,
-        }}
-      >
-        {onToggleSelectMode && (
-          <Tooltip
-            title={selectMode ? "Cancel select mode" : "Select multiple notes"}
-            arrow
-          >
-            <span>
-              <IconButton
-                aria-label="Toggle select mode"
-                color={selectMode ? "primary" : "default"}
-                size="small"
-                onClick={onToggleSelectMode}
-                disabled={selectDisabled}
+}: NoteListAccordionHeaderProps) => {
+  const hasFilterButtons = Boolean(
+    selectedLabel ||
+    hasStartOrEndDateFilter ||
+    hasDueDateFilter ||
+    hasTextFilter,
+  );
+
+  return (
+    <Box
+      sx={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        px: 1.5,
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 0,
+        backgroundColor: "rgba(255,255,255,0.03)",
+      }}
+    >
+      <Tooltip title={tooltip} arrow>
+        <Box
+          component="button"
+          type="button"
+          onClick={onToggle}
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.5,
+            background: "transparent",
+            border: "none",
+            color: "inherit",
+            cursor: "pointer",
+            fontSize: "0.82rem",
+            fontWeight: 700,
+            letterSpacing: 0.4,
+            textTransform: "uppercase",
+            p: 0,
+          }}
+        >
+          <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.7} />
+          {label} ({count})
+        </Box>
+      </Tooltip>
+      {(onToggleSelectMode ||
+        onOpenDateFilter ||
+        selectedLabel ||
+        hasStartOrEndDateFilter ||
+        hasDueDateFilter ||
+        hasTextFilter) && (
+        <Box
+          sx={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 1,
+          }}
+        >
+          <Stack direction="row" spacing={2} >
+            {selectedLabel && (
+              <Tooltip
+                title={`Remove label filter: ${selectedLabel.name}`}
+                arrow
               >
-                <Badge
-                  badgeContent={selectedCount}
-                  color="primary"
-                  anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={onClearLabelFilter}
                   sx={{
-                    "& .MuiBadge-badge": {
-                      backgroundColor: "primary",
-                      color: colors.grey[900],
-                      minWidth: 12,
-                      height: 12,
-                      fontSize: "0.5rem",
-                    },
+                    ...FILTER_CLEAR_BUTTON_SX,
+                    color: getLabelColorSwatch(selectedLabel.color).background,
                   }}
                 >
-                  <Icon path={mdiCheckboxMultipleMarked} size={0.8} />
-                </Badge>
-              </IconButton>
-            </span>
-          </Tooltip>
-        )}
-        {onOpenDateFilter && (
-          <Tooltip title="Filter by date" arrow>
-            <span>
-              <IconButton
-                aria-label="Filter by date"
-                color={hasDateFilter ? "primary" : "default"}
-                size="small"
-                onClick={onOpenDateFilter}
-                disabled={dateFilterDisabled}
+                  <LabelIcon
+                    icon={selectedLabel.icon}
+                    color={selectedLabel.color}
+                    size={0.65}
+                  />
+                </Box>
+              </Tooltip>
+            )}
+            {hasStartOrEndDateFilter && (
+              <Tooltip
+                title={
+                  activeDateRangeLabel
+                    ? `Remove date range filter: ${activeDateRangeLabel}`
+                    : "Remove date range filter"
+                }
+                arrow
               >
-                <Icon path={mdiCalendar} size={0.8} />
-              </IconButton>
-            </span>
-          </Tooltip>
-        )}
-        {selectedLabel && (
-          <Tooltip title={`Remove label filter: ${selectedLabel.name}`} arrow>
-            <Box
-              component="button"
-              type="button"
-              onClick={onClearLabelFilter}
-              sx={{
-                ...FILTER_CLEAR_BUTTON_SX,
-                color: getLabelColorSwatch(selectedLabel.color).background,
-              }}
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={onClearDateRangeFilter}
+                  sx={{
+                    ...FILTER_CLEAR_BUTTON_SX,
+                    color: colors.blue[200],
+                  }}
+                >
+                  <Icon path={mdiCalendar} size={0.7} />
+                </Box>
+              </Tooltip>
+            )}
+            {hasDueDateFilter && (
+              <Tooltip
+                title={
+                  activeDueDateLabel
+                    ? `Remove schedule note filter: ${activeDueDateLabel}`
+                    : "Remove schedule note filter"
+                }
+                arrow
+              >
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={onClearDueDateFilter}
+                  sx={{
+                    ...FILTER_CLEAR_BUTTON_SX,
+                    color: colors.orange[400],
+                  }}
+                >
+                  <Icon path={mdiCalendarClock} size={0.7} />
+                </Box>
+              </Tooltip>
+            )}
+            {hasTextFilter && (
+              <Tooltip title={"Remove note text filter"} arrow>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={onClearTextFilter}
+                  sx={{
+                    ...FILTER_CLEAR_BUTTON_SX,
+                    color: colors.teal[200],
+                  }}
+                >
+                  <Icon path={mdiFilter} size={0.7} />
+                </Box>
+              </Tooltip>
+            )}
+          </Stack>
+          {hasFilterButtons && onOpenDateFilter && (
+            <Divider
+              orientation="vertical"
+              flexItem
+              sx={{ borderColor: "rgba(255,255,255,0.16)" }}
+            />
+          )}
+          {onOpenDateFilter && (
+            <Tooltip title="Filter by date" arrow>
+              <span>
+                <IconButton
+                  aria-label="Filter by date"
+                  color={hasDateFilter ? "primary" : "default"}
+                  size="small"
+                  onClick={onOpenDateFilter}
+                  disabled={dateFilterDisabled}
+                >
+                  <Icon path={mdiCalendar} size={0.8} />
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
+          {onToggleSelectMode && (
+            <Tooltip
+              title={
+                selectMode ? "Cancel select mode" : "Select multiple notes"
+              }
+              arrow
             >
-              <LabelIcon
-                icon={selectedLabel.icon}
-                color={selectedLabel.color}
-                size={0.65}
-              />
-            </Box>
-          </Tooltip>
-        )}
-        {hasStartOrEndDateFilter && (
-          <Tooltip
-            title={
-              activeDateRangeLabel
-                ? `Remove date range filter: ${activeDateRangeLabel}`
-                : "Remove date range filter"
-            }
-            arrow
-          >
-            <Box
-              component="button"
-              type="button"
-              onClick={onClearDateRangeFilter}
-              sx={{
-                ...FILTER_CLEAR_BUTTON_SX,
-                color: colors.blue[200],
-              }}
-            >
-              <Icon path={mdiCalendar} size={0.7} />
-            </Box>
-          </Tooltip>
-        )}
-        {hasDueDateFilter && (
-          <Tooltip
-            title={
-              activeDueDateLabel
-                ? `Remove schedule note filter: ${activeDueDateLabel}`
-                : "Remove schedule note filter"
-            }
-            arrow
-          >
-            <Box
-              component="button"
-              type="button"
-              onClick={onClearDueDateFilter}
-              sx={{
-                ...FILTER_CLEAR_BUTTON_SX,
-                color: colors.orange[400],
-              }}
-            >
-              <Icon path={mdiCalendarClock} size={0.7} />
-            </Box>
-          </Tooltip>
-        )}
-        {hasTextFilter && (
-          <Tooltip title={"Remove note text filter"} arrow>
-            <Box
-              component="button"
-              type="button"
-              onClick={onClearTextFilter}
-              sx={{
-                ...FILTER_CLEAR_BUTTON_SX,
-                color: colors.teal[200],
-              }}
-            >
-              <Icon path={mdiFilter} size={0.7} />
-            </Box>
-          </Tooltip>
-        )}
-      </Box>
-    )}
-  </Box>
-);
+              <span>
+                <IconButton
+                  aria-label="Toggle select mode"
+                  color={selectMode ? "primary" : "default"}
+                  size="small"
+                  onClick={onToggleSelectMode}
+                  disabled={selectDisabled}
+                >
+                  <Badge
+                    badgeContent={selectedCount}
+                    color="primary"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    sx={{
+                      "& .MuiBadge-badge": {
+                        backgroundColor: "primary",
+                        color: colors.grey[900],
+                        minWidth: 12,
+                        height: 12,
+                        fontSize: "0.5rem",
+                      },
+                    }}
+                  >
+                    <Icon path={mdiCheckboxMultipleMarked} size={0.8} />
+                  </Badge>
+                </IconButton>
+              </span>
+            </Tooltip>
+          )}
+        </Box>
+      )}
+    </Box>
+  );
+};
 
 export default NoteListAccordionHeader;
