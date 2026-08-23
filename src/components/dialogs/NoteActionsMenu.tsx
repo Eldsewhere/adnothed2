@@ -4,11 +4,9 @@ import {
   Button,
   ButtonBase,
   Divider,
-  IconButton,
   Menu,
   MenuItem,
   Popover,
-  Stack,
   colors,
   useMediaQuery,
   useTheme,
@@ -19,7 +17,6 @@ import {
   mdiArchiveArrowUp,
   mdiBell,
   mdiCalendarClock,
-  mdiClose,
   mdiClockOutline,
   mdiContentCopy,
   mdiEmoticonOutline,
@@ -38,6 +35,7 @@ import {
 import type { Note, Status, StatusFormValues } from "../../types";
 import StatusForm from "../StatusForm";
 import StatusList from "../StatusList";
+import SelectionPopover from "./SelectionPopover";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
@@ -509,119 +507,83 @@ const NoteActionsMenu = ({
           },
         }}
       >
-        <Stack
-          spacing={1}
-          sx={{ width: "100%", height: isSmallScreen ? "100%" : "auto" }}
+        <SelectionPopover
+          title="Status"
+          count={statuses.length}
+          onClose={() => {
+            setStatusMenuAnchor(null);
+            setIsStatusFormOpen(false);
+            if (openStatusPicker) {
+              onClose();
+            }
+          }}
         >
-          <Box
+          <Button
+            fullWidth
+            variant="outlined"
+            onClick={() => setIsStatusFormOpen(true)}
             sx={{
-              display: "flex",
+              justifyContent: "center",
+              mb: 1,
+            }}
+          >
+            Create status
+          </Button>
+          {isStatusFormOpen || statusManagement.editingStatus ? (
+            <StatusForm
+              editingStatus={statusManagement.editingStatus}
+              onSubmit={(values) => {
+                const result = statusManagement.onSubmit(values);
+                if (result !== false) setIsStatusFormOpen(false);
+                return result;
+              }}
+              onCancelEdit={() => {
+                statusManagement.onCancelEdit();
+                setIsStatusFormOpen(false);
+              }}
+            />
+          ) : null}
+          <ButtonBase
+            onClick={() => selectStatus(null)}
+            sx={{
               alignItems: "center",
-              justifyContent: "space-between",
-              px: 1.5,
-              py: 1,
-              backgroundColor: colors.blueGrey[800],
+              bgcolor: colors.blueGrey[900],
+              borderBottom: "3px solid",
+              borderColor: colors.grey[900],
+              borderRadius: 1,
+              color: colors.blueGrey[300],
+              display: "flex",
+              justifyContent: "flex-start",
+              minHeight: 40,
+              p: 2,
+              mb: 0.5,
+              textAlign: "left",
+              width: "100%",
+              ...(!note?.emoji && { bgcolor: "action.selected" }),
             }}
           >
             <Box
               component="span"
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 1,
-                fontSize: "0.82rem",
-                fontWeight: 700,
-                letterSpacing: 0.5,
-                textTransform: "uppercase",
-              }}
+              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
             >
-              Status ({statuses.length})
+              <Icon path={mdiEmoticonOutline} size={0.7} />
             </Box>
-            <IconButton
-              size="small"
-              onClick={() => {
-                setStatusMenuAnchor(null);
-                setIsStatusFormOpen(false);
-                if (openStatusPicker) {
-                  onClose();
-                }
-              }}
-              aria-label="Close status"
-              sx={{
-                backgroundColor: colors.blueGrey[700],
-              }}
-            >
-              <Icon path={mdiClose} size={0.7} />
-            </IconButton>
-          </Box>
-          <Box sx={{ px: 1.5, pb: 1.5 }}>
-            <Button
-              fullWidth
-              variant="outlined"
-              onClick={() => setIsStatusFormOpen(true)}
-              sx={{
-                justifyContent: "center",
-                mb: 1,
-              }}
-            >
-              Create status
-            </Button>
-            {isStatusFormOpen || statusManagement.editingStatus ? (
-              <StatusForm
-                editingStatus={statusManagement.editingStatus}
-                onSubmit={(values) => {
-                  const result = statusManagement.onSubmit(values);
-                  if (result !== false) setIsStatusFormOpen(false);
-                  return result;
-                }}
-                onCancelEdit={() => {
-                  statusManagement.onCancelEdit();
-                  setIsStatusFormOpen(false);
-                }}
-              />
-            ) : null}
-            <ButtonBase
-              onClick={() => selectStatus(null)}
-              sx={{
-                alignItems: "center",
-                bgcolor: colors.blueGrey[900],
-                borderBottom: "3px solid",
-                borderColor: colors.grey[900],
-                borderRadius: 1,
-                color: colors.blueGrey[300],
-                display: "flex",
-                justifyContent: "flex-start",
-                minHeight: 40,
-                p: 2,
-                 mb: 0.5,
-                textAlign: "left",
-                width: "100%",
-                ...(!note?.emoji && { bgcolor: "action.selected" }),
-              }}
-            >
-              <Box
-                component="span"
-                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-              >
-                <Icon path={mdiEmoticonOutline} size={0.7} />
-              </Box>
-              No status
-            </ButtonBase>
-            <StatusList
-              statuses={statuses}
-              notes={statusManagement.notes}
-              editingStatusId={statusManagement.editingStatus?.id ?? null}
-              selectedStatusEmoji={note?.emoji ?? null}
-              onEdit={(status) => {
-                statusManagement.onEdit(status);
-                setIsStatusFormOpen(true);
-              }}
-              onDelete={statusManagement.onDelete}
-              newStatusId={statusManagement.newStatusId}
-              onSelect={selectStatus}
-            />
-          </Box>
-        </Stack>
+            No status
+          </ButtonBase>
+          <StatusList
+            statuses={statuses}
+            notes={statusManagement.notes}
+            editingStatusId={statusManagement.editingStatus?.id ?? null}
+            selectedStatusEmoji={note?.emoji ?? null}
+            onEdit={(status) => {
+              statusManagement.onEdit(status);
+              setIsStatusFormOpen(true);
+            }}
+            onDelete={statusManagement.onDelete}
+            newStatusId={statusManagement.newStatusId}
+            onSelect={selectStatus}
+          />
+        </SelectionPopover>
       </Popover>
 
       <Menu

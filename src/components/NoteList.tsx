@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import { Box, Alert, Button } from "@mui/material";
 import type {
   Label,
+  LabelFormValues,
   Note,
   NoteFilters as noteFiltersValue,
   Status,
@@ -78,7 +79,9 @@ type NoteListProps = {
     notes: Note[];
     editingLabel: Label | null;
     onSubmit: (
-      values: { name: string; icon: NonNullable<LabelFormValues["icon"]>; color: string },
+      values: LabelFormValues & {
+        icon: NonNullable<LabelFormValues["icon"]>;
+      },
     ) => void | boolean;
     onCancelEdit: () => void;
     onEdit: (label: Label) => void;
