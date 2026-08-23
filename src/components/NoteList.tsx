@@ -92,6 +92,15 @@ const isPriorityNote = (note: Note): boolean =>
   (note.pinned ||
     (note.due !== undefined && (isToday(note.due) || isTomorrow(note.due))));
 
+const isFutureDueNote = (note: Note): boolean => {
+  if (note.completed || note.archived || note.due === undefined) {
+    return false;
+  }
+
+  const tomorrowStart = dayjs().add(1, "day").startOf("day").unix();
+  return !isPriorityNote(note) && note.due > tomorrowStart;
+};
+
 const NoteList = ({
   notes,
   labels,
@@ -150,6 +159,8 @@ const NoteList = ({
     note: Note;
   } | null>(null);
   const [notesSectionExpanded, setNotesSectionExpanded] = useState(true);
+  const [futureDueSectionExpanded, setFutureDueSectionExpanded] =
+    useState(true);
   const [archivedSectionExpanded, setArchivedSectionExpanded] = useState(true);
   const [dueDateDialogNote, setdueDateDialogNote] = useState<Note | null>(null);
   const [dueDateValue, setDueDateValue] = useState<Dayjs | null>(null);
@@ -184,10 +195,17 @@ const NoteList = ({
       const bPriority = isPriorityNote(b);
       if (aPriority !== bPriority) return aPriority ? -1 : 1;
 
-      if (a.archived !== b.archived) {
-        if (aPriority || bPriority) return 0;
-        return a.archived ? 1 : -1;
-      }
+      const aBucket = a.archived
+        ? 3
+        : isFutureDueNote(a)
+          ? 2
+          : 1;
+      const bBucket = b.archived
+        ? 3
+        : isFutureDueNote(b)
+          ? 2
+          : 1;
+      if (aBucket !== bBucket) return aBucket - bBucket;
 
       const aPinned = a.pinned ? 1 : 0;
       const bPinned = b.pinned ? 1 : 0;
@@ -205,6 +223,9 @@ const NoteList = ({
         b.due < dayAfterTomorrowUnix;
       if (aIsDueSoon !== bIsDueSoon) return aIsDueSoon ? -1 : 1;
       if (aIsDueSoon && bIsDueSoon) return (a.due ?? 0) - (b.due ?? 0);
+      if (aBucket === 2 && bBucket === 2) {
+        return (a.due ?? Number.MAX_SAFE_INTEGER) - (b.due ?? Number.MAX_SAFE_INTEGER);
+      }
 
       return b.createdAt - a.createdAt;
     });
@@ -521,19 +542,36 @@ const NoteList = ({
 
   const notesSectionRange = useMemo(() => {
     const firstIndex = filteredNotes.findIndex(
-      (note) => !note.archived && !isPriorityNote(note),
+      (note) => !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
     );
     if (firstIndex === -1) {
       return null;
     }
     const lastIndex = filteredNotes.findLastIndex(
-      (note) => !note.archived && !isPriorityNote(note),
+      (note) => !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
     );
     return { firstIndex, lastIndex };
   }, [filteredNotes]);
 
   const notesSectionCount = notesSectionRange
     ? notesSectionRange.lastIndex - notesSectionRange.firstIndex + 1
+    : 0;
+
+  const futureDueSectionRange = useMemo(() => {
+    const firstIndex = filteredNotes.findIndex(
+      (note) => !note.archived && isFutureDueNote(note),
+    );
+    if (firstIndex === -1) {
+      return null;
+    }
+    const lastIndex = filteredNotes.findLastIndex(
+      (note) => !note.archived && isFutureDueNote(note),
+    );
+    return { firstIndex, lastIndex };
+  }, [filteredNotes]);
+
+  const futureDueSectionCount = futureDueSectionRange
+    ? futureDueSectionRange.lastIndex - futureDueSectionRange.firstIndex + 1
     : 0;
 
   const archivedSectionRange = useMemo(() => {
@@ -555,9 +593,10 @@ const NoteList = ({
 
   const displayItems = useMemo(() => {
     const hasNotesSection = notesSectionRange !== null;
+    const hasFutureDueSection = futureDueSectionRange !== null;
     const hasArchivedSection = archivedSectionRange !== null;
 
-    if (!hasNotesSection && !hasArchivedSection) {
+    if (!hasNotesSection && !hasFutureDueSection && !hasArchivedSection) {
       return filteredNotes.map((note, index) => ({
         type: "note" as const,
         key: `note-${note.id}`,
@@ -574,13 +613,21 @@ const NoteList = ({
     }> = [];
 
     filteredNotes.forEach((note, index) => {
-      const isNotesSectionNonPriority = !note.archived && !isPriorityNote(note);
+      const isNotesSectionNonPriority =
+        !note.archived && !isPriorityNote(note) && !isFutureDueNote(note);
+      const isFutureDueSectionNote = !note.archived && isFutureDueNote(note);
       const isArchivedNonPriority = note.archived && !isPriorityNote(note);
 
       if (notesSectionRange && index === notesSectionRange.firstIndex) {
         items.push({
           type: "header",
           key: "notes-section-header",
+        });
+      }
+      if (futureDueSectionRange && index === futureDueSectionRange.firstIndex) {
+        items.push({
+          type: "header",
+          key: "future-due-section-header",
         });
       }
       if (archivedSectionRange && index === archivedSectionRange.firstIndex) {
@@ -590,6 +637,9 @@ const NoteList = ({
         });
       }
       if (!notesSectionExpanded && isNotesSectionNonPriority) {
+        return;
+      }
+      if (!futureDueSectionExpanded && isFutureDueSectionNote) {
         return;
       }
       if (!archivedSectionExpanded && isArchivedNonPriority) {
@@ -608,6 +658,8 @@ const NoteList = ({
     archivedSectionExpanded,
     archivedSectionRange,
     filteredNotes,
+    futureDueSectionExpanded,
+    futureDueSectionRange,
     notesSectionExpanded,
     notesSectionRange,
   ]);
@@ -733,23 +785,39 @@ const NoteList = ({
 
               if (item.type === "header") {
                 const isArchivedHeader = item.key === "archived-section-header";
+                const isFutureDueHeader =
+                  item.key === "future-due-section-header";
                 const isExpanded = isArchivedHeader
                   ? archivedSectionExpanded
-                  : notesSectionExpanded;
+                  : isFutureDueHeader
+                    ? futureDueSectionExpanded
+                    : notesSectionExpanded;
                 const count = isArchivedHeader
                   ? archivedSectionCount
-                  : notesSectionCount;
-                const label = isArchivedHeader ? "Archived" : "Notes";
+                  : isFutureDueHeader
+                    ? futureDueSectionCount
+                    : notesSectionCount;
+                const label = isArchivedHeader
+                  ? "Archived"
+                  : isFutureDueHeader
+                    ? "Future due"
+                    : "Notes";
                 const tooltip = isArchivedHeader
                   ? archivedSectionExpanded
                     ? "Collapse archived notes"
                     : "Expand archived notes"
-                  : notesSectionExpanded
-                    ? "Collapse notes"
-                    : "Expand notes";
+                  : isFutureDueHeader
+                    ? futureDueSectionExpanded
+                      ? "Collapse future due notes"
+                      : "Expand future due notes"
+                    : notesSectionExpanded
+                      ? "Collapse notes"
+                      : "Expand notes";
                 const onToggle = isArchivedHeader
                   ? () => setArchivedSectionExpanded((value) => !value)
-                  : () => setNotesSectionExpanded((value) => !value);
+                  : isFutureDueHeader
+                    ? () => setFutureDueSectionExpanded((value) => !value)
+                    : () => setNotesSectionExpanded((value) => !value);
 
                 const selectedLabel =
                   item.key === "notes-section-header" &&
