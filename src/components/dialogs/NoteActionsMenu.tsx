@@ -19,7 +19,6 @@ import {
   mdiCalendarClock,
   mdiClockOutline,
   mdiContentCopy,
-  mdiEmoticonOutline,
   mdiFilter,
   mdiLink,
   mdiMagnify,
