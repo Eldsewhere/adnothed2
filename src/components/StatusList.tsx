@@ -92,6 +92,8 @@ const StatusList = ({
             maxHeight: "calc(100vh - 220px)",
             minHeight: 0,
             overflowY: "auto",
+            overflowX: "hidden",
+            scrollbarGutter: "auto",
             bgcolor: colors.blueGrey[900],
             borderRadius: 2,
             scrollbarWidth: "thin",
@@ -107,7 +109,7 @@ const StatusList = ({
             },
           }}
         >
-          <TableContainer sx={{ overflowY: "auto", overflowX: "hidden" }}>
+          <TableContainer sx={{ overflow: "hidden" }}>
             <Table
               size="small"
               sx={{ borderCollapse: "collapse", borderSpacing: 0 }}
