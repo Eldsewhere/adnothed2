@@ -142,6 +142,11 @@ const NoteListRow = ({
     !note.completed &&
     note.due !== undefined &&
     isFutureDueDate;
+  const shouldShowDueDateIcon =
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -655,8 +660,14 @@ const NoteListRow = ({
                     </Box>
                   </Tooltip>
                 )}
-                {shouldUsePriorityDueDate && (
-                  <Tooltip title="Due date" aria-label={undefined} arrow>
+                {shouldShowDueDateIcon && (
+                  <Tooltip
+                    title={
+                      shouldUsePriorityDueDate ? "Due date" : "Future due date"
+                    }
+                    aria-label={undefined}
+                    arrow
+                  >
                     <Box
                       component="span"
                       sx={{
