@@ -88,6 +88,7 @@ function isTomorrow(date: number): boolean {
 }
 
 const isPriorityNote = (note: Note): boolean =>
+  !note.archived &&
   !note.completed &&
   (note.pinned ||
     (note.due !== undefined && (isToday(note.due) || isTomorrow(note.due))));
