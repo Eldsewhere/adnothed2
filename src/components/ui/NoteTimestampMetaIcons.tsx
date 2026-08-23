@@ -7,6 +7,7 @@ import {
   mdiCheckboxMarkedOutline,
   mdiClockCheckOutline,
   mdiClockOutline,
+  mdiFormatListBulleted,
   mdiPin,
 } from "@mdi/js";
 import type { Note, Status } from "../../types";
@@ -17,6 +18,7 @@ type NoteTimestampMetaIconsProps = {
   status?: Status;
   noteIconColor: string;
   checkboxProgress: { percentage: number } | null;
+  bulletCount: number | null;
   shouldShowCompleteIcon: boolean;
   shouldShowDueDateIcon: boolean;
   shouldUsePriorityDueDate: boolean;
@@ -32,6 +34,7 @@ const NoteTimestampMetaIcons = ({
   status,
   noteIconColor,
   checkboxProgress,
+  bulletCount,
   shouldShowCompleteIcon,
   shouldShowDueDateIcon,
   shouldUsePriorityDueDate,
@@ -161,6 +164,23 @@ const NoteTimestampMetaIcons = ({
         <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
         <Box component="span">{checkboxProgress.percentage}%</Box>
       </Box>
+    )}
+    {bulletCount && (
+      <Tooltip title={`${bulletCount} bullet${bulletCount === 1 ? "" : "s"}`} arrow>
+        <Box
+          component="span"
+          sx={{
+            ml: 0.75,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.25,
+            color: noteIconColor,
+          }}
+        >
+          <Icon path={mdiFormatListBulleted} size={0.5} />
+          <Box component="span">{bulletCount}</Box>
+        </Box>
+      </Tooltip>
     )}
   </>
 );

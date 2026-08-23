@@ -34,6 +34,7 @@ import HashtagChip from "./HashtagChip";
 import { getStatusTextStyle } from "../utils/statusStyles";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
+const BULLET_ROW_PATTERN = /^\s*•\s?/;
 
 const normalizeTag = (tag: string) => {
   const trimmedTag = tag.trim();
@@ -66,6 +67,14 @@ const getCheckboxProgress = (text: string) => {
     total,
     percentage: Math.round((checked / total) * 100),
   };
+};
+
+const getBulletCount = (text: string): number | null => {
+  const count = text
+    .split(/\r?\n/)
+    .filter((row) => BULLET_ROW_PATTERN.test(row)).length;
+
+  return count === 0 ? null : count;
 };
 
 const isTomorrow = (timestamp: number): boolean => {
@@ -212,6 +221,7 @@ const NoteListRow = ({
       ? colors.orange[300]
       : colors.lightGreen[400];
   const checkboxProgress = getCheckboxProgress(note.text);
+  const bulletCount = getBulletCount(note.text);
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
@@ -670,6 +680,7 @@ const NoteListRow = ({
                   status={status}
                   noteIconColor={noteIconColor}
                   checkboxProgress={checkboxProgress}
+                  bulletCount={bulletCount}
                   shouldShowCompleteIcon={shouldShowCompleteIcon}
                   shouldShowDueDateIcon={shouldShowDueDateIcon}
                   shouldUsePriorityDueDate={shouldUsePriorityDueDate}
