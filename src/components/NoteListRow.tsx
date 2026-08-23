@@ -13,6 +13,7 @@ import {
   mdiArchive,
   mdiArchiveArrowUp,
   mdiBell,
+  mdiCheckboxMarkedOutline,
   mdiChevronDown,
   mdiClockCheckOutline,
   mdiClockOutline,
@@ -37,6 +38,34 @@ import HashtagChip from "./HashtagChip";
 import { getStatusTextStyle } from "../utils/statusStyles";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
+
+const getCheckboxProgress = (text: string) => {
+  const rows = text.split(/\r?\n/);
+  let checked = 0;
+  let total = 0;
+
+  for (const row of rows) {
+    const match = row.match(CHECKBOX_ROW_PATTERN);
+    if (!match) {
+      continue;
+    }
+
+    total += 1;
+    if (match[1]?.toLowerCase() === "x") {
+      checked += 1;
+    }
+  }
+
+  if (total === 0) {
+    return null;
+  }
+
+  return {
+    checked,
+    total,
+    percentage: Math.round((checked / total) * 100),
+  };
+};
 
 const isTomorrow = (timestamp: number): boolean => {
   const target = dayjs.unix(timestamp).startOf("day");
@@ -148,6 +177,7 @@ const NoteListRow = ({
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
+  const checkboxProgress = getCheckboxProgress(note.text);
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
@@ -598,6 +628,23 @@ const NoteListRow = ({
                     ? formatDueDate(note.due!)
                     : formatTimestamp(note.createdAt)}
                 </Box>
+                {checkboxProgress && (
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 0.75,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 0.25,
+                      color: shouldUseFutureDueDateTextColor || shouldUsePriorityDueDate
+                        ? colors.orange[300]
+                        : colors.lightGreen[400],
+                    }}
+                  >
+                    <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
+                    <Box component="span">{checkboxProgress.percentage}%</Box>
+                  </Box>
+                )}
                 {note.archived && (
                   <Tooltip title="Archived" aria-label={undefined} arrow>
                     <Box
