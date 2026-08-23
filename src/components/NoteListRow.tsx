@@ -122,16 +122,26 @@ const NoteListRow = ({
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isBefore(dayjs().startOf("day"));
+  const isFutureDueDate =
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
   const shouldDisplayDueDateForMeta =
     !note.archived &&
     !note.completed &&
     note.due !== undefined &&
-    (isToday(note.due) || isTomorrow(note.due) || isPastDueDate);
+    (isToday(note.due) || isTomorrow(note.due) || isPastDueDate || isFutureDueDate);
   const shouldUsePriorityDueDate =
     !note.archived &&
     !note.completed &&
     note.due !== undefined &&
     (isToday(note.due) || isTomorrow(note.due));
+  const shouldUseFutureDueDateTextColor =
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    isFutureDueDate;
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
   const [dragOffset, setDragOffset] = useState(0);
@@ -558,7 +568,7 @@ const NoteListRow = ({
                   alignItems: "center",
                   color: note.archived
                     ? colors.red[300]
-                    : shouldUsePriorityDueDate
+                    : shouldUseFutureDueDateTextColor || shouldUsePriorityDueDate
                       ? colors.orange[300]
                       : isToday(note.createdAt) ||
                           note.pinned ||
@@ -703,23 +713,6 @@ const NoteListRow = ({
                   }}
                 >
                   #{globalIndex}
-                </Typography>
-              ) : !shouldUsePriorityDueDate &&
-                note.due !== undefined &&
-                (isToday(note.due) ||
-                  isTomorrow(note.due) ||
-                  note.due >= dayjs().unix() ||
-                  note.archived) ? (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    textAlign: "right",
-                    display: "block",
-                    color: colors.orange[300],
-                    textDecoration: note.completed ? "line-through" : "none",
-                  }}
-                >
-                  {formatDueDate(note.due)}
                 </Typography>
               ) : null}
             </Stack>
