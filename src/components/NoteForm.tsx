@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Badge,
   Box,
   colors,
   IconButton,
@@ -53,7 +52,6 @@ const NoteForm = ({
   filterLabelId = "",
   labels,
   dueLabel,
-  dueFutureCount = 0,
   onDueDateClick,
   onSubmit,
   onCancelEdit,
