@@ -623,46 +623,61 @@ const NoteList = ({
       index?: number;
     }> = [];
 
-    filteredNotes.forEach((note, index) => {
-      const isNotesSectionNonPriority =
-        !note.archived && !isPriorityNote(note) && !isFutureDueNote(note);
-      const isFutureDueSectionNote = !note.archived && isFutureDueNote(note);
-      const isArchivedNonPriority = note.archived && !isPriorityNote(note);
-
-      if (notesSectionRange && index === notesSectionRange.firstIndex) {
+    const addNotes = (
+      matchesSection: (note: Note) => boolean,
+      headerKey?: string,
+      isExpanded = true,
+    ) => {
+      const sectionNotes = filteredNotes.filter(matchesSection);
+      if (sectionNotes.length === 0) return;
+      if (headerKey) {
+        items.push({ type: "header", key: headerKey });
+      }
+      if (!isExpanded) return;
+      sectionNotes.forEach((note) => {
         items.push({
-          type: "header",
-          key: "notes-section-header",
+          type: "note",
+          key: `note-${note.id}`,
+          note,
+          index: filteredNotes.indexOf(note),
         });
-      }
-      if (futureDueSectionRange && index === futureDueSectionRange.firstIndex) {
-        items.push({
-          type: "header",
-          key: "future-due-section-header",
-        });
-      }
-      if (archivedSectionRange && index === archivedSectionRange.firstIndex) {
-        items.push({
-          type: "header",
-          key: "archived-section-header",
-        });
-      }
-      if (!notesSectionExpanded && isNotesSectionNonPriority) {
-        return;
-      }
-      if (!futureDueSectionExpanded && isFutureDueSectionNote) {
-        return;
-      }
-      if (!archivedSectionExpanded && isArchivedNonPriority) {
-        return;
-      }
-      items.push({
-        type: "note",
-        key: `note-${note.id}`,
-        note,
-        index,
       });
-    });
+    };
+
+    addNotes((note) => isPriorityNote(note));
+
+    const isMostRecentAdditionScheduled = filteredNotes.some(
+      (note) =>
+        note.id === mostRecentAddedNoteId &&
+        !note.archived &&
+        isFutureDueNote(note),
+    );
+    const ordinaryNotes = (note: Note) =>
+      !note.archived && !isPriorityNote(note) && !isFutureDueNote(note);
+    const futureScheduledNotes = (note: Note) =>
+      !note.archived && isFutureDueNote(note);
+
+    if (isMostRecentAdditionScheduled) {
+      addNotes(
+        futureScheduledNotes,
+        "future-due-section-header",
+        futureDueSectionExpanded,
+      );
+      addNotes(ordinaryNotes, "notes-section-header", notesSectionExpanded);
+    } else {
+      addNotes(ordinaryNotes, "notes-section-header", notesSectionExpanded);
+      addNotes(
+        futureScheduledNotes,
+        "future-due-section-header",
+        futureDueSectionExpanded,
+      );
+    }
+
+    addNotes(
+      (note) => Boolean(note.archived) && !isPriorityNote(note),
+      "archived-section-header",
+      archivedSectionExpanded,
+    );
 
     return items;
   }, [
@@ -671,6 +686,7 @@ const NoteList = ({
     filteredNotes,
     futureDueSectionExpanded,
     futureDueSectionRange,
+    mostRecentAddedNoteId,
     notesSectionExpanded,
     notesSectionRange,
   ]);
