@@ -98,10 +98,11 @@ const LabelMenu = ({
               borderColor: colors.grey[900],
               borderRadius: 1,
               color: colors.blueGrey[300],
+              cursor: "pointer",
               display: "flex",
               justifyContent: "flex-start",
-              minHeight: 40,
-              px: 2,
+              minHeight: 36,
+              px: 1.5,
               textAlign: "left",
               width: "100%",
               ...(selected === null && {

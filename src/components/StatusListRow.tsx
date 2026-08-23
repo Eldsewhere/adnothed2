@@ -41,11 +41,12 @@ const StatusListRow = ({
       sx={{
         borderBottom: "3px solid",
         borderColor: colors.grey[900],
-        paddingY: 2,
+        paddingY: 1.5,
         flexShrink: 0,
         width: 40,
         verticalAlign: "middle",
         opacity: isMenuOpen ? 0.5 : 1,
+        cursor: onSelect ? "pointer" : "default",
         bgcolor: isEditing ? "rgba(255, 152, 0, 0.18)" : undefined,
       }}
       hover={Boolean(onSelect)}

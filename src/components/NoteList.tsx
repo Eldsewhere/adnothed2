@@ -770,6 +770,7 @@ const NoteList = ({
                   ? labelsById.get(filters.labelId)
                   : undefined
               }
+              hasNoLabelFilter={filters.labelId === NO_LABEL_FILTER_VALUE}
               onClearLabelFilter={onClearLabelFilter}
               hasStartOrEndDateFilter={Boolean(filters.date || filters.endDate)}
               activeDateRangeLabel={
@@ -878,6 +879,9 @@ const NoteList = ({
                   filters.labelId !== NO_LABEL_FILTER_VALUE
                     ? labelsById.get(filters.labelId)
                     : undefined;
+                const hasNoLabelFilter =
+                  item.key === "notes-section-header" &&
+                  filters.labelId === NO_LABEL_FILTER_VALUE;
                 const activeDateRangeLabel =
                   item.key === "notes-section-header"
                     ? [filters.date, filters.endDate]
@@ -917,6 +921,7 @@ const NoteList = ({
                       tooltip={tooltip}
                       onToggle={onToggle}
                       selectedLabel={selectedLabel}
+                      hasNoLabelFilter={hasNoLabelFilter}
                       onClearLabelFilter={onClearLabelFilter}
                       hasStartOrEndDateFilter={hasStartOrEndDateFilter}
                       activeDateRangeLabel={activeDateRangeLabel}
