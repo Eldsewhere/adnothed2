@@ -187,7 +187,10 @@ const NoteListRow = ({
     note.due !== undefined &&
     dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
   const shouldDisplayDueDateForMeta =
-    !note.archived && !note.completed && note.due !== undefined;
+    !note.archived &&
+    !note.completed &&
+    note.due !== undefined &&
+    dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
   const shouldUsePriorityDueDate =
     !note.archived &&
     !note.completed &&
@@ -569,7 +572,9 @@ const NoteListRow = ({
                       /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
                         <HashtagChip
                           tag={visibleRowText.trim()}
-                          selected={isInputMatchedHashtag(visibleRowText.trim())}
+                          selected={isInputMatchedHashtag(
+                            visibleRowText.trim(),
+                          )}
                           onClick={() => {
                             onToggleHashtagInDraft?.(visibleRowText.trim());
                           }}
@@ -640,7 +645,8 @@ const NoteListRow = ({
                   alignItems: "center",
                   color: note.archived
                     ? colors.red[300]
-                    : shouldUseFutureDueDateTextColor || shouldUsePriorityDueDate
+                    : shouldUseFutureDueDateTextColor ||
+                        shouldUsePriorityDueDate
                       ? colors.orange[300]
                       : isToday(note.createdAt) ||
                           note.pinned ||
