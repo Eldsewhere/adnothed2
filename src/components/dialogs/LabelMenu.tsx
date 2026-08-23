@@ -62,7 +62,7 @@ const LabelMenu = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1 }}>
+        <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1.5 }}>
           {showLabelForm ? (
             <LabelForm
               editingLabel={management.editingLabel}
@@ -102,7 +102,7 @@ const LabelMenu = ({
               display: "flex",
               justifyContent: "flex-start",
               minHeight: 36,
-              px: 1.5,
+              p: 2,
               textAlign: "left",
               width: "100%",
               ...(selected === null && {

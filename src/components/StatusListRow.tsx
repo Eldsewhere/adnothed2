@@ -41,7 +41,6 @@ const StatusListRow = ({
       sx={{
         borderBottom: "3px solid",
         borderColor: colors.grey[900],
-        paddingY: 1.5,
         flexShrink: 0,
         width: 40,
         verticalAlign: "middle",
@@ -53,7 +52,7 @@ const StatusListRow = ({
       onClick={() => onSelect?.(status)}
     >
       <TableCell
-        sx={{ paddingY: 2, flexShrink: 0, width: 40, verticalAlign: "middle" }}
+        sx={{ paddingY: 1.5, flexShrink: 0, width: 40, verticalAlign: "middle" }}
       >
         <Tooltip title={`${status.emoji} ${status.name}`}>
           <Typography component="span" sx={{ fontSize: "1.2rem" }}>
@@ -61,7 +60,7 @@ const StatusListRow = ({
           </Typography>
         </Tooltip>
       </TableCell>
-      <TableCell sx={{ paddingY: 2, pl: 0, maxWidth: 0, width: "100%" }}>
+      <TableCell sx={{ pl: 0, maxWidth: 0, width: "100%" }}>
         <Box
           sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}
         >
@@ -102,7 +101,6 @@ const StatusListRow = ({
         align="right"
         sx={{
           verticalAlign: "middle",
-          paddingY: 2,
           color: colors.blueGrey[300],
           width: 60,
         }}
@@ -111,7 +109,7 @@ const StatusListRow = ({
           {count}
         </Typography>
       </TableCell>
-      <TableCell align="right" sx={{ verticalAlign: "middle", paddingY: 2 }}>
+      <TableCell align="right" sx={{ verticalAlign: "middle" }}>
         <Tooltip title="Actions">
           <IconButton
             aria-label={`Open actions for ${status.name}`}

@@ -1,5 +1,15 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import { Box, Button, ButtonBase, Divider, Menu, MenuItem, Popover, Stack, colors } from "@mui/material";
+import {
+  Box,
+  Button,
+  ButtonBase,
+  Divider,
+  Menu,
+  MenuItem,
+  Popover,
+  Stack,
+  colors,
+} from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowDown,
@@ -468,7 +478,10 @@ const NoteActionsMenu = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
         transformOrigin={{ vertical: "top", horizontal: "left" }}
       >
-        <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1 }}>
+        <Stack
+          spacing={1}
+          sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1.5 }}
+        >
           {isStatusFormOpen || statusManagement.editingStatus ? (
             <StatusForm
               editingStatus={statusManagement.editingStatus}
@@ -483,13 +496,32 @@ const NoteActionsMenu = ({
               }}
             />
           ) : (
-            <Button onClick={() => setIsStatusFormOpen(true)}>Create status</Button>
+            <Button onClick={() => setIsStatusFormOpen(true)}>
+              Create status
+            </Button>
           )}
           <ButtonBase
             onClick={() => selectStatus(null)}
-            sx={{ alignItems: "center", bgcolor: colors.blueGrey[900], borderBottom: "3px solid", borderColor: colors.grey[900], borderRadius: 1, color: colors.blueGrey[300], display: "flex", justifyContent: "flex-start", minHeight: 40, px: 2, textAlign: "left", width: "100%", ...(!note?.emoji && { bgcolor: "action.selected" }) }}
+            sx={{
+              alignItems: "center",
+              bgcolor: colors.blueGrey[900],
+              borderBottom: "3px solid",
+              borderColor: colors.grey[900],
+              borderRadius: 1,
+              color: colors.blueGrey[300],
+              display: "flex",
+              justifyContent: "flex-start",
+              minHeight: 40,
+              p: 2,
+              textAlign: "left",
+              width: "100%",
+              ...(!note?.emoji && { bgcolor: "action.selected" }),
+            }}
           >
-            <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
+            <Box
+              component="span"
+              sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+            >
               <Icon path={mdiEmoticonOutline} size={0.7} />
             </Box>
             No status

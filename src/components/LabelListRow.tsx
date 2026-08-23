@@ -37,7 +37,6 @@ const LabelListRow = ({
     sx={{
       borderBottom: "3px solid",
       borderColor: colors.grey[900],
-      paddingY: 1.5,
       flexShrink: 0,
       width: 40,
       verticalAlign: "middle",
@@ -50,10 +49,10 @@ const LabelListRow = ({
   >
     <TableCell
       sx={{
-        paddingY: 2,
         flexShrink: 0,
         width: 40,
         verticalAlign: "middle",
+        paddingY: 1.5,
       }}
     >
       <Tooltip title={label.icon.label} aria-label={`Icon for ${label.name}`}>
@@ -62,7 +61,6 @@ const LabelListRow = ({
     </TableCell>
     <TableCell
       sx={{
-        paddingY: 2,
         pl: 0,
         maxWidth: 0,
         width: "100%",
@@ -99,7 +97,6 @@ const LabelListRow = ({
       align="right"
       sx={{
         verticalAlign: "middle",
-        paddingY: 2,
         color: colors.blueGrey[300],
         width: 60,
       }}
@@ -112,7 +109,6 @@ const LabelListRow = ({
       align="right"
       sx={{
         verticalAlign: "middle",
-        paddingY: 2,
       }}
     >
       <Tooltip title="Actions">
