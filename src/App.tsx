@@ -1609,6 +1609,19 @@ function App() {
     });
   }, [availableHashtags, draftNoteText, editingNote]);
 
+  const selectedHashtags = useMemo(() => {
+    const matches = new Set<string>();
+
+    for (const part of draftNoteText.split(/\s+/)) {
+      const normalizedTag = part.trim();
+      if (/^#\w[\w-]*$/.test(normalizedTag)) {
+        matches.add(normalizedTag);
+      }
+    }
+
+    return matches;
+  }, [draftNoteText]);
+
   useEffect(() => {
     refreshAvailableHashtags();
   }, [refreshAvailableHashtags]);
@@ -2429,6 +2442,7 @@ function App() {
                 <HashtagBar
                   hashtags={hashtagSuggestions}
                   hashtagCounts={hashtagCounts}
+                  selectedHashtags={selectedHashtags}
                   onToggleHashtagInDraft={toggleHashtagInDraft}
                 />
 

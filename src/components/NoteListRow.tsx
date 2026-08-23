@@ -35,6 +35,11 @@ import { getStatusTextStyle } from "../utils/statusStyles";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
 
+const normalizeTag = (tag: string) => {
+  const trimmedTag = tag.trim();
+  return trimmedTag.startsWith("#") ? trimmedTag : `#${trimmedTag}`;
+};
+
 const getCheckboxProgress = (text: string) => {
   const rows = text.split(/\r?\n/);
   let checked = 0;
@@ -139,9 +144,38 @@ const NoteListRow = ({
   onArchive,
   onOpenActionsMenu,
   setnoteTextRef,
+  availableHashtags = [],
+  filterText = "",
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
 }: NoteListRowProps) => {
+  const isExistingHashtag = (tag: string) =>
+    availableHashtags.some(
+      (existingTag) => normalizeTag(existingTag) === normalizeTag(tag),
+    );
+
+  const getActiveInputHashtag = () => {
+    const currentValue = filterText ?? "";
+    const lastToken = currentValue.split(/\s+/).at(-1) ?? "";
+
+    if (!/^#\w[\w-]*$/.test(lastToken)) {
+      return null;
+    }
+
+    return normalizeTag(lastToken).toLowerCase();
+  };
+
+  const isInputMatchedHashtag = (tag: string) => {
+    const normalizedTag = normalizeTag(tag).toLowerCase();
+    const activeInputHashtag = getActiveInputHashtag();
+
+    return (
+      activeInputHashtag !== null &&
+      isExistingHashtag(tag) &&
+      normalizedTag === activeInputHashtag
+    );
+  };
+
   const isPastDueDate =
     !note.archived &&
     !note.completed &&
@@ -202,7 +236,7 @@ const NoteListRow = ({
         <HashtagChip
           key={`${part}-${index}`}
           tag={part}
-          selected={false}
+          selected={isInputMatchedHashtag(part)}
           onClick={() => {
             onToggleHashtagInDraft?.(part);
           }}
@@ -535,7 +569,7 @@ const NoteListRow = ({
                       /^#\w[\w-]*$/.test(visibleRowText.trim()) ? (
                         <HashtagChip
                           tag={visibleRowText.trim()}
-                          selected={false}
+                          selected={isInputMatchedHashtag(visibleRowText.trim())}
                           onClick={() => {
                             onToggleHashtagInDraft?.(visibleRowText.trim());
                           }}

@@ -1001,6 +1001,8 @@ const NoteList = ({
           open
           note={overflowModalNote}
           labels={labels}
+          availableHashtags={availableHashtags}
+          filterText={filters.text}
           onClose={() => setOverflowModalnoteId(null)}
           onToggleCheckbox={onToggleCheckbox}
           onOpenActionsMenu={(event: MouseEvent<HTMLElement>) =>

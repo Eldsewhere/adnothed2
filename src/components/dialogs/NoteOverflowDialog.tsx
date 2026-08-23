@@ -24,21 +24,56 @@ type NoteOverflowDialogProps = {
   open: boolean;
   note: Note | null;
   labels: Label[];
+  availableHashtags?: string[];
+  filterText?: string;
   onClose: () => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenActionsMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
 };
 
+const normalizeTag = (tag: string) => {
+  const trimmedTag = tag.trim();
+  return trimmedTag.startsWith("#") ? trimmedTag : `#${trimmedTag}`;
+};
+
 const NoteOverflowDialog = ({
   open,
   note,
   labels,
+  availableHashtags = [],
+  filterText = "",
   onClose,
   onToggleCheckbox,
   onOpenActionsMenu,
   onRemoveHashtagFromNote,
 }: NoteOverflowDialogProps) => {
+  const isExistingHashtag = (tag: string) =>
+    availableHashtags.some(
+      (existingTag) => normalizeTag(existingTag) === normalizeTag(tag),
+    );
+
+  const getActiveInputHashtag = () => {
+    const lastToken = filterText.split(/\s+/).at(-1) ?? "";
+
+    if (!/^#\w[\w-]*$/.test(lastToken)) {
+      return null;
+    }
+
+    return normalizeTag(lastToken).toLowerCase();
+  };
+
+  const isInputMatchedHashtag = (tag: string) => {
+    const normalizedTag = normalizeTag(tag).toLowerCase();
+    const activeInputHashtag = getActiveInputHashtag();
+
+    return (
+      activeInputHashtag !== null &&
+      isExistingHashtag(tag) &&
+      normalizedTag === activeInputHashtag
+    );
+  };
+
   if (!note) {
     return null;
   }
@@ -157,7 +192,7 @@ const NoteOverflowDialog = ({
                       <HashtagChip
                         key={`${part}-${partIndex}`}
                         tag={part}
-                        selected={false}
+                        selected={isInputMatchedHashtag(part)}
                         onClick={() => undefined}
                         showDelete={Boolean(onRemoveHashtagFromNote)}
                         onDelete={() => onRemoveHashtagFromNote?.(note, part)}

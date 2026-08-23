@@ -4,12 +4,14 @@ import HashtagChip from "./HashtagChip";
 type HashtagBarProps = {
   hashtags: string[];
   hashtagCounts?: Record<string, number>;
+  selectedHashtags?: Set<string>;
   onToggleHashtagInDraft: (tag: string) => void;
 };
 
 const HashtagBar = ({
   hashtags,
   hashtagCounts = {},
+  selectedHashtags = new Set(),
   onToggleHashtagInDraft,
 }: HashtagBarProps) => (
   <Box
@@ -49,12 +51,13 @@ const HashtagBar = ({
         {hashtags.map((tag) => {
           const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
           const count = hashtagCounts[normalizedTag] ?? 0;
+          const isSelected = selectedHashtags.has(normalizedTag);
 
           return (
             <HashtagChip
               key={normalizedTag}
               tag={normalizedTag}
-              selected={false}
+              selected={isSelected}
               count={count}
               onClick={() => {
                 onToggleHashtagInDraft(tag);
