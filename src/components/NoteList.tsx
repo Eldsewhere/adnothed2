@@ -17,7 +17,7 @@ import NoteListRow from "./NoteListRow";
 import NoteOverflowDialog from "./dialogs/NoteOverflowDialog";
 import NoteActionsMenu from "./dialogs/NoteActionsMenu";
 import LabelMenu from "./dialogs/LabelMenu";
-import { mdiDownload, mdiInformationOutline } from "@mdi/js";
+import { mdiDownload, mdiImport, mdiInformationOutline } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import NoteListAccordionHeader from "./NoteListAccordionHeader";
 
@@ -705,8 +705,8 @@ const NoteList = ({
       archivedSectionExpanded,
     );
 
-    if (archivedSectionRange !== null && onImportActionsClick) {
-      items.push({ type: "footer", key: "archived-import-actions-footer" });
+    if (onImportActionsClick) {
+      items.push({ type: "footer", key: "import-actions-footer" });
     }
 
     return items;
@@ -996,14 +996,11 @@ const NoteList = ({
                     }}
                   >
                     <Button
-                      variant="contained"
+                      variant="outlined"
+                      startIcon={<Icon path={mdiImport} size={0.9} />}
                       onClick={(event) => onImportActionsClick?.(event)}
                       sx={{
-                        borderRadius: 999,
-                        px: 2.5,
-                        py: 0.75,
-                        fontWeight: 600,
-                        minWidth: 160,
+                        mt:1,
                       }}
                     >
                       Import / Export
