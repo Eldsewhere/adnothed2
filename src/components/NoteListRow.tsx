@@ -229,12 +229,8 @@ const NoteListRow = ({
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
   const MENU_OPEN_DRAG_THRESHOLD = 80;
-  const statusStyle =
-    status && status.format !== "spoiler"
-      ? getStatusTextStyle(status.format)
-      : {};
-  const isSpoilerStatus = status?.format === "spoiler";
-  const isSpoilerActive = Boolean(note.spoiler) || isSpoilerStatus;
+  const statusStyle = status ? getStatusTextStyle(status.format) : {};
+  const isSpoilerActive = Boolean(note.spoiler);
   const shouldHideSpoilerText =
     isSpoilerActive && !(isSpoilerVisible || revealAllSpoilers);
 

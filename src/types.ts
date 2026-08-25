@@ -22,7 +22,6 @@ export type StatusFormat =
   | "underline"
   | "bold"
   | "strikethrough"
-  | "spoiler"
   | "transparent"
   | "red"
   | "amber"

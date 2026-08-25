@@ -34,8 +34,7 @@ const StatusListRow = ({
   onOpenMenu,
   onSelect,
 }: StatusListRowProps) => {
-  const statusTextStyle =
-    status.format === "spoiler" ? {} : getStatusTextStyle(status.format);
+  const statusTextStyle = getStatusTextStyle(status.format);
 
   return (
     <TableRow
@@ -95,11 +94,7 @@ const StatusListRow = ({
               minWidth: 0,
             }}
           >
-            {status.format === "spoiler"
-              ? [...status.name]
-                  .map((char, index) => `${index === 0 ? "" : "•"}${char}`)
-                  .join("")
-              : status.name}
+            {status.name}
           </Typography>
         </Box>
       </TableCell>

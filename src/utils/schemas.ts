@@ -6,17 +6,19 @@ export const IconOptionSchema = z.object({
   path: z.string(),
 });
 
-export const StatusFormatSchema = z.enum([
-  "none",
-  "underline",
-  "bold",
-  "strikethrough",
-  "spoiler",
-  "transparent",
-  "red",
-  "amber",
-  "green",
-]);
+export const StatusFormatSchema = z
+  .enum([
+    "none",
+    "underline",
+    "bold",
+    "strikethrough",
+    "spoiler",
+    "transparent",
+    "red",
+    "amber",
+    "green",
+  ])
+  .transform((format) => (format === "spoiler" ? "none" : format));
 
 export const PersistedLabelSchema = z.object({
   name: z.string(),

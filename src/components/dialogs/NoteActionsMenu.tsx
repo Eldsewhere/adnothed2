@@ -279,9 +279,12 @@ const NoteActionsMenu = ({
                   px: 0.5,
                 }}
               >
-                <Icon path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline} size={0.7} />
+                <Icon
+                  path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline}
+                  size={0.7}
+                />
               </Box>
-              {note.spoiler ? "Hide spoiler" : "Spoiler"}
+              Spoiler
             </MenuItem>
             <MenuItem
               onClick={(event: MouseEvent<HTMLElement>) =>
