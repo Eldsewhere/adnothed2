@@ -79,6 +79,7 @@ type NoteListAccordionHeaderProps = {
   onOpenDateFilter?: (event: MouseEvent<HTMLElement>) => void;
   hasDateFilter?: boolean;
   dateFilterDisabled?: boolean;
+  interactionDisabled?: boolean;
 };
 
 const NoteListAccordionHeader = ({
@@ -104,6 +105,7 @@ const NoteListAccordionHeader = ({
   onOpenDateFilter,
   hasDateFilter = false,
   dateFilterDisabled = false,
+  interactionDisabled = false,
 }: NoteListAccordionHeaderProps) => {
   const hasFilterButtons = Boolean(
     selectedLabel ||
@@ -147,6 +149,7 @@ const NoteListAccordionHeader = ({
             letterSpacing: 0.4,
             textTransform: "uppercase",
             p: 0,
+            opacity: 1,
           }}
         >
           <Icon path={isExpanded ? mdiChevronUp : mdiChevronDown} size={0.7} />
@@ -176,10 +179,13 @@ const NoteListAccordionHeader = ({
                 <Box
                   component="button"
                   type="button"
-                  onClick={onClearLabelFilter}
+                  onClick={interactionDisabled ? undefined : onClearLabelFilter}
+                  disabled={interactionDisabled}
                   sx={{
                     ...FILTER_CLEAR_BUTTON_SX,
                     color: getLabelColorSwatch(selectedLabel.color).background,
+                    cursor: interactionDisabled ? "not-allowed" : "pointer",
+                    opacity: interactionDisabled ? 0.55 : 1,
                   }}
                 >
                   <LabelIcon
@@ -202,10 +208,13 @@ const NoteListAccordionHeader = ({
                 <Box
                   component="button"
                   type="button"
-                  onClick={onClearDateRangeFilter}
+                  onClick={interactionDisabled ? undefined : onClearDateRangeFilter}
+                  disabled={interactionDisabled}
                   sx={{
                     ...FILTER_CLEAR_BUTTON_SX,
                     color: colors.blue[200],
+                    cursor: interactionDisabled ? "not-allowed" : "pointer",
+                    opacity: interactionDisabled ? 0.55 : 1,
                   }}
                 >
                   <Icon path={mdiCalendar} size={0.7} />
@@ -224,10 +233,13 @@ const NoteListAccordionHeader = ({
                 <Box
                   component="button"
                   type="button"
-                  onClick={onClearDueDateFilter}
+                  onClick={interactionDisabled ? undefined : onClearDueDateFilter}
+                  disabled={interactionDisabled}
                   sx={{
                     ...FILTER_CLEAR_BUTTON_SX,
                     color: colors.orange[400],
+                    cursor: interactionDisabled ? "not-allowed" : "pointer",
+                    opacity: interactionDisabled ? 0.55 : 1,
                   }}
                 >
                   <Icon path={mdiCalendarClock} size={0.7} />
@@ -239,10 +251,13 @@ const NoteListAccordionHeader = ({
                 <Box
                   component="button"
                   type="button"
-                  onClick={onClearTextFilter}
+                  onClick={interactionDisabled ? undefined : onClearTextFilter}
+                  disabled={interactionDisabled}
                   sx={{
                     ...FILTER_CLEAR_BUTTON_SX,
                     color: colors.teal[200],
+                    cursor: interactionDisabled ? "not-allowed" : "pointer",
+                    opacity: interactionDisabled ? 0.55 : 1,
                   }}
                 >
                   <Icon path={mdiFilter} size={0.7} />
@@ -264,8 +279,8 @@ const NoteListAccordionHeader = ({
                   aria-label="Filter by date"
                   color={hasDateFilter ? "primary" : "default"}
                   size="small"
-                  onClick={onOpenDateFilter}
-                  disabled={dateFilterDisabled}
+                  onClick={interactionDisabled ? undefined : onOpenDateFilter}
+                  disabled={dateFilterDisabled || interactionDisabled}
                 >
                   <Icon path={mdiCalendar} size={0.8} />
                 </IconButton>
@@ -284,8 +299,8 @@ const NoteListAccordionHeader = ({
                   aria-label="Toggle select mode"
                   color={selectMode ? "primary" : "default"}
                   size="small"
-                  onClick={onToggleSelectMode}
-                  disabled={selectDisabled}
+                  onClick={interactionDisabled ? undefined : onToggleSelectMode}
+                  disabled={selectDisabled || interactionDisabled}
                 >
                   <Badge
                     badgeContent={selectedCount}

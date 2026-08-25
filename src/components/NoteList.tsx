@@ -628,6 +628,8 @@ const NoteList = ({
     ? archivedSectionRange.lastIndex - archivedSectionRange.firstIndex + 1
     : 0;
 
+  const isListInteractionDisabled = editingNoteId !== null;
+
   const displayItems = useMemo(() => {
     const hasNotesSection = notesSectionRange !== null;
     const hasFutureDueSection = futureDueSectionRange !== null;
@@ -975,6 +977,7 @@ const NoteList = ({
                       hasDateFilter={hasDateFilter}
                       dateFilterDisabled={notes.length === 0 || selectMode}
                       selectDisabled={notes.length === 0}
+                      interactionDisabled={isListInteractionDisabled}
                     />
                   </Box>
                 );
@@ -999,6 +1002,7 @@ const NoteList = ({
                       variant="outlined"
                       startIcon={<Icon path={mdiImport} size={0.9} />}
                       onClick={(event) => onImportActionsClick?.(event)}
+                      disabled={isListInteractionDisabled}
                       sx={{
                         mt:1,
                       }}
@@ -1074,6 +1078,7 @@ const NoteList = ({
                   isExpandable={expandablenoteIds.has(note.id)}
                   isEditing={isEditingThisNote}
                   isMenuOpen={isThisNoteMenuOpen}
+                  isInteractionDisabled={isListInteractionDisabled}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
                   onToggleSelect={onToggleSelect}
                   onOpenLabelMenu={openLabelMenu}

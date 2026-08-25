@@ -104,6 +104,7 @@ type NoteListRowProps = {
   isExpandable: boolean;
   isEditing: boolean;
   isMenuOpen?: boolean;
+  isInteractionDisabled?: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
@@ -144,6 +145,7 @@ const NoteListRow = ({
   isExpandable,
   isEditing,
   isMenuOpen = false,
+  isInteractionDisabled = false,
   shouldHighlightRecentEdit,
   onToggleSelect,
   onOpenLabelMenu,
@@ -277,7 +279,7 @@ const NoteListRow = ({
     : 0;
 
   const handleRowPointerDown = (event: React.PointerEvent<HTMLElement>) => {
-    if (selectMode || event.button !== 0) {
+    if (selectMode || isInteractionDisabled || event.button !== 0) {
       return;
     }
 
@@ -433,6 +435,7 @@ const NoteListRow = ({
               onClick={(event: MouseEvent<HTMLElement>) =>
                 onOpenLabelMenu(event, note)
               }
+              disabled={isInteractionDisabled}
               sx={{
                 p: 0.5,
                 color: label ? "inherit" : colors.blueGrey[500],
@@ -510,6 +513,7 @@ const NoteListRow = ({
                         event.stopPropagation();
                         setIsSpoilerVisible((value) => !value);
                       }}
+                      disabled={isInteractionDisabled}
                       sx={{
                         p: 0,
                         minWidth: 20,
@@ -587,6 +591,7 @@ const NoteListRow = ({
                             );
                           }}
                           showDelete
+                          disabled={isInteractionDisabled}
                         />
                       ) : (
                         splitTextByUrls(visibleRowText).map(
@@ -623,6 +628,7 @@ const NoteListRow = ({
                   aria-label={`Expand ${note.text}`}
                   size="small"
                   onClick={() => onOpenOverflow(note.id)}
+                  disabled={isInteractionDisabled}
                   sx={{ ml: 0.25, p: 0.25, flexShrink: 0 }}
                 >
                   <Icon path={mdiChevronDown} size={0.7} />
@@ -682,6 +688,7 @@ const NoteListRow = ({
                   shouldShowCompleteIcon={shouldShowCompleteIcon}
                   shouldShowDueDateIcon={shouldShowDueDateIcon}
                   shouldUsePriorityDueDate={shouldUsePriorityDueDate}
+                  interactionDisabled={isInteractionDisabled}
                   onOpenActionsMenu={onOpenActionsMenu}
                 />
               </Typography>
@@ -714,7 +721,7 @@ const NoteListRow = ({
               onClick={(event: MouseEvent<HTMLElement>) =>
                 onOpenActionsMenu(event, note)
               }
-              disabled={selectMode}
+              disabled={selectMode || isInteractionDisabled}
             >
               <Icon path={mdiDotsVertical} size={0.8} />
             </IconButton>

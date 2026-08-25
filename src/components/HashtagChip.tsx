@@ -9,6 +9,7 @@ type HashtagChipProps = {
   onClick: () => void;
   onDelete?: () => void;
   showDelete?: boolean;
+  disabled?: boolean;
 };
 
 const HashtagChip = ({
@@ -18,16 +19,23 @@ const HashtagChip = ({
   onClick,
   onDelete,
   showDelete = false,
+  disabled = false,
 }: HashtagChipProps) => (
   <Chip
     label={`${tag} ${count !== undefined && count > 1 ? `(${count})` : ""}`}
     size="small"
+    disabled={disabled}
     onClick={(event) => {
+      if (disabled) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
       event.stopPropagation();
       onClick();
     }}
     onDelete={
-      showDelete && onDelete
+      showDelete && onDelete && !disabled
         ? (event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -36,7 +44,7 @@ const HashtagChip = ({
         : undefined
     }
     onPointerDown={
-      showDelete
+      showDelete && !disabled
         ? (event) => {
             event.stopPropagation();
           }

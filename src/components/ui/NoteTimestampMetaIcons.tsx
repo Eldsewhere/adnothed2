@@ -22,6 +22,7 @@ type NoteTimestampMetaIconsProps = {
   shouldShowCompleteIcon: boolean;
   shouldShowDueDateIcon: boolean;
   shouldUsePriorityDueDate: boolean;
+  interactionDisabled?: boolean;
   onOpenActionsMenu: (
     event: ReactMouseEvent<HTMLElement>,
     note: Note,
@@ -38,6 +39,7 @@ const NoteTimestampMetaIcons = ({
   shouldShowCompleteIcon,
   shouldShowDueDateIcon,
   shouldUsePriorityDueDate,
+  interactionDisabled = false,
   onOpenActionsMenu,
 }: NoteTimestampMetaIconsProps) => (
   <>
@@ -103,9 +105,18 @@ const NoteTimestampMetaIcons = ({
           role="img"
           aria-label={status ? status.name : "Note status"}
           onPointerDown={(event) => {
+            if (interactionDisabled) {
+              event.stopPropagation();
+              return;
+            }
             event.stopPropagation();
           }}
           onClick={(event: ReactMouseEvent<HTMLElement>) => {
+            if (interactionDisabled) {
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
             event.stopPropagation();
             onOpenActionsMenu(event, note, true);
           }}
@@ -115,7 +126,8 @@ const NoteTimestampMetaIcons = ({
             alignItems: "center",
             fontSize: "0.85rem",
             lineHeight: 1,
-            cursor: "pointer",
+            cursor: interactionDisabled ? "not-allowed" : "pointer",
+            opacity: interactionDisabled ? 0.6 : 1,
           }}
         >
           {note.emoji}
