@@ -119,6 +119,7 @@ const NoteListAccordionHeader = ({
     hasDueDateFilter ||
     hasTextFilter,
   );
+  const hasSpoilerRevealToggle = Boolean(onToggleRevealAllSpoilers);
 
   return (
     <Box
@@ -270,42 +271,45 @@ const NoteListAccordionHeader = ({
                 </Box>
               </Tooltip>
             )}
+            {hasSpoilerRevealToggle && (
+              <Tooltip
+                title={
+                  revealAllSpoilers
+                    ? "Hide all spoilers temporarily"
+                    : "Reveal all spoilers temporarily"
+                }
+                arrow
+              >
+                <span>
+                  <IconButton
+                    aria-label={
+                      revealAllSpoilers
+                        ? "Hide all spoilers temporarily"
+                        : "Reveal all spoilers temporarily"
+                    }
+                    color={revealAllSpoilers ? "primary" : "default"}
+                    size="small"
+                    onClick={interactionDisabled ? undefined : onToggleRevealAllSpoilers}
+                    disabled={interactionDisabled}
+                    sx={{
+                      color: revealAllSpoilers ? "primary.main" : colors.grey[300],
+                    }}
+                  >
+                    <Icon
+                      path={revealAllSpoilers ? mdiEyeOutline : mdiEyeOffOutline}
+                      size={0.8}
+                    />
+                  </IconButton>
+                </span>
+              </Tooltip>
+            )}
           </Stack>
-          {hasFilterButtons && onOpenDateFilter && (
+          {(hasFilterButtons || hasSpoilerRevealToggle) && onOpenDateFilter && (
             <Divider
               orientation="vertical"
               flexItem
               sx={{ borderColor: "rgba(255,255,255,0.16)" }}
             />
-          )}
-          {onToggleRevealAllSpoilers && (
-            <Tooltip
-              title={
-                revealAllSpoilers
-                  ? "Hide all spoilers temporarily"
-                  : "Reveal all spoilers temporarily"
-              }
-              arrow
-            >
-              <span>
-                <IconButton
-                  aria-label={
-                    revealAllSpoilers
-                      ? "Hide all spoilers temporarily"
-                      : "Reveal all spoilers temporarily"
-                  }
-                  color={revealAllSpoilers ? "primary" : "default"}
-                  size="small"
-                  onClick={interactionDisabled ? undefined : onToggleRevealAllSpoilers}
-                  disabled={interactionDisabled}
-                >
-                  <Icon
-                    path={revealAllSpoilers ? mdiEyeOutline : mdiEyeOffOutline}
-                    size={0.8}
-                  />
-                </IconButton>
-              </span>
-            </Tooltip>
           )}
           {onOpenDateFilter && (
             <Tooltip title="Filter by date" arrow>

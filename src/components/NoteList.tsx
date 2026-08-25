@@ -598,6 +598,11 @@ const NoteList = ({
     return { firstIndex, lastIndex };
   }, [filteredNotes]);
 
+  const hasSpoilerNotesAfterFilters = useMemo(
+    () => filteredNotes.some((note) => note.spoiler),
+    [filteredNotes],
+  );
+
   const notesSectionCount = notesSectionRange
     ? notesSectionRange.lastIndex - notesSectionRange.firstIndex + 1
     : 0;
@@ -976,7 +981,7 @@ const NoteList = ({
                         item.key === "notes-section-header" && revealAllSpoilers
                       }
                       onToggleRevealAllSpoilers={
-                        item.key === "notes-section-header"
+                        item.key === "notes-section-header" && hasSpoilerNotesAfterFilters
                           ? () => setRevealAllSpoilers((value) => !value)
                           : undefined
                       }
