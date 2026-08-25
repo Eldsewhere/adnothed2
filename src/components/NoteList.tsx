@@ -924,11 +924,13 @@ const NoteList = ({
                   item.key === "notes-section-header" &&
                   Boolean(filters.date || filters.endDate);
                 const activeDueDateLabel =
-                  item.key === "notes-section-header"
+                  item.key === "notes-section-header" ||
+                  item.key === "future-due-section-header"
                     ? filters.weekday || filters.dueDate || null
                     : null;
                 const hasDueDateFilter =
-                  item.key === "notes-section-header" &&
+                  (item.key === "notes-section-header" ||
+                    item.key === "future-due-section-header") &&
                   Boolean(
                     filters.dueDate ||
                     filters.hasDue ||
