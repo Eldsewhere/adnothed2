@@ -193,10 +193,7 @@ const NoteListRow = ({
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
-  const shouldDisplayDueDateForMeta =
-    !note.completed &&
-    note.due !== undefined &&
-    dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
+  const shouldDisplayDueDateForMeta = note.due !== undefined;
   const shouldUsePriorityDueDate =
     !note.completed &&
     note.due !== undefined &&
