@@ -943,6 +943,19 @@ function App() {
       (hasFutureSelectedDay || hasExplicitSelectedDayTime
         ? selectedDay?.unix()
         : undefined);
+    const shouldAutoNotify =
+      finalDueTimestamp === undefined ||
+      (() => {
+        if (finalDueTimestamp === undefined) {
+          return true;
+        }
+
+        const dueDay = dayjs.unix(finalDueTimestamp).startOf("day");
+        return (
+          dueDay.isSame(today, "day") ||
+          dueDay.isSame(today.add(1, "day"), "day")
+        );
+      })();
 
     if (finalText.length === 0) {
       return;
@@ -992,7 +1005,7 @@ function App() {
           labelId,
           text: finalText,
           createdAt,
-          hasNotification: true,
+          hasNotification: shouldAutoNotify,
           ...(finalDueTimestamp !== undefined
             ? { due: finalDueTimestamp }
             : {}),
@@ -1005,9 +1018,11 @@ function App() {
     setDraftDueDate(null);
     setCloneNote(null);
     setNotification(`${labelName}: ${finalText}`);
-    void showAppNotification(labelName, finalText).then(
-      handleNotificationResult,
-    );
+    if (shouldAutoNotify) {
+      void showAppNotification(labelName, finalText).then(
+        handleNotificationResult,
+      );
+    }
   };
 
   const handleNoteCopy = (note: Note) => {
