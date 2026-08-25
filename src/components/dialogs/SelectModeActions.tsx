@@ -125,19 +125,21 @@ const SelectModeActions = ({
           />
         </IconButton>
       </Tooltip>
-      <Tooltip
-        title={
-          selectedCount > 0 ? "Set selected status" : "Select notes to enable"
-        }
-      >
-        <IconButton
-          color="inherit"
-          disabled={selectedCount === 0}
-          onClick={onStatusClick}
+      {false && (
+        <Tooltip
+          title={
+            selectedCount > 0 ? "Set selected status" : "Select notes to enable"
+          }
         >
-          <Icon path={mdiMinusCircle} size={0.9} />
-        </IconButton>
-      </Tooltip>
+          <IconButton
+            color="inherit"
+            disabled={selectedCount === 0}
+            onClick={onStatusClick}
+          >
+            <Icon path={mdiMinusCircle} size={0.9} />
+          </IconButton>
+        </Tooltip>
+      )}
       <Tooltip
         title={
           selectedCount > 0 ? "Share selected text" : "Select notes to enable"

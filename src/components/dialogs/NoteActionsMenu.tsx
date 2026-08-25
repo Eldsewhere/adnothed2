@@ -281,25 +281,27 @@ const NoteActionsMenu = ({
               </Box>
               Spoiler
             </MenuItem>
-            <MenuItem
-              onClick={(event: MouseEvent<HTMLElement>) =>
-                setStatusMenuAnchor(event.currentTarget)
-              }
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
+            {false && (
+              <MenuItem
+                onClick={(event: MouseEvent<HTMLElement>) =>
+                  setStatusMenuAnchor(event.currentTarget)
+                }
               >
-                <Icon path={mdiMinusCircle} size={0.7} />
-              </Box>
-              Status
-            </MenuItem>
+                <Box
+                  component="span"
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    mr: 1,
+                    py: 1,
+                    px: 0.5,
+                  }}
+                >
+                  <Icon path={mdiMinusCircle} size={0.7} />
+                </Box>
+                Status
+              </MenuItem>
+            )}
             <MenuItem
               onClick={() => {
                 onComplete(note);
