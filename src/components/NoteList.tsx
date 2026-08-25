@@ -185,6 +185,7 @@ const NoteList = ({
   const [overflowModalnoteId, setOverflowModalnoteId] = useState<string | null>(
     null,
   );
+  const [revealAllSpoilers, setRevealAllSpoilers] = useState(false);
   const [overflowingnoteIds, setOverflowingNoteIds] = useState<Set<string>>(
     new Set(),
   );
@@ -971,6 +972,14 @@ const NoteList = ({
                       onClearDueDateFilter={onClearDueDateFilter}
                       hasTextFilter={hasTextFilter}
                       onClearTextFilter={onClearTextFilter}
+                      revealAllSpoilers={
+                        item.key === "notes-section-header" && revealAllSpoilers
+                      }
+                      onToggleRevealAllSpoilers={
+                        item.key === "notes-section-header"
+                          ? () => setRevealAllSpoilers((value) => !value)
+                          : undefined
+                      }
                       selectMode={selectMode}
                       selectedCount={selectedIds.size}
                       onToggleSelectMode={
@@ -1089,6 +1098,7 @@ const NoteList = ({
                   isMenuOpen={isThisNoteMenuOpen}
                   isInteractionDisabled={isListInteractionDisabled}
                   shouldHighlightRecentEdit={shouldHighlightRecentEdit}
+                  revealAllSpoilers={revealAllSpoilers}
                   onToggleSelect={onToggleSelect}
                   onOpenLabelMenu={openLabelMenu}
                   onToggleCheckbox={onToggleCheckbox}

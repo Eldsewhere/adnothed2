@@ -15,6 +15,8 @@ import {
   mdiCheckboxMultipleMarked,
   mdiChevronDown,
   mdiChevronUp,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
   mdiFilter,
 } from "@mdi/js";
 import type { Label } from "../types";
@@ -80,6 +82,8 @@ type NoteListAccordionHeaderProps = {
   hasDateFilter?: boolean;
   dateFilterDisabled?: boolean;
   interactionDisabled?: boolean;
+  revealAllSpoilers?: boolean;
+  onToggleRevealAllSpoilers?: () => void;
 };
 
 const NoteListAccordionHeader = ({
@@ -106,6 +110,8 @@ const NoteListAccordionHeader = ({
   hasDateFilter = false,
   dateFilterDisabled = false,
   interactionDisabled = false,
+  revealAllSpoilers = false,
+  onToggleRevealAllSpoilers,
 }: NoteListAccordionHeaderProps) => {
   const hasFilterButtons = Boolean(
     selectedLabel ||
@@ -271,6 +277,35 @@ const NoteListAccordionHeader = ({
               flexItem
               sx={{ borderColor: "rgba(255,255,255,0.16)" }}
             />
+          )}
+          {onToggleRevealAllSpoilers && (
+            <Tooltip
+              title={
+                revealAllSpoilers
+                  ? "Hide all spoilers temporarily"
+                  : "Reveal all spoilers temporarily"
+              }
+              arrow
+            >
+              <span>
+                <IconButton
+                  aria-label={
+                    revealAllSpoilers
+                      ? "Hide all spoilers temporarily"
+                      : "Reveal all spoilers temporarily"
+                  }
+                  color={revealAllSpoilers ? "primary" : "default"}
+                  size="small"
+                  onClick={interactionDisabled ? undefined : onToggleRevealAllSpoilers}
+                  disabled={interactionDisabled}
+                >
+                  <Icon
+                    path={revealAllSpoilers ? mdiEyeOutline : mdiEyeOffOutline}
+                    size={0.8}
+                  />
+                </IconButton>
+              </span>
+            </Tooltip>
           )}
           {onOpenDateFilter && (
             <Tooltip title="Filter by date" arrow>

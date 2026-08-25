@@ -103,6 +103,7 @@ type NoteListRowProps = {
   isEditing: boolean;
   isMenuOpen?: boolean;
   isInteractionDisabled?: boolean;
+  revealAllSpoilers?: boolean;
   shouldHighlightRecentEdit: boolean;
   onToggleSelect: (id: string) => void;
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
@@ -144,6 +145,7 @@ const NoteListRow = ({
   isEditing,
   isMenuOpen = false,
   isInteractionDisabled = false,
+  revealAllSpoilers = false,
   shouldHighlightRecentEdit,
   onToggleSelect,
   onOpenLabelMenu,
@@ -233,7 +235,8 @@ const NoteListRow = ({
       : {};
   const isSpoilerStatus = status?.format === "spoiler";
   const isSpoilerActive = Boolean(note.spoiler) || isSpoilerStatus;
-  const shouldHideSpoilerText = isSpoilerActive && !isSpoilerVisible;
+  const shouldHideSpoilerText =
+    isSpoilerActive && !(isSpoilerVisible || revealAllSpoilers);
 
   const handleSpoilerVisibilityToggle = () => {
     if (!isSpoilerActive) {
