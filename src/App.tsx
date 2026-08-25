@@ -30,6 +30,7 @@ import BulkLabelMenu from "./components/dialogs/LabelMenu";
 import ConfirmBulkDeleteDialog from "./components/dialogs/ConfirmBulkDeleteDialog";
 import ConfirmDeleteLabelDialog from "./components/dialogs/ConfirmDeleteLabelDialog";
 import ConfirmImportDialog from "./components/dialogs/ConfirmImportDialog";
+import ImportActionsMenu from "./components/dialogs/ImportActionsMenu";
 import SelectModeActions from "./components/dialogs/SelectModeActions";
 import NoteStorageInfoDialog from "./components/dialogs/NoteStorageInfoDialog";
 import type {
@@ -47,8 +48,10 @@ import {
   enableGoogleDriveFromQuery,
   getPersistedFileName,
   loadPersistedState,
+  openPersistedStateFile,
   parsePersistedState,
   savePersistedState,
+  serializeState,
 } from "./utils/storage";
 import {
   type AppNotificationResult,
@@ -210,6 +213,8 @@ function App() {
   const [bulkStatusAnchor, setBulkStatusAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const [importActionsAnchor, setImportActionsAnchor] =
+    useState<HTMLElement | null>(null);
   const [noteStorageInfoOpen, setNoteStorageInfoOpen] = useState(false);
   const [storageFileName, setStorageFileName] =
     useState<string>(DEFAULT_FILE_NAME);
@@ -400,6 +405,32 @@ function App() {
     applyImportedState(pendingImport);
     setPendingImport(null);
     setConfirmImportOpen(false);
+  };
+
+  const handleExportState = () => {
+    const payload = serializeState({ labels, statuses, notes });
+    const fileName = storageFileName.trim() || DEFAULT_FILE_NAME;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {
+      type: "application/json",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    setNotificationSeverity("success");
+    setNotification(`Exported ${fileName}`);
+  };
+
+  const handleImportState = async () => {
+    const fileResult = await openPersistedStateFile(storageFileName);
+    if (!fileResult) {
+      return;
+    }
+    applyImportedState(fileResult);
   };
 
   const handleImportFromGoogleDrive = async () => {
@@ -2127,6 +2158,9 @@ function App() {
                     newStatusId: latestStatusId,
                   }}
                   onInfoTips={() => setNoteStorageInfoOpen(true)}
+                  onImportActionsClick={(event) =>
+                    setImportActionsAnchor(event.currentTarget)
+                  }
                   availableHashtags={availableHashtags}
                   onRefreshAvailableHashtags={refreshAvailableHashtags}
                   onFilterTextChange={handleFilterTextChange}
@@ -2316,6 +2350,29 @@ function App() {
           onClose={() => setbulkLabelAnchor(null)}
           onSelect={(labelId) => {
             handleBulkLabelChange(labelId);
+          }}
+        />
+        <ImportActionsMenu
+          anchorEl={importActionsAnchor}
+          onClose={() => setImportActionsAnchor(null)}
+          onImport={() => {
+            setImportActionsAnchor(null);
+            void handleImportState();
+          }}
+          onImportFromGoogleDrive={() => {
+            setImportActionsAnchor(null);
+            void handleImportFromGoogleDrive();
+          }}
+          onExport={() => {
+            setImportActionsAnchor(null);
+            handleExportState();
+          }}
+          labels={labels}
+          statuses={statuses}
+          notes={notes}
+          onNotify={(severity, message) => {
+            setNotificationSeverity(severity);
+            setNotification(message);
           }}
         />
       </Box>

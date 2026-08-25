@@ -64,6 +64,7 @@ type NoteListProps = {
   hasDateFilter: boolean;
   onInfoTips?: () => void;
   onInstall?: () => void;
+  onImportActionsClick?: (event: MouseEvent<HTMLElement>) => void;
   availableHashtags?: string[];
   onRefreshAvailableHashtags?: () => void;
   onFilterTextChange?: (value: string) => void;
@@ -160,6 +161,7 @@ const NoteList = ({
   hasDateFilter,
   onInfoTips,
   onInstall,
+  onImportActionsClick,
   availableHashtags = [],
   onRefreshAvailableHashtags,
   onFilterTextChange,
@@ -641,7 +643,7 @@ const NoteList = ({
     }
 
     const items: Array<{
-      type: "header" | "note";
+      type: "header" | "note" | "footer";
       key: string;
       note?: Note;
       index?: number;
@@ -703,6 +705,10 @@ const NoteList = ({
       archivedSectionExpanded,
     );
 
+    if (archivedSectionRange !== null && onImportActionsClick) {
+      items.push({ type: "footer", key: "archived-import-actions-footer" });
+    }
+
     return items;
   }, [
     archivedSectionExpanded,
@@ -713,14 +719,17 @@ const NoteList = ({
     mostRecentAddedNoteId,
     notesSectionExpanded,
     notesSectionRange,
+    onImportActionsClick,
   ]);
 
   const rowHeights = displayItems.map((item) =>
     item.type === "header"
       ? ARCHIVED_SECTION_HEADER_HEIGHT
-      : overflowingnoteIds.has(item.note!.id)
-        ? EXPANDED_ROW_HEIGHT
-        : ROW_HEIGHT,
+      : item.type === "footer"
+        ? 52
+        : overflowingnoteIds.has(item.note!.id)
+          ? EXPANDED_ROW_HEIGHT
+          : ROW_HEIGHT,
   );
 
   const rowOffsets = rowHeights.reduce<number[]>((offsets, height) => {
@@ -967,6 +976,38 @@ const NoteList = ({
                       dateFilterDisabled={notes.length === 0 || selectMode}
                       selectDisabled={notes.length === 0}
                     />
+                  </Box>
+                );
+              }
+
+              if (item.type === "footer") {
+                return (
+                  <Box
+                    key={item.key}
+                    sx={{
+                      position: "absolute",
+                      top: rowOffsets[index] - rowHeights[index],
+                      left: 0,
+                      right: 0,
+                      height: rowHeights[index],
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Button
+                      variant="contained"
+                      onClick={(event) => onImportActionsClick?.(event)}
+                      sx={{
+                        borderRadius: 999,
+                        px: 2.5,
+                        py: 0.75,
+                        fontWeight: 600,
+                        minWidth: 160,
+                      }}
+                    >
+                      Import / Export
+                    </Button>
                   </Box>
                 );
               }
