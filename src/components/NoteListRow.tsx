@@ -660,7 +660,7 @@ const NoteListRow = ({
                   shouldUsePriorityDueDate={shouldUsePriorityDueDate}
                   interactionDisabled={isInteractionDisabled}
                   isSpoilerActive={isSpoilerActive}
-                  isSpoilerVisible={isSpoilerVisible}
+                  isSpoilerVisible={isSpoilerVisible || revealAllSpoilers}
                   onToggleSpoilerVisibility={handleSpoilerVisibilityToggle}
                   onOpenActionsMenu={onOpenActionsMenu}
                 />
