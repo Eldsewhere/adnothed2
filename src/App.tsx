@@ -1331,6 +1331,22 @@ function App() {
     setRecentlyEditedNoteId(note.id);
   };
 
+  const handleNoteToggleSpoiler = (note: Note) => {
+    const nextSpoiler = !Boolean(note.spoiler);
+    setNotes((prev) =>
+      prev.map((existingNote) =>
+        existingNote.id === note.id
+          ? { ...existingNote, spoiler: nextSpoiler }
+          : existingNote,
+      ),
+    );
+    setRecentlyAddedNoteId(null);
+    setRecentlyEditedNoteId(note.id);
+    if (editingNote?.id === note.id) {
+      seteditingNote({ ...editingNote, spoiler: nextSpoiler });
+    }
+  };
+
   const handleNoteEmojiChange = (note: Note, emoji: string | null) => {
     setNotes((prev) =>
       prev.map((existingNote) =>
@@ -2180,6 +2196,7 @@ function App() {
                   onComplete={handleNoteComplete}
                   onPin={handleNotePin}
                   onArchive={handleNoteArchive}
+                  onToggleSpoiler={handleNoteToggleSpoiler}
                   onEmojiChange={handleNoteEmojiChange}
                   statusManagement={{
                     notes,

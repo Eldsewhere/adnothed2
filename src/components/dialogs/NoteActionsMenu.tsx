@@ -19,6 +19,8 @@ import {
   mdiCalendarClock,
   mdiClockOutline,
   mdiContentCopy,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
   mdiFilter,
   mdiLink,
   mdiMagnify,
@@ -48,6 +50,7 @@ type NoteActionsMenuProps = {
   onNotify: (note: Note) => void;
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
+  onToggleSpoiler: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   statusManagement: {
     notes: Note[];
@@ -113,6 +116,7 @@ const NoteActionsMenu = ({
   onNotify,
   onPin,
   onArchive,
+  onToggleSpoiler,
   onEmojiChange,
   statusManagement,
   onComplete,
@@ -258,6 +262,26 @@ const NoteActionsMenu = ({
                 />
               </Box>
               {note.archived ? "Unarchive" : "Archive"}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onToggleSpoiler(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline} size={0.7} />
+              </Box>
+              {note.spoiler ? "Hide spoiler" : "Spoiler"}
             </MenuItem>
             <MenuItem
               onClick={(event: MouseEvent<HTMLElement>) =>

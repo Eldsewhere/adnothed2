@@ -46,6 +46,7 @@ type NoteListProps = {
   onComplete: (note: Note) => void;
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
+  onToggleSpoiler: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   statusManagement: {
     notes: Note[];
@@ -151,6 +152,7 @@ const NoteList = ({
   onComplete,
   onPin,
   onArchive,
+  onToggleSpoiler,
   onEmojiChange,
   statusManagement,
   selectMode,
@@ -368,6 +370,11 @@ const NoteList = ({
 
   const handleShareLink = (note: Note) => {
     onShareLink(note);
+    closeMenu();
+  };
+
+  const handleToggleSpoiler = (note: Note) => {
+    onToggleSpoiler(note);
     closeMenu();
   };
 
@@ -1123,6 +1130,7 @@ const NoteList = ({
           onNotify={handleNotify}
           onPin={onPin}
           onArchive={onArchive}
+          onToggleSpoiler={handleToggleSpoiler}
           onEmojiChange={onEmojiChange}
           statusManagement={statusManagement}
           onComplete={onComplete}

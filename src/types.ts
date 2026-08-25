@@ -52,6 +52,7 @@ export type Note = {
   completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
+  spoiler?: boolean;
   updatedAt?: number;
 };
 

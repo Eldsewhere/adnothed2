@@ -39,6 +39,7 @@ export const PersistedNoteSchema = z.object({
   completed: z.boolean().optional(),
   pinned: z.boolean().optional(),
   archived: z.boolean().optional(),
+  spoiler: z.boolean().optional(),
 });
 
 export const PersistedStateSchema = z.object({

@@ -27,6 +27,7 @@ type PersistedNote = {
   completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
+  spoiler?: boolean;
 };
 
 type PersistedState = {
@@ -156,6 +157,7 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
       ...(note.completed ? { completed: true } : {}),
       ...(note.pinned ? { pinned: note.pinned } : {}),
       ...(note.archived ? { archived: note.archived } : {}),
+      ...(note.spoiler ? { spoiler: true } : {}),
     });
   }
 
@@ -171,6 +173,7 @@ function toPersistedNote(note: {
   completed?: boolean;
   pinned?: boolean;
   archived?: boolean;
+  spoiler?: boolean;
 }): PersistedNote {
   const icon = note.icon ?? undefined;
 
@@ -183,6 +186,7 @@ function toPersistedNote(note: {
     ...(note.completed ? { completed: true } : {}),
     ...(note.pinned ? { pinned: note.pinned } : {}),
     ...(note.archived ? { archived: true } : {}),
+    ...(note.spoiler ? { spoiler: true } : {}),
   };
 }
 
@@ -228,6 +232,7 @@ export function serializeState(state: {
         completed,
         pinned,
         archived,
+        spoiler,
       } = stripTransientNoteFields(note);
       return toPersistedNote({
         icon: labelId,
@@ -238,6 +243,7 @@ export function serializeState(state: {
         completed,
         pinned,
         archived,
+        spoiler,
       });
     }),
   };

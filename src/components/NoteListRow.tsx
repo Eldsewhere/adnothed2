@@ -1,4 +1,4 @@
-import { useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import {
   Box,
   Checkbox,
@@ -13,8 +13,6 @@ import {
   mdiArchiveArrowUp,
   mdiChevronDown,
   mdiDotsVertical,
-  mdiEyeOffOutline,
-  mdiEyeOutline,
   mdiLabelOff,
   mdiPencil,
   mdiPin,
@@ -223,6 +221,9 @@ const NoteListRow = ({
   const checkboxProgress = getCheckboxProgress(note.text);
   const bulletCount = getBulletCount(note.text);
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
+  useEffect(() => {
+    setIsSpoilerVisible(false);
+  }, [note.id]);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
   const MENU_OPEN_DRAG_THRESHOLD = 80;
@@ -231,7 +232,15 @@ const NoteListRow = ({
       ? getStatusTextStyle(status.format)
       : {};
   const isSpoilerStatus = status?.format === "spoiler";
-  const shouldHideSpoilerText = isSpoilerStatus && !isSpoilerVisible;
+  const isSpoilerActive = Boolean(note.spoiler) || isSpoilerStatus;
+  const shouldHideSpoilerText = isSpoilerActive && !isSpoilerVisible;
+
+  const handleSpoilerVisibilityToggle = () => {
+    if (!isSpoilerActive) {
+      return;
+    }
+    setIsSpoilerVisible((value) => !value);
+  };
 
   const renderTextWithHashtags = (value: string) =>
     value.split(/(#\w[\w-]*\b)/g).map((part, index) => {
@@ -490,49 +499,7 @@ const NoteListRow = ({
                 ...statusStyle,
               }}
             >
-              {isSpoilerStatus && (
-                <Box
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    verticalAlign: "middle",
-                    mr: 0.5,
-                  }}
-                >
-                  <Tooltip
-                    title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
-                    arrow
-                  >
-                    <IconButton
-                      size="small"
-                      aria-label={
-                        isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"
-                      }
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        setIsSpoilerVisible((value) => !value);
-                      }}
-                      disabled={isInteractionDisabled}
-                      sx={{
-                        p: 0,
-                        minWidth: 20,
-                        width: 20,
-                        height: 20,
-                        color: "inherit",
-                      }}
-                    >
-                      <Icon
-                        path={
-                          isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline
-                        }
-                        size={0.7}
-                      />
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-              )}
-              {note.text.split("\n").map((row, rowIndex) => {
+                {note.text.split("\n").map((row, rowIndex) => {
                 const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
                 const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
                 const rowText = checkboxMatch?.[2] ?? row;
@@ -689,6 +656,9 @@ const NoteListRow = ({
                   shouldShowDueDateIcon={shouldShowDueDateIcon}
                   shouldUsePriorityDueDate={shouldUsePriorityDueDate}
                   interactionDisabled={isInteractionDisabled}
+                  isSpoilerActive={isSpoilerActive}
+                  isSpoilerVisible={isSpoilerVisible}
+                  onToggleSpoilerVisibility={handleSpoilerVisibilityToggle}
                   onOpenActionsMenu={onOpenActionsMenu}
                 />
               </Typography>

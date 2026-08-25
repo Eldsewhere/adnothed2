@@ -7,6 +7,8 @@ import {
   mdiCheckboxMarkedOutline,
   mdiClockCheckOutline,
   mdiClockOutline,
+  mdiEyeOffOutline,
+  mdiEyeOutline,
   mdiFormatListBulleted,
   mdiPin,
 } from "@mdi/js";
@@ -23,6 +25,9 @@ type NoteTimestampMetaIconsProps = {
   shouldShowDueDateIcon: boolean;
   shouldUsePriorityDueDate: boolean;
   interactionDisabled?: boolean;
+  isSpoilerActive?: boolean;
+  isSpoilerVisible?: boolean;
+  onToggleSpoilerVisibility?: () => void;
   onOpenActionsMenu: (
     event: ReactMouseEvent<HTMLElement>,
     note: Note,
@@ -40,6 +45,9 @@ const NoteTimestampMetaIcons = ({
   shouldShowDueDateIcon,
   shouldUsePriorityDueDate,
   interactionDisabled = false,
+  isSpoilerActive = false,
+  isSpoilerVisible = false,
+  onToggleSpoilerVisibility,
   onOpenActionsMenu,
 }: NoteTimestampMetaIconsProps) => (
   <>
@@ -191,6 +199,43 @@ const NoteTimestampMetaIcons = ({
         >
           <Icon path={mdiFormatListBulleted} size={0.5} />
           <Box component="span">{bulletCount}</Box>
+        </Box>
+      </Tooltip>
+    )}
+    {isSpoilerActive && (
+      <Tooltip
+        title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
+        aria-label={undefined}
+        arrow
+      >
+        <Box
+          component="button"
+          type="button"
+          onClick={(event: ReactMouseEvent<HTMLElement>) => {
+            if (interactionDisabled) {
+              event.preventDefault();
+              event.stopPropagation();
+              return;
+            }
+            event.stopPropagation();
+            onToggleSpoilerVisibility?.();
+          }}
+          sx={{
+            ml: 0.5,
+            display: "inline-flex",
+            alignItems: "center",
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            color: "inherit",
+            cursor: interactionDisabled ? "not-allowed" : "pointer",
+            opacity: interactionDisabled ? 0.6 : 1,
+          }}
+        >
+          <Icon
+            path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
+            size={0.5}
+          />
         </Box>
       </Tooltip>
     )}
