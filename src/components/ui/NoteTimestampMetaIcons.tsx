@@ -4,6 +4,7 @@ import { Icon } from "@mdi/react";
 import {
   mdiArchive,
   mdiBell,
+  mdiCheckBold,
   mdiCheckboxMarkedOutline,
   mdiClockCheckOutline,
   mdiClockOutline,
@@ -88,7 +89,10 @@ const NoteTimestampMetaIcons = ({
             color: noteIconColor,
           }}
         >
-          <Icon path={mdiClockCheckOutline} size={0.5} />
+          <Icon
+            path={note.due === undefined ? mdiCheckBold : mdiClockCheckOutline}
+            size={0.5}
+          />
         </Box>
       </Tooltip>
     )}

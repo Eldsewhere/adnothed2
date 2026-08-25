@@ -424,7 +424,10 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.withPriority && !isPinned && !isDueTodayOrTomorrow(due)) {
+  if (
+    parsed.withPriority &&
+    (isCompleted || (!isPinned && !isDueTodayOrTomorrow(due)))
+  ) {
     return false;
   }
 

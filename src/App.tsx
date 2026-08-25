@@ -1299,7 +1299,7 @@ function App() {
     setNotes((prev) =>
       prev.map((existingNote) =>
         existingNote.id === note.id
-          ? { ...existingNote, completed: true }
+          ? { ...existingNote, completed: !existingNote.completed }
           : existingNote,
       ),
     );

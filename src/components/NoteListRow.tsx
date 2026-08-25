@@ -501,6 +501,7 @@ const NoteListRow = ({
                 {note.text.split("\n").map((row, rowIndex) => {
                 const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
                 const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
+                const shouldStrikeText = note.completed || isChecked;
                 const rowText = checkboxMatch?.[2] ?? row;
                 const visibleRowText = shouldHideSpoilerText
                   ? maskSpoilerText(rowText)
@@ -537,7 +538,7 @@ const NoteListRow = ({
                       }
                       component="span"
                       sx={{
-                        textDecoration: isChecked ? "line-through" : "none",
+                        textDecoration: "none",
                       }}
                     >
                       {!selectMode &&
@@ -578,7 +579,17 @@ const NoteListRow = ({
                                 {part.value}
                               </Box>
                             ) : (
-                              renderTextWithHashtags(part.value)
+                              <Box
+                                key={partIndex}
+                                component="span"
+                                sx={{
+                                  textDecoration: shouldStrikeText
+                                    ? "line-through"
+                                    : "none",
+                                }}
+                              >
+                                {renderTextWithHashtags(part.value)}
+                              </Box>
                             ),
                         )
                       )}

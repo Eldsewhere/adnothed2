@@ -17,7 +17,7 @@ import {
   mdiArchiveArrowUp,
   mdiBell,
   mdiCalendarClock,
-  mdiClockOutline,
+  mdiCheckBold,
   mdiContentCopy,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -32,6 +32,7 @@ import {
   mdiPinOff,
   mdiShareVariant,
   mdiTrashCanOutline,
+  mdiUndo,
 } from "@mdi/js";
 import type { Note, Status, StatusFormValues } from "../../types";
 import StatusForm from "../StatusForm";
@@ -98,12 +99,6 @@ const SearchSiteIcon = ({ domain }: { domain: string }) => (
     sx={{ width: 16, height: 16, mr: 1, flexShrink: 0 }}
   />
 );
-
-const isDueTodayOrLater = (due: number): boolean => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return due >= today.getTime() / 1000;
-};
 
 const NoteActionsMenu = ({
   anchorEl,
@@ -305,30 +300,29 @@ const NoteActionsMenu = ({
               </Box>
               Status
             </MenuItem>
-            {note.due !== undefined &&
-              !note.completed &&
-              isDueTodayOrLater(note.due) && (
-                <MenuItem
-                  onClick={() => {
-                    onComplete(note);
-                    handleMenuClose();
-                  }}
-                >
-                  <Box
-                    component="span"
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      mr: 1,
-                      py: 1,
-                      px: 0.5,
-                    }}
-                  >
-                    <Icon path={mdiClockOutline} size={0.7} />
-                  </Box>
-                  Complete
-                </MenuItem>
-              )}
+            <MenuItem
+              onClick={() => {
+                onComplete(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon
+                  path={note.completed ? mdiUndo : mdiCheckBold}
+                  size={0.7}
+                />
+              </Box>
+              {note.completed ? "Undone" : "Done"}
+            </MenuItem>
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
