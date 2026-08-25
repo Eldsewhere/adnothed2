@@ -1246,6 +1246,9 @@ function App() {
     setCloneNote(null);
     seteditingNote(note);
     setDraftNoteText(note.text);
+    setDraftDueDate(
+      note.due !== undefined ? dayjs.unix(note.due).startOf("day") : null,
+    );
   };
 
   const handleCancelEditNote = () => {
@@ -1260,6 +1263,9 @@ function App() {
     seteditingNote(null);
     setCloneNote(note);
     setDraftNoteText(note.text);
+    setDraftDueDate(
+      note.due !== undefined ? dayjs.unix(note.due).startOf("day") : null,
+    );
   };
 
   const handleNoteDueChange = (note: Note, due: number | null) => {
@@ -1692,6 +1698,13 @@ function App() {
 
   const handleWeekdayToggle = (dayKey: string) => {
     setDatePopoverAnchor(null);
+    const nextDraftDueDate = dayjs(dayKey, "YYYY-MM-DD", true);
+
+    if (editingNote !== null || cloneNote !== null) {
+      setDraftDueDate(nextDraftDueDate.isValid() ? nextDraftDueDate : null);
+      return;
+    }
+
     setDraftDueDate(null);
     setPendingDateFilter((prev) => ({
       ...prev,
@@ -1730,14 +1743,17 @@ function App() {
       .minute(weekPickerDueMinute)
       .second(0);
     setDraftDueDate(nextDueDate);
-    setNoteFilters((prev) => ({
-      ...prev,
-      weekday: nextDueDate.format("YYYY-MM-DD"),
-      date: "",
-      endDate: "",
-      dueDate: "",
-      hasDue: false,
-    }));
+
+    if (editingNote === null && cloneNote === null) {
+      setNoteFilters((prev) => ({
+        ...prev,
+        weekday: nextDueDate.format("YYYY-MM-DD"),
+        date: "",
+        endDate: "",
+        dueDate: "",
+        hasDue: false,
+      }));
+    }
     setWeekPickerDueDialogOpen(false);
   };
 
@@ -1762,14 +1778,16 @@ function App() {
 
   const handleWeekPickerClearDueDate = () => {
     setDraftDueDate(null);
-    setNoteFilters((prev) => ({
-      ...prev,
-      weekday: null,
-      date: "",
-      endDate: "",
-      dueDate: "",
-      hasDue: false,
-    }));
+    if (editingNote === null && cloneNote === null) {
+      setNoteFilters((prev) => ({
+        ...prev,
+        weekday: null,
+        date: "",
+        endDate: "",
+        dueDate: "",
+        hasDue: false,
+      }));
+    }
     setWeekPickerDueDialogOpen(false);
   };
 
