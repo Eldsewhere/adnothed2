@@ -56,6 +56,66 @@ type NoteFormProps = {
 
 const emptyValues: NoteFormValues = { labelId: "", text: "" };
 
+const BULLET_PREFIX = "• ";
+const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
+
+const getAutoListContinuation = (
+  value: string,
+  caretPosition: number,
+): { nextValue: string; cursorPosition: number } | null => {
+  if (caretPosition < 0) {
+    return null;
+  }
+
+  const beforeCaret = value.slice(0, caretPosition);
+  const lineStartIndex = beforeCaret.lastIndexOf("\n") + 1;
+  const currentLine = beforeCaret.slice(lineStartIndex);
+  const currentLineIndent = currentLine.match(/^\s*/)?.[0] ?? "";
+  const currentLineContent = currentLine.slice(currentLineIndent.length);
+
+  const continuationPrefix =
+    currentLineContent.startsWith(BULLET_PREFIX)
+      ? `${currentLineIndent}${BULLET_PREFIX}`
+      : currentLineContent.match(CHECKBOX_PREFIX_PATTERN)
+        ? `${currentLineIndent}[] `
+        : null;
+
+  if (continuationPrefix) {
+    const nextValue = `${beforeCaret}\n${continuationPrefix}${value.slice(caretPosition)}`;
+    return {
+      nextValue,
+      cursorPosition: beforeCaret.length + 1 + continuationPrefix.length,
+    };
+  }
+
+  if (!currentLine.trim()) {
+    const previousLineSource = beforeCaret.endsWith("\n")
+      ? beforeCaret.slice(0, -1)
+      : beforeCaret;
+    const previousLineStart = previousLineSource.lastIndexOf("\n") + 1;
+    const previousLine = previousLineSource.slice(previousLineStart);
+    const previousIndent = previousLine.match(/^\s*/)?.[0] ?? "";
+    const previousContent = previousLine.slice(previousIndent.length);
+
+    const previousPrefix =
+      previousContent.startsWith(BULLET_PREFIX)
+        ? `${previousIndent}${BULLET_PREFIX}`
+        : previousContent.match(CHECKBOX_PREFIX_PATTERN)
+          ? `${previousIndent}[] `
+          : null;
+
+    if (previousPrefix) {
+      const nextValue = `${beforeCaret}${previousPrefix}${value.slice(caretPosition)}`;
+      return {
+        nextValue,
+        cursorPosition: beforeCaret.length + previousPrefix.length,
+      };
+    }
+  }
+
+  return null;
+};
+
 const NoteForm = ({
   editingNote,
   cloneNote,
@@ -246,6 +306,37 @@ const NoteForm = ({
                       value={textValue ?? field.value}
                       onChange={(event) => {
                         handleTextChange(event.target.value);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter") {
+                          return;
+                        }
+
+                        const textarea = textAreaRef.current;
+                        if (!textarea) {
+                          return;
+                        }
+
+                        const selectionStart =
+                          textarea.selectionStart ?? textarea.value.length;
+                        const continuation = getAutoListContinuation(
+                          textarea.value,
+                          selectionStart,
+                        );
+
+                        if (!continuation) {
+                          return;
+                        }
+
+                        event.preventDefault();
+                        textarea.value = continuation.nextValue;
+                        handleTextChange(continuation.nextValue);
+
+                        window.requestAnimationFrame(() => {
+                          textarea.focus();
+                          textarea.selectionStart = continuation.cursorPosition;
+                          textarea.selectionEnd = continuation.cursorPosition;
+                        });
                       }}
                       inputRef={(el: HTMLTextAreaElement | null) => {
                         textAreaRef.current = el;

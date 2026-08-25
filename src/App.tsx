@@ -1092,7 +1092,7 @@ function App() {
         if (/^\[ ?[xX]? ?\]/.test(rowWithoutBullet)) {
           return `${leadingWhitespace}${rowWithoutBullet}`;
         }
-        return `${leadingWhitespace}[ ] ${rowWithoutBullet}`;
+        return `${leadingWhitespace}[] ${rowWithoutBullet}`;
       })
       .join("\n");
     setNotes((prev) =>
@@ -1115,7 +1115,7 @@ function App() {
       .map((row, index) => {
         if (index !== rowIndex) return row;
         return row.replace(/^\[ ?([xX])? ?\]/, (_match, checked) =>
-          checked ? "[ ]" : "[x]",
+          checked ? "[]" : "[x]",
         );
       })
       .join("\n");
@@ -1957,7 +1957,7 @@ function App() {
   return (
     <main>
       <Box>
-        <Paper sx={{ p: 1 }}>
+        <Paper sx={{ px: 1, py: 0 }}>
           <NoteStorageInfoDialog
             open={noteStorageInfoOpen}
             onClose={() => setNoteStorageInfoOpen(false)}
