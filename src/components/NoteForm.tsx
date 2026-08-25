@@ -232,7 +232,9 @@ const NoteForm = ({
                 const text = field.value;
 
                 const noteFieldLabel = isEditing
-                  ? "Editing note"
+                  ? dueLabel
+                    ? `Editing note, due ${dueLabel}`
+                    : "Editing note"
                   : dueLabel
                     ? `Note, due ${dueLabel}`
                     : "Create or filter note";
