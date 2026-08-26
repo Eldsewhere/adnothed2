@@ -237,6 +237,29 @@ const NoteActionsMenu = ({
             </MenuItem>
             <MenuItem
               onClick={() => {
+                onComplete(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon
+                  path={note.completed ? mdiUndo : mdiCheckBold}
+                  size={0.7}
+                />
+              </Box>
+              {note.completed ? "Undone" : "Done"}
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
                 onArchive(note);
                 handleMenuClose();
               }}
@@ -279,7 +302,7 @@ const NoteActionsMenu = ({
                   size={0.7}
                 />
               </Box>
-              Spoiler
+              {note.spoiler ? "Show" : "Hide"}
             </MenuItem>
             {false && (
               <MenuItem
@@ -302,29 +325,6 @@ const NoteActionsMenu = ({
                 Status
               </MenuItem>
             )}
-            <MenuItem
-              onClick={() => {
-                onComplete(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon
-                  path={note.completed ? mdiUndo : mdiCheckBold}
-                  size={0.7}
-                />
-              </Box>
-              {note.completed ? "Undone" : "Done"}
-            </MenuItem>
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {

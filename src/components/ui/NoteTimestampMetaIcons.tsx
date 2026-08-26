@@ -208,7 +208,7 @@ const NoteTimestampMetaIcons = ({
     )}
     {isSpoilerActive && (
       <Tooltip
-        title={isSpoilerVisible ? "Hide spoiler" : "Reveal spoiler"}
+        title={isSpoilerVisible ? "Hide text" : "Reveal text"}
         aria-label={undefined}
         arrow
       >
