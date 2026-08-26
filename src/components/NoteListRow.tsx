@@ -123,6 +123,7 @@ type NoteListRowProps = {
   onToggleHashtagInDraft?: (tag: string) => void;
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
+  onEmojiChange: (note: Note, emoji: string | null) => void;
 };
 
 const NoteListRow = ({
@@ -159,6 +160,7 @@ const NoteListRow = ({
   filterText = "",
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
+  onEmojiChange,
 }: NoteListRowProps) => {
   const isExistingHashtag = (tag: string) =>
     availableHashtags.some(
@@ -670,6 +672,7 @@ const NoteListRow = ({
                   isSpoilerVisible={isSpoilerVisible || revealAllSpoilers}
                   onToggleSpoilerVisibility={handleSpoilerVisibilityToggle}
                   onOpenActionsMenu={onOpenActionsMenu}
+                  onEmojiChange={onEmojiChange}
                 />
               </Typography>
               {selectMode && globalIndex !== undefined ? (

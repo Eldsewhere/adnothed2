@@ -1126,6 +1126,7 @@ const NoteList = ({
                   onToggleHashtagInDraft={onToggleHashtagInDraft}
                   onAppendHashtagToNote={onAppendHashtagToNote}
                   onRemoveHashtagFromNote={onRemoveHashtagFromNote}
+                  onEmojiChange={onEmojiChange}
                 />
               );
             })}
