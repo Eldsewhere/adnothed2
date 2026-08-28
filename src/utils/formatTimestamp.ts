@@ -59,8 +59,18 @@ export function isYesterday(timestamp: number): boolean {
 const DAY_ABBREVS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
 const MONTH_ABBREVS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
 ];
 
 export function formatDueDate(timestamp: number): string {
@@ -70,21 +80,26 @@ export function formatDueDate(timestamp: number): string {
 
   const isMidnight = date.getHours() === 0 && date.getMinutes() === 0;
   const yearSuffix =
-    date.getFullYear() !== now.getFullYear()
-      ? `, ${date.getFullYear()}`
-      : "";
+    date.getFullYear() !== now.getFullYear() ? `, ${date.getFullYear()}` : "";
 
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
 
   const month = MONTH_ABBREVS[date.getMonth()];
   const day = pad(date.getDate());
+  const daysAfterTodayMidnight = Math.floor(
+    (date.getTime() -
+      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
+  const daysAfter = daysAfterTodayMidnight > 0 ? daysAfterTodayMidnight : 0;
 
   if (isMidnight) {
     if (isSameDay(date, now)) return "Today";
     if (isSameDay(date, tomorrow)) return "Tomorrow";
     const dow = DAY_ABBREVS[date.getDay()];
-    const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
+
+    const dateText = `${dow}, ${month} ${day}${yearSuffix} (in ${daysAfter} days)`;
     if (date.getFullYear() !== now.getFullYear()) {
       return `${dateText} at 00:00`;
     }
@@ -99,7 +114,8 @@ export function formatDueDate(timestamp: number): string {
   if (isSameDay(date, tomorrow)) return `Tomorrow • ${time}`;
 
   const dow = DAY_ABBREVS[date.getDay()];
-  const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
+
+  const dateText = `${dow}, ${month} ${day}${yearSuffix} (in ${daysAfter} days)`;
 
   if (date.getFullYear() !== now.getFullYear()) {
     return `${dateText} at ${time}`;
