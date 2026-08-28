@@ -30,6 +30,7 @@ import LabelIcon from "./ui/LabelIcon";
 import NoteTimestampMetaIcons from "./ui/NoteTimestampMetaIcons";
 import HashtagChip from "./HashtagChip";
 import { getStatusTextStyle } from "../utils/statusStyles";
+import { MultiLayerProgressBar } from "./ui/MultiLayerProgressBar";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
 const BULLET_ROW_PATTERN = /^\s*•\s?/;
@@ -197,16 +198,13 @@ const NoteListRow = ({
     !note.completed &&
     note.due !== undefined &&
     dayjs.unix(note.due).isAfter(dayjs().add(1, "day").startOf("day"));
-  const shouldDisplayDueDateForMeta =
-    note.due !== undefined && !note.completed;
+  const shouldDisplayDueDateForMeta = note.due !== undefined && !note.completed;
   const shouldUsePriorityDueDate =
     !note.completed &&
     note.due !== undefined &&
     (isToday(note.due) || isTomorrow(note.due));
   const shouldUseFutureDueDateTextColor =
-    !note.completed &&
-    note.due !== undefined &&
-    isFutureDueDate;
+    !note.completed && note.due !== undefined && isFutureDueDate;
   const shouldShowDueDateIcon =
     !note.completed &&
     note.due !== undefined &&
@@ -500,7 +498,7 @@ const NoteListRow = ({
                 ...statusStyle,
               }}
             >
-                {note.text.split("\n").map((row, rowIndex) => {
+              {note.text.split("\n").map((row, rowIndex) => {
                 const checkboxMatch = row.match(CHECKBOX_ROW_PATTERN);
                 const isChecked = checkboxMatch?.[1]?.toLowerCase() === "x";
                 const shouldStrikeText = note.completed || isChecked;
@@ -674,7 +672,18 @@ const NoteListRow = ({
                   onOpenActionsMenu={onOpenActionsMenu}
                   onEmojiChange={onEmojiChange}
                 />
+                <MultiLayerProgressBar
+                  timestamp={
+                    !note.archived &&
+                    note.due &&
+                    !note.pinned &&
+                    !note.completed
+                      ? note.due
+                      : undefined
+                  }
+                />
               </Typography>
+
               {selectMode && globalIndex !== undefined ? (
                 <Typography
                   variant="caption"

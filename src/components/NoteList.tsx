@@ -209,7 +209,7 @@ const NoteList = ({
   >(0);
   const today = useMemo(() => dayjs().startOf("day"), []);
   const endOfNextMonth = useMemo(
-    () => dayjs().add(1, "month").endOf("month").startOf("day"),
+    () => dayjs().add(12, "month").endOf("month").startOf("day"),
     [],
   );
   const containerRef = useRef<HTMLDivElement>(null);
@@ -233,16 +233,8 @@ const NoteList = ({
       const bPriority = isPriorityNote(b);
       if (aPriority !== bPriority) return aPriority ? -1 : 1;
 
-      const aBucket = a.archived
-        ? 3
-        : isFutureDueNote(a)
-          ? 2
-          : 1;
-      const bBucket = b.archived
-        ? 3
-        : isFutureDueNote(b)
-          ? 2
-          : 1;
+      const aBucket = a.archived ? 3 : isFutureDueNote(a) ? 2 : 1;
+      const bBucket = b.archived ? 3 : isFutureDueNote(b) ? 2 : 1;
       if (aBucket !== bBucket) return aBucket - bBucket;
 
       const aPinned = a.pinned ? 1 : 0;
@@ -262,7 +254,10 @@ const NoteList = ({
       if (aIsDueSoon !== bIsDueSoon) return aIsDueSoon ? -1 : 1;
       if (aIsDueSoon && bIsDueSoon) return (a.due ?? 0) - (b.due ?? 0);
       if (aBucket === 2 && bBucket === 2) {
-        return (a.due ?? Number.MAX_SAFE_INTEGER) - (b.due ?? Number.MAX_SAFE_INTEGER);
+        return (
+          (a.due ?? Number.MAX_SAFE_INTEGER) -
+          (b.due ?? Number.MAX_SAFE_INTEGER)
+        );
       }
 
       return b.createdAt - a.createdAt;
@@ -587,13 +582,15 @@ const NoteList = ({
 
   const notesSectionRange = useMemo(() => {
     const firstIndex = filteredNotes.findIndex(
-      (note) => !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
+      (note) =>
+        !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
     );
     if (firstIndex === -1) {
       return null;
     }
     const lastIndex = filteredNotes.findLastIndex(
-      (note) => !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
+      (note) =>
+        !note.archived && !isPriorityNote(note) && !isFutureDueNote(note),
     );
     return { firstIndex, lastIndex };
   }, [filteredNotes]);
@@ -981,7 +978,8 @@ const NoteList = ({
                         item.key === "notes-section-header" && revealAllSpoilers
                       }
                       onToggleRevealAllSpoilers={
-                        item.key === "notes-section-header" && hasSpoilerNotesAfterFilters
+                        item.key === "notes-section-header" &&
+                        hasSpoilerNotesAfterFilters
                           ? () => setRevealAllSpoilers((value) => !value)
                           : undefined
                       }
@@ -1027,7 +1025,7 @@ const NoteList = ({
                       onClick={(event) => onImportActionsClick?.(event)}
                       disabled={isListInteractionDisabled}
                       sx={{
-                        mt:1,
+                        mt: 1,
                       }}
                     >
                       Import / Export
@@ -1189,10 +1187,14 @@ const NoteList = ({
           onClose={closeLabelMenu}
           onSelect={(val) => handleLabelSelect(val)}
           selected={labelMenuAnchor?.note.labelId}
-          onCreateLabel={labelManagement ? () => {
-            labelManagement.onCancelEdit();
-            closeLabelMenu();
-          } : undefined}
+          onCreateLabel={
+            labelManagement
+              ? () => {
+                  labelManagement.onCancelEdit();
+                  closeLabelMenu();
+                }
+              : undefined
+          }
           management={labelManagement}
         />
       )}

@@ -99,7 +99,7 @@ export function formatDueDate(timestamp: number): string {
     if (isSameDay(date, tomorrow)) return "Tomorrow";
     const dow = DAY_ABBREVS[date.getDay()];
 
-    const dateText = `${dow}, ${month} ${day}${yearSuffix} (in ${daysAfter} days)`;
+    const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
     if (date.getFullYear() !== now.getFullYear()) {
       return `${dateText} at 00:00`;
     }
@@ -115,7 +115,7 @@ export function formatDueDate(timestamp: number): string {
 
   const dow = DAY_ABBREVS[date.getDay()];
 
-  const dateText = `${dow}, ${month} ${day}${yearSuffix} (in ${daysAfter} days)`;
+  const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
 
   if (date.getFullYear() !== now.getFullYear()) {
     return `${dateText} at ${time}`;
