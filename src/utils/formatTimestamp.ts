@@ -92,7 +92,6 @@ export function formatDueDate(timestamp: number): string {
       new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) /
       (1000 * 60 * 60 * 24),
   );
-  const daysAfter = daysAfterTodayMidnight > 0 ? daysAfterTodayMidnight : 0;
 
   if (isMidnight) {
     if (isSameDay(date, now)) return "Today";
