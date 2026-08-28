@@ -87,11 +87,6 @@ export function formatDueDate(timestamp: number): string {
 
   const month = MONTH_ABBREVS[date.getMonth()];
   const day = pad(date.getDate());
-  const daysAfterTodayMidnight = Math.floor(
-    (date.getTime() -
-      new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) /
-      (1000 * 60 * 60 * 24),
-  );
 
   if (isMidnight) {
     if (isSameDay(date, now)) return "Today";
