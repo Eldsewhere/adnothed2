@@ -111,10 +111,6 @@ export function formatDueDate(timestamp: number): string {
 
   const dateText = `${dow}, ${month} ${day}${yearSuffix}`;
 
-  if (date.getFullYear() !== now.getFullYear()) {
-    return `${dateText} at ${time}`;
-  }
-
   return `${dateText} • ${time}`;
 }
 

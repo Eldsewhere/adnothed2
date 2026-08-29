@@ -43,12 +43,28 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
     return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
   };
 
+  let flag = false;
+
   return (
     <Tooltip title={`in ${daysAfter} days`}>
       <Stack direction="row" spacing={0} sx={{ alignItems: "center", ml: 0.5 }}>
         {Array.from({ length: maxBigSections }).map((_, sectionIndex) => {
           const isCompleted = sectionIndex < completedBigSections;
           const isActive = sectionIndex === completedBigSections;
+
+          if (!isActive && isCompleted) {
+            flag = true;
+            return (
+              <Icon
+                key={sectionIndex}
+                path={mdiCircle}
+                size={0.5}
+                style={{
+                  color: colors.orange[500],
+                }}
+              />
+            );
+          }
 
           if (isActive && !isCompleted) {
             return Array.from({ length: activeSmallSteps }).map(
@@ -63,28 +79,14 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
                     path={mdiCircleMedium}
                     size={0.5}
                     style={{
-                      color: isWeekend ? colors.red[500] : colors.orange[500],
+                      color:
+                        isWeekend && !flag
+                          ? colors.red[500]
+                          : colors.orange[500],
                     }}
                   />
                 );
               },
-            );
-          }
-
-          if (!isActive && isCompleted) {
-            // A big section represents the last day of that 7-day chunk
-            const lastDayOfSection = sectionIndex * STEPS_PER_SECTION + 6;
-            const isWeekend = isWeekendStep(lastDayOfSection);
-
-            return (
-              <Icon
-                key={sectionIndex}
-                path={mdiCircle}
-                size={0.5}
-                style={{
-                  color: isWeekend ? colors.red[500] : colors.orange[500],
-                }}
-              />
             );
           }
 
