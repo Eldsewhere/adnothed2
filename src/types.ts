@@ -1,4 +1,4 @@
-import type { PersistedLabel, PersistedNote } from "./utils/schemas";
+import type { PersistedNote } from "./utils/schemas";
 
 export type IconOption = {
   name: string;
@@ -6,8 +6,11 @@ export type IconOption = {
   path: string;
 };
 
-export type Label = PersistedLabel & {
+export type Label = {
   id: string;
+  name: string;
+  icon: IconOption;
+  color?: string;
 };
 
 export type LabelFormValues = {
