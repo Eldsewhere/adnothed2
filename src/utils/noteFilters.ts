@@ -282,7 +282,7 @@ function isDueTodayOrTomorrow(timestamp?: number): boolean {
 
 export function matchesTextFilters(
   text: string,
-  createdAt: number,
+  time: number,
   index: number,
   sortedNotesLength: number,
   parsed: ParsedTextFilters,
@@ -326,7 +326,7 @@ export function matchesTextFilters(
     return false;
   }
 
-  const noteDate = formatDate(createdAt);
+  const noteDate = formatDate(time);
 
   if (parsed.fullDate !== null && noteDate !== parsed.fullDate) {
     return false;

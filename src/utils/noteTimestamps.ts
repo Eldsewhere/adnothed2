@@ -1,40 +1,36 @@
 export function getUniqueCreatedAt(
-  notes: Array<{ id: string; createdAt: number }>,
+  notes: Array<{ id: string; time: number }>,
   preferredCreatedAt: number = Math.floor(Date.now() / 1000),
   excludenoteId?: string,
 ): number {
   const usedCreatedAt = new Set(
     notes
       .filter((note) => note.id !== excludenoteId)
-      .map((note) => normalizeCreatedAt(note.createdAt)),
+      .map((note) => normalizeCreatedAt(note.time)),
   );
 
-  let createdAt = normalizeCreatedAt(preferredCreatedAt);
-  while (usedCreatedAt.has(createdAt)) {
-    createdAt += 1;
+  let time = normalizeCreatedAt(preferredCreatedAt);
+  while (usedCreatedAt.has(time)) {
+    time += 1;
   }
 
-  return createdAt;
+  return time;
 }
 
-export function normalizeCreatedAt(createdAt: number): number {
-  return createdAt >= 1_000_000_000_000
-    ? Math.floor(createdAt / 1000)
-    : Math.floor(createdAt);
+export function normalizeCreatedAt(time: number): number {
+  return time >= 1_000_000_000_000 ? Math.floor(time / 1000) : Math.floor(time);
 }
 
-export function hasDuplicateCreatedAt(
-  notes: Array<{ createdAt: number }>,
-): boolean {
+export function hasDuplicateCreatedAt(notes: Array<{ time: number }>): boolean {
   const seen = new Set<number>();
 
   return notes.some((note) => {
-    const createdAt = normalizeCreatedAt(note.createdAt);
-    if (seen.has(createdAt)) {
+    const time = normalizeCreatedAt(note.time);
+    if (seen.has(time)) {
       return true;
     }
 
-    seen.add(createdAt);
+    seen.add(time);
     return false;
   });
 }

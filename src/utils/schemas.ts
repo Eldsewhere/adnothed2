@@ -1,12 +1,12 @@
 import { z } from "zod";
 
-export const PersistedLabelSchema = z.object({
+const PersistedLabelSchema = z.object({
   name: z.string(),
   icon: z.string(),
   color: z.string().optional(),
 });
 
-export const PersistedNoteSchema = z.object({
+const PersistedNoteSchema = z.object({
   icon: z.string().nullable().optional(),
   text: z.string(),
   emoji: z.string().optional(),

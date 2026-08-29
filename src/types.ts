@@ -21,7 +21,7 @@ export type Note = {
   id: string;
   labelId: string | null;
   text: string;
-  createdAt: number;
+  time: number;
   emoji?: string;
   hasNotification?: boolean;
   due?: number;
@@ -29,7 +29,6 @@ export type Note = {
   pinned?: boolean;
   archived?: boolean;
   spoiler?: boolean;
-  updatedAt?: number;
 };
 
 export type NoteFormValues = {

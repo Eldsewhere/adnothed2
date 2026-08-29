@@ -902,8 +902,8 @@ function App() {
     }
 
     setNotes((prev) => {
-      const createdAt = getUniqueCreatedAt(prev);
-      const id = String(createdAt);
+      const time = getUniqueCreatedAt(prev);
+      const id = String(time);
 
       setRecentlyAddedNoteId(id);
       setRecentlyEditedNoteId(null);
@@ -914,7 +914,7 @@ function App() {
           id,
           labelId,
           text: finalText,
-          createdAt,
+          time,
           hasNotification: shouldAutoNotify,
           ...(finalDueTimestamp !== undefined
             ? { due: finalDueTimestamp }
@@ -1432,7 +1432,7 @@ function App() {
       : null;
 
   const sortedNotes = useMemo(
-    () => [...notes].sort((a, b) => b.createdAt - a.createdAt),
+    () => [...notes].sort((a, b) => b.time - a.time),
     [notes],
   );
 
@@ -1460,15 +1460,15 @@ function App() {
   const refreshAvailableHashtags = useCallback(() => {
     const tagCreatedAt = new Map<string, number>();
 
-    for (const note of [...notes].sort((a, b) => b.createdAt - a.createdAt)) {
+    for (const note of [...notes].sort((a, b) => b.time - a.time)) {
       for (const part of note.text.split(/\s+/)) {
         if (/^#\w[\w-]*$/.test(part)) {
           const existingCreatedAt = tagCreatedAt.get(part);
           if (
             existingCreatedAt === undefined ||
-            note.createdAt > existingCreatedAt
+            note.time > existingCreatedAt
           ) {
-            tagCreatedAt.set(part, note.createdAt);
+            tagCreatedAt.set(part, note.time);
           }
         }
       }
@@ -1540,7 +1540,7 @@ function App() {
 
         return matchesTextFilters(
           note.text,
-          note.createdAt,
+          note.time,
           index,
           sortedNotes.length,
           parsedTextFilters,
@@ -1558,7 +1558,7 @@ function App() {
   const noteCountsByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of calendarFilteredNotes) {
-      const dayKey = formatDate(note.createdAt);
+      const dayKey = formatDate(note.time);
       counts.set(dayKey, (counts.get(dayKey) ?? 0) + 1);
     }
     return counts;
@@ -1568,7 +1568,7 @@ function App() {
     if (notes.length === 0) {
       return dayjs().startOf("day");
     }
-    const minTimestamp = Math.min(...notes.map((note) => note.createdAt));
+    const minTimestamp = Math.min(...notes.map((note) => note.time));
     return dayjs.unix(minTimestamp).startOf("day");
   }, [notes]);
 
@@ -1579,7 +1579,7 @@ function App() {
       return oldestNoteDate;
     }
     const minTimestamp = Math.min(
-      ...calendarFilteredNotes.map((note) => note.createdAt),
+      ...calendarFilteredNotes.map((note) => note.time),
     );
     return dayjs.unix(minTimestamp).startOf("day");
   }, [calendarFilteredNotes, oldestNoteDate]);
@@ -1604,7 +1604,7 @@ function App() {
   const noteCountByDay = useMemo(() => {
     const counts = new Map<string, number>();
     for (const note of notes) {
-      const key = dayjs.unix(note.createdAt).format("YYYY-MM-DD");
+      const key = dayjs.unix(note.time).format("YYYY-MM-DD");
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
     return counts;
@@ -2124,17 +2124,17 @@ function App() {
                       existingNote.id === note.id
                         ? (() => {
                             const shouldRefreshTimestamp = isToday(
-                              existingNote.createdAt,
+                              existingNote.time,
                             );
                             const nextCreatedAt = shouldRefreshTimestamp
                               ? getUniqueCreatedAt(prev, now, existingNote.id)
-                              : existingNote.createdAt;
+                              : existingNote.time;
 
                             return {
                               ...existingNote,
                               hasNotification: true,
                               id: String(nextCreatedAt),
-                              createdAt: nextCreatedAt,
+                              time: nextCreatedAt,
                             };
                           })()
                         : existingNote,

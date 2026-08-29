@@ -242,7 +242,7 @@ const NoteList = ({
         );
       }
 
-      return b.createdAt - a.createdAt;
+      return b.time - a.time;
     });
   }, [notes, today]);
   const overflowModalNote = useMemo(
@@ -485,7 +485,7 @@ const NoteList = ({
         if (
           !matchesTextFilters(
             note.text,
-            note.createdAt,
+            note.time,
             index,
             sortedNotes.length,
             parsedTextFilters,
@@ -499,7 +499,7 @@ const NoteList = ({
         ) {
           return false;
         }
-        const noteDate = formatDate(note.createdAt);
+        const noteDate = formatDate(note.time);
         const hasStartDate =
           filters.date.length === 10 && dateRegex.test(filters.date);
         const hasEndDate =
@@ -517,7 +517,7 @@ const NoteList = ({
           }
         }
         if (filters.weekday !== null) {
-          const noteCreatedDate = formatDate(note.createdAt);
+          const noteCreatedDate = formatDate(note.time);
           const noteDueDate =
             note.due !== undefined ? formatDate(note.due) : null;
           if (
@@ -545,7 +545,7 @@ const NoteList = ({
         filteredNotes.map((note) =>
           isFutureDueNote(note) && note.due !== undefined
             ? formatDate(note.due)
-            : formatDate(note.createdAt),
+            : formatDate(note.time),
         ),
       ),
     ];
@@ -1023,7 +1023,7 @@ const NoteList = ({
               const zebraDate =
                 isFutureDueNote(note) && note.due !== undefined
                   ? formatDate(note.due)
-                  : formatDate(note.createdAt);
+                  : formatDate(note.time);
               const dayIndex = dayIndexByDate.get(zebraDate) ?? 0;
               const globalIndex = globalIndexByNoteId.get(note.id);
 

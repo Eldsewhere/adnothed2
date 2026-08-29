@@ -133,16 +133,13 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
   const normalized: Note[] = [];
 
   for (const note of notes) {
-    const createdAt = getUniqueCreatedAt(
-      normalized,
-      normalizeCreatedAt(note.time),
-    );
+    const time = getUniqueCreatedAt(normalized, normalizeCreatedAt(note.time));
 
     normalized.push({
-      id: String(createdAt),
+      id: String(time),
       labelId: note.icon ?? null,
       text: note.text,
-      createdAt,
+      time,
       ...(note.emoji ? { emoji: note.emoji } : {}),
       ...(note.due !== undefined && note.due !== null ? { due: note.due } : {}),
       ...(note.completed ? { completed: true } : {}),
@@ -203,35 +200,19 @@ export function serializeState(state: {
       ...(label.color ? { color: label.color } : {}),
     })),
     notes: state.notes.map((note) => {
-      const {
-        labelId,
-        text,
-        emoji,
-        createdAt,
-        due,
-        completed,
-        pinned,
-        archived,
-        spoiler,
-      } = stripTransientNoteFields(note);
       return toPersistedNote({
-        icon: labelId,
-        text,
-        emoji,
-        time: createdAt,
-        due,
-        completed,
-        pinned,
-        archived,
-        spoiler,
+        icon: note.labelId ?? null,
+        text: note.text,
+        emoji: note.emoji,
+        time: note.time,
+        due: note.due,
+        completed: note.completed,
+        pinned: note.pinned,
+        archived: note.archived,
+        spoiler: note.spoiler,
       });
     }),
   };
-}
-
-function stripTransientNoteFields<T extends Note>(note: T): T {
-  const { updatedAt: _updatedAt, ...rest } = note;
-  return rest as T;
 }
 
 export function deserializeState(state: PersistedState): {

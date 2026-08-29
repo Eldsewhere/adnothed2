@@ -630,7 +630,7 @@ const NoteListRow = ({
                     : shouldUseFutureDueDateTextColor ||
                         shouldUsePriorityDueDate
                       ? colors.orange[300]
-                      : isToday(note.createdAt) ||
+                      : isToday(note.time) ||
                           note.pinned ||
                           (note.due !== undefined &&
                             !note.completed &&
@@ -651,7 +651,7 @@ const NoteListRow = ({
                 >
                   {shouldDisplayDueDateForMeta
                     ? formatDueDate(note.due!)
-                    : formatTimestamp(note.createdAt)}
+                    : formatTimestamp(note.time)}
                 </Box>
                 <NoteTimestampMetaIcons
                   note={note}
