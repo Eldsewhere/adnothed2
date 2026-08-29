@@ -22,9 +22,4 @@ export const PersistedStateSchema = z.object({
   labels: z.array(PersistedLabelSchema),
   notes: z.array(PersistedNoteSchema),
 });
-
-export const AnyPersistedStateSchema = PersistedStateSchema;
-
-export const ExportedStateSchema = PersistedStateSchema;
 export type PersistedState = z.infer<typeof PersistedStateSchema>;
-export type ExportedState = z.infer<typeof ExportedStateSchema>;

@@ -1,6 +1,6 @@
 ﻿import { mdiLabelOff } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
-import { AnyPersistedStateSchema } from "./schemas";
+import { PersistedStateSchema } from "./schemas";
 import type { Label, Note } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./noteTimestamps";
 import { createEmojiIconOptionFromName } from "./emojiIconOptions";
@@ -256,7 +256,7 @@ export function parsePersistedState(raw: string | null): ParseResult {
 
   try {
     const parsed = JSON.parse(raw);
-    const result = AnyPersistedStateSchema.safeParse(parsed);
+    const result = PersistedStateSchema.safeParse(parsed);
     if (!result.success) {
       return {
         state: emptyPersistedState,
