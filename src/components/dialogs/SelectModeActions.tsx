@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react";
-import { Box, Button, IconButton, Stack, Tooltip } from "@mui/material";
+import { Box, IconButton, Stack, Tooltip } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowDown,
@@ -73,7 +73,7 @@ const SelectModeActions = ({
   >
     <Stack
       direction="row"
-      spacing={0.5}
+      spacing={0.3}
       sx={{
         alignItems: "center",
         minWidth: "max-content",
@@ -189,14 +189,13 @@ const SelectModeActions = ({
         </IconButton>
       </Tooltip>
       <Tooltip title="Exit select mode">
-        <Button
-          variant="text"
-          startIcon={<Icon path={mdiCancel} size={0.9} />}
+        <IconButton
+          color="inherit"
           onClick={onCancelClick}
-          sx={{ textTransform: "none" }}
+          sx={{ color: "primary.main" }}
         >
-          Cancel
-        </Button>
+          <Icon path={mdiCancel} size={0.9} />
+        </IconButton>
       </Tooltip>
     </Stack>
   </Box>
