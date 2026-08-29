@@ -1,14 +1,13 @@
+import type { PersistedLabel, PersistedNote } from "./utils/schemas";
+
 export type IconOption = {
   name: string;
   label: string;
   path: string;
 };
 
-export type Label = {
+export type Label = PersistedLabel & {
   id: string;
-  name: string;
-  icon: IconOption;
-  color?: string;
 };
 
 export type LabelFormValues = {
@@ -17,18 +16,9 @@ export type LabelFormValues = {
   color?: string;
 };
 
-export type Note = {
+export type Note = PersistedNote & {
   id: string;
-  icon: string | null;
-  text: string;
-  time: number;
-  emoji?: string;
   hasNotification?: boolean;
-  due?: number;
-  completed?: boolean;
-  pinned?: boolean;
-  archived?: boolean;
-  spoiler?: boolean;
 };
 
 export type NoteFormValues = {
