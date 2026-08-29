@@ -24,7 +24,7 @@ import {
   mdiTrashCanOutline,
   mdiUndo,
 } from "@mdi/js";
-import type { Note, Status, StatusFormValues } from "../../types";
+import type { Note } from "../../types";
 import EmojiStatusPicker from "./EmojiStatusPicker";
 
 type NoteActionsMenuProps = {
