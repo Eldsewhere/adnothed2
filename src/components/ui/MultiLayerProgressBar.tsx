@@ -12,7 +12,6 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
   timestamp,
 }) => {
   if (!timestamp) return null;
-  const STEPS_PER_SECTION = 7;
 
   const now = new Date();
   const todayMidnight = new Date(
@@ -28,69 +27,75 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
 
   const daysAfter = currentStep > 0 ? currentStep : 0;
 
-  const completedBigSections = Math.floor(currentStep / STEPS_PER_SECTION);
-  const activeSmallSteps = currentStep % STEPS_PER_SECTION;
+  // 1. Calculate days remaining in the current calendar week (ending on Sunday)
+  const todayDay = todayMidnight.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const daysLeftInCurrentWeek = todayDay === 0 ? 0 : 7 - todayDay;
 
+  // 2. Distribute the total steps across the three phases
+  const daysThisWeek = Math.min(currentStep, daysLeftInCurrentWeek);
+  const remainingDaysAfterThisWeek = currentStep - daysThisWeek;
+
+  const completedBigSections = Math.floor(remainingDaysAfterThisWeek / 7);
+  const extraDays = remainingDaysAfterThisWeek % 7;
+
+  // Fallback to text if the full week count exceeds maximum allowed blocks
   if (completedBigSections >= maxBigSections) {
     return <Box sx={{ ml: 0.3 }}>{`${daysAfter} days`}</Box>;
   }
 
-  // Helper function to check if a specific step offset from today is a weekend
+  // Helper to check if a specific day offset from today lands on a weekend
   const isWeekendStep = (stepIndex: number) => {
     const stepDate = new Date(todayMidnight.getTime());
     stepDate.setDate(stepDate.getDate() + stepIndex + 1);
     const dayOfWeek = stepDate.getDay();
-    return dayOfWeek === 0 || dayOfWeek === 6; // 0 = Sunday, 6 = Saturday
+    return dayOfWeek === 0 || dayOfWeek === 6;
   };
-
-  let flag = false;
 
   return (
     <Tooltip title={`in ${daysAfter} days`}>
       <Stack direction="row" spacing={0} sx={{ alignItems: "center", ml: 0.5 }}>
-        {Array.from({ length: maxBigSections }).map((_, sectionIndex) => {
-          const isCompleted = sectionIndex < completedBigSections;
-          const isActive = sectionIndex === completedBigSections;
+        {/* Phase 1: Remaining days of this current week */}
+        {Array.from({ length: daysThisWeek }).map((_, stepIndex) => {
+          const isWeekend = isWeekendStep(stepIndex);
+          return (
+            <Icon
+              key={`this-week-${stepIndex}`}
+              path={mdiCircleMedium}
+              size={0.5}
+              style={{
+                color: isWeekend ? colors.red[500] : colors.orange[500],
+              }}
+            />
+          );
+        })}
 
-          if (!isActive && isCompleted) {
-            flag = true;
-            return (
-              <Icon
-                key={sectionIndex}
-                path={mdiCircle}
-                size={0.5}
-                style={{
-                  color: colors.orange[500],
-                }}
-              />
-            );
-          }
+        {/* Phase 2: Full weeks represented as big circles */}
+        {Array.from({ length: completedBigSections }).map((_, sectionIndex) => (
+          <Icon
+            key={`big-${sectionIndex}`}
+            path={mdiCircle}
+            size={0.5}
+            style={{
+              color: colors.orange[500],
+            }}
+          />
+        ))}
 
-          if (isActive && !isCompleted) {
-            return Array.from({ length: activeSmallSteps }).map(
-              (_, stepIndex) => {
-                // Global step index for this specific small circle
-                const exactStep = sectionIndex * STEPS_PER_SECTION + stepIndex;
-                const isWeekend = isWeekendStep(exactStep);
-
-                return (
-                  <Icon
-                    key={stepIndex}
-                    path={mdiCircleMedium}
-                    size={0.5}
-                    style={{
-                      color:
-                        isWeekend && !flag
-                          ? colors.red[500]
-                          : colors.orange[500],
-                    }}
-                  />
-                );
-              },
-            );
-          }
-
-          return null;
+        {/* Phase 3: Extra trailing days left over at the end */}
+        {Array.from({ length: extraDays }).map((_, stepIndex) => {
+          // Calculate exact global day offset to evaluate weekend state correctly
+          const exactStep = daysThisWeek + completedBigSections * 7 + stepIndex;
+          const isWeekend = isWeekendStep(exactStep);
+          return (
+            <Icon
+              key={`extra-${stepIndex}`}
+              path={mdiCircleMedium}
+              size={0.5}
+              style={{
+                color: isWeekend ? colors.red[500] : colors.orange[500],
+              }}
+            />
+          );
         })}
       </Stack>
     </Tooltip>
