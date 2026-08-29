@@ -1,7 +1,7 @@
 import { Box, Menu, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiDownload, mdiGoogleDrive, mdiUpload } from "@mdi/js";
-import type { Label, Note, Status } from "../../types";
+import type { Label, Note } from "../../types";
 import { isGoogleDriveEnabled } from "../../utils/storage";
 import { lazy, Suspense } from "react";
 
@@ -16,7 +16,6 @@ type ImportActionsMenuProps = {
   onImportFromGoogleDrive?: () => void;
   onExport: () => void;
   labels: Label[];
-  statuses: Status[];
   notes: Note[];
   onNotify: (
     severity: "success" | "error" | "info" | "warning",
@@ -31,7 +30,6 @@ const ImportActionsMenu = ({
   onImportFromGoogleDrive,
   onExport,
   labels,
-  statuses,
   notes,
   onNotify,
 }: ImportActionsMenuProps) => {
@@ -68,7 +66,6 @@ const ImportActionsMenu = ({
               onClose={onClose}
               onNotify={onNotify}
               labels={labels}
-              statuses={statuses}
               notes={notes}
             />
             <MenuItem

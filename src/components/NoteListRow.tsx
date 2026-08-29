@@ -19,7 +19,7 @@ import {
   mdiPinOff,
 } from "@mdi/js";
 import dayjs from "dayjs";
-import type { Label, Note, Status } from "../types";
+import type { Label, Note } from "../types";
 import {
   formatDueDate,
   formatTimestamp,
@@ -27,10 +27,9 @@ import {
 } from "../utils/formatTimestamp";
 import { splitTextByUrls } from "../utils/textPatterns";
 import LabelIcon from "./ui/LabelIcon";
-import NoteTimestampMetaIcons from "./ui/NoteTimestampMetaIcons";
 import HashtagChip from "./HashtagChip";
-import { getStatusTextStyle } from "../utils/statusStyles";
 import { MultiLayerProgressBar } from "./ui/MultiLayerProgressBar";
+import NoteTimestampMetaIcons from "./dialogs/NoteTimestampMetaIcons";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
 const BULLET_ROW_PATTERN = /^\s*•\s?/;
@@ -85,7 +84,6 @@ const isTomorrow = (timestamp: number): boolean => {
 type NoteListRowProps = {
   note: Note;
   label?: Label;
-  status?: Status;
   top: number;
   height: number;
   isPriority: boolean;
@@ -131,7 +129,6 @@ type NoteListRowProps = {
 const NoteListRow = ({
   note,
   label,
-  status,
   top,
   height,
   isPriority,
@@ -231,7 +228,6 @@ const NoteListRow = ({
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
   const MENU_OPEN_DRAG_THRESHOLD = 80;
-  const statusStyle = status ? getStatusTextStyle(status.format) : {};
   const isSpoilerActive = Boolean(note.spoiler);
   const shouldHideSpoilerText =
     isSpoilerActive && !(isSpoilerVisible || revealAllSpoilers);
@@ -497,7 +493,6 @@ const NoteListRow = ({
                 display: "-webkit-box",
                 WebkitLineClamp: isOverflowing ? 4 : 2,
                 WebkitBoxOrient: "vertical",
-                ...statusStyle,
               }}
             >
               {note.text.split("\n").map((row, rowIndex) => {
@@ -660,7 +655,6 @@ const NoteListRow = ({
                 </Box>
                 <NoteTimestampMetaIcons
                   note={note}
-                  status={status}
                   noteIconColor={noteIconColor}
                   checkboxProgress={checkboxProgress}
                   bulletCount={bulletCount}

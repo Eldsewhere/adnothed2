@@ -17,23 +17,6 @@ export type LabelFormValues = {
   color?: string;
 };
 
-export type StatusFormat =
-  | "none"
-  | "underline"
-  | "bold"
-  | "strikethrough"
-  | "transparent"
-  | "red"
-  | "amber"
-  | "green";
-
-export type Status = {
-  id: string;
-  name: string;
-  emoji: string;
-  format: StatusFormat;
-};
-
 export type Note = {
   id: string;
   labelId: string | null;

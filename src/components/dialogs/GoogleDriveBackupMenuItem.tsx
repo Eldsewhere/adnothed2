@@ -1,7 +1,7 @@
 import { Box, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiGoogleDrive } from "@mdi/js";
-import type { Label, Note, Status } from "../../types";
+import type { Label, Note } from "../../types";
 import { serializeState } from "../../utils/storage";
 
 type GoogleDriveTokenClient = {
@@ -37,7 +37,6 @@ type GoogleDriveBackupMenuItemProps = {
     message: string,
   ) => void;
   labels: Label[];
-  statuses?: Status[];
   notes: Note[];
 };
 
@@ -79,7 +78,6 @@ const GoogleDriveBackupMenuItem = ({
   onClose,
   onNotify,
   labels,
-  statuses,
   notes,
 }: GoogleDriveBackupMenuItemProps) => {
   const handleBackupToGoogleDrive = async () => {
@@ -180,7 +178,6 @@ const GoogleDriveBackupMenuItem = ({
 
       const payload = serializeState({
         labels,
-        statuses: statuses ?? [],
         notes,
       });
       const now = new Date();

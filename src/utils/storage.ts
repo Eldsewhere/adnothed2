@@ -1,7 +1,7 @@
 ﻿import { mdiLabelOff } from "@mdi/js";
 import { mdiIconOptions } from "../hooks/useMdiIconOptions";
 import { AnyPersistedStateSchema } from "./schemas";
-import type { Label, Note, Status, StatusFormat } from "../types";
+import type { Label, Note } from "../types";
 import { getUniqueCreatedAt, normalizeCreatedAt } from "./noteTimestamps";
 import { createEmojiIconOptionFromName } from "./emojiIconOptions";
 import { createLetterIconOptionFromName } from "./letterIconOptions";
@@ -10,12 +10,6 @@ type PersistedLabel = {
   name: string;
   icon: string;
   color?: string;
-};
-
-type PersistedStatus = {
-  name: string;
-  emoji: string;
-  format: StatusFormat;
 };
 
 type PersistedNote = {
@@ -32,7 +26,6 @@ type PersistedNote = {
 
 type PersistedState = {
   labels: PersistedLabel[];
-  statuses: PersistedStatus[];
   notes: PersistedNote[];
 };
 
@@ -48,12 +41,10 @@ const GOOGLE_DRIVE_STORAGE_KEY = "adnothed-google-drive-enabled";
 
 const emptyPersistedState: PersistedState = {
   labels: [],
-  statuses: [],
   notes: [],
 };
-const emptyAppState: { labels: Label[]; statuses: Status[]; notes: Note[] } = {
+const emptyAppState: { labels: Label[]; notes: Note[] } = {
   labels: [],
-  statuses: [],
   notes: [],
 };
 
@@ -197,18 +188,12 @@ function normalizePersistedState(state: PersistedState): PersistedState {
       icon: label.icon,
       ...(label.color ? { color: label.color } : {}),
     })),
-    statuses: (state.statuses ?? []).map((status) => ({
-      name: status.name,
-      emoji: status.emoji,
-      format: status.format,
-    })),
     notes: state.notes.map(toPersistedNote),
   };
 }
 
 export function serializeState(state: {
   labels: Label[];
-  statuses: Status[];
   notes: Note[];
 }): PersistedState {
   return {
@@ -216,11 +201,6 @@ export function serializeState(state: {
       name: label.name,
       icon: label.icon.name,
       ...(label.color ? { color: label.color } : {}),
-    })),
-    statuses: state.statuses.map((status) => ({
-      name: status.name,
-      emoji: status.emoji,
-      format: status.format,
     })),
     notes: state.notes.map((note) => {
       const {
@@ -256,7 +236,6 @@ function stripTransientNoteFields<T extends Note>(note: T): T {
 
 export function deserializeState(state: PersistedState): {
   labels: Label[];
-  statuses: Status[];
   notes: Note[];
 } {
   return {
@@ -265,12 +244,6 @@ export function deserializeState(state: PersistedState): {
       name: label.name,
       icon: resolveIconOption(label.icon),
       ...(label.color ? { color: label.color } : {}),
-    })),
-    statuses: (state.statuses ?? []).map((status) => ({
-      id: status.emoji,
-      name: status.name,
-      emoji: status.emoji,
-      format: status.format,
     })),
     notes: normalizeNotes(state.notes),
   };
@@ -322,7 +295,6 @@ export async function openPersistedStateFile(
   suggestedFileName: string = DEFAULT_FILE_NAME,
 ): Promise<{
   labels: Label[];
-  statuses: Status[];
   notes: Note[];
   fileName: string;
   parseError: string | null;
@@ -401,7 +373,6 @@ export function hasPersistedStateFile(): boolean {
 
 export async function loadPersistedState(): Promise<{
   labels: Label[];
-  statuses: Status[];
   notes: Note[];
   fileName: string;
   parseError: string | null;
@@ -424,7 +395,6 @@ export async function loadPersistedState(): Promise<{
 export async function savePersistedState(
   state: {
     labels: Label[];
-    statuses: Status[];
     notes: Note[];
   },
   suggestedFileName: string = DEFAULT_FILE_NAME,

@@ -24,7 +24,6 @@ import type {
   Label,
   LabelFormValues,
   Note,
-  Status,
 } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
@@ -157,7 +156,6 @@ function toggleBulletRows(text: string): string {
 function App() {
   const [labels, setLabels] = useState<Label[]>([]);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
-  const [statuses, setStatuses] = useState<Status[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editingNote, seteditingNote] = useState<Note | null>(null);
   const [cloneNote, setCloneNote] = useState<Note | null>(null);
@@ -187,7 +185,6 @@ function App() {
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
     labels: Label[];
-    statuses: Status[];
     notes: Note[];
     fileName: string;
     parseError: string | null;
@@ -328,7 +325,6 @@ function App() {
       }
 
       setLabels(persistedState.labels);
-      setStatuses(persistedState.statuses ?? []);
       setNotes(persistedState.notes);
       setStorageFileName(persistedState.fileName);
       if (persistedState.parseError) {
@@ -350,18 +346,16 @@ function App() {
       return;
     }
 
-    savePersistedState({ labels, statuses, notes }, storageFileName);
-  }, [labels, statuses, notes, storageReady, storageFileName]);
+    savePersistedState({ labels, notes }, storageFileName);
+  }, [labels, notes, storageReady, storageFileName]);
 
   const applyImportedState = (next: {
     labels: Label[];
-    statuses: Status[];
     notes: Note[];
     fileName: string;
     parseError?: string | null;
   }) => {
     setLabels(next.labels);
-    setStatuses(next.statuses ?? []);
     setNotes(next.notes);
     setStorageFileName(next.fileName);
     setStorageReady(true);
@@ -392,7 +386,7 @@ function App() {
   };
 
   const handleExportState = () => {
-    const payload = serializeState({ labels, statuses, notes });
+    const payload = serializeState({ labels, notes });
     const fileName = storageFileName.trim() || DEFAULT_FILE_NAME;
     const blob = new Blob([JSON.stringify(payload, null, 2)], {
       type: "application/json",
@@ -556,7 +550,6 @@ function App() {
       const importedState = deserializeState(parsedState.state);
       const imported = {
         labels: importedState.labels,
-        statuses: importedState.statuses,
         notes: importedState.notes,
         fileName: latestFile.name,
       };
@@ -2288,7 +2281,6 @@ function App() {
             handleExportState();
           }}
           labels={labels}
-          statuses={statuses}
           notes={notes}
           onNotify={(severity, message) => {
             setNotificationSeverity(severity);
