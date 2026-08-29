@@ -13,7 +13,7 @@ import { mdiLabelOff, mdiPlus } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import LabelForm from "../LabelForm";
 import LabelList from "../LabelList";
-import SelectionPopover from "./SelectionPopover";
+import SelectionPopover from "../ui/SelectionPopover";
 
 type LabelMenuProps = {
   anchorEl: HTMLElement | null;
