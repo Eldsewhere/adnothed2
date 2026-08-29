@@ -125,6 +125,7 @@ type NoteListRowProps = {
   onAppendHashtagToNote?: (note: Note, tag: string) => void;
   onRemoveHashtagFromNote?: (note: Note, tag: string) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
+  openDueDateDialog: (note: Note) => void;
 };
 
 const NoteListRow = ({
@@ -162,6 +163,7 @@ const NoteListRow = ({
   onToggleHashtagInDraft,
   onRemoveHashtagFromNote,
   onEmojiChange,
+  openDueDateDialog,
 }: NoteListRowProps) => {
   const isExistingHashtag = (tag: string) =>
     availableHashtags.some(
@@ -671,6 +673,7 @@ const NoteListRow = ({
                   onToggleSpoilerVisibility={handleSpoilerVisibilityToggle}
                   onOpenActionsMenu={onOpenActionsMenu}
                   onEmojiChange={onEmojiChange}
+                  openDueDateDialog={openDueDateDialog}
                 />
                 <MultiLayerProgressBar
                   timestamp={

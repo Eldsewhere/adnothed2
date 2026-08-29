@@ -37,6 +37,7 @@ type NoteTimestampMetaIconsProps = {
     openStatusPicker?: boolean,
   ) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
+  openDueDateDialog: (note: Note) => void;
 };
 
 const NoteTimestampMetaIcons = ({
@@ -53,6 +54,7 @@ const NoteTimestampMetaIcons = ({
   isSpoilerVisible = false,
   onToggleSpoilerVisibility,
   onEmojiChange,
+  openDueDateDialog,
 }: NoteTimestampMetaIconsProps) => {
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
@@ -68,11 +70,30 @@ const NoteTimestampMetaIcons = ({
         >
           <Box
             component="span"
+            role="img"
             sx={{
               ml: 0.5,
               display: "inline-flex",
               alignItems: "center",
               color: noteIconColor,
+              cursor: interactionDisabled ? "not-allowed" : "pointer",
+              opacity: interactionDisabled ? 0.6 : 1,
+            }}
+            onPointerDown={(event) => {
+              if (interactionDisabled) {
+                event.stopPropagation();
+                return;
+              }
+              event.stopPropagation();
+            }}
+            onClick={(event) => {
+              if (interactionDisabled) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+              }
+              event.stopPropagation();
+              openDueDateDialog(note);
             }}
           >
             <Icon path={mdiClockOutline} size={0.5} />

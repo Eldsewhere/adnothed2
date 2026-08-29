@@ -1125,6 +1125,7 @@ const NoteList = ({
                   onAppendHashtagToNote={onAppendHashtagToNote}
                   onRemoveHashtagFromNote={onRemoveHashtagFromNote}
                   onEmojiChange={onEmojiChange}
+                  openDueDateDialog={openDueDateDialog}
                 />
               );
             })}
