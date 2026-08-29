@@ -5,8 +5,6 @@ import type {
   LabelFormValues,
   Note,
   NoteFilters as noteFiltersValue,
-  Status,
-  StatusFormValues,
 } from "../types";
 import { dateRegex, formatDate, isToday } from "../utils/formatTimestamp";
 import { matchesTextFilters, parseTextFilters } from "../utils/noteFilters";
@@ -25,7 +23,6 @@ type NoteListProps = {
   notes: Note[];
   labels: Label[];
   labelCounts?: Map<string, number> | Record<string, number>;
-  statuses: Status[];
   filters: noteFiltersValue;
   mostRecentAddedNoteId: string | null;
   mostRecentEditedNoteId: string | null;
@@ -48,15 +45,6 @@ type NoteListProps = {
   onArchive: (note: Note) => void;
   onToggleSpoiler: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
-  statusManagement: {
-    notes: Note[];
-    editingStatus: Status | null;
-    onSubmit: (values: StatusFormValues) => boolean | void;
-    onCancelEdit: () => void;
-    onEdit: (status: Status) => void;
-    onDelete: (status: Status) => void;
-    newStatusId?: string | null;
-  };
   selectMode: boolean;
   selectedIds: Set<string>;
   onToggleSelect: (id: string) => void;
@@ -133,7 +121,6 @@ const NoteList = ({
   notes,
   labels,
   labelCounts,
-  statuses,
   filters,
   mostRecentAddedNoteId,
   mostRecentEditedNoteId,
@@ -154,7 +141,6 @@ const NoteList = ({
   onArchive,
   onToggleSpoiler,
   onEmojiChange,
-  statusManagement,
   selectMode,
   selectedIds,
   onToggleSelect,
@@ -219,10 +205,6 @@ const NoteList = ({
   const labelsById = useMemo(
     () => new Map(labels.map((label) => [label.id, label])),
     [labels],
-  );
-  const statusByEmoji = useMemo(
-    () => new Map(statuses.map((status) => [status.emoji, status])),
-    [statuses],
   );
 
   const sortedNotes = useMemo(() => {
@@ -1081,9 +1063,6 @@ const NoteList = ({
                   height={rowHeights[index]}
                   note={note}
                   label={label}
-                  status={
-                    note.emoji ? statusByEmoji.get(note.emoji) : undefined
-                  }
                   isPriority={isPrioritary}
                   isLastNote={isLastNote}
                   isPriorityBoundary={isPriorityBoundary}
@@ -1136,7 +1115,6 @@ const NoteList = ({
         <NoteActionsMenu
           anchorEl={menuAnchor.el}
           note={menuAnchor.note}
-          statuses={statuses}
           onHashtagPickerOpen={onRefreshAvailableHashtags}
           openStatusPicker={menuAnchor.openStatusPicker}
           hasUrl={getFirstUrl(menuAnchor.note.text) !== null}
@@ -1147,7 +1125,6 @@ const NoteList = ({
           onArchive={onArchive}
           onToggleSpoiler={handleToggleSpoiler}
           onEmojiChange={onEmojiChange}
-          statusManagement={statusManagement}
           onComplete={onComplete}
           onCopy={handleCopy}
           onClone={handleClone}

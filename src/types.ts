@@ -34,12 +34,6 @@ export type Status = {
   format: StatusFormat;
 };
 
-export type StatusFormValues = {
-  name: string;
-  emoji: string;
-  format: StatusFormat;
-};
-
 export type Note = {
   id: string;
   labelId: string | null;

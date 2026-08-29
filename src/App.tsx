@@ -5,25 +5,11 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  Alert,
-  Box,
-  ButtonBase,
-  colors,
-  Paper,
-  Popover,
-  Snackbar,
-  Stack,
-} from "@mui/material";
-import { Icon } from "@mdi/react";
-import {
-  mdiEmoticonOutline,
-} from "@mdi/js";
+import { Alert, Box, Paper, Snackbar, Stack } from "@mui/material";
 import DueDateDialog from "./components/dialogs/DueDateDialog";
 import NoteForm from "./components/NoteForm";
 import NoteList from "./components/NoteList";
 import HashtagBar from "./components/HashtagBar";
-import StatusList from "./components/StatusList";
 import WeekdayPicker from "./components/WeekdayPicker";
 import DateFilterPopover from "./components/dialogs/DateFilterPopover";
 import BulkLabelMenu from "./components/dialogs/LabelMenu";
@@ -39,7 +25,6 @@ import type {
   LabelFormValues,
   Note,
   Status,
-  StatusFormValues,
 } from "./types";
 import dayjs, { type Dayjs } from "dayjs";
 import {
@@ -64,6 +49,7 @@ import {
 } from "./utils/noteFilters";
 import { dateRegex, formatDate, isToday } from "./utils/formatTimestamp";
 import { getUniqueCreatedAt } from "./utils/noteTimestamps";
+import EmojiStatusPicker from "./components/dialogs/EmojiStatusPicker";
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
 const SHORT_MONTHS = [
@@ -172,7 +158,6 @@ function App() {
   const [labels, setLabels] = useState<Label[]>([]);
   const [editingLabel, setEditingLabel] = useState<Label | null>(null);
   const [statuses, setStatuses] = useState<Status[]>([]);
-  const [editingStatus, setEditingStatus] = useState<Status | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
   const [editingNote, seteditingNote] = useState<Note | null>(null);
   const [cloneNote, setCloneNote] = useState<Note | null>(null);
@@ -199,7 +184,6 @@ function App() {
     null,
   );
   const [latestlabelId, setLatestlabelId] = useState<string | null>(null);
-  const [latestStatusId, setLatestStatusId] = useState<string | null>(null);
   const [confirmImportOpen, setConfirmImportOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{
     labels: Label[];
@@ -662,73 +646,6 @@ function App() {
     }
     if (editingNote?.labelId === label.id) {
       seteditingNote(null);
-    }
-  };
-
-  const handleStatusSubmit: (values: StatusFormValues) => boolean | void = (
-    values,
-  ) => {
-    const emoji = values.emoji.trim();
-    const conflict = statuses.some(
-      (status) => status.emoji === emoji && status.id !== editingStatus?.id,
-    );
-    if (!emoji) {
-      return false;
-    }
-    if (conflict) {
-      setNotificationSeverity("error");
-      setNotification("A status with that emoji already exists.");
-      return false;
-    }
-
-    if (editingStatus) {
-      setStatuses((prev) =>
-        prev.map((status) =>
-          status.id === editingStatus.id
-            ? {
-                ...status,
-                name: values.name,
-                emoji,
-                format: values.format,
-                id: emoji,
-              }
-            : status,
-        ),
-      );
-      setNotes((prev) =>
-        prev.map((note) =>
-          note.emoji === editingStatus.emoji ? { ...note, emoji } : note,
-        ),
-      );
-      setNotificationSeverity("success");
-      setNotification(`Updated status "${values.name}"`);
-      setEditingStatus(null);
-      return;
-    }
-
-    setStatuses((prev) => [
-      ...prev,
-      {
-        id: emoji,
-        name: values.name,
-        emoji,
-        format: values.format,
-      },
-    ]);
-    setLatestStatusId(emoji);
-    setNotificationSeverity("success");
-    setNotification(`Added status "${values.name}"`);
-  };
-
-  const handleStatusDelete = (status: Status) => {
-    setStatuses((prev) => prev.filter((item) => item.id !== status.id));
-    setNotes((prev) =>
-      prev.map((note) =>
-        note.emoji === status.emoji ? { ...note, emoji: undefined } : note,
-      ),
-    );
-    if (editingStatus?.id === status.id) {
-      setEditingStatus(null);
     }
   };
 
@@ -1980,342 +1897,295 @@ function App() {
             onNeverShowAgain={handleNeverShowInfoTipsAgain}
           />
           <Box sx={{ pt: 2 }}>
-              <Stack spacing={1}>
-                <NoteForm
-                  editingNote={editingNote}
-                  cloneNote={cloneNote}
-                  initialText={sharedText ?? undefined}
-                  textValue={draftNoteText}
-                  filterLabelId={noteFilters.labelId}
-                  labels={labels}
-                  dueLabel={futureDueLabel}
-                  dueFutureCount={dueFutureCount}
-                  onDueDateClick={openWeekPickerDueDialog}
-                  onSubmit={handleNoteSubmit}
-                  onCancelEdit={handleCancelEditNote}
-                  onFilterTextChange={handleFilterTextChange}
-                  onFilterLabelChange={handleFilterLabelChange}
-                  onClearFilters={handleClearFilters}
-                  onNoteTextChange={setDraftNoteText}
-                  labelManagement={{
-                    notes,
-                    editingLabel,
-                    onSubmit: handleSubmit,
-                    onCancelEdit: () => setEditingLabel(null),
-                    onEdit: setEditingLabel,
-                    onDelete: requestDeleteLabel,
-                    newLabelId: latestlabelId,
-                  }}
-                />
-                <DateFilterPopover
-                  open={isDatePopoverOpen}
-                  anchorEl={datePopoverAnchor}
-                  onClose={() => setDatePopoverAnchor(null)}
-                  datePickerMode={datePickerMode}
-                  titleRangeSuffix={titleRangeSuffix}
-                  activeStartDate={activeStartDate}
-                  activeEndDate={activeEndDate}
-                  pendingDateFilter={pendingDateFilter}
-                  setPendingDateFilter={setPendingDateFilter}
-                  applyDateFilter={applyDateFilter}
-                  clearDateFilter={clearDateFilter}
-                  filteredMinDate={filteredMinDate}
-                  noteCountsByDay={noteCountsByDay}
+            <Stack spacing={1}>
+              <NoteForm
+                editingNote={editingNote}
+                cloneNote={cloneNote}
+                initialText={sharedText ?? undefined}
+                textValue={draftNoteText}
+                filterLabelId={noteFilters.labelId}
+                labels={labels}
+                dueLabel={futureDueLabel}
+                dueFutureCount={dueFutureCount}
+                onDueDateClick={openWeekPickerDueDialog}
+                onSubmit={handleNoteSubmit}
+                onCancelEdit={handleCancelEditNote}
+                onFilterTextChange={handleFilterTextChange}
+                onFilterLabelChange={handleFilterLabelChange}
+                onClearFilters={handleClearFilters}
+                onNoteTextChange={setDraftNoteText}
+                labelManagement={{
+                  notes,
+                  editingLabel,
+                  onSubmit: handleSubmit,
+                  onCancelEdit: () => setEditingLabel(null),
+                  onEdit: setEditingLabel,
+                  onDelete: requestDeleteLabel,
+                  newLabelId: latestlabelId,
+                }}
+              />
+              <DateFilterPopover
+                open={isDatePopoverOpen}
+                anchorEl={datePopoverAnchor}
+                onClose={() => setDatePopoverAnchor(null)}
+                datePickerMode={datePickerMode}
+                titleRangeSuffix={titleRangeSuffix}
+                activeStartDate={activeStartDate}
+                activeEndDate={activeEndDate}
+                pendingDateFilter={pendingDateFilter}
+                setPendingDateFilter={setPendingDateFilter}
+                applyDateFilter={applyDateFilter}
+                clearDateFilter={clearDateFilter}
+                filteredMinDate={filteredMinDate}
+                noteCountsByDay={noteCountsByDay}
+                today={today}
+                setDatePickerMode={setDatePickerMode}
+              />
+              <Box
+                ref={weekPickerRef}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  overflowX: "auto",
+                  overflowY: "visible",
+                  scrollbarWidth: "none",
+                  "&::-webkit-scrollbar": {
+                    display: "none",
+                  },
+                  "&::-webkit-scrollbar-thumb": {
+                    display: "none",
+                  },
+                  "-ms-overflow-style": "none",
+                }}
+              >
+                <WeekdayPicker
+                  days={weekdayStripDays}
                   today={today}
-                  setDatePickerMode={setDatePickerMode}
-                />
-                <Box
-                  ref={weekPickerRef}
-                  sx={{
-                    flex: 1,
-                    minWidth: 0,
-                    overflowX: "auto",
-                    overflowY: "visible",
-                    scrollbarWidth: "none",
-                    "&::-webkit-scrollbar": {
-                      display: "none",
-                    },
-                    "&::-webkit-scrollbar-thumb": {
-                      display: "none",
-                    },
-                    "-ms-overflow-style": "none",
-                  }}
-                >
-                  <WeekdayPicker
-                    days={weekdayStripDays}
-                    today={today}
-                    selectedDayKey={
-                      draftDueDate
-                        ? draftDueDate.format("YYYY-MM-DD")
-                        : noteFilters.weekday
-                    }
-                    noteCountByDay={noteCountByDay}
-                    dueCountByDay={dueCountByDay}
-                    onSelect={handleWeekdayToggle}
-                  />
-                </Box>
-
-                <HashtagBar
-                  hashtags={hashtagSuggestions}
-                  hashtagCounts={hashtagCounts}
-                  selectedHashtags={selectedHashtags}
-                  onToggleHashtagInDraft={toggleHashtagInDraft}
-                />
-
-                {selectMode && (
-                  <SelectModeActions
-                    selectedCount={selectednoteIds.size}
-                    allSelectedPinned={
-                      selectednoteIds.size > 0 &&
-                      [...selectednoteIds].every((id) => {
-                        const note = notes.find((item) => item.id === id);
-                        return note?.pinned === true;
-                      })
-                    }
-                    allSelectedArchived={
-                      selectednoteIds.size > 0 &&
-                      [...selectednoteIds].every((id) => {
-                        const note = notes.find((item) => item.id === id);
-                        return note?.archived === true;
-                      })
-                    }
-                    onLabelClick={(event) =>
-                      setbulkLabelAnchor(event.currentTarget)
-                    }
-                    onPinToggleClick={handleBulkPinToggle}
-                    onArchiveToggleClick={handleBulkArchiveToggle}
-                    onStatusClick={(event) =>
-                      setBulkStatusAnchor(event.currentTarget)
-                    }
-                    onShareTextClick={() => {
-                      void handleBulkShareText();
-                    }}
-                    onDeleteClick={() => setConfirmBulkDeleteOpen(true)}
-                    onCancelClick={() => {
-                      setSelectedNoteIds(new Set());
-                      setSelectMode(false);
-                    }}
-                  />
-                )}
-                <Popover
-                  anchorEl={bulkStatusAnchor}
-                  open={Boolean(bulkStatusAnchor)}
-                  onClose={() => setBulkStatusAnchor(null)}
-                  anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                  transformOrigin={{ vertical: "top", horizontal: "left" }}
-                >
-                  <Stack spacing={1} sx={{ width: 360, maxWidth: "calc(100vw - 32px)", p: 1.5 }}>
-                    <ButtonBase
-                      onClick={() => {
-                        handleBulkStatusChange(null);
-                        setBulkStatusAnchor(null);
-                      }}
-                      sx={{
-                        alignItems: "center",
-                        bgcolor: colors.blueGrey[900],
-                        borderBottom: "3px solid",
-                        borderColor: colors.grey[900],
-                        borderRadius: 1,
-                        color: colors.blueGrey[300],
-                        cursor: "pointer",
-                        display: "flex",
-                        justifyContent: "flex-start",
-                        minHeight: 36,
-                        px: 2,
-                        textAlign: "left",
-                        width: "100%",
-                        ...(selectednoteIds.size > 0 &&
-                          [...selectednoteIds].every(
-                            (id) => !notes.find((item) => item.id === id)?.emoji,
-                          ) && {
-                            bgcolor: "action.selected",
-                          }),
-                      }}
-                    >
-                      <Box component="span" sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}>
-                        <Icon path={mdiEmoticonOutline} size={0.7} />
-                      </Box>
-                      {statuses.length === 0 ? "no statuses available" : "no status"}
-                    </ButtonBase>
-                    <StatusList
-                      statuses={statuses}
-                      notes={notes}
-                      selectedStatusEmoji={
-                        selectednoteIds.size > 0
-                          ? [...selectednoteIds].reduce<string | null>(
-                              (current, id) => {
-                                const note = notes.find((item) => item.id === id);
-                                if (!note) return current;
-                                if (current === null) return note.emoji ?? null;
-                                return current === note.emoji ? current : "__mixed__";
-                              },
-                              null,
-                            ) === "__mixed__"
-                            ? null
-                            : [...selectednoteIds].reduce<string | null>(
-                                (current, id) => {
-                                  const note = notes.find((item) => item.id === id);
-                                  if (!note) return current;
-                                  if (current === null) return note.emoji ?? null;
-                                  return current === note.emoji ? current : "__mixed__";
-                                },
-                                null,
-                              )
-                          : null
-                      }
-                      onEdit={() => undefined}
-                      onDelete={() => undefined}
-                      onSelect={(status) => {
-                        handleBulkStatusChange(status.emoji);
-                        setBulkStatusAnchor(null);
-                      }}
-                    />
-                  </Stack>
-                </Popover>
-                <NoteList
-                  notes={notes}
-                  labels={labels}
-                  statuses={statuses}
-                  filters={noteFilters}
-                  hasTextFilter={Boolean(draftNoteText.trim() || noteFilters.text.trim())}
-                  onClearTextFilter={handleClearTextFilter}
-                  mostRecentAddedNoteId={recentlyAddednoteId}
-                  mostRecentEditedNoteId={recentlyEditednoteId}
-                  editingNoteId={editingNote?.id ?? null}
-                  dueDaysByDate={dueCountByDay}
-                  noteCountsByDay={noteCountByDay}
-                  onEdit={handleEditNote}
-                  onDelete={handleNoteDelete}
-                  onCopy={handleNoteCopy}
-                  onClone={handleCloneNote}
-                  onShareLink={handleNoteShareLink}
-                  onToggleBullet={handleNoteToggleBullet}
-                  onAddCheckboxes={handleNoteAddCheckboxes}
-                  onToggleCheckbox={handleNoteToggleCheckbox}
-                  onDueChange={handleNoteDueChange}
-                  onComplete={handleNoteComplete}
-                  onPin={handleNotePin}
-                  onArchive={handleNoteArchive}
-                  onToggleSpoiler={handleNoteToggleSpoiler}
-                  onEmojiChange={handleNoteEmojiChange}
-                  statusManagement={{
-                    notes,
-                    editingStatus,
-                    onSubmit: handleStatusSubmit,
-                    onCancelEdit: () => setEditingStatus(null),
-                    onEdit: setEditingStatus,
-                    onDelete: handleStatusDelete,
-                    newStatusId: latestStatusId,
-                  }}
-                  onInfoTips={() => setNoteStorageInfoOpen(true)}
-                  onImportActionsClick={(event) =>
-                    setImportActionsAnchor(event.currentTarget)
+                  selectedDayKey={
+                    draftDueDate
+                      ? draftDueDate.format("YYYY-MM-DD")
+                      : noteFilters.weekday
                   }
-                  availableHashtags={availableHashtags}
-                  onRefreshAvailableHashtags={refreshAvailableHashtags}
-                  onFilterTextChange={handleFilterTextChange}
-                  onToggleHashtagInDraft={toggleHashtagInDraft}
-                  onAppendHashtagToNote={handleAppendHashtagToNote}
-                  labelManagement={{
-                    notes,
-                    editingLabel,
-                    onSubmit: handleSubmit,
-                    onCancelEdit: () => setEditingLabel(null),
-                    onEdit: setEditingLabel,
-                    onDelete: requestDeleteLabel,
-                    newLabelId: latestlabelId,
-                  }}
-                  onClearLabelFilter={handleClearLabelFilter}
-                  onClearDateRangeFilter={handleClearDateRangeFilter}
-                  onClearDueDateFilter={handleClearDueDateFilter}
-                  onRemoveHashtagFromNote={(note, tag) => {
-                    const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
-                    const nextText = note.text
-                      .split("\n")
-                      .map((line) =>
-                        line
-                          .split(/\s+/)
-                          .filter((part) => part !== normalizedTag)
-                          .join(" ")
-                          .trim(),
-                      )
-                      .join("\n");
-                    if (nextText !== note.text) {
-                      setNotes((prev) =>
-                        prev.map((existing) =>
-                          existing.id === note.id
-                            ? { ...existing, text: nextText }
-                            : existing,
-                        ),
-                      );
-                    }
-                  }}
-                  onNotify={(note) => {
-                    const labelName =
-                      labels.find((c) => c.id === note.labelId)?.name ??
-                      "Reminder";
-                    const now = Math.floor(Date.now() / 1000);
-                    // mark note as having an active notification
-                    setNotes((prev) =>
-                      prev.map((existingNote) =>
-                        existingNote.id === note.id
-                          ? (() => {
-                              const shouldRefreshTimestamp = isToday(
-                                existingNote.createdAt,
-                              );
-                              const nextCreatedAt = shouldRefreshTimestamp
-                                ? getUniqueCreatedAt(prev, now, existingNote.id)
-                                : existingNote.createdAt;
-
-                              return {
-                                ...existingNote,
-                                hasNotification: true,
-                                id: String(nextCreatedAt),
-                                createdAt: nextCreatedAt,
-                              };
-                            })()
-                          : existingNote,
-                      ),
-                    );
-                    setNotification(`${labelName}: ${note.text}`);
-                    void showAppNotification(labelName, note.text).then(
-                      handleNotificationResult,
-                    );
-                  }}
-                  onLabelChange={(note, labelId) => {
-                    setNotes((prev) =>
-                      prev.map((existingNote) =>
-                        existingNote.id === note.id
-                          ? { ...existingNote, labelId }
-                          : existingNote,
-                      ),
-                    );
-                    if (editingNote?.id === note.id) {
-                      seteditingNote({ ...editingNote, labelId });
-                    }
-                  }}
-                  selectMode={selectMode}
-                  selectedIds={selectednoteIds}
-                  onToggleSelect={toggleNoteSelected}
-                  onToggleSelectMode={toggleSelectMode}
-                  onOpenDateFilter={(event) => {
-                    setPendingDateFilter({
-                      date: noteFilters.date,
-                      endDate: noteFilters.endDate,
-                    });
-                    setDatePickerMode("start");
-                    setDatePopoverAnchor(event.currentTarget);
-                  }}
-                  hasDateFilter={Boolean(
-                    noteFilters.date ||
-                      noteFilters.endDate ||
-                      noteFilters.dueDate ||
-                      noteFilters.hasDue ||
-                      noteFilters.weekday !== null,
-                  )}
-                  onInstall={installPrompt ? handleInstall : undefined}
+                  noteCountByDay={noteCountByDay}
+                  dueCountByDay={dueCountByDay}
+                  onSelect={handleWeekdayToggle}
                 />
-              </Stack>
+              </Box>
+
+              <HashtagBar
+                hashtags={hashtagSuggestions}
+                hashtagCounts={hashtagCounts}
+                selectedHashtags={selectedHashtags}
+                onToggleHashtagInDraft={toggleHashtagInDraft}
+              />
+
+              {selectMode && (
+                <SelectModeActions
+                  selectedCount={selectednoteIds.size}
+                  allSelectedPinned={
+                    selectednoteIds.size > 0 &&
+                    [...selectednoteIds].every((id) => {
+                      const note = notes.find((item) => item.id === id);
+                      return note?.pinned === true;
+                    })
+                  }
+                  allSelectedArchived={
+                    selectednoteIds.size > 0 &&
+                    [...selectednoteIds].every((id) => {
+                      const note = notes.find((item) => item.id === id);
+                      return note?.archived === true;
+                    })
+                  }
+                  onLabelClick={(event) =>
+                    setbulkLabelAnchor(event.currentTarget)
+                  }
+                  onPinToggleClick={handleBulkPinToggle}
+                  onArchiveToggleClick={handleBulkArchiveToggle}
+                  onStatusClick={(event) =>
+                    setBulkStatusAnchor(event.currentTarget)
+                  }
+                  onShareTextClick={() => {
+                    void handleBulkShareText();
+                  }}
+                  onDeleteClick={() => setConfirmBulkDeleteOpen(true)}
+                  onCancelClick={() => {
+                    setSelectedNoteIds(new Set());
+                    setSelectMode(false);
+                  }}
+                  allSelectedCompleted={
+                    selectednoteIds.size > 0 &&
+                    [...selectednoteIds].every((id) => {
+                      const note = notes.find((item) => item.id === id);
+                      return note?.completed === true;
+                    })
+                  }
+                  onCompleteToggleClick={() => {
+                    if (selectednoteIds.size === 0) {
+                      return;
+                    }
+
+                    const selectedNotes = notes.filter((note) =>
+                      selectednoteIds.has(note.id),
+                    );
+                    const shouldComplete = !selectedNotes.every(
+                      (note) => note.completed,
+                    );
+
+                    setNotes((prev) =>
+                      prev.map((note) =>
+                        selectednoteIds.has(note.id)
+                          ? { ...note, completed: shouldComplete }
+                          : note,
+                      ),
+                    );
+                  }}
+                />
+              )}
+              <EmojiStatusPicker
+                anchorEl={bulkStatusAnchor}
+                onClose={() => setBulkStatusAnchor(null)}
+                onEmojiChange={(_, emoji) => {
+                  handleBulkStatusChange(emoji);
+                  setBulkStatusAnchor(null);
+                }}
+                note={null}
+              />
+              <NoteList
+                notes={notes}
+                labels={labels}
+                filters={noteFilters}
+                hasTextFilter={Boolean(
+                  draftNoteText.trim() || noteFilters.text.trim(),
+                )}
+                onClearTextFilter={handleClearTextFilter}
+                mostRecentAddedNoteId={recentlyAddednoteId}
+                mostRecentEditedNoteId={recentlyEditednoteId}
+                editingNoteId={editingNote?.id ?? null}
+                dueDaysByDate={dueCountByDay}
+                noteCountsByDay={noteCountByDay}
+                onEdit={handleEditNote}
+                onDelete={handleNoteDelete}
+                onCopy={handleNoteCopy}
+                onClone={handleCloneNote}
+                onShareLink={handleNoteShareLink}
+                onToggleBullet={handleNoteToggleBullet}
+                onAddCheckboxes={handleNoteAddCheckboxes}
+                onToggleCheckbox={handleNoteToggleCheckbox}
+                onDueChange={handleNoteDueChange}
+                onComplete={handleNoteComplete}
+                onPin={handleNotePin}
+                onArchive={handleNoteArchive}
+                onToggleSpoiler={handleNoteToggleSpoiler}
+                onEmojiChange={handleNoteEmojiChange}
+                onInfoTips={() => setNoteStorageInfoOpen(true)}
+                onImportActionsClick={(event) =>
+                  setImportActionsAnchor(event.currentTarget)
+                }
+                availableHashtags={availableHashtags}
+                onRefreshAvailableHashtags={refreshAvailableHashtags}
+                onFilterTextChange={handleFilterTextChange}
+                onToggleHashtagInDraft={toggleHashtagInDraft}
+                onAppendHashtagToNote={handleAppendHashtagToNote}
+                labelManagement={{
+                  notes,
+                  editingLabel,
+                  onSubmit: handleSubmit,
+                  onCancelEdit: () => setEditingLabel(null),
+                  onEdit: setEditingLabel,
+                  onDelete: requestDeleteLabel,
+                  newLabelId: latestlabelId,
+                }}
+                onClearLabelFilter={handleClearLabelFilter}
+                onClearDateRangeFilter={handleClearDateRangeFilter}
+                onClearDueDateFilter={handleClearDueDateFilter}
+                onRemoveHashtagFromNote={(note, tag) => {
+                  const normalizedTag = tag.startsWith("#") ? tag : `#${tag}`;
+                  const nextText = note.text
+                    .split("\n")
+                    .map((line) =>
+                      line
+                        .split(/\s+/)
+                        .filter((part) => part !== normalizedTag)
+                        .join(" ")
+                        .trim(),
+                    )
+                    .join("\n");
+                  if (nextText !== note.text) {
+                    setNotes((prev) =>
+                      prev.map((existing) =>
+                        existing.id === note.id
+                          ? { ...existing, text: nextText }
+                          : existing,
+                      ),
+                    );
+                  }
+                }}
+                onNotify={(note) => {
+                  const labelName =
+                    labels.find((c) => c.id === note.labelId)?.name ??
+                    "Reminder";
+                  const now = Math.floor(Date.now() / 1000);
+                  // mark note as having an active notification
+                  setNotes((prev) =>
+                    prev.map((existingNote) =>
+                      existingNote.id === note.id
+                        ? (() => {
+                            const shouldRefreshTimestamp = isToday(
+                              existingNote.createdAt,
+                            );
+                            const nextCreatedAt = shouldRefreshTimestamp
+                              ? getUniqueCreatedAt(prev, now, existingNote.id)
+                              : existingNote.createdAt;
+
+                            return {
+                              ...existingNote,
+                              hasNotification: true,
+                              id: String(nextCreatedAt),
+                              createdAt: nextCreatedAt,
+                            };
+                          })()
+                        : existingNote,
+                    ),
+                  );
+                  setNotification(`${labelName}: ${note.text}`);
+                  void showAppNotification(labelName, note.text).then(
+                    handleNotificationResult,
+                  );
+                }}
+                onLabelChange={(note, labelId) => {
+                  setNotes((prev) =>
+                    prev.map((existingNote) =>
+                      existingNote.id === note.id
+                        ? { ...existingNote, labelId }
+                        : existingNote,
+                    ),
+                  );
+                  if (editingNote?.id === note.id) {
+                    seteditingNote({ ...editingNote, labelId });
+                  }
+                }}
+                selectMode={selectMode}
+                selectedIds={selectednoteIds}
+                onToggleSelect={toggleNoteSelected}
+                onToggleSelectMode={toggleSelectMode}
+                onOpenDateFilter={(event) => {
+                  setPendingDateFilter({
+                    date: noteFilters.date,
+                    endDate: noteFilters.endDate,
+                  });
+                  setDatePickerMode("start");
+                  setDatePopoverAnchor(event.currentTarget);
+                }}
+                hasDateFilter={Boolean(
+                  noteFilters.date ||
+                  noteFilters.endDate ||
+                  noteFilters.dueDate ||
+                  noteFilters.hasDue ||
+                  noteFilters.weekday !== null,
+                )}
+                onInstall={installPrompt ? handleInstall : undefined}
+              />
+            </Stack>
           </Box>
         </Paper>
         {weekPickerDueDialogOpen && (

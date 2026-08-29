@@ -1,16 +1,5 @@
 import { useEffect, useState, type MouseEvent } from "react";
-import {
-  Box,
-  Button,
-  ButtonBase,
-  Divider,
-  Menu,
-  MenuItem,
-  Popover,
-  colors,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
+import { Box, Divider, Menu, MenuItem } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowDown,
@@ -19,7 +8,6 @@ import {
   mdiCalendarClock,
   mdiCheckBold,
   mdiContentCopy,
-  mdiDelete,
   mdiEmoticonOutline,
   mdiEyeOffOutline,
   mdiEyeOutline,
@@ -37,15 +25,11 @@ import {
   mdiUndo,
 } from "@mdi/js";
 import type { Note, Status, StatusFormValues } from "../../types";
-import StatusForm from "../StatusForm";
-import StatusList from "../StatusList";
-import SelectionPopover from "./SelectionPopover";
-import Picker, { Theme } from "emoji-picker-react";
+import EmojiStatusPicker from "./EmojiStatusPicker";
 
 type NoteActionsMenuProps = {
   anchorEl: HTMLElement | null;
   note: Note | null;
-  statuses: Status[];
   onHashtagPickerOpen?: () => void;
   openStatusPicker?: boolean;
   hasUrl: boolean;
@@ -56,15 +40,6 @@ type NoteActionsMenuProps = {
   onArchive: (note: Note) => void;
   onToggleSpoiler: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
-  statusManagement: {
-    notes: Note[];
-    editingStatus: Status | null;
-    onSubmit: (values: StatusFormValues) => boolean | void;
-    onCancelEdit: () => void;
-    onEdit: (status: Status) => void;
-    onDelete: (status: Status) => void;
-    newStatusId?: string | null;
-  };
   onComplete: (note: Note) => void;
   onCopy: (note: Note) => void;
   onClone: (note: Note) => void;
@@ -106,7 +81,6 @@ const SearchSiteIcon = ({ domain }: { domain: string }) => (
 const NoteActionsMenu = ({
   anchorEl,
   note,
-  statuses,
   openStatusPicker,
   hasUrl,
   isPinned,
@@ -116,7 +90,6 @@ const NoteActionsMenu = ({
   onArchive,
   onToggleSpoiler,
   onEmojiChange,
-  statusManagement,
   onComplete,
   onCopy,
   onClone,
@@ -129,8 +102,6 @@ const NoteActionsMenu = ({
   onEdit,
   onDelete,
 }: NoteActionsMenuProps) => {
-  const theme = useTheme();
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down("sm"));
   const [shareMenuAnchor, setShareMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -140,7 +111,6 @@ const NoteActionsMenu = ({
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
-  const [isStatusFormOpen, setIsStatusFormOpen] = useState(false);
 
   useEffect(() => {
     if (openStatusPicker && anchorEl && note) {
@@ -181,12 +151,6 @@ const NoteActionsMenu = ({
     onSearch(note, queryBuilder, getSelectedText?.(note.id));
     setSearchMenuAnchor(null);
     onClose();
-  };
-
-  const selectStatus = (status: Status | null) => {
-    if (!note) return;
-    onEmojiChange(note, status ? status.emoji : null);
-    handleMenuClose();
   };
 
   return (
@@ -310,7 +274,6 @@ const NoteActionsMenu = ({
             <MenuItem
               onClick={(event) => {
                 setStatusMenuAnchor(event.currentTarget);
-                // handleMenuClose();
               }}
             >
               <Box
@@ -327,58 +290,15 @@ const NoteActionsMenu = ({
               </Box>
               Emoji
             </MenuItem>
-            <Menu
-              anchorEl={statusMenuAnchor}
-              open={Boolean(statusMenuAnchor)}
-              onClose={() => setStatusMenuAnchor(null)}
-              slotProps={{
-                paper: {
-                  sx: {
-                    overflow: "hidden",
-                    backgroundColor: colors.blueGrey[900],
-                  },
-                },
+            <EmojiStatusPicker
+              note={note}
+              onEmojiChange={(note, emoji) => {
+                note && onEmojiChange(note, emoji);
+                handleMenuClose();
               }}
-            >
-              <Box
-                role="group"
-                aria-label="Emoji picker"
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                  padding: 1,
-                  margin: 0,
-                }}
-              >
-                <Picker
-                  onEmojiClick={(emojiData) => {
-                    const emoji = emojiData.emoji;
-                    onEmojiChange(note, emoji);
-
-                    setStatusMenuAnchor(null);
-                    handleMenuClose();
-                  }}
-                  lazyLoadEmojis
-                  theme={Theme.DARK}
-                  width={352}
-                  height={420}
-                />
-                <Button
-                  variant="contained"
-                  color="error"
-                  startIcon={<Icon path={mdiDelete} size={0.7} />}
-                  onClick={() => {
-                    onEmojiChange(note, null);
-
-                    setStatusMenuAnchor(null);
-                    handleMenuClose();
-                  }}
-                >
-                  Delete
-                </Button>
-              </Box>
-            </Menu>
+              anchorEl={statusMenuAnchor}
+              onClose={() => setStatusMenuAnchor(null)}
+            />
             {false && (
               <MenuItem
                 onClick={(event: MouseEvent<HTMLElement>) =>
@@ -566,128 +486,6 @@ const NoteActionsMenu = ({
           </>
         )}
       </Menu>
-      {false && (
-        <Popover
-          anchorEl={statusMenuAnchor}
-          open={Boolean(statusMenuAnchor)}
-          onClose={() => {
-            setStatusMenuAnchor(null);
-            setIsStatusFormOpen(false);
-            if (openStatusPicker) {
-              onClose();
-            }
-          }}
-          marginThreshold={0}
-          anchorOrigin={
-            isSmallScreen
-              ? { vertical: "top", horizontal: "left" }
-              : { vertical: "bottom", horizontal: "left" }
-          }
-          transformOrigin={
-            isSmallScreen
-              ? { vertical: "top", horizontal: "left" }
-              : { vertical: "top", horizontal: "left" }
-          }
-          slotProps={{
-            paper: {
-              sx: {
-                width: isSmallScreen ? "100vw" : 360,
-                maxWidth: isSmallScreen ? "100vw" : "calc(100vw - 32px)",
-                height: isSmallScreen ? "100vh" : "auto",
-                maxHeight: isSmallScreen ? "100vh" : undefined,
-                borderRadius: isSmallScreen ? 0 : 1,
-                border: "none",
-                boxShadow: "none",
-                overflow: isSmallScreen ? "auto" : "hidden",
-                m: isSmallScreen ? 0 : undefined,
-                outline: "none",
-              },
-            },
-          }}
-        >
-          <SelectionPopover
-            title="Status"
-            count={statuses.length}
-            onClose={() => {
-              setStatusMenuAnchor(null);
-              setIsStatusFormOpen(false);
-              if (openStatusPicker) {
-                onClose();
-              }
-            }}
-          >
-            {!isStatusFormOpen && !statusManagement.editingStatus && (
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => setIsStatusFormOpen(true)}
-                sx={{
-                  justifyContent: "center",
-                  mb: 1,
-                }}
-              >
-                Create status
-              </Button>
-            )}
-            {isStatusFormOpen || statusManagement.editingStatus ? (
-              <StatusForm
-                editingStatus={statusManagement.editingStatus}
-                onSubmit={(values) => {
-                  const result = statusManagement.onSubmit(values);
-                  if (result !== false) setIsStatusFormOpen(false);
-                  return result;
-                }}
-                onCancelEdit={() => {
-                  statusManagement.onCancelEdit();
-                  setIsStatusFormOpen(false);
-                }}
-              />
-            ) : null}
-            <ButtonBase
-              onClick={() => selectStatus(null)}
-              sx={{
-                alignItems: "center",
-                bgcolor: colors.blueGrey[900],
-                borderBottom: "3px solid",
-                borderColor: colors.grey[900],
-                borderRadius: 1,
-                color: colors.blueGrey[300],
-                display: "flex",
-                justifyContent: "flex-start",
-                minHeight: 40,
-                p: 2,
-                my: 0.5,
-                textAlign: "left",
-                width: "100%",
-                ...(!note?.emoji && { bgcolor: "action.selected" }),
-              }}
-            >
-              <Box
-                component="span"
-                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
-              >
-                <Icon path={mdiMinusCircle} size={0.7} />
-              </Box>
-              No status
-            </ButtonBase>
-
-            <StatusList
-              statuses={statuses}
-              notes={statusManagement.notes}
-              editingStatusId={statusManagement.editingStatus?.id ?? null}
-              selectedStatusEmoji={note?.emoji ?? null}
-              onEdit={(status) => {
-                statusManagement.onEdit(status);
-                setIsStatusFormOpen(true);
-              }}
-              onDelete={statusManagement.onDelete}
-              newStatusId={statusManagement.newStatusId}
-              onSelect={selectStatus}
-            />
-          </SelectionPopover>
-        </Popover>
-      )}
-
       <Menu
         anchorEl={shareMenuAnchor}
         open={Boolean(shareMenuAnchor)}

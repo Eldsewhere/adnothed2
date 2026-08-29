@@ -1,5 +1,5 @@
 import { useState, type MouseEvent as ReactMouseEvent } from "react";
-import { Box, Button, Menu, Tooltip, colors } from "@mui/material";
+import { Box, Tooltip, colors } from "@mui/material";
 import { Icon } from "@mdi/react";
 import {
   mdiArchive,
@@ -8,7 +8,6 @@ import {
   mdiCheckboxMarkedOutline,
   mdiClockCheckOutline,
   mdiClockOutline,
-  mdiDelete,
   mdiEyeOffOutline,
   mdiEyeOutline,
   mdiFormatListBulleted,
@@ -16,7 +15,7 @@ import {
 } from "@mdi/js";
 import type { Note, Status } from "../../types";
 import { formatDueDate } from "../../utils/formatTimestamp";
-import Picker, { Theme } from "emoji-picker-react";
+import EmojiStatusPicker from "../dialogs/EmojiStatusPicker";
 
 type NoteTimestampMetaIconsProps = {
   note: Note;
@@ -177,56 +176,14 @@ const NoteTimestampMetaIcons = ({
               {note.emoji}
             </Box>
           </Tooltip>
-          <Menu
+          <EmojiStatusPicker
             anchorEl={statusMenuAnchor}
-            open={Boolean(statusMenuAnchor)}
             onClose={() => setStatusMenuAnchor(null)}
-            slotProps={{
-              paper: {
-                sx: {
-                  overflow: "hidden",
-                  backgroundColor: colors.blueGrey[900],
-                },
-              },
+            note={note}
+            onEmojiChange={(note, emoji) => {
+              note && onEmojiChange(note, emoji);
             }}
-          >
-            <Box
-              role="group"
-              aria-label="Emoji picker"
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 1,
-                padding: 1,
-                margin: 0,
-              }}
-            >
-              <Picker
-                onEmojiClick={(emojiData) => {
-                  const emoji = emojiData.emoji;
-                  onEmojiChange(note, emoji);
-
-                  setStatusMenuAnchor(null);
-                }}
-                lazyLoadEmojis
-                theme={Theme.DARK}
-                width={352}
-                height={420}
-              />
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<Icon path={mdiDelete} size={0.7} />}
-                onClick={() => {
-                  onEmojiChange(note, null);
-
-                  setStatusMenuAnchor(null);
-                }}
-              >
-                Delete
-              </Button>
-            </Box>
-          </Menu>
+          />
         </>
       )}
       {note.hasNotification && (

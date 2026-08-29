@@ -5,8 +5,10 @@ import {
   mdiArchiveArrowDown,
   mdiArchiveArrowUp,
   mdiCancel,
+  mdiCheckBold,
+  mdiClose,
+  mdiEmoticonOutline,
   mdiFolderMove,
-  mdiMinusCircle,
   mdiPin,
   mdiPinOff,
   mdiShareVariant,
@@ -24,6 +26,8 @@ type SelectModeActionsProps = {
   onShareTextClick: () => void;
   onDeleteClick: () => void;
   onCancelClick: () => void;
+  onCompleteToggleClick: () => void;
+  allSelectedCompleted: boolean;
 };
 
 const SelectModeActions = ({
@@ -37,6 +41,8 @@ const SelectModeActions = ({
   onShareTextClick,
   onDeleteClick,
   onCancelClick,
+  onCompleteToggleClick,
+  allSelectedCompleted,
 }: SelectModeActionsProps) => (
   <Box
     sx={{
@@ -108,6 +114,26 @@ const SelectModeActions = ({
       <Tooltip
         title={
           selectedCount > 0
+            ? allSelectedCompleted
+              ? "Undone selected"
+              : "Done selected"
+            : "Select notes to enable"
+        }
+      >
+        <IconButton
+          color="inherit"
+          disabled={selectedCount === 0}
+          onClick={onCompleteToggleClick}
+        >
+          <Icon
+            path={allSelectedCompleted ? mdiClose : mdiCheckBold}
+            size={0.9}
+          />
+        </IconButton>
+      </Tooltip>
+      <Tooltip
+        title={
+          selectedCount > 0
             ? allSelectedArchived
               ? "Unarchive selected"
               : "Archive selected"
@@ -125,21 +151,19 @@ const SelectModeActions = ({
           />
         </IconButton>
       </Tooltip>
-      {false && (
-        <Tooltip
-          title={
-            selectedCount > 0 ? "Set selected status" : "Select notes to enable"
-          }
+      <Tooltip
+        title={
+          selectedCount > 0 ? "Set selected status" : "Select notes to enable"
+        }
+      >
+        <IconButton
+          color="inherit"
+          disabled={selectedCount === 0}
+          onClick={onStatusClick}
         >
-          <IconButton
-            color="inherit"
-            disabled={selectedCount === 0}
-            onClick={onStatusClick}
-          >
-            <Icon path={mdiMinusCircle} size={0.9} />
-          </IconButton>
-        </Tooltip>
-      )}
+          <Icon path={mdiEmoticonOutline} size={0.9} />
+        </IconButton>
+      </Tooltip>
       <Tooltip
         title={
           selectedCount > 0 ? "Share selected text" : "Select notes to enable"
