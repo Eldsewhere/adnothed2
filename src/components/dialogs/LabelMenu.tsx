@@ -20,7 +20,7 @@ type LabelMenuProps = {
   labels: Label[];
   labelCounts?: Map<string, number> | Record<string, number>;
   onClose: () => void;
-  onSelect: (labelId: string | null) => void;
+  onSelect: (icon: string | null) => void;
   selected?: string | null;
   onShowAllSelect?: () => void;
   onCreateLabel?: () => void;

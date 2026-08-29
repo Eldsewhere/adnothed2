@@ -38,7 +38,7 @@ type NoteListProps = {
   onAddCheckboxes: (note: Note) => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onNotify: (note: Note) => void;
-  onLabelChange: (note: Note, labelId: string | null) => void;
+  onLabelChange: (note: Note, icon: string | null) => void;
   onDueChange: (note: Note, due: number | null) => void;
   onComplete: (note: Note) => void;
   onPin: (note: Note) => void;
@@ -463,11 +463,11 @@ const NoteList = ({
     );
   };
 
-  const handleLabelSelect = (labelId: string | null) => {
+  const handleLabelSelect = (icon: string | null) => {
     if (!labelMenuAnchor) {
       return;
     }
-    onLabelChange(labelMenuAnchor.note, labelId);
+    onLabelChange(labelMenuAnchor.note, icon);
     closeLabelMenu();
   };
 
@@ -479,7 +479,7 @@ const NoteList = ({
   const filteredNotes = useMemo(
     () =>
       sortedNotes.filter((note, index) => {
-        if (filters.labelId && note.labelId !== filters.labelId) {
+        if (filters.icon && note.icon !== filters.icon) {
           return false;
         }
         if (
@@ -490,7 +490,7 @@ const NoteList = ({
             sortedNotes.length,
             parsedTextFilters,
             note.due,
-            note.labelId,
+            note.icon,
             note.pinned,
             note.emoji,
             note.archived,
@@ -787,7 +787,7 @@ const NoteList = ({
               tooltip="Notes"
               onToggle={() => {}}
               selectedLabel={
-                filters.labelId ? labelsById.get(filters.labelId) : undefined
+                filters.icon ? labelsById.get(filters.icon) : undefined
               }
               onClearLabelFilter={onClearLabelFilter}
               hasStartOrEndDateFilter={Boolean(filters.date || filters.endDate)}
@@ -903,8 +903,8 @@ const NoteList = ({
                     : () => setNotesSectionExpanded((value) => !value);
 
                 const selectedLabel =
-                  item.key === "notes-section-header" && filters.labelId
-                    ? labelsById.get(filters.labelId)
+                  item.key === "notes-section-header" && filters.icon
+                    ? labelsById.get(filters.icon)
                     : undefined;
                 const activeDateRangeLabel =
                   item.key === "notes-section-header"
@@ -1017,9 +1017,7 @@ const NoteList = ({
               }
 
               const note = item.note!;
-              const label = note.labelId
-                ? labelsById.get(note.labelId)
-                : undefined;
+              const label = note.icon ? labelsById.get(note.icon) : undefined;
               const zebraDate =
                 isFutureDueNote(note) && note.due !== undefined
                   ? formatDate(note.due)
@@ -1164,7 +1162,7 @@ const NoteList = ({
           labelCounts={labelCounts}
           onClose={closeLabelMenu}
           onSelect={(val) => handleLabelSelect(val)}
-          selected={labelMenuAnchor?.note.labelId}
+          selected={labelMenuAnchor?.note.icon}
           onCreateLabel={
             labelManagement
               ? () => {

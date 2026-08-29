@@ -19,7 +19,7 @@ export type LabelFormValues = {
 
 export type Note = {
   id: string;
-  labelId: string | null;
+  icon: string | null;
   text: string;
   time: number;
   emoji?: string;
@@ -32,7 +32,7 @@ export type Note = {
 };
 
 export type NoteFormValues = {
-  labelId: string;
+  icon: string;
   text: string;
 };
 
@@ -42,7 +42,7 @@ export interface BeforeInstallPromptEvent extends Event {
 }
 
 export type NoteFilters = {
-  labelId: string;
+  icon: string;
   text: string;
   date: string;
   endDate: string;

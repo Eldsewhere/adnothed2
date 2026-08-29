@@ -77,7 +77,9 @@ const LabelList = ({
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}>
+    <Box
+      sx={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0 }}
+    >
       {orderedLabels.length === 0 ? (
         <Alert severity="info" sx={{ textAlign: "left" }}>
           <Box> No labels added yet. Add labels to filter notes together</Box>
@@ -117,7 +119,7 @@ const LabelList = ({
                     key={label.id}
                     label={label}
                     count={
-                      notes.filter((note) => note.labelId === label.id).length
+                      notes.filter((note) => note.icon === label.id).length
                     }
                     isNewLabel={label.id === newlabelId}
                     isEditing={label.id === editingLabelId}

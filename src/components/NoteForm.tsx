@@ -54,7 +54,7 @@ type NoteFormProps = {
   };
 };
 
-const emptyValues: NoteFormValues = { labelId: "", text: "" };
+const emptyValues: NoteFormValues = { icon: "", text: "" };
 
 const BULLET_PREFIX = "• ";
 const CHECKBOX_PREFIX_PATTERN = /^\[ ?[xX]? ?\]\s?/;
@@ -73,12 +73,11 @@ const getAutoListContinuation = (
   const currentLineIndent = currentLine.match(/^\s*/)?.[0] ?? "";
   const currentLineContent = currentLine.slice(currentLineIndent.length);
 
-  const continuationPrefix =
-    currentLineContent.startsWith(BULLET_PREFIX)
-      ? `${currentLineIndent}${BULLET_PREFIX}`
-      : currentLineContent.match(CHECKBOX_PREFIX_PATTERN)
-        ? `${currentLineIndent}[] `
-        : null;
+  const continuationPrefix = currentLineContent.startsWith(BULLET_PREFIX)
+    ? `${currentLineIndent}${BULLET_PREFIX}`
+    : currentLineContent.match(CHECKBOX_PREFIX_PATTERN)
+      ? `${currentLineIndent}[] `
+      : null;
 
   if (continuationPrefix) {
     const nextValue = `${beforeCaret}\n${continuationPrefix}${value.slice(caretPosition)}`;
@@ -97,12 +96,11 @@ const getAutoListContinuation = (
     const previousIndent = previousLine.match(/^\s*/)?.[0] ?? "";
     const previousContent = previousLine.slice(previousIndent.length);
 
-    const previousPrefix =
-      previousContent.startsWith(BULLET_PREFIX)
-        ? `${previousIndent}${BULLET_PREFIX}`
-        : previousContent.match(CHECKBOX_PREFIX_PATTERN)
-          ? `${previousIndent}[] `
-          : null;
+    const previousPrefix = previousContent.startsWith(BULLET_PREFIX)
+      ? `${previousIndent}${BULLET_PREFIX}`
+      : previousContent.match(CHECKBOX_PREFIX_PATTERN)
+        ? `${previousIndent}[] `
+        : null;
 
     if (previousPrefix) {
       const nextValue = `${beforeCaret}${previousPrefix}${value.slice(caretPosition)}`;
@@ -141,9 +139,7 @@ const NoteForm = ({
     setValue,
     formState: { errors },
   } = useForm<NoteFormValues>({
-    defaultValues: initialText
-      ? { labelId: "", text: initialText }
-      : emptyValues,
+    defaultValues: initialText ? { icon: "", text: initialText } : emptyValues,
   });
   const [labelMenuAnchor, setLabelMenuAnchor] = useState<HTMLElement | null>(
     null,
@@ -156,20 +152,20 @@ const NoteForm = ({
   useEffect(() => {
     const nextValues = editingNote
       ? {
-          labelId: editingNote.labelId ?? "",
+          icon: editingNote.icon ?? "",
           text: editingNote.text,
         }
       : cloneNote
-        ? { labelId: "", text: cloneNote.text }
+        ? { icon: "", text: cloneNote.text }
         : initialText
-          ? { labelId: filterLabelId, text: initialText }
-          : { labelId: filterLabelId, text: textValue ?? "" };
+          ? { icon: filterLabelId, text: initialText }
+          : { icon: filterLabelId, text: textValue ?? "" };
 
     reset(nextValues);
     onNoteTextChange?.(nextValues.text);
     if (!isEditing) {
       onFilterTextChange(nextValues.text);
-      onFilterLabelChange(nextValues.labelId ? nextValues.labelId : "");
+      onFilterLabelChange(nextValues.icon ? nextValues.icon : "");
     }
   }, [
     editingNote,
@@ -188,7 +184,7 @@ const NoteForm = ({
     }
 
     setValue("text", textValue ?? "");
-    setValue("labelId", filterLabelId ?? "");
+    setValue("icon", filterLabelId ?? "");
   }, [cloneNote, editingNote, filterLabelId, initialText, setValue, textValue]);
 
   useEffect(() => {
@@ -375,7 +371,7 @@ const NoteForm = ({
                       }}
                     />
                     <Controller
-                      name="labelId"
+                      name="icon"
                       control={control}
                       render={({ field }) => {
                         const activelabelId = field.value;

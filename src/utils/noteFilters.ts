@@ -10,7 +10,7 @@ const yearMonthRegex = /^\d{4}-\d{2}$/;
 export const NO_LABEL_FILTER_VALUE = "__none__";
 
 export const emptyNoteFilters: NoteFilters = {
-  labelId: "",
+  icon: "",
   text: "",
   date: "",
   endDate: "",
@@ -287,7 +287,7 @@ export function matchesTextFilters(
   sortedNotesLength: number,
   parsed: ParsedTextFilters,
   due?: number,
-  labelId: string | null = null,
+  icon: string | null = null,
   isPinned = false,
   emoji?: string,
   isArchived = false,
@@ -431,7 +431,7 @@ export function matchesTextFilters(
     return false;
   }
 
-  if (parsed.withLabel && labelId === null) {
+  if (parsed.withLabel && icon === null) {
     return false;
   }
 

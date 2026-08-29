@@ -137,7 +137,7 @@ function normalizeNotes(notes: PersistedNote[]): Note[] {
 
     normalized.push({
       id: String(time),
-      labelId: note.icon ?? null,
+      icon: note.icon ?? null,
       text: note.text,
       time,
       ...(note.emoji ? { emoji: note.emoji } : {}),
@@ -201,7 +201,7 @@ export function serializeState(state: {
     })),
     notes: state.notes.map((note) => {
       return toPersistedNote({
-        icon: note.labelId ?? null,
+        icon: note.icon ?? null,
         text: note.text,
         emoji: note.emoji,
         time: note.time,

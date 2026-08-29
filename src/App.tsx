@@ -589,9 +589,7 @@ function App() {
           if (prevLabel.id === editingLabel.id) {
             setNotes((prev) =>
               prev.map((note) =>
-                note.labelId === prevLabel.id
-                  ? { ...note, labelId: iconName }
-                  : note,
+                note.icon === prevLabel.id ? { ...note, icon: iconName } : note,
               ),
             );
 
@@ -631,13 +629,13 @@ function App() {
     setLabels((prev) => prev.filter((c) => c.id !== label.id));
     setNotes((prev) =>
       prev.map((note) =>
-        note.labelId === label.id ? { ...note, labelId: null } : note,
+        note.icon === label.id ? { ...note, icon: null } : note,
       ),
     );
     if (editingLabel?.id === label.id) {
       setEditingLabel(null);
     }
-    if (editingNote?.labelId === label.id) {
+    if (editingNote?.icon === label.id) {
       seteditingNote(null);
     }
   };
@@ -829,8 +827,8 @@ function App() {
   const handleNoteSubmit: React.ComponentProps<typeof NoteForm>["onSubmit"] = (
     values,
   ) => {
-    const labelId = values.labelId === "" ? null : values.labelId;
-    const labelName = labels.find((c) => c.id === labelId)?.name ?? "Reminder";
+    const icon = values.icon === "" ? null : values.icon;
+    const labelName = labels.find((c) => c.id === icon)?.name ?? "Reminder";
     const selectedDay =
       draftDueDate ??
       (noteFilters.weekday
@@ -883,7 +881,7 @@ function App() {
           note.id === editingNote.id
             ? {
                 ...note,
-                labelId,
+                icon,
                 text: finalText,
                 ...(finalDueTimestamp !== undefined
                   ? { due: finalDueTimestamp }
@@ -912,7 +910,7 @@ function App() {
         ...prev,
         {
           id,
-          labelId,
+          icon,
           text: finalText,
           time,
           hasNotification: shouldAutoNotify,
@@ -1156,10 +1154,10 @@ function App() {
     }
   };
 
-  const handleBulkLabelChange = (labelId: string | null) => {
+  const handleBulkLabelChange = (icon: string | null) => {
     setNotes((prev) =>
       prev.map((note) =>
-        selectednoteIds.has(note.id) ? { ...note, labelId } : note,
+        selectednoteIds.has(note.id) ? { ...note, icon } : note,
       ),
     );
     setSelectedNoteIds(new Set());
@@ -1369,17 +1367,17 @@ function App() {
 
   const handleFilterLabelChange = useCallback((value: string) => {
     setNoteFilters((prev) =>
-      prev.labelId === value
+      prev.icon === value
         ? prev
         : {
             ...prev,
-            labelId: value,
+            icon: value,
           },
     );
   }, []);
 
   const handleClearLabelFilter = useCallback(() => {
-    setNoteFilters((prev) => ({ ...prev, labelId: "" }));
+    setNoteFilters((prev) => ({ ...prev, icon: "" }));
   }, []);
 
   const handleClearDateRangeFilter = useCallback(() => {
@@ -1534,7 +1532,7 @@ function App() {
           }
         }
 
-        if (noteFilters.labelId && note.labelId !== noteFilters.labelId) {
+        if (noteFilters.icon && note.icon !== noteFilters.icon) {
           return false;
         }
 
@@ -1545,14 +1543,14 @@ function App() {
           sortedNotes.length,
           parsedTextFilters,
           note.due,
-          note.labelId,
+          note.icon,
           note.pinned,
           note.emoji,
           note.archived,
           note.completed,
         );
       }),
-    [noteFilters.labelId, noteFilters.hasDue, parsedTextFilters, sortedNotes],
+    [noteFilters.icon, noteFilters.hasDue, parsedTextFilters, sortedNotes],
   );
 
   const noteCountsByDay = useMemo(() => {
@@ -1896,7 +1894,7 @@ function App() {
                 cloneNote={cloneNote}
                 initialText={sharedText ?? undefined}
                 textValue={draftNoteText}
-                filterLabelId={noteFilters.labelId}
+                filterLabelId={noteFilters.icon}
                 labels={labels}
                 dueLabel={futureDueLabel}
                 dueFutureCount={dueFutureCount}
@@ -2115,8 +2113,7 @@ function App() {
                 }}
                 onNotify={(note) => {
                   const labelName =
-                    labels.find((c) => c.id === note.labelId)?.name ??
-                    "Reminder";
+                    labels.find((c) => c.id === note.icon)?.name ?? "Reminder";
                   const now = Math.floor(Date.now() / 1000);
                   // mark note as having an active notification
                   setNotes((prev) =>
@@ -2145,16 +2142,16 @@ function App() {
                     handleNotificationResult,
                   );
                 }}
-                onLabelChange={(note, labelId) => {
+                onLabelChange={(note, icon) => {
                   setNotes((prev) =>
                     prev.map((existingNote) =>
                       existingNote.id === note.id
-                        ? { ...existingNote, labelId }
+                        ? { ...existingNote, icon }
                         : existingNote,
                     ),
                   );
                   if (editingNote?.id === note.id) {
-                    seteditingNote({ ...editingNote, labelId });
+                    seteditingNote({ ...editingNote, icon });
                   }
                 }}
                 selectMode={selectMode}
@@ -2261,8 +2258,8 @@ function App() {
           anchorEl={bulkLabelAnchor}
           labels={labels}
           onClose={() => setbulkLabelAnchor(null)}
-          onSelect={(labelId) => {
-            handleBulkLabelChange(labelId);
+          onSelect={(icon) => {
+            handleBulkLabelChange(icon);
           }}
         />
         <ImportActionsMenu

@@ -93,7 +93,7 @@ const NoteOverflowDialog = ({
         >
           <Typography variant="body2">
             {(() => {
-              const label = labels.find((label) => label.id === note.labelId);
+              const label = labels.find((label) => label.id === note.icon);
 
               return (
                 <Box
