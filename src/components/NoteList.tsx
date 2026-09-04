@@ -1083,6 +1083,7 @@ const NoteList = ({
                   onOpenLabelMenu={openLabelMenu}
                   onToggleCheckbox={onToggleCheckbox}
                   onOpenOverflow={(id) => setOverflowModalnoteId(id)}
+                  onComplete={onComplete}
                   onPin={onPin}
                   onArchive={onArchive}
                   onOpenActionsMenu={(event, note, openStatusPicker) =>

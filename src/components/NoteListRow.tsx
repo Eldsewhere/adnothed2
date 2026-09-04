@@ -11,7 +11,11 @@ import {
 import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowUp,
+  mdiCheckBold,
+  mdiCheckboxBlankOutline,
+  mdiCheckboxMarked,
   mdiChevronDown,
+  mdiClose,
   mdiDotsVertical,
   mdiLabelOff,
   mdiPencil,
@@ -108,6 +112,7 @@ type NoteListRowProps = {
   onOpenLabelMenu: (event: MouseEvent<HTMLElement>, note: Note) => void;
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onOpenOverflow: (noteId: string) => void;
+  onComplete: (note: Note) => void;
   onPin: (note: Note) => void;
   onArchive: (note: Note) => void;
   onOpenActionsMenu: (
@@ -151,6 +156,7 @@ const NoteListRow = ({
   onOpenLabelMenu,
   onToggleCheckbox,
   onOpenOverflow,
+  onComplete,
   onPin,
   onArchive,
   onOpenActionsMenu,
@@ -214,6 +220,10 @@ const NoteListRow = ({
     !note.completed &&
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor || isPriority);
+  const isScheduledDragAction =
+    !note.archived &&
+    note.due !== undefined &&
+    (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor || isPriority);
   const noteIconColor = note.archived
     ? colors.red[300]
     : isScheduledStatus
@@ -271,14 +281,17 @@ const NoteListRow = ({
     setDragOffset(0);
   };
 
-  const dragDirection = dragOffset < 0 ? "menu" : dragOffset > 0 ? "pin" : null;
+  const dragDirection =
+    dragOffset < 0 ? "menu" : dragOffset > 0 ? "action" : null;
   const dragActionIcon =
-    dragDirection === "pin"
+    dragDirection === "action"
       ? note.archived
         ? mdiArchiveArrowUp
-        : note.pinned
-          ? mdiPinOff
-          : mdiPin
+        : note.due !== undefined && !note.completed
+          ? mdiCheckBold
+          : note.pinned
+            ? mdiPinOff
+            : mdiPin
       : mdiDotsVertical;
   const dragActionOpacity = dragDirection
     ? Math.min(1, 0.2 + Math.abs(dragOffset) / (MENU_OPEN_DRAG_THRESHOLD * 1.6))
@@ -317,7 +330,7 @@ const NoteListRow = ({
     }
 
     const shouldOpenActions = dragOffset < -MENU_OPEN_DRAG_THRESHOLD;
-    const shouldPin = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
+    const shouldRunAction = dragOffset > MENU_OPEN_DRAG_THRESHOLD;
     resetDragState();
 
     if (shouldOpenActions) {
@@ -328,9 +341,13 @@ const NoteListRow = ({
       return;
     }
 
-    if (shouldPin) {
+    if (shouldRunAction) {
       if (note.archived) {
         onArchive(note);
+        return;
+      }
+      if (note.due !== undefined && !note.completed) {
+        onComplete(note);
         return;
       }
       onPin(note);
@@ -371,7 +388,8 @@ const NoteListRow = ({
             inset: 0,
             display: "flex",
             alignItems: "center",
-            justifyContent: dragDirection === "pin" ? "flex-start" : "flex-end",
+            justifyContent:
+              dragDirection === "action" ? "flex-start" : "flex-end",
             px: 1.5,
             pointerEvents: "none",
             opacity: dragActionOpacity,
@@ -384,10 +402,14 @@ const NoteListRow = ({
               alignItems: "center",
               justifyContent: "center",
               color:
-                dragDirection === "pin"
-                  ? note.pinned
-                    ? colors.orange[300]
-                    : colors.lightGreen[300]
+                dragDirection === "action"
+                  ? isScheduledDragAction
+                    ? note.completed
+                      ? colors.lightGreen[300]
+                      : colors.orange[300]
+                    : note.pinned
+                      ? colors.orange[300]
+                      : colors.lightGreen[300]
                   : colors.blue[300],
               fontSize: "1.4rem",
               lineHeight: 1,
