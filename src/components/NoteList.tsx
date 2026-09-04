@@ -579,10 +579,16 @@ const NoteList = ({
     return { firstIndex, lastIndex };
   }, [filteredNotes]);
 
-  const hasSpoilerNotesAfterFilters = useMemo(
-    () => filteredNotes.some((note) => note.spoiler),
-    [filteredNotes],
-  );
+  const hasSpoilerNotesInRevealScope = useMemo(() => {
+    const lastTenFilteredNotes = filteredNotes.slice(-10);
+    return filteredNotes.some(
+      (note) =>
+        note.spoiler &&
+        (isPriorityNote(note) ||
+          isFutureDueNote(note) ||
+          lastTenFilteredNotes.includes(note)),
+    );
+  }, [filteredNotes]);
 
   const notesSectionCount = notesSectionRange
     ? notesSectionRange.lastIndex - notesSectionRange.firstIndex + 1
@@ -963,7 +969,7 @@ const NoteList = ({
                       }
                       onToggleRevealAllSpoilers={
                         item.key === "notes-section-header" &&
-                        hasSpoilerNotesAfterFilters
+                        hasSpoilerNotesInRevealScope
                           ? () => setRevealAllSpoilers((value) => !value)
                           : undefined
                       }
