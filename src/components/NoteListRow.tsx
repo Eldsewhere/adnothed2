@@ -349,6 +349,47 @@ const NoteListRow = ({
         return;
       }
 
+      const rowElement = (
+        range.startContainer.nodeType === Node.ELEMENT_NODE
+          ? (range.startContainer as Element)
+          : range.startContainer.parentElement
+      )?.closest<HTMLElement>("[data-note-row-index]");
+      const rowIndex = rowElement?.dataset.noteRowIndex;
+      const sourceRow =
+        rowIndex !== undefined ? note.text.split("\n")[Number(rowIndex)] : "";
+      if (
+        rowElement &&
+        (CHECKBOX_ROW_PATTERN.test(sourceRow) ||
+          BULLET_ROW_PATTERN.test(sourceRow))
+      ) {
+        const textNodes: Text[] = [];
+        const walker = document.createTreeWalker(
+          rowElement,
+          NodeFilter.SHOW_TEXT,
+        );
+        let currentNode = walker.nextNode();
+        while (currentNode) {
+          textNodes.push(currentNode as Text);
+          currentNode = walker.nextNode();
+        }
+
+        const firstTextNode = textNodes[0];
+        const lastTextNode = textNodes.at(-1);
+        if (!firstTextNode || !lastTextNode) {
+          return;
+        }
+
+        const rowRange = document.createRange();
+        const bulletPrefixLength = sourceRow.match(BULLET_ROW_PATTERN)?.[0]
+          .length ?? 0;
+        rowRange.setStart(
+          firstTextNode,
+          Math.min(bulletPrefixLength, firstTextNode.length),
+        );
+        rowRange.setEnd(lastTextNode, lastTextNode.length);
+        selection?.removeAllRanges();
+        selection?.addRange(rowRange);
+      } else {
       const text = textNode.textContent ?? "";
       let start = range.startOffset;
       while (start > 0 && !/\s/.test(text[start - 1])) {
@@ -367,6 +408,7 @@ const NoteListRow = ({
       wordRange.setEnd(textNode, end);
       selection?.removeAllRanges();
       selection?.addRange(wordRange);
+      }
     }
 
     const syntheticEvent = {
@@ -624,6 +666,7 @@ const NoteListRow = ({
                   <Box
                     key={`${rowIndex}-${row}`}
                     component="span"
+                    data-note-row-index={rowIndex}
                     sx={{ display: "inline" }}
                   >
                     {checkboxMatch && (
