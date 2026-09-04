@@ -187,29 +187,47 @@ const NoteActionsMenu = ({
       >
         {note && (
           <>
-            <MenuItem onClick={() => { onNotify(note); handleMenuClose(); }}>
+            <MenuItem
+              selected={Boolean(note.hasNotification)}
+              onClick={() => { onNotify(note); handleMenuClose(); }}
+            >
               <ActionIcon path={mdiBell} />
               Notify
             </MenuItem>
-            <MenuItem onClick={() => { onPin(note); handleMenuClose(); }}>
+            <MenuItem
+              selected={Boolean(note.pinned)}
+              onClick={() => { onPin(note); handleMenuClose(); }}
+            >
               <ActionIcon path={isPinned ? mdiPinOff : mdiPin} />
               {isPinned ? "Unpin" : "Pin"}
             </MenuItem>
-            <MenuItem onClick={() => { onComplete(note); handleMenuClose(); }}>
+            <MenuItem
+              selected={Boolean(note.completed)}
+              onClick={() => { onComplete(note); handleMenuClose(); }}
+            >
               <ActionIcon path={note.completed ? mdiUndo : mdiCheckBold} />
               {note.completed ? "Undone" : "Done"}
             </MenuItem>
-            <MenuItem onClick={() => { onArchive(note); handleMenuClose(); }}>
+            <MenuItem
+              selected={Boolean(note.archived)}
+              onClick={() => { onArchive(note); handleMenuClose(); }}
+            >
               <ActionIcon
                 path={note.archived ? mdiArchiveArrowUp : mdiArchiveArrowDown}
               />
               {note.archived ? "Unarchive" : "Archive"}
             </MenuItem>
-            <MenuItem onClick={() => { onToggleSpoiler(note); handleMenuClose(); }}>
+            <MenuItem
+              selected={Boolean(note.spoiler)}
+              onClick={() => { onToggleSpoiler(note); handleMenuClose(); }}
+            >
               <ActionIcon path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline} />
               {note.spoiler ? "Show" : "Hide"}
             </MenuItem>
-            <MenuItem onClick={(event) => setStatusMenuAnchor(event.currentTarget)}>
+            <MenuItem
+              selected={Boolean(note.emoji)}
+              onClick={(event) => setStatusMenuAnchor(event.currentTarget)}
+            >
               <ActionIcon path={mdiEmoticonOutline} />
               Emoji
             </MenuItem>
