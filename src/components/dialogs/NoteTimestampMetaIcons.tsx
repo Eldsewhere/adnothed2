@@ -59,6 +59,23 @@ const NoteTimestampMetaIcons = ({
   const [statusMenuAnchor, setStatusMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
+  const iconSx = {
+    ml: 0.5,
+    display: "inline-flex",
+    alignItems: "center",
+    color: noteIconColor,
+  } as const;
+  const interactiveIconSx = {
+    ...iconSx,
+    cursor: interactionDisabled ? "not-allowed" : "pointer",
+    opacity: interactionDisabled ? 0.6 : 1,
+  } as const;
+  const iconButtonSx = {
+    ...interactiveIconSx,
+    border: "none",
+    background: "transparent",
+    padding: 0,
+  } as const;
 
   return (
     <>
@@ -71,14 +88,7 @@ const NoteTimestampMetaIcons = ({
           <Box
             component="span"
             role="img"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              alignItems: "center",
-              color: noteIconColor,
-              cursor: interactionDisabled ? "not-allowed" : "pointer",
-              opacity: interactionDisabled ? 0.6 : 1,
-            }}
+            sx={interactiveIconSx}
             onPointerDown={(event) => {
               if (interactionDisabled) {
                 event.stopPropagation();
@@ -110,14 +120,7 @@ const NoteTimestampMetaIcons = ({
           aria-label={undefined}
           arrow
         >
-          <Box
-            component="span"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              color: noteIconColor,
-            }}
-          >
+          <Box component="span" sx={iconSx}>
             <Icon
               path={
                 note.due === undefined ? mdiCheckBold : mdiClockCheckOutline
@@ -129,42 +132,21 @@ const NoteTimestampMetaIcons = ({
       )}
       {note.archived && (
         <Tooltip title="Archived" aria-label={undefined} arrow>
-          <Box
-            component="span"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              color: colors.red[300],
-            }}
-          >
+          <Box component="span" sx={{ ...iconSx, color: colors.red[300] }}>
             <Icon path={mdiArchive} size={0.5} />
           </Box>
         </Tooltip>
       )}
       {note.hasNotification && (
         <Tooltip title="Notified" aria-label={undefined} arrow>
-          <Box
-            component="span"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              color: noteIconColor,
-            }}
-          >
+          <Box component="span" sx={iconSx}>
             <Icon path={mdiBell} size={0.5} />
           </Box>
         </Tooltip>
       )}
       {note.pinned && (
         <Tooltip title="Pinned" aria-label={undefined} arrow>
-          <Box
-            component="span"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              color: noteIconColor,
-            }}
-          >
+          <Box component="span" sx={iconSx}>
             <Icon path={mdiPin} size={0.5} />
           </Box>
         </Tooltip>
@@ -187,17 +169,7 @@ const NoteTimestampMetaIcons = ({
               event.stopPropagation();
               onToggleSpoilerVisibility?.();
             }}
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              alignItems: "center",
-              border: "none",
-              background: "transparent",
-              padding: 0,
-              color: noteIconColor,
-              cursor: interactionDisabled ? "not-allowed" : "pointer",
-              opacity: interactionDisabled ? 0.6 : 1,
-            }}
+            sx={iconButtonSx}
           >
             <Icon
               path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
@@ -207,16 +179,7 @@ const NoteTimestampMetaIcons = ({
         </Tooltip>
       )}
       {checkboxProgress && (
-        <Box
-          component="span"
-          sx={{
-            ml: 0.5,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.25,
-            color: noteIconColor,
-          }}
-        >
+        <Box component="span" sx={{ ...iconSx, gap: 0.25 }}>
           <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
           <Box component="span">{checkboxProgress.percentage}%</Box>
         </Box>
@@ -226,16 +189,7 @@ const NoteTimestampMetaIcons = ({
           title={`${bulletCount} bullet${bulletCount === 1 ? "" : "s"}`}
           arrow
         >
-          <Box
-            component="span"
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.25,
-              color: noteIconColor,
-            }}
-          >
+          <Box component="span" sx={{ ...iconSx, gap: 0.25 }}>
             <Icon path={mdiFormatListBulleted} size={0.5} />
             <Box component="span">{bulletCount}</Box>
           </Box>
@@ -243,11 +197,11 @@ const NoteTimestampMetaIcons = ({
       )}
       {note.emoji && (
         <>
-          <Tooltip title={"Note emoji"} arrow>
+          <Tooltip title="Note emoji" arrow>
             <Box
               component="span"
               role="img"
-              aria-label={"Note emoji"}
+              aria-label="Note emoji"
               onPointerDown={(event) => {
                 if (interactionDisabled) {
                   event.stopPropagation();
@@ -265,13 +219,9 @@ const NoteTimestampMetaIcons = ({
                 setStatusMenuAnchor(event.currentTarget);
               }}
               sx={{
-                ml: 0.5,
-                display: "inline-flex",
-                alignItems: "center",
+                ...interactiveIconSx,
                 fontSize: "0.85rem",
                 lineHeight: 1,
-                cursor: interactionDisabled ? "not-allowed" : "pointer",
-                opacity: interactionDisabled ? 0.6 : 1,
               }}
             >
               {note.emoji}
@@ -281,8 +231,10 @@ const NoteTimestampMetaIcons = ({
             anchorEl={statusMenuAnchor}
             onClose={() => setStatusMenuAnchor(null)}
             note={note}
-            onEmojiChange={(note, emoji) => {
-              note && onEmojiChange(note, emoji);
+            onEmojiChange={(changedNote, emoji) => {
+              if (changedNote) {
+                onEmojiChange(changedNote, emoji);
+              }
             }}
           />
         </>
@@ -302,16 +254,7 @@ const NoteTimestampMetaIcons = ({
               event.stopPropagation();
               onOpenActionsMenu(event, note, false, true);
             }}
-            sx={{
-              ml: 0.5,
-              display: "inline-flex",
-              alignItems: "center",
-              border: "none",
-              background: "transparent",
-              padding: 0,
-              cursor: interactionDisabled ? "not-allowed" : "pointer",
-              opacity: interactionDisabled ? 0.6 : 1,
-            }}
+            sx={{ ...iconButtonSx, color: 'white' }}
           >
             <Icon path={mdiPlus} size={0.6} />
           </Box>
