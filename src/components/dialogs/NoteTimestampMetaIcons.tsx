@@ -141,52 +141,6 @@ const NoteTimestampMetaIcons = ({
           </Box>
         </Tooltip>
       )}
-      {note.emoji && (
-        <>
-          <Tooltip title={"Note emoji"} arrow>
-            <Box
-              component="span"
-              role="img"
-              aria-label={"Note emoji"}
-              onPointerDown={(event) => {
-                if (interactionDisabled) {
-                  event.stopPropagation();
-                  return;
-                }
-                event.stopPropagation();
-              }}
-              onClick={(event: ReactMouseEvent<HTMLElement>) => {
-                if (interactionDisabled) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  return;
-                }
-                event.stopPropagation();
-                setStatusMenuAnchor(event.currentTarget);
-              }}
-              sx={{
-                ml: 0.5,
-                display: "inline-flex",
-                alignItems: "center",
-                fontSize: "0.85rem",
-                lineHeight: 1,
-                cursor: interactionDisabled ? "not-allowed" : "pointer",
-                opacity: interactionDisabled ? 0.6 : 1,
-              }}
-            >
-              {note.emoji}
-            </Box>
-          </Tooltip>
-          <EmojiStatusPicker
-            anchorEl={statusMenuAnchor}
-            onClose={() => setStatusMenuAnchor(null)}
-            note={note}
-            onEmojiChange={(note, emoji) => {
-              note && onEmojiChange(note, emoji);
-            }}
-          />
-        </>
-      )}
       {note.hasNotification && (
         <Tooltip title="Notified" aria-label={undefined} arrow>
           <Box
@@ -286,6 +240,52 @@ const NoteTimestampMetaIcons = ({
             />
           </Box>
         </Tooltip>
+      )}
+      {note.emoji && (
+        <>
+          <Tooltip title={"Note emoji"} arrow>
+            <Box
+              component="span"
+              role="img"
+              aria-label={"Note emoji"}
+              onPointerDown={(event) => {
+                if (interactionDisabled) {
+                  event.stopPropagation();
+                  return;
+                }
+                event.stopPropagation();
+              }}
+              onClick={(event: ReactMouseEvent<HTMLElement>) => {
+                if (interactionDisabled) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  return;
+                }
+                event.stopPropagation();
+                setStatusMenuAnchor(event.currentTarget);
+              }}
+              sx={{
+                ml: 0.5,
+                display: "inline-flex",
+                alignItems: "center",
+                fontSize: "0.85rem",
+                lineHeight: 1,
+                cursor: interactionDisabled ? "not-allowed" : "pointer",
+                opacity: interactionDisabled ? 0.6 : 1,
+              }}
+            >
+              {note.emoji}
+            </Box>
+          </Tooltip>
+          <EmojiStatusPicker
+            anchorEl={statusMenuAnchor}
+            onClose={() => setStatusMenuAnchor(null)}
+            note={note}
+            onEmojiChange={(note, emoji) => {
+              note && onEmojiChange(note, emoji);
+            }}
+          />
+        </>
       )}
       {onOpenActionsMenu && (
         <Tooltip title="Status actions" aria-label={undefined} arrow>
