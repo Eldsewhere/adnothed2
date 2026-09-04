@@ -832,6 +832,7 @@ const NoteListRow = ({
                   timestamp={
                     !note.archived &&
                     note.due &&
+                    !isTomorrow(note.due) &&
                     !note.pinned &&
                     !note.completed
                       ? note.due
