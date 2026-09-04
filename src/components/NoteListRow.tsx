@@ -829,7 +829,7 @@ const NoteListRow = ({
                   isSpoilerActive={isSpoilerActive}
                   isSpoilerVisible={isSpoilerVisible || revealAllSpoilers}
                   onToggleSpoilerVisibility={handleSpoilerVisibilityToggle}
-                  onOpenActionsMenu={onOpenActionsMenu}
+                  onOpenActionsMenu={selectMode ? undefined : onOpenActionsMenu}
                   onEmojiChange={onEmojiChange}
                   openDueDateDialog={openDueDateDialog}
                 />
@@ -844,14 +844,16 @@ const NoteListRow = ({
                       : undefined
                   }
                 />
-                <Box
-                  component="span"
-                  sx={{ ml: "auto", pl: 0.5, color: noteIconColor }}
-                >
-                  {formatWeekday(
-                    shouldDisplayDueDateForMeta ? note.due! : note.time,
-                  )}
-                </Box>
+                {!selectMode && (
+                  <Box
+                    component="span"
+                    sx={{ ml: "auto", pl: 0.5, color: noteIconColor }}
+                  >
+                    {formatWeekday(
+                      shouldDisplayDueDateForMeta ? note.due! : note.time,
+                    )}
+                  </Box>
+                )}
               </Typography>
 
               {selectMode && globalIndex !== undefined ? (
