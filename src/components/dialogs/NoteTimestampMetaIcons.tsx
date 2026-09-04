@@ -169,41 +169,6 @@ const NoteTimestampMetaIcons = ({
           </Box>
         </Tooltip>
       )}
-      {checkboxProgress && (
-        <Box
-          component="span"
-          sx={{
-            ml: 0.75,
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 0.25,
-            color: noteIconColor,
-          }}
-        >
-          <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
-          <Box component="span">{checkboxProgress.percentage}%</Box>
-        </Box>
-      )}
-      {bulletCount && (
-        <Tooltip
-          title={`${bulletCount} bullet${bulletCount === 1 ? "" : "s"}`}
-          arrow
-        >
-          <Box
-            component="span"
-            sx={{
-              ml: 0.75,
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 0.25,
-              color: noteIconColor,
-            }}
-          >
-            <Icon path={mdiFormatListBulleted} size={0.5} />
-            <Box component="span">{bulletCount}</Box>
-          </Box>
-        </Tooltip>
-      )}
       {isSpoilerActive && (
         <Tooltip
           title={isSpoilerVisible ? "Hide text" : "Reveal text"}
@@ -238,6 +203,41 @@ const NoteTimestampMetaIcons = ({
               path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
               size={0.5}
             />
+          </Box>
+        </Tooltip>
+      )}
+      {checkboxProgress && (
+        <Box
+          component="span"
+          sx={{
+            ml: 0.5,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 0.25,
+            color: noteIconColor,
+          }}
+        >
+          <Icon path={mdiCheckboxMarkedOutline} size={0.5} />
+          <Box component="span">{checkboxProgress.percentage}%</Box>
+        </Box>
+      )}
+      {bulletCount && (
+        <Tooltip
+          title={`${bulletCount} bullet${bulletCount === 1 ? "" : "s"}`}
+          arrow
+        >
+          <Box
+            component="span"
+            sx={{
+              ml: 0.5,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 0.25,
+              color: noteIconColor,
+            }}
+          >
+            <Icon path={mdiFormatListBulleted} size={0.5} />
+            <Box component="span">{bulletCount}</Box>
           </Box>
         </Tooltip>
       )}
