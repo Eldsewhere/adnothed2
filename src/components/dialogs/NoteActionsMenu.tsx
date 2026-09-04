@@ -240,6 +240,26 @@ const NoteActionsMenu = ({
               </Box>
               Search
             </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onClone(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiFilter} size={0.8} />
+              </Box>
+              Filter
+            </MenuItem>
           </>
         )}
       </Menu>
@@ -471,6 +491,26 @@ const NoteActionsMenu = ({
                 Search
               </MenuItem>
             )}
+            <MenuItem
+              onClick={() => {
+                onClone(note);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiFilter} size={0.8} />
+              </Box>
+              Filter
+            </MenuItem>
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
@@ -511,26 +551,6 @@ const NoteActionsMenu = ({
                 <Icon path={mdiCalendarClock} size={0.7} />
               </Box>
               Schedule
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onClone(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon path={mdiFilter} size={0.8} />
-              </Box>
-              Filter
             </MenuItem>
             <MenuItem
               onClick={() => {
