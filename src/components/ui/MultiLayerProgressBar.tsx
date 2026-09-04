@@ -37,6 +37,7 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
 
   const completedBigSections = Math.floor(remainingDaysAfterThisWeek / 7);
   const extraDays = remainingDaysAfterThisWeek % 7;
+  const hasWeeklyCircleBeforeExtraDays = completedBigSections > 0;
 
   // Fallback to text if the full week count exceeds maximum allowed blocks
   if (completedBigSections >= maxBigSections) {
@@ -53,7 +54,7 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
 
   return (
     <Tooltip title={`in ${daysAfter} days`}>
-      <Stack direction="row" spacing={0} sx={{ alignItems: "center", ml: 0.5 }}>
+      <Stack direction="row" spacing={0} sx={{ alignItems: "center", ml: 0.1 }}>
         {/* Phase 1: Remaining days of this current week */}
         {Array.from({ length: daysThisWeek }).map((_, stepIndex) => {
           const isWeekend = isWeekendStep(stepIndex);
@@ -63,6 +64,7 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
               path={mdiCircleMedium}
               size={0.5}
               style={{
+                marginLeft: stepIndex === 0 ? 0 : -4,
                 color: isWeekend ? colors.red[500] : colors.orange[500],
               }}
             />
@@ -71,14 +73,30 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
 
         {/* Phase 2: Full weeks represented as big circles */}
         {Array.from({ length: completedBigSections }).map((_, sectionIndex) => (
-          <Icon
+          <Box
             key={`big-${sectionIndex}`}
-            path={mdiCircle}
-            size={0.5}
-            style={{
+            sx={{
+              position: "relative",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
               color: colors.orange[500],
             }}
-          />
+          >
+            <Icon path={mdiCircle} size={0.5} />
+            <Box
+              component="span"
+              sx={{
+                position: "absolute",
+                color: colors.blueGrey[900],
+                fontSize: "0.45rem",
+                fontWeight: "bold",
+                lineHeight: 1,
+              }}
+            >
+              7
+            </Box>
+          </Box>
         ))}
 
         {/* Phase 3: Extra trailing days left over at the end */}
@@ -92,6 +110,11 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
               path={mdiCircleMedium}
               size={0.5}
               style={{
+                marginLeft:
+                  stepIndex === 0 &&
+                  (hasWeeklyCircleBeforeExtraDays || daysThisWeek === 0)
+                    ? 0
+                    : -4,
                 color: isWeekend ? colors.red[500] : colors.orange[500],
               }}
             />

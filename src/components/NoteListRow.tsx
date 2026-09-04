@@ -598,7 +598,8 @@ const NoteListRow = ({
             display: "flex",
             alignItems: "center",
             flexShrink: 0,
-            pr: 0.1,
+            p: 0,
+            m: 0,
           }}
         >
           <Tooltip title={label ? label.name : "Assign a label"} arrow>
