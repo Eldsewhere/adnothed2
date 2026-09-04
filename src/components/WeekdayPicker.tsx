@@ -1,5 +1,7 @@
 import type { Dayjs } from "dayjs";
 import { Badge, Box, Button, Tooltip, colors } from "@mui/material";
+import { Icon } from "@mdi/react";
+import { mdiCalendarClock } from "@mdi/js";
 
 const WEEKDAY_LETTERS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 
@@ -10,6 +12,8 @@ type WeekdayPickerProps = {
   noteCountByDay: Map<string, number>;
   dueCountByDay: Map<string, number>;
   onSelect: (dayKey: string) => void;
+  futureScheduledDateCount: number;
+  onOpenSchedule: () => void;
 };
 
 const WeekdayPicker = ({
@@ -19,6 +23,8 @@ const WeekdayPicker = ({
   noteCountByDay,
   dueCountByDay,
   onSelect,
+  futureScheduledDateCount,
+  onOpenSchedule,
 }: WeekdayPickerProps) => (
   <Box
     sx={{
@@ -188,6 +194,42 @@ const WeekdayPicker = ({
             </Tooltip>
           );
         })}
+        <Tooltip title="Schedule note">
+          <Badge
+            badgeContent={futureScheduledDateCount}
+            color="warning"
+            overlap="rectangular"
+            sx={{
+              "& .MuiBadge-badge": {
+                minWidth: 12,
+                height: 12,
+                fontSize: "0.5rem",
+              },
+            }}
+          >
+            <Button
+              variant="outlined"
+              aria-label="Schedule note"
+              onClick={onOpenSchedule}
+              sx={{
+                minWidth: 32,
+                width: 32,
+                height: 34,
+                p: 0,
+                borderRadius: 2,
+                color: colors.orange[100],
+                borderColor: "rgba(255, 152, 0, 0.6)",
+                backgroundColor: "rgba(255, 152, 0, 0.24)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 152, 0, 0.32)",
+                  borderColor: colors.orange[300],
+                },
+              }}
+            >
+              <Icon path={mdiCalendarClock} size={0.65} />
+            </Button>
+          </Badge>
+        </Tooltip>
       </Box>
     </Box>
   </Box>

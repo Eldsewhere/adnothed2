@@ -1590,6 +1590,20 @@ function App() {
     ).length;
   }, [notes, today]);
 
+  const futureScheduledDateCount = useMemo(() => {
+    const scheduledDates = new Set(
+      notes
+        .filter(
+          (note) =>
+            !note.completed &&
+            note.due !== undefined &&
+            dayjs.unix(note.due).isAfter(today, "day"),
+        )
+        .map((note) => dayjs.unix(note.due!).format("YYYY-MM-DD")),
+    );
+    return scheduledDates.size;
+  }, [notes, today]);
+
   const weekdayStripDays = useMemo(
     () =>
       Array.from({ length: 31 }, (_unused, idx) => {
@@ -1960,6 +1974,8 @@ function App() {
                   noteCountByDay={noteCountByDay}
                   dueCountByDay={dueCountByDay}
                   onSelect={handleWeekdayToggle}
+                  futureScheduledDateCount={futureScheduledDateCount}
+                  onOpenSchedule={openWeekPickerDueDialog}
                 />
               </Box>
 
