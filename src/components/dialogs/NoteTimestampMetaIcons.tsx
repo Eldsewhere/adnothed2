@@ -272,7 +272,7 @@ const NoteTimestampMetaIcons = ({
               border: "none",
               background: "transparent",
               padding: 0,
-              color: "inherit",
+              color: noteIconColor,
               cursor: interactionDisabled ? "not-allowed" : "pointer",
               opacity: interactionDisabled ? 0.6 : 1,
             }}

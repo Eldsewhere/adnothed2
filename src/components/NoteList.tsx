@@ -31,7 +31,7 @@ type NoteListProps = {
   noteCountsByDay?: Map<string, number>;
   onEdit: (note: Note) => void;
   onDelete: (note: Note) => void;
-  onCopy: (note: Note) => void;
+  onCopy: (note: Note, selectedText?: string) => void;
   onClone: (note: Note) => void;
   onShareLink: (note: Note) => void;
   onToggleBullet: (note: Note) => void;
@@ -280,8 +280,8 @@ const NoteList = ({
     closeMenu();
   };
 
-  const handleCopy = (note: Note) => {
-    onCopy(note);
+  const handleCopy = (note: Note, selectedText?: string) => {
+    onCopy(note, selectedText);
     closeMenu();
   };
 
@@ -337,12 +337,13 @@ const NoteList = ({
     closeMenu();
   };
 
-  const handleShare = async (note: Note) => {
+  const handleShare = async (note: Note, selectedText?: string) => {
     closeMenu();
+    const text = selectedText ?? note.text;
     if (navigator.share) {
-      await navigator.share({ text: note.text });
+      await navigator.share({ text });
     } else {
-      await navigator.clipboard.writeText(note.text);
+      await navigator.clipboard.writeText(text);
     }
   };
 

@@ -12,10 +12,7 @@ import { Icon } from "@mdi/react";
 import {
   mdiArchiveArrowUp,
   mdiCheckBold,
-  mdiCheckboxBlankOutline,
-  mdiCheckboxMarked,
   mdiChevronDown,
-  mdiClose,
   mdiDotsVertical,
   mdiLabelOff,
   mdiPencil,
@@ -305,7 +302,7 @@ const NoteListRow = ({
     const target = event.target as HTMLElement;
     if (
       target.closest(
-        "button, input, a, label, .MuiCheckbox-root, .MuiChip-root, [role='img']",
+        "button, input, a, label, .MuiCheckbox-root, .MuiChip-root, [role='img'], [data-note-text-id]",
       )
     ) {
       return;
@@ -313,6 +310,98 @@ const NoteListRow = ({
 
     dragStartXRef.current = event.clientX;
     event.currentTarget.setPointerCapture?.(event.pointerId);
+  };
+
+  const handleNoteTextClick = (event: MouseEvent<HTMLElement>) => {
+    if (selectMode || isInteractionDisabled || isEditing) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest("a, button, input, label, .MuiChip-root, [role='img']")) {
+      return;
+    }
+
+    const noteTextElement = event.currentTarget;
+    const selection = window.getSelection();
+    const existingSelection = selection?.toString().trim();
+    const selectionBelongsToNote =
+      existingSelection &&
+      selection?.anchorNode &&
+      selection.focusNode &&
+      noteTextElement.contains(selection.anchorNode) &&
+      noteTextElement.contains(selection.focusNode);
+
+    if (!selectionBelongsToNote) {
+      const range = document.caretRangeFromPoint?.(
+        event.clientX,
+        event.clientY,
+      );
+      if (!range || !noteTextElement.contains(range.startContainer)) {
+        return;
+      }
+
+      const textNode =
+        range.startContainer.nodeType === Node.TEXT_NODE
+          ? range.startContainer
+          : range.startContainer.childNodes[range.startOffset];
+      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+        return;
+      }
+
+      const text = textNode.textContent ?? "";
+      let start = range.startOffset;
+      while (start > 0 && !/\s/.test(text[start - 1])) {
+        start -= 1;
+      }
+      let end = range.startOffset;
+      while (end < text.length && !/\s/.test(text[end])) {
+        end += 1;
+      }
+      if (start === end) {
+        return;
+      }
+
+      const wordRange = document.createRange();
+      wordRange.setStart(textNode, start);
+      wordRange.setEnd(textNode, end);
+      selection?.removeAllRanges();
+      selection?.addRange(wordRange);
+    }
+
+    const syntheticEvent = {
+      currentTarget: noteTextElement,
+    } as unknown as MouseEvent<HTMLElement>;
+    onOpenActionsMenu(syntheticEvent, note);
+  };
+
+  const handleNoteTextSelectionEnd = (
+    event: React.SyntheticEvent<HTMLElement>,
+  ) => {
+    if (selectMode || isInteractionDisabled || isEditing) {
+      return;
+    }
+
+    const target = event.target as HTMLElement;
+    if (target.closest("a, button, input, label, .MuiChip-root, [role='img']")) {
+      return;
+    }
+
+    const selection = window.getSelection();
+    if (
+      !selection?.toString().trim() ||
+      !selection.anchorNode ||
+      !selection.focusNode ||
+      !event.currentTarget.contains(selection.anchorNode) ||
+      !event.currentTarget.contains(selection.focusNode)
+    ) {
+      return;
+    }
+
+    const syntheticEvent = {
+      currentTarget: event.currentTarget,
+    } as unknown as MouseEvent<HTMLElement>;
+    onOpenActionsMenu(syntheticEvent, note);
   };
 
   const handleRowPointerMove = (event: React.PointerEvent<HTMLElement>) => {
@@ -504,6 +593,9 @@ const NoteListRow = ({
               component="div"
               ref={setnoteTextRef}
               data-note-text-id={note.id}
+              onClick={handleNoteTextClick}
+              onMouseUp={handleNoteTextSelectionEnd}
+              onPointerUp={handleNoteTextSelectionEnd}
               sx={{
                 flex: 1,
                 minWidth: 0,
@@ -515,6 +607,8 @@ const NoteListRow = ({
                 display: "-webkit-box",
                 WebkitLineClamp: isOverflowing ? 4 : 2,
                 WebkitBoxOrient: "vertical",
+                touchAction: "auto",
+                userSelect: "text",
               }}
             >
               {note.text.split("\n").map((row, rowIndex) => {

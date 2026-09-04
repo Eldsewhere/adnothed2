@@ -14,7 +14,6 @@ import {
   mdiFilter,
   mdiLink,
   mdiMagnify,
-  mdiMinusCircle,
   mdiNoteText,
   mdiOpenInNew,
   mdiPencil,
@@ -41,9 +40,9 @@ type NoteActionsMenuProps = {
   onToggleSpoiler: (note: Note) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   onComplete: (note: Note) => void;
-  onCopy: (note: Note) => void;
+  onCopy: (note: Note, selectedText?: string) => void;
   onClone: (note: Note) => void;
-  onShareText: (note: Note) => void;
+  onShareText: (note: Note, selectedText?: string) => void;
   onShareLink: (note: Note) => void;
   onOpen: (note: Note) => void;
   onSearch: (
@@ -69,12 +68,18 @@ const SEARCH_ICON_FILENAMES: Record<string, string> = {
   "amazon.es": "amazon-es.png",
 };
 
-const SearchSiteIcon = ({ domain }: { domain: string }) => (
+const SearchSiteIcon = ({
+  domain,
+  compact = false,
+}: {
+  domain: string;
+  compact?: boolean;
+}) => (
   <Box
     component="img"
     src={`${import.meta.env.BASE_URL}search-icons/${SEARCH_ICON_FILENAMES[domain]}`}
     alt=""
-    sx={{ width: 16, height: 16, mr: 1, flexShrink: 0 }}
+    sx={{ width: 16, height: 16, mr: compact ? 0 : 1, flexShrink: 0 }}
   />
 );
 
@@ -153,11 +158,96 @@ const NoteActionsMenu = ({
     onClose();
   };
 
+  const selectedText = note ? getSelectedText?.(note.id) : undefined;
+  const hasSelectedText = Boolean(selectedText);
+
   return (
     <>
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl && note) && !openStatusPicker}
+        open={Boolean(anchorEl && note && hasSelectedText) && !openStatusPicker}
+        onClose={handleMenuClose}
+      >
+        {note && selectedText && (
+          <>
+            <MenuItem
+              disabled
+              sx={{
+                minHeight: 28,
+                py: 0.25,
+                fontSize: "0.75rem",
+                lineHeight: 1.2,
+                maxWidth: 280,
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {selectedText}
+            </MenuItem>
+            <Divider sx={{ m: `0 !important` }} />
+            <MenuItem
+              onClick={() => {
+                onCopy(note, selectedText);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiContentCopy} size={0.8} />
+              </Box>
+              Copy
+            </MenuItem>
+            <MenuItem
+              onClick={() => {
+                onShareText(note, selectedText);
+                handleMenuClose();
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <Icon path={mdiShareVariant} size={0.7} />
+              </Box>
+              Share
+            </MenuItem>
+            <MenuItem onClick={() => runSearch("google.com")}>
+              <Box
+                component="span"
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  mr: 1,
+                  py: 1,
+                  px: 0.5,
+                }}
+              >
+                <SearchSiteIcon domain="google.com" compact />
+              </Box>
+              Search
+            </MenuItem>
+          </>
+        )}
+      </Menu>
+      <Menu
+        anchorEl={anchorEl}
+        open={
+          Boolean(anchorEl && note) && !openStatusPicker && !hasSelectedText
+        }
         onClose={handleMenuClose}
       >
         {note && (
@@ -299,31 +389,10 @@ const NoteActionsMenu = ({
               anchorEl={statusMenuAnchor}
               onClose={() => setStatusMenuAnchor(null)}
             />
-            {false && (
-              <MenuItem
-                onClick={(event: MouseEvent<HTMLElement>) =>
-                  setStatusMenuAnchor(event.currentTarget)
-                }
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    mr: 1,
-                    py: 1,
-                    px: 0.5,
-                  }}
-                >
-                  <Icon path={mdiMinusCircle} size={0.7} />
-                </Box>
-                Status
-              </MenuItem>
-            )}
             <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
-                onCopy(note);
+                onCopy(note, getSelectedText?.(note.id));
                 handleMenuClose();
               }}
             >
@@ -360,7 +429,7 @@ const NoteActionsMenu = ({
               </Box>
               Share
             </MenuItem>
-            {hasUrl ? (
+            {hasUrl && !hasSelectedText ? (
               <MenuItem
                 onClick={() => {
                   onOpen(note);
@@ -496,7 +565,7 @@ const NoteActionsMenu = ({
         <MenuItem
           onClick={() => {
             if (!note) return;
-            onShareText(note);
+            onShareText(note, getSelectedText?.(note.id));
             setShareMenuAnchor(null);
             onClose();
           }}

@@ -933,8 +933,8 @@ function App() {
     }
   };
 
-  const handleNoteCopy = (note: Note) => {
-    navigator.clipboard.writeText(note.text);
+  const handleNoteCopy = (note: Note, selectedText?: string) => {
+    navigator.clipboard.writeText(selectedText ?? note.text);
     setNotificationSeverity("success");
     setNotification("Note Copied");
   };
