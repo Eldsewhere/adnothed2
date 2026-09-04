@@ -214,6 +214,8 @@ const NoteListRow = ({
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
+  const displayedTimestamp = shouldDisplayDueDateForMeta ? note.due! : note.time;
+  const isWeekend = [0, 6].includes(dayjs.unix(displayedTimestamp).day());
   const isScheduledDragAction =
     !note.archived &&
     note.due !== undefined &&
@@ -848,11 +850,22 @@ const NoteListRow = ({
                 {!selectMode && (
                   <Box
                     component="span"
-                    sx={{ ml: "auto", pl: 0.5, color: noteIconColor }}
+                    sx={{
+                      ml: "auto",
+                      pl: 0.5,
+                      color: noteIconColor,
+                    }}
                   >
-                    {formatWeekday(
-                      shouldDisplayDueDateForMeta ? note.due! : note.time,
+                    {isWeekend && (
+                      <Box
+                        component="span"
+                        aria-hidden="true"
+                        sx={{ color: colors.red[400], mr: 0.25 }}
+                      >
+                        •
+                      </Box>
                     )}
+                    {formatWeekday(displayedTimestamp)}
                   </Box>
                 )}
               </Typography>
