@@ -878,7 +878,13 @@ const NoteListRow = ({
             alignItems: "center",
           }}
         >
-          <Tooltip title="Actions">
+          <Tooltip
+            title="Actions"
+            sx={{
+              padding: 0,
+              margin: 0,
+            }}
+          >
             <IconButton
               aria-label={`Actions for ${note.text}`}
               size="small"
