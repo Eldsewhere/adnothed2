@@ -24,6 +24,7 @@ import type { Label, Note } from "../types";
 import {
   formatDueDate,
   formatTimestamp,
+  formatWeekday,
   isToday,
 } from "../utils/formatTimestamp";
 import { splitTextByUrls } from "../utils/textPatterns";
@@ -320,7 +321,9 @@ const NoteListRow = ({
     }
 
     const target = event.target as HTMLElement;
-    if (target.closest("a, button, input, label, .MuiChip-root, [role='img']")) {
+    if (
+      target.closest("a, button, input, label, .MuiChip-root, [role='img']")
+    ) {
       return;
     }
 
@@ -353,7 +356,10 @@ const NoteListRow = ({
         BULLET_ROW_PATTERN.test(sourceRow))
     ) {
       const textNodes: Text[] = [];
-      const walker = document.createTreeWalker(rowElement, NodeFilter.SHOW_TEXT);
+      const walker = document.createTreeWalker(
+        rowElement,
+        NodeFilter.SHOW_TEXT,
+      );
       let currentNode = walker.nextNode();
       while (currentNode) {
         textNodes.push(currentNode as Text);
@@ -367,8 +373,8 @@ const NoteListRow = ({
       }
 
       const rowRange = document.createRange();
-      const bulletPrefixLength = sourceRow.match(BULLET_ROW_PATTERN)?.[0]
-        .length ?? 0;
+      const bulletPrefixLength =
+        sourceRow.match(BULLET_ROW_PATTERN)?.[0].length ?? 0;
       rowRange.setStart(
         firstTextNode,
         Math.min(bulletPrefixLength, firstTextNode.length),
@@ -421,7 +427,9 @@ const NoteListRow = ({
     }
 
     const target = event.target as HTMLElement;
-    if (target.closest("a, button, input, label, .MuiChip-root, [role='img']")) {
+    if (
+      target.closest("a, button, input, label, .MuiChip-root, [role='img']")
+    ) {
       return;
     }
 
@@ -446,7 +454,8 @@ const NoteListRow = ({
   };
 
   const handleNoteTextPointerDown = () => {
-    selectionBeforePointerDownRef.current = window.getSelection()?.toString().trim() ?? "";
+    selectionBeforePointerDownRef.current =
+      window.getSelection()?.toString().trim() ?? "";
   };
 
   const handleRowPointerMove = (event: React.PointerEvent<HTMLElement>) => {
@@ -832,6 +841,11 @@ const NoteListRow = ({
                   onEmojiChange={onEmojiChange}
                   openDueDateDialog={openDueDateDialog}
                 />
+                <Box sx={{ pl: 0.5, color: noteIconColor }}>
+                  {formatWeekday(
+                    shouldDisplayDueDateForMeta ? note.due! : note.time,
+                  )}
+                </Box>
                 <MultiLayerProgressBar
                   timestamp={
                     !note.archived &&
