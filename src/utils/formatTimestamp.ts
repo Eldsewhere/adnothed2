@@ -113,17 +113,6 @@ export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export function formatWeekday(timestamp: number): string | null {
   const date = new Date(timestamp * 1000);
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  if (
-    isSameDay(date, yesterday)
-  ) {
-    return null;
-  }
 
   return `${DAY_ABBREVS[date.getDay()]}`;
 }
