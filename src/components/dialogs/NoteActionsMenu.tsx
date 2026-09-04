@@ -31,6 +31,7 @@ type NoteActionsMenuProps = {
   note: Note | null;
   onHashtagPickerOpen?: () => void;
   openStatusPicker?: boolean;
+  openQuickActions?: boolean;
   hasUrl: boolean;
   isPinned: boolean;
   onClose: () => void;
@@ -83,10 +84,26 @@ const SearchSiteIcon = ({
   />
 );
 
+const ActionIcon = ({ path }: { path: string }) => (
+  <Box
+    component="span"
+    sx={{
+      display: "inline-flex",
+      alignItems: "center",
+      mr: 1,
+      py: 1,
+      px: 0.5,
+    }}
+  >
+    <Icon path={path} size={0.7} />
+  </Box>
+);
+
 const NoteActionsMenu = ({
   anchorEl,
   note,
   openStatusPicker,
+  openQuickActions,
   hasUrl,
   isPinned,
   onClose,
@@ -165,7 +182,58 @@ const NoteActionsMenu = ({
     <>
       <Menu
         anchorEl={anchorEl}
-        open={Boolean(anchorEl && note && hasSelectedText) && !openStatusPicker}
+        open={Boolean(anchorEl && note && openQuickActions)}
+        onClose={handleMenuClose}
+      >
+        {note && (
+          <>
+            <MenuItem onClick={() => { onNotify(note); handleMenuClose(); }}>
+              <ActionIcon path={mdiBell} />
+              Notify
+            </MenuItem>
+            <MenuItem onClick={() => { onPin(note); handleMenuClose(); }}>
+              <ActionIcon path={isPinned ? mdiPinOff : mdiPin} />
+              {isPinned ? "Unpin" : "Pin"}
+            </MenuItem>
+            <MenuItem onClick={() => { onComplete(note); handleMenuClose(); }}>
+              <ActionIcon path={note.completed ? mdiUndo : mdiCheckBold} />
+              {note.completed ? "Undone" : "Done"}
+            </MenuItem>
+            <MenuItem onClick={() => { onArchive(note); handleMenuClose(); }}>
+              <ActionIcon
+                path={note.archived ? mdiArchiveArrowUp : mdiArchiveArrowDown}
+              />
+              {note.archived ? "Unarchive" : "Archive"}
+            </MenuItem>
+            <MenuItem onClick={() => { onToggleSpoiler(note); handleMenuClose(); }}>
+              <ActionIcon path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline} />
+              {note.spoiler ? "Show" : "Hide"}
+            </MenuItem>
+            <MenuItem onClick={(event) => setStatusMenuAnchor(event.currentTarget)}>
+              <ActionIcon path={mdiEmoticonOutline} />
+              Emoji
+            </MenuItem>
+            <EmojiStatusPicker
+              note={note}
+              anchorEl={statusMenuAnchor}
+              onClose={() => setStatusMenuAnchor(null)}
+              onEmojiChange={(changedNote, emoji) => {
+                if (changedNote) {
+                  onEmojiChange(changedNote, emoji);
+                }
+                handleMenuClose();
+              }}
+            />
+          </>
+        )}
+      </Menu>
+      <Menu
+        anchorEl={anchorEl}
+        open={
+          Boolean(anchorEl && note && hasSelectedText) &&
+          !openStatusPicker &&
+          !openQuickActions
+        }
         onClose={handleMenuClose}
       >
         {note && selectedText && (
@@ -266,150 +334,15 @@ const NoteActionsMenu = ({
       <Menu
         anchorEl={anchorEl}
         open={
-          Boolean(anchorEl && note) && !openStatusPicker && !hasSelectedText
+          Boolean(anchorEl && note) &&
+          !openStatusPicker &&
+          !openQuickActions &&
+          !hasSelectedText
         }
         onClose={handleMenuClose}
       >
         {note && (
           <>
-            <MenuItem
-              onClick={() => {
-                onNotify(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon path={mdiBell} size={0.7} />
-              </Box>
-              Notify
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onPin(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon path={isPinned ? mdiPinOff : mdiPin} size={0.7} />
-              </Box>
-              {isPinned ? "Unpin" : "Pin"}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onComplete(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon
-                  path={note.completed ? mdiUndo : mdiCheckBold}
-                  size={0.7}
-                />
-              </Box>
-              {note.completed ? "Undone" : "Done"}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onArchive(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon
-                  path={note.archived ? mdiArchiveArrowUp : mdiArchiveArrowDown}
-                  size={0.7}
-                />
-              </Box>
-              {note.archived ? "Unarchive" : "Archive"}
-            </MenuItem>
-            <MenuItem
-              onClick={() => {
-                onToggleSpoiler(note);
-                handleMenuClose();
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon
-                  path={note.spoiler ? mdiEyeOutline : mdiEyeOffOutline}
-                  size={0.7}
-                />
-              </Box>
-              {note.spoiler ? "Show" : "Hide"}
-            </MenuItem>
-            <MenuItem
-              onClick={(event) => {
-                setStatusMenuAnchor(event.currentTarget);
-              }}
-            >
-              <Box
-                component="span"
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  mr: 1,
-                  py: 1,
-                  px: 0.5,
-                }}
-              >
-                <Icon path={mdiEmoticonOutline} size={0.7} />
-              </Box>
-              Emoji
-            </MenuItem>
-            <EmojiStatusPicker
-              note={note}
-              onEmojiChange={(note, emoji) => {
-                note && onEmojiChange(note, emoji);
-                handleMenuClose();
-              }}
-              anchorEl={statusMenuAnchor}
-              onClose={() => setStatusMenuAnchor(null)}
-            />
-            <Divider sx={{ m: `0 !important` }} />
             <MenuItem
               onClick={() => {
                 onCopy(note, getSelectedText?.(note.id));

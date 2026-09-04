@@ -12,6 +12,7 @@ import {
   mdiEyeOutline,
   mdiFormatListBulleted,
   mdiPin,
+  mdiPlus,
 } from "@mdi/js";
 import type { Note } from "../../types";
 import { formatDueDate } from "../../utils/formatTimestamp";
@@ -33,6 +34,7 @@ type NoteTimestampMetaIconsProps = {
     event: ReactMouseEvent<HTMLElement>,
     note: Note,
     openStatusPicker?: boolean,
+    openQuickActions?: boolean,
   ) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   openDueDateDialog: (note: Note) => void;
@@ -50,6 +52,7 @@ const NoteTimestampMetaIcons = ({
   isSpoilerActive = false,
   isSpoilerVisible = false,
   onToggleSpoilerVisibility,
+  onOpenActionsMenu,
   onEmojiChange,
   openDueDateDialog,
 }: NoteTimestampMetaIconsProps) => {
@@ -281,6 +284,36 @@ const NoteTimestampMetaIcons = ({
               path={isSpoilerVisible ? mdiEyeOutline : mdiEyeOffOutline}
               size={0.5}
             />
+          </Box>
+        </Tooltip>
+      )}
+      {onOpenActionsMenu && (
+        <Tooltip title="Status actions" aria-label={undefined} arrow>
+          <Box
+            component="button"
+            type="button"
+            aria-label="Status actions"
+            onClick={(event: ReactMouseEvent<HTMLElement>) => {
+              if (interactionDisabled) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+              }
+              event.stopPropagation();
+              onOpenActionsMenu(event, note, false, true);
+            }}
+            sx={{
+              ml: 0.5,
+              display: "inline-flex",
+              alignItems: "center",
+              border: "none",
+              background: "transparent",
+              padding: 0,
+              cursor: interactionDisabled ? "not-allowed" : "pointer",
+              opacity: interactionDisabled ? 0.6 : 1,
+            }}
+          >
+            <Icon path={mdiPlus} size={0.6} />
           </Box>
         </Tooltip>
       )}

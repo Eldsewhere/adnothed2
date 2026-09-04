@@ -116,6 +116,7 @@ type NoteListRowProps = {
     event: MouseEvent<HTMLElement>,
     note: Note,
     openStatusPicker?: boolean,
+    openQuickActions?: boolean,
   ) => void;
   setnoteTextRef: (element: HTMLElement | null) => void;
   availableHashtags?: string[];
