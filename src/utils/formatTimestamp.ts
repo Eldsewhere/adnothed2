@@ -76,10 +76,15 @@ export function formatDueDate(timestamp: number): string {
   const date = new Date(timestamp * 1000);
   const pad = (value: number) => value.toString().padStart(2, "0");
   const now = new Date();
+  const yearDisplayBoundary = new Date(
+    now.getFullYear() + 1,
+    now.getMonth(),
+    1,
+  );
 
   const isMidnight = date.getHours() === 0 && date.getMinutes() === 0;
   const yearSuffix =
-    date.getFullYear() !== now.getFullYear() ? `, ${date.getFullYear()}` : "";
+    date >= yearDisplayBoundary ? `, ${date.getFullYear()}` : "";
 
   const tomorrow = new Date(now);
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -91,7 +96,7 @@ export function formatDueDate(timestamp: number): string {
     if (isSameDay(date, now)) return "Today";
     if (isSameDay(date, tomorrow)) return "Tomorrow";
     const dateText = `${month} ${day}${yearSuffix}`;
-    if (date.getFullYear() !== now.getFullYear()) {
+    if (date >= yearDisplayBoundary) {
       return `${dateText} • 00:00`;
     }
     return dateText;
