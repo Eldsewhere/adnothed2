@@ -265,7 +265,7 @@ const NoteForm = ({
     <Box component="form" onSubmit={submit} noValidate>
       <Stack
         direction="row"
-        sx={{ alignItems: "flex-start", flexWrap: "wrap", gap: 1 }}
+        sx={{ alignItems: "flex-start", flexWrap: "wrap" }}
       >
         <Stack direction="row" sx={{ alignItems: "center", width: "100%" }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -615,14 +615,6 @@ const NoteForm = ({
               }}
             />
           </Box>
-          <Stack
-            sx={{
-              alignItems: "center",
-              justifyContent: "center",
-              ml: 1,
-              gap: 1,
-            }}
-          ></Stack>
         </Stack>
       </Stack>
     </Box>
