@@ -40,7 +40,7 @@ export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
 
   // Fallback to text if the full week count exceeds maximum allowed blocks
   if (completedBigSections >= maxBigSections) {
-    return <Box sx={{ ml: 0.3 }}>({`${daysAfter} days`})</Box>;
+    return <Box sx={{ ml: 0.3 }}>{`${daysAfter} days`}</Box>;
   }
 
   // Helper to check if a specific day offset from today lands on a weekend

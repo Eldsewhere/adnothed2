@@ -214,20 +214,22 @@ const NoteListRow = ({
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor);
   const shouldShowCompleteIcon = note.completed || isPastDueDate;
-  const isScheduledStatus =
-    !note.archived &&
-    !note.completed &&
-    note.due !== undefined &&
-    (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor || isPriority);
   const isScheduledDragAction =
     !note.archived &&
     note.due !== undefined &&
     (shouldUsePriorityDueDate || shouldUseFutureDueDateTextColor || isPriority);
   const noteIconColor = note.archived
     ? colors.red[300]
-    : isScheduledStatus
+    : shouldUseFutureDueDateTextColor || shouldUsePriorityDueDate
       ? colors.orange[300]
-      : colors.lightGreen[400];
+      : isToday(note.time) ||
+          note.pinned ||
+          (note.due !== undefined &&
+            !note.completed &&
+            (isToday(note.due) || isTomorrow(note.due))) ||
+          note.hasNotification
+        ? colors.lightGreen[400]
+        : colors.blueGrey[300];
   const checkboxProgress = getCheckboxProgress(note.text);
   const bulletCount = getBulletCount(note.text);
   const [isSpoilerVisible, setIsSpoilerVisible] = useState(false);
@@ -797,19 +799,9 @@ const NoteListRow = ({
                   textAlign: "left",
                   display: "flex",
                   alignItems: "center",
-                  color: note.archived
-                    ? colors.red[300]
-                    : shouldUseFutureDueDateTextColor ||
-                        shouldUsePriorityDueDate
-                      ? colors.orange[300]
-                      : isToday(note.time) ||
-                          note.pinned ||
-                          (note.due !== undefined &&
-                            !note.completed &&
-                            (isToday(note.due) || isTomorrow(note.due))) ||
-                          note.hasNotification
-                        ? colors.lightGreen[400]
-                        : colors.blueGrey[300],
+                  flex: 1,
+                  minWidth: 0,
+                  color: noteIconColor,
                 }}
               >
                 <Box
@@ -841,11 +833,6 @@ const NoteListRow = ({
                   onEmojiChange={onEmojiChange}
                   openDueDateDialog={openDueDateDialog}
                 />
-                <Box sx={{ pl: 0.5, color: noteIconColor }}>
-                  {formatWeekday(
-                    shouldDisplayDueDateForMeta ? note.due! : note.time,
-                  )}
-                </Box>
                 <MultiLayerProgressBar
                   timestamp={
                     !note.archived &&
@@ -857,6 +844,14 @@ const NoteListRow = ({
                       : undefined
                   }
                 />
+                <Box
+                  component="span"
+                  sx={{ ml: "auto", pl: 0.5, color: noteIconColor }}
+                >
+                  {formatWeekday(
+                    shouldDisplayDueDateForMeta ? note.due! : note.time,
+                  )}
+                </Box>
               </Typography>
 
               {selectMode && globalIndex !== undefined ? (
