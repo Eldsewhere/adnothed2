@@ -235,6 +235,7 @@ const NoteListRow = ({
   }, [note.id]);
   const [dragOffset, setDragOffset] = useState(0);
   const dragStartXRef = useRef<number | null>(null);
+  const selectionBeforePointerDownRef = useRef("");
   const MENU_OPEN_DRAG_THRESHOLD = 80;
   const isSpoilerActive = Boolean(note.spoiler);
   const shouldHideSpoilerText =
@@ -325,72 +326,57 @@ const NoteListRow = ({
 
     const noteTextElement = event.currentTarget;
     const selection = window.getSelection();
-    const existingSelection = selection?.toString().trim();
-    const selectionBelongsToNote =
-      existingSelection &&
-      selection?.anchorNode &&
-      selection.focusNode &&
-      noteTextElement.contains(selection.anchorNode) &&
-      noteTextElement.contains(selection.focusNode);
+    const range = document.caretRangeFromPoint?.(event.clientX, event.clientY);
+    if (!range || !noteTextElement.contains(range.startContainer)) {
+      return;
+    }
 
-    if (!selectionBelongsToNote) {
-      const range = document.caretRangeFromPoint?.(
-        event.clientX,
-        event.clientY,
+    const textNode =
+      range.startContainer.nodeType === Node.TEXT_NODE
+        ? range.startContainer
+        : range.startContainer.childNodes[range.startOffset];
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      return;
+    }
+
+    const rowElement = (
+      range.startContainer.nodeType === Node.ELEMENT_NODE
+        ? (range.startContainer as Element)
+        : range.startContainer.parentElement
+    )?.closest<HTMLElement>("[data-note-row-index]");
+    const rowIndex = rowElement?.dataset.noteRowIndex;
+    const sourceRow =
+      rowIndex !== undefined ? note.text.split("\n")[Number(rowIndex)] : "";
+    if (
+      rowElement &&
+      (CHECKBOX_ROW_PATTERN.test(sourceRow) ||
+        BULLET_ROW_PATTERN.test(sourceRow))
+    ) {
+      const textNodes: Text[] = [];
+      const walker = document.createTreeWalker(rowElement, NodeFilter.SHOW_TEXT);
+      let currentNode = walker.nextNode();
+      while (currentNode) {
+        textNodes.push(currentNode as Text);
+        currentNode = walker.nextNode();
+      }
+
+      const firstTextNode = textNodes[0];
+      const lastTextNode = textNodes.at(-1);
+      if (!firstTextNode || !lastTextNode) {
+        return;
+      }
+
+      const rowRange = document.createRange();
+      const bulletPrefixLength = sourceRow.match(BULLET_ROW_PATTERN)?.[0]
+        .length ?? 0;
+      rowRange.setStart(
+        firstTextNode,
+        Math.min(bulletPrefixLength, firstTextNode.length),
       );
-      if (!range || !noteTextElement.contains(range.startContainer)) {
-        return;
-      }
-
-      const textNode =
-        range.startContainer.nodeType === Node.TEXT_NODE
-          ? range.startContainer
-          : range.startContainer.childNodes[range.startOffset];
-      if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
-        return;
-      }
-
-      const rowElement = (
-        range.startContainer.nodeType === Node.ELEMENT_NODE
-          ? (range.startContainer as Element)
-          : range.startContainer.parentElement
-      )?.closest<HTMLElement>("[data-note-row-index]");
-      const rowIndex = rowElement?.dataset.noteRowIndex;
-      const sourceRow =
-        rowIndex !== undefined ? note.text.split("\n")[Number(rowIndex)] : "";
-      if (
-        rowElement &&
-        (CHECKBOX_ROW_PATTERN.test(sourceRow) ||
-          BULLET_ROW_PATTERN.test(sourceRow))
-      ) {
-        const textNodes: Text[] = [];
-        const walker = document.createTreeWalker(
-          rowElement,
-          NodeFilter.SHOW_TEXT,
-        );
-        let currentNode = walker.nextNode();
-        while (currentNode) {
-          textNodes.push(currentNode as Text);
-          currentNode = walker.nextNode();
-        }
-
-        const firstTextNode = textNodes[0];
-        const lastTextNode = textNodes.at(-1);
-        if (!firstTextNode || !lastTextNode) {
-          return;
-        }
-
-        const rowRange = document.createRange();
-        const bulletPrefixLength = sourceRow.match(BULLET_ROW_PATTERN)?.[0]
-          .length ?? 0;
-        rowRange.setStart(
-          firstTextNode,
-          Math.min(bulletPrefixLength, firstTextNode.length),
-        );
-        rowRange.setEnd(lastTextNode, lastTextNode.length);
-        selection?.removeAllRanges();
-        selection?.addRange(rowRange);
-      } else {
+      rowRange.setEnd(lastTextNode, lastTextNode.length);
+      selection?.removeAllRanges();
+      selection?.addRange(rowRange);
+    } else {
       const text = textNode.textContent ?? "";
       let start = range.startOffset;
       while (start > 0 && !/\s/.test(text[start - 1])) {
@@ -407,9 +393,18 @@ const NoteListRow = ({
       const wordRange = document.createRange();
       wordRange.setStart(textNode, start);
       wordRange.setEnd(textNode, end);
+      const clickedWord = Array.from(wordRange.getClientRects()).some(
+        (rect) =>
+          event.clientX >= rect.left &&
+          event.clientX <= rect.right &&
+          event.clientY >= rect.top &&
+          event.clientY <= rect.bottom,
+      );
+      if (!clickedWord) {
+        return;
+      }
       selection?.removeAllRanges();
       selection?.addRange(wordRange);
-      }
     }
 
     const syntheticEvent = {
@@ -431,8 +426,11 @@ const NoteListRow = ({
     }
 
     const selection = window.getSelection();
+    const selectedText = selection?.toString().trim() ?? "";
     if (
-      !selection?.toString().trim() ||
+      !selectedText ||
+      selectedText === selectionBeforePointerDownRef.current ||
+      !selection ||
       !selection.anchorNode ||
       !selection.focusNode ||
       !event.currentTarget.contains(selection.anchorNode) ||
@@ -445,6 +443,10 @@ const NoteListRow = ({
       currentTarget: event.currentTarget,
     } as unknown as MouseEvent<HTMLElement>;
     onOpenActionsMenu(syntheticEvent, note);
+  };
+
+  const handleNoteTextPointerDown = () => {
+    selectionBeforePointerDownRef.current = window.getSelection()?.toString().trim() ?? "";
   };
 
   const handleRowPointerMove = (event: React.PointerEvent<HTMLElement>) => {
@@ -637,6 +639,7 @@ const NoteListRow = ({
               ref={setnoteTextRef}
               data-note-text-id={note.id}
               onClick={handleNoteTextClick}
+              onPointerDown={handleNoteTextPointerDown}
               onMouseUp={handleNoteTextSelectionEnd}
               onPointerUp={handleNoteTextSelectionEnd}
               sx={{
