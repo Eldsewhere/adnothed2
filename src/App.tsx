@@ -1155,11 +1155,17 @@ function App() {
   };
 
   const handleBulkLabelChange = (icon: string | null) => {
+    const selectedFilteredNote = notes.some(
+      (note) => selectednoteIds.has(note.id) && note.icon === noteFilters.icon,
+    );
     setNotes((prev) =>
       prev.map((note) =>
         selectednoteIds.has(note.id) ? { ...note, icon } : note,
       ),
     );
+    if (selectedFilteredNote) {
+      handleFilterLabelChange(icon ?? "");
+    }
     setSelectedNoteIds(new Set());
     setbulkLabelAnchor(null);
   };
@@ -2072,6 +2078,7 @@ function App() {
                 noteCountsByDay={noteCountByDay}
                 onEdit={handleEditNote}
                 onDelete={handleNoteDelete}
+                onFilterLabelChange={handleFilterLabelChange}
                 onCopy={handleNoteCopy}
                 onClone={handleCloneNote}
                 onShareLink={handleNoteShareLink}
@@ -2168,6 +2175,10 @@ function App() {
                   );
                   if (editingNote?.id === note.id) {
                     seteditingNote({ ...editingNote, icon });
+                  }
+                  setRecentlyEditedNoteId(note.id);
+                  if (noteFilters.icon === note.icon) {
+                    handleFilterLabelChange(icon ?? "");
                   }
                 }}
                 selectMode={selectMode}
@@ -2274,6 +2285,10 @@ function App() {
           anchorEl={bulkLabelAnchor}
           labels={labels}
           onClose={() => setbulkLabelAnchor(null)}
+          onFilter={(label) => {
+            handleFilterLabelChange(label.id);
+            setbulkLabelAnchor(null);
+          }}
           onSelect={(icon) => {
             handleBulkLabelChange(icon);
           }}

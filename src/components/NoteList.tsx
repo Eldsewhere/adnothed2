@@ -39,6 +39,7 @@ type NoteListProps = {
   onToggleCheckbox: (note: Note, rowIndex: number) => void;
   onNotify: (note: Note) => void;
   onLabelChange: (note: Note, icon: string | null) => void;
+  onFilterLabelChange: (value: string) => void;
   onDueChange: (note: Note, due: number | null) => void;
   onComplete: (note: Note) => void;
   onPin: (note: Note) => void;
@@ -135,6 +136,7 @@ const NoteList = ({
   onToggleCheckbox,
   onNotify,
   onLabelChange,
+  onFilterLabelChange,
   onDueChange,
   onComplete,
   onPin,
@@ -1178,6 +1180,10 @@ const NoteList = ({
           labelCounts={labelCounts}
           onClose={closeLabelMenu}
           onSelect={(val) => handleLabelSelect(val)}
+          onFilter={(label) => {
+            onFilterLabelChange(label.id);
+            closeLabelMenu();
+          }}
           selected={labelMenuAnchor?.note.icon}
           onCreateLabel={
             labelManagement

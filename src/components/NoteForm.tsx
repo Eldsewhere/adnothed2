@@ -586,22 +586,22 @@ const NoteForm = ({
                               <LabelMenu
                                 onShowAllSelect={() => {
                                   field.onChange("");
-                                  if (!isEditing) {
-                                    onFilterLabelChange("");
-                                  }
+                                  onFilterLabelChange("");
                                   closeLabelMenu();
                                 }}
                                 anchorEl={labelMenuAnchor}
                                 onClose={closeLabelMenu}
+                                onFilter={(label) => {
+                                  onFilterLabelChange(label.id);
+                                  closeLabelMenu();
+                                }}
                                 labels={labels}
                                 selected={activelabelId}
                                 management={labelManagement}
                                 onSelect={(val) => {
                                   const nextValue = val ?? "";
                                   field.onChange(nextValue);
-                                  if (!isEditing) {
-                                    onFilterLabelChange(nextValue);
-                                  }
+                                  onFilterLabelChange(nextValue);
                                   closeLabelMenu();
                                 }}
                               />

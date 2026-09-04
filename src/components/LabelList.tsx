@@ -10,7 +10,7 @@ import {
   TableContainer,
 } from "@mui/material";
 import { Icon } from "@mdi/react";
-import { mdiCheck, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
+import { mdiCheck, mdiFilter, mdiPencil, mdiTrashCanOutline } from "@mdi/js";
 import type { Label, Note } from "../types";
 import LabelListRow from "./LabelListRow";
 
@@ -23,6 +23,7 @@ type LabelListProps = {
   onDelete: (label: Label) => void;
   newlabelId?: string | null;
   onSelect?: (label: Label) => void;
+  onFilter?: (label: Label) => void;
 };
 
 const LabelList = ({
@@ -34,6 +35,7 @@ const LabelList = ({
   onDelete,
   newlabelId,
   onSelect,
+  onFilter,
 }: LabelListProps) => {
   const [menuState, setMenuState] = useState<{
     anchorEl: HTMLElement | null;
@@ -61,6 +63,13 @@ const LabelList = ({
   const handleMenuEdit = () => {
     if (menuState.label) {
       onEdit(menuState.label);
+    }
+    handleCloseMenu();
+  };
+
+  const handleMenuFilter = () => {
+    if (menuState.label && onFilter) {
+      onFilter(menuState.label);
     }
     handleCloseMenu();
   };
@@ -154,8 +163,25 @@ const LabelList = ({
           >
             <Icon path={mdiCheck} size={0.7} />
           </Box>
-          Select
+          Pick
         </MenuItem>
+        {onFilter && (
+          <MenuItem onClick={handleMenuFilter}>
+            <Box
+              component="span"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mr: 1,
+                py: 1,
+                px: 0.5,
+              }}
+            >
+              <Icon path={mdiFilter} size={0.7} />
+            </Box>
+            Pick & Filter
+          </MenuItem>
+        )}
         <MenuItem onClick={handleMenuEdit}>
           <Box
             component="span"

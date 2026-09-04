@@ -21,6 +21,7 @@ type LabelMenuProps = {
   labelCounts?: Map<string, number> | Record<string, number>;
   onClose: () => void;
   onSelect: (icon: string | null) => void;
+  onFilter?: (label: Label) => void;
   selected?: string | null;
   onShowAllSelect?: () => void;
   onCreateLabel?: () => void;
@@ -45,6 +46,7 @@ const LabelMenu = ({
   labelCounts: _labelCounts,
   onClose,
   onSelect,
+  onFilter,
   selected,
   onShowAllSelect,
   onCreateLabel,
@@ -183,6 +185,7 @@ const LabelMenu = ({
             onDelete={management.onDelete}
             newlabelId={management.newLabelId}
             onSelect={(label) => onSelect(label.id)}
+            onFilter={onFilter}
           />
         </SelectionPopover>
       </Popover>
@@ -294,6 +297,7 @@ const LabelMenu = ({
             onSelect(label.id);
             onClose();
           }}
+          onFilter={onFilter}
         />
       </SelectionPopover>
     </Popover>
