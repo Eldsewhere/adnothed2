@@ -491,7 +491,7 @@ const NoteFormActionsMenu = ({
           <Box component="span" sx={menuItemIconSx}>
             <Icon path={mdiSelectAll} size={0.75} />
           </Box>
-          Select
+          Select All
         </MenuItem>
         <MenuItem
           onClick={() => {
