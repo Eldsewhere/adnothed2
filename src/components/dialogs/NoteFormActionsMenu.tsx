@@ -21,7 +21,6 @@ import {
   mdiCheckboxBlankOutline,
   mdiChevronRight,
   mdiCircleSmall,
-  mdiCloseCircleOutline,
   mdiContentCopy,
   mdiContentPaste,
   mdiEmailOutline,
@@ -40,6 +39,7 @@ import {
   mdiRayStartEnd,
   mdiSelectAll,
 } from "@mdi/js";
+import { isGoogleDriveEnabled } from "../../utils/storage";
 
 type QueryTemplate = {
   label: string;
@@ -246,16 +246,15 @@ const menuItemIconSx = {
 type NoteFormActionsMenuProps = {
   value: string;
   onTextChange: (str: string) => void;
-  onClear: () => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
 };
 
 const NoteFormActionsMenu = ({
   value,
   onTextChange,
-  onClear,
   textAreaRef,
 }: NoteFormActionsMenuProps) => {
+  const showGoogleDriveBackup = isGoogleDriveEnabled();
   const [formatMenuAnchor, setFormatMenuAnchor] = useState<HTMLElement | null>(
     null,
   );
@@ -489,19 +488,6 @@ const NoteFormActionsMenu = ({
         </MenuItem>
         <MenuItem
           onClick={() => {
-            onClear();
-            setFormatMenuAnchor(null);
-            closeQueryMenu();
-            requestAnimationFrame(() => textAreaRef.current?.focus());
-          }}
-        >
-          <Box component="span" sx={menuItemIconSx}>
-            <Icon path={mdiCloseCircleOutline} size={0.75} />
-          </Box>
-          Clear
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
             void navigator.clipboard.writeText(value);
             setFormatMenuAnchor(null);
             closeQueryMenu();
@@ -525,17 +511,21 @@ const NoteFormActionsMenu = ({
           </Box>
           Paste
         </MenuItem>
-        <Divider />
-        <MenuItem
-          onClick={(event: MouseEvent<HTMLElement>) => {
-            setQueryMenuAnchor(event.currentTarget);
-          }}
-        >
-          <Box component="span" sx={menuItemIconSx}>
-            <Icon path={mdiChevronRight} size={0.75} />
-          </Box>
-          Query
-        </MenuItem>
+        {showGoogleDriveBackup && (
+          <>
+            <Divider />
+            <MenuItem
+              onClick={(event: MouseEvent<HTMLElement>) => {
+                setQueryMenuAnchor(event.currentTarget);
+              }}
+            >
+              <Box component="span" sx={menuItemIconSx}>
+                <Icon path={mdiChevronRight} size={0.75} />
+              </Box>
+              Query
+            </MenuItem>
+          </>
+        )}
       </Menu>
       <Menu
         anchorEl={queryMenuAnchor}
