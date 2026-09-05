@@ -1,5 +1,5 @@
 import { useState, type MouseEvent } from "react";
-import { Box, IconButton, Menu, Tooltip } from "@mui/material";
+import { Box, IconButton, Menu, MenuItem, Tooltip } from "@mui/material";
 import { Icon } from "@mdi/react";
 import { mdiEmoticonOutline } from "@mdi/js";
 import Picker, { Theme, type EmojiClickData } from "emoji-picker-react";
@@ -8,9 +8,15 @@ type EmojiMenuProps = {
   value: string;
   onTextChange: (value: string) => void;
   textAreaRef: React.RefObject<HTMLTextAreaElement | null>;
+  mode?: "icon" | "menu";
 };
 
-const EmojiMenu = ({ value, onTextChange, textAreaRef }: EmojiMenuProps) => {
+const EmojiMenu = ({
+  value,
+  onTextChange,
+  textAreaRef,
+  mode = "icon",
+}: EmojiMenuProps) => {
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
   const insertEmoji = (emojiData: EmojiClickData) => {
@@ -29,6 +35,57 @@ const EmojiMenu = ({ value, onTextChange, textAreaRef }: EmojiMenuProps) => {
       textArea?.setSelectionRange(cursor, cursor);
     });
   };
+
+  if (mode === "menu") {
+    return (
+      <>
+        <MenuItem
+          onClick={(event: MouseEvent<HTMLElement>) =>
+            setAnchorEl(event.currentTarget)
+          }
+        >
+          <Box
+            component="span"
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              mr: 1,
+              py: 1,
+              px: 0.5,
+            }}
+          >
+            <Icon path={mdiEmoticonOutline} size={0.75} />
+          </Box>
+          Emoji
+        </MenuItem>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+          slotProps={{
+            paper: {
+              sx: {
+                overflow: "hidden",
+                bgcolor: "#263238",
+                border: "1px solid #455a64",
+                boxShadow: "0 16px 36px rgba(15, 23, 42, 0.45)",
+              },
+            },
+          }}
+        >
+          <Box role="group" aria-label="Emoji picker">
+            <Picker
+              onEmojiClick={insertEmoji}
+              lazyLoadEmojis
+              theme={Theme.DARK}
+              width={352}
+              height={420}
+            />
+          </Box>
+        </Menu>
+      </>
+    );
+  }
 
   return (
     <>

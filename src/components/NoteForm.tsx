@@ -20,7 +20,6 @@ import {
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { countGraphemes } from "../utils/textLength";
-import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
 
@@ -499,11 +498,6 @@ const NoteForm = ({
                                   </Tooltip>
                                 )}
                                 <NoteFormActionsMenu
-                                  value={text}
-                                  onTextChange={handleTextChange}
-                                  textAreaRef={textAreaRef}
-                                />
-                                <EmojiMenu
                                   value={text}
                                   onTextChange={handleTextChange}
                                   textAreaRef={textAreaRef}

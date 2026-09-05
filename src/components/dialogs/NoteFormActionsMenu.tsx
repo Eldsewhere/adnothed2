@@ -40,6 +40,7 @@ import {
   mdiSelectAll,
 } from "@mdi/js";
 import { isGoogleDriveEnabled } from "../../utils/storage";
+import EmojiMenu from "./EmojiMenu";
 
 type QueryTemplate = {
   label: string;
@@ -466,6 +467,12 @@ const NoteFormActionsMenu = ({
           </Box>
           Hashtag
         </MenuItem>
+        <EmojiMenu
+          value={value}
+          onTextChange={onTextChange}
+          textAreaRef={textAreaRef}
+          mode="menu"
+        />
         <Divider />
         <MenuItem
           onClick={() => {
