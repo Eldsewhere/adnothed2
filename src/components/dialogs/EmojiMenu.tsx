@@ -96,7 +96,6 @@ const EmojiMenu = ({
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
         onClose={() => setAnchorEl(null)}
-        title="Emoji"
         onEmojiClick={insertEmoji}
       />
     </>

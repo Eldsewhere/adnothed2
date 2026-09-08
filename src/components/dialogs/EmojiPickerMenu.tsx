@@ -19,7 +19,7 @@ const EmojiPickerMenu = ({
   anchorEl,
   open,
   onClose,
-  title = "Pick Emoji",
+  title = "Emoji",
   onEmojiClick,
   footer,
   width = 352,
@@ -30,6 +30,11 @@ const EmojiPickerMenu = ({
     open={open}
     onClose={onClose}
     slotProps={{
+      list: {
+        sx: {
+          padding: 0,
+        },
+      },
       paper: {
         sx: {
           overflow: "hidden",

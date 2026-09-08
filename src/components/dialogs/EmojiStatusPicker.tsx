@@ -21,7 +21,6 @@ const EmojiStatusPicker = ({
     anchorEl={anchorEl}
     open={Boolean(anchorEl)}
     onClose={onClose}
-    title="Emoji"
     onEmojiClick={(emojiData) => {
       onEmojiChange(note, emojiData.emoji);
       onClose();
