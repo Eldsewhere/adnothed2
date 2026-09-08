@@ -1,8 +1,8 @@
 import { mdiDelete } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Box, Button, colors, Menu } from "@mui/material";
-import Picker, { Theme } from "emoji-picker-react";
+import { Button } from "@mui/material";
 import type { Note } from "../../types";
+import EmojiPickerMenu from "./EmojiPickerMenu";
 
 type EmojiStatusPickerProps = {
   note: Note | null;
@@ -17,41 +17,18 @@ const EmojiStatusPicker = ({
   anchorEl,
   onClose,
 }: EmojiStatusPickerProps) => (
-  <Menu
+  <EmojiPickerMenu
     anchorEl={anchorEl}
     open={Boolean(anchorEl)}
     onClose={onClose}
-    slotProps={{
-      paper: {
-        sx: {
-          overflow: "hidden",
-          backgroundColor: colors.blueGrey[900],
-        },
-      },
+    title="Emoji"
+    onEmojiClick={(emojiData) => {
+      onEmojiChange(note, emojiData.emoji);
+      onClose();
     }}
-  >
-    <Box
-      role="group"
-      aria-label="Emoji picker"
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 1,
-        padding: 1,
-        margin: 0,
-      }}
-    >
-      <Picker
-        onEmojiClick={(emojiData) => {
-          onEmojiChange(note, emojiData.emoji);
-          onClose();
-        }}
-        lazyLoadEmojis
-        theme={Theme.DARK}
-        width={352}
-        height={420}
-      />
+    footer={
       <Button
+        fullWidth
         variant="contained"
         color="error"
         startIcon={<Icon path={mdiDelete} size={0.7} />}
@@ -59,11 +36,16 @@ const EmojiStatusPicker = ({
           onEmojiChange(note, null);
           onClose();
         }}
+        sx={{
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: 0.5,
+        }}
       >
         Delete
       </Button>
-    </Box>
-  </Menu>
+    }
+  />
 );
 
 export default EmojiStatusPicker;
