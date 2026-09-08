@@ -86,6 +86,43 @@ const SHORT_MONTH_LOOKUP: Record<string, number> = {
   dez: 11,
   dec: 11,
 };
+const TIME_TOKEN_PATTERN =
+  "(?:[01]?\\d|2[0-3])(?::(?:0|5|10|15|20|25|30|35|40|45|50|55)(?:am|pm)?|(?:am|pm))|(?:[01]?\\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?";
+
+const parseTimeToken = (rawToken: string): { hour: number; minute: number } | null => {
+  const normalized = rawToken.toLowerCase();
+  const meridiem = normalized.endsWith("am") || normalized.endsWith("pm")
+    ? normalized.slice(-2)
+    : null;
+  const timeWithoutMeridiem = meridiem
+    ? normalized.slice(0, -2)
+    : normalized;
+  const isHourSyntax = timeWithoutMeridiem.includes("h");
+  const hourText = isHourSyntax
+    ? timeWithoutMeridiem.replace(/h.*$/, "")
+    : timeWithoutMeridiem.split(":")[0];
+  const minuteText = isHourSyntax
+    ? timeWithoutMeridiem.replace(/^[0-9]+h/, "")
+    : timeWithoutMeridiem.split(":")[1];
+  let hour = Number.parseInt(hourText, 10);
+  const minute = Number.parseInt(minuteText ?? "0", 10);
+
+  if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
+    return null;
+  }
+
+  if (meridiem) {
+    if (hour < 1 || hour > 12) return null;
+    if (meridiem === "am") hour = hour === 12 ? 0 : hour;
+    if (meridiem === "pm" && hour !== 12) hour += 12;
+  }
+
+  if (hour < 0 || hour > 23 || ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)) {
+    return null;
+  }
+
+  return { hour, minute };
+};
 
 const formatShortRangeDate = (value: Dayjs): string => {
   const day = value.date().toString().padStart(2, "0");
@@ -713,7 +750,7 @@ function App() {
         .trim();
 
       const timeMatch =
-        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+        new RegExp(`(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`, "i").exec(
           dateText,
         );
 
@@ -725,38 +762,15 @@ function App() {
         };
       }
 
-      const rawToken = timeMatch[2].toLowerCase();
-      const isHourSyntax = rawToken.includes("h");
-      const hour = isHourSyntax
-        ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
-        : Number.parseInt(rawToken.split(":")[0], 10);
-      const minute = isHourSyntax
-        ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
-        : Number.parseInt(rawToken.split(":")[1], 10);
-
-      if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-        return { cleanedText: textWithToday };
-      }
-
-      if (
-        !isHourSyntax &&
-        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
-      ) {
-        return { cleanedText: textWithToday };
-      }
-
-      if (
-        isHourSyntax &&
-        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
-        rawToken !== `${hour}h`
-      ) {
+      const parsedTime = parseTimeToken(timeMatch[2]);
+      if (!parsedTime) {
         return { cleanedText: textWithToday };
       }
 
       const finalDue = targetDate
         .clone()
-        .hour(hour)
-        .minute(minute)
+        .hour(parsedTime.hour)
+        .minute(parsedTime.minute)
         .second(0)
         .millisecond(0);
 
@@ -772,14 +786,20 @@ function App() {
       };
     }
 
-    const monthDateMatch =
-      /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
-        workingText,
-      );
+    const monthDateMatch = /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+      workingText,
+    );
+    const monthBeforeDayMatch = /(^|[\s(])(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(\d{1,2})(g)?(?=$|[\s)\],;.!?])/i.exec(
+      workingText,
+    );
+    const dateMatch = monthDateMatch ?? monthBeforeDayMatch;
 
-    if (monthDateMatch) {
-      const dayValue = Number.parseInt(monthDateMatch[2], 10);
-      const monthValue = SHORT_MONTH_LOOKUP[monthDateMatch[3].toLowerCase()];
+    if (dateMatch) {
+      const isMonthBeforeDay = dateMatch === monthBeforeDayMatch;
+      const dayValue = Number.parseInt(isMonthBeforeDay ? dateMatch[3] : dateMatch[2], 10);
+      const monthValue = SHORT_MONTH_LOOKUP[
+        (isMonthBeforeDay ? dateMatch[2] : dateMatch[3]).toLowerCase()
+      ];
       if (!Number.isInteger(dayValue) || dayValue < 1 || dayValue > 31) {
         return { cleanedText: textWithToday };
       }
@@ -804,12 +824,12 @@ function App() {
       }
 
       const dateText = workingText
-        .replace(monthDateMatch[0], monthDateMatch[1] ?? "")
+        .replace(dateMatch[0], dateMatch[1] ?? "")
         .replace(/\s{2,}/g, " ")
         .trim();
 
       const timeMatch =
-        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+        new RegExp(`(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`, "i").exec(
           dateText,
         );
 
@@ -823,42 +843,19 @@ function App() {
             .second(0)
             .millisecond(0)
             .unix(),
-          openCalendar: Boolean(monthDateMatch[4]),
+          openCalendar: Boolean(dateMatch[4]),
         };
       }
 
-      const rawToken = timeMatch[2].toLowerCase();
-      const isHourSyntax = rawToken.includes("h");
-      const hour = isHourSyntax
-        ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
-        : Number.parseInt(rawToken.split(":")[0], 10);
-      const minute = isHourSyntax
-        ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
-        : Number.parseInt(rawToken.split(":")[1], 10);
-
-      if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-        return { cleanedText: textWithToday };
-      }
-
-      if (
-        !isHourSyntax &&
-        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
-      ) {
-        return { cleanedText: textWithToday };
-      }
-
-      if (
-        isHourSyntax &&
-        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
-        rawToken !== `${hour}h`
-      ) {
+      const parsedTime = parseTimeToken(timeMatch[2]);
+      if (!parsedTime) {
         return { cleanedText: textWithToday };
       }
 
       const finalDue = parsedDate
         .clone()
-        .hour(hour)
-        .minute(minute)
+        .hour(parsedTime.hour)
+        .minute(parsedTime.minute)
         .second(0)
         .millisecond(0);
 
@@ -870,51 +867,28 @@ function App() {
       return {
         cleanedText,
         dueTimestamp: finalDue.unix(),
-        openCalendar: Boolean(monthDateMatch[4] || timeMatch[3]),
+        openCalendar: Boolean(dateMatch[4] || timeMatch[3]),
       };
     }
 
-    const match =
-      /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
-        workingText,
-      );
+    const match = new RegExp(
+      `(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`,
+      "i",
+    ).exec(workingText);
 
     if (!match) {
       return { cleanedText: textWithToday };
     }
 
-    const rawToken = match[2].toLowerCase();
-    const isHourSyntax = rawToken.includes("h");
-    const hour = isHourSyntax
-      ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
-      : Number.parseInt(rawToken.split(":")[0], 10);
-    const minute = isHourSyntax
-      ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
-      : Number.parseInt(rawToken.split(":")[1], 10);
-
-    if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
-      return { cleanedText: textWithToday };
-    }
-
-    if (
-      !isHourSyntax &&
-      ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
-    ) {
-      return { cleanedText: textWithToday };
-    }
-
-    if (
-      isHourSyntax &&
-      ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
-      rawToken !== `${hour}h`
-    ) {
+    const parsedTime = parseTimeToken(match[2]);
+    if (!parsedTime) {
       return { cleanedText: textWithToday };
     }
 
     const nextDue = effectiveDate
       .clone()
-      .hour(hour)
-      .minute(minute)
+      .hour(parsedTime.hour)
+      .minute(parsedTime.minute)
       .second(0)
       .millisecond(0);
 
