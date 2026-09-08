@@ -882,7 +882,7 @@ const NoteListRow = ({
                       color: noteIconColor,
                     }}
                   >
-                    {isWeekend && (
+                    {isWeekend && !!formatWeekday(displayedTimestamp) && (
                       <Box
                         component="span"
                         aria-hidden="true"

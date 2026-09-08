@@ -150,8 +150,8 @@ export function formatWeekday(timestamp: number): string | null {
     (dateMidnight.getTime() - nowMidnight.getTime()) / (1000 * 60 * 60 * 24),
   );
 
-  if (diffDays <= 0) {
-    return label;
+  if (diffDays < 0) {
+    return diffDays < -6 ? null : label;
   }
 
   const currentWeekday = nowMidnight.getDay();
