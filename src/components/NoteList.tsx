@@ -88,7 +88,8 @@ const OVERSCAN = 6;
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
 const formatScheduleGap = (gapDays: number): string => {
-  let remainingDays = gapDays;
+  /* let remainingDays = gapDays;
+  
   const years = Math.floor(remainingDays / 365);
   remainingDays %= 365;
   const months = Math.floor(remainingDays / 30);
@@ -101,9 +102,9 @@ const formatScheduleGap = (gapDays: number): string => {
     months > 1 ? `${months}m` : null,
     weeks > 1 ? `${weeks}w` : null,
     remainingDays > 0 ? `${remainingDays}` : null,
-  ].filter((part): part is string => part !== null);
+  ].filter((part): part is string => part !== null); */
 
-  return parts.join(" ");
+  return String(gapDays) // parts.join(" ");
 };
 
 const getSearchQuery = (text: string): string =>
