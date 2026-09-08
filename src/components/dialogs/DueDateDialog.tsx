@@ -21,7 +21,7 @@ import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
 import {
   mdiCalendarPlus,
-  mdiCheckCircle,
+  mdiSend,
   mdiClose,
   mdiTrashCanOutline,
 } from "@mdi/js";
@@ -351,7 +351,7 @@ const DueDateDialog = ({
             color="primary"
             sx={{ color: colors.lightGreen[400] }}
           >
-            <Icon path={mdiCheckCircle} size={0.9} />
+            <Icon path={mdiSend} size={0.9} />
           </IconButton>
         </Tooltip>
       </DialogActions>

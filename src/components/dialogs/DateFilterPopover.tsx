@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import {
-    Badge,
+  Badge,
   Box,
   Button,
   colors,
@@ -12,12 +12,7 @@ import {
 import { DateCalendar } from "@mui/x-date-pickers";
 import { PickerDay, type PickerDayProps } from "@mui/x-date-pickers/PickerDay";
 import { Icon } from "@mdi/react";
-import {
-  mdiCalendar,
-  mdiCheckCircle,
-  mdiClose,
-  mdiTrashCanOutline,
-} from "@mdi/js";
+import { mdiCalendar, mdiSend, mdiClose, mdiTrashCanOutline } from "@mdi/js";
 import dayjs, { type Dayjs } from "dayjs";
 
 export type DateFilterState = {
@@ -279,7 +274,7 @@ const DateFilterPopover = ({
           minDate={
             datePickerMode === "start"
               ? filteredMinDate
-              : (activeStartDate ?? filteredMinDate) ?? undefined
+              : (activeStartDate ?? filteredMinDate ?? undefined)
           }
           maxDate={today}
           shouldDisableDate={(day) => day.isAfter(today, "day")}
@@ -371,7 +366,7 @@ const DateFilterPopover = ({
             }}
             sx={{ color: colors.lightGreen[400] }}
           >
-            <Icon path={mdiCheckCircle} size={0.9} />
+            <Icon path={mdiSend} size={0.9} />
           </IconButton>
         </Tooltip>
       </Box>

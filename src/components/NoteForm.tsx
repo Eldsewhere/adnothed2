@@ -13,13 +13,13 @@ import type { Label, LabelFormValues, Note, NoteFormValues } from "../types";
 import {
   mdiCalendarClock,
   mdiCancel,
-  mdiCheckCircle,
+  mdiSend,
   mdiChevronDown,
   mdiLabelMultiple,
+  mdiTrashCanOutline,
 } from "@mdi/js";
 import LabelIcon from "./ui/LabelIcon";
 import { countGraphemes } from "../utils/textLength";
-import EmojiMenu from "./dialogs/EmojiMenu";
 import LabelMenu from "./dialogs/LabelMenu";
 import NoteFormActionsMenu from "./dialogs/NoteFormActionsMenu";
 
@@ -500,16 +500,6 @@ const NoteForm = ({
                                 <NoteFormActionsMenu
                                   value={text}
                                   onTextChange={handleTextChange}
-                                  onClear={() => {
-                                    handleTextChange("");
-                                    field.onChange("");
-                                    onClearFilters();
-                                  }}
-                                  textAreaRef={textAreaRef}
-                                />
-                                <EmojiMenu
-                                  value={text}
-                                  onTextChange={handleTextChange}
                                   textAreaRef={textAreaRef}
                                 />
                               </Stack>
@@ -521,6 +511,39 @@ const NoteForm = ({
                                   pointerEvents: "auto",
                                 }}
                               >
+                                {!isEditing && (
+                                  <Tooltip title="Clear note">
+                                    <IconButton
+                                      onClick={() => {
+                                        handleTextChange("");
+                                        field.onChange("");
+                                        onClearFilters();
+                                      }}
+                                      aria-label="Clear note"
+                                      size="small"
+                                      sx={{
+                                        color: colors.red[400],
+                                        border: "none",
+                                        backgroundColor: "transparent",
+                                        borderRadius: 1,
+                                        minWidth: 32,
+                                        width: 32,
+                                        height: 32,
+                                        p: 0,
+                                        boxShadow: "none",
+                                        "&:hover": {
+                                          backgroundColor:
+                                            "rgba(148, 163, 184, 0.12)",
+                                        },
+                                      }}
+                                    >
+                                      <Icon
+                                        path={mdiTrashCanOutline}
+                                        size={0.8}
+                                      />
+                                    </IconButton>
+                                  </Tooltip>
+                                )}
                                 {editingNote && (
                                   <Tooltip title="Cancel edit">
                                     <IconButton
@@ -577,7 +600,7 @@ const NoteForm = ({
                                       },
                                     }}
                                   >
-                                    <Icon path={mdiCheckCircle} size={0.8} />
+                                    <Icon path={mdiSend} size={0.8} />
                                   </IconButton>
                                 </Tooltip>
                               </Stack>

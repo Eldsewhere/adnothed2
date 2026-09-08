@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import useMdiIconOptions from "../hooks/useMdiIconOptions";
 import type { Label, LabelFormValues, IconOption } from "../types";
-import { mdiCancel, mdiCheckCircle } from "@mdi/js";
+import { mdiCancel, mdiSend } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import LabelIcon from "./ui/LabelIcon";
 import { createLetterIconOptionFromInput } from "../utils/letterIconOptions";
@@ -355,7 +355,7 @@ const LabelForm = ({
                             }}
                           >
                             <Icon
-                              path={mdiCheckCircle}
+                              path={mdiSend}
                               size={0.8}
                               color={colors.lightGreen[400]}
                             />
