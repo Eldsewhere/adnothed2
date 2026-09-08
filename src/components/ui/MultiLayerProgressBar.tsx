@@ -8,7 +8,7 @@ interface MultiLayerProgressBarProps {
 }
 
 export const MultiLayerProgressBar: React.FC<MultiLayerProgressBarProps> = ({
-  maxBigSections = 5,
+  maxBigSections = 4,
   timestamp,
 }) => {
   if (!timestamp) return null;

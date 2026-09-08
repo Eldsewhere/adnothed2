@@ -56,6 +56,22 @@ export function isYesterday(timestamp: number): boolean {
 }
 
 const DAY_ABBREVS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const SUPERSCRIPT_DIGITS: Record<string, string> = {
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+};
+
+function toSuperscript(value: number): string {
+  return String(value).replace(/\d/g, (digit) => SUPERSCRIPT_DIGITS[digit] ?? digit);
+}
 
 const MONTH_ABBREVS = [
   "Jan",
@@ -118,6 +134,34 @@ export const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
 
 export function formatWeekday(timestamp: number): string | null {
   const date = new Date(timestamp * 1000);
+  const label = DAY_ABBREVS[date.getDay()];
+  const now = new Date();
+  const nowMidnight = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  );
+  const dateMidnight = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+  );
+  const diffDays = Math.round(
+    (dateMidnight.getTime() - nowMidnight.getTime()) / (1000 * 60 * 60 * 24),
+  );
 
-  return `${DAY_ABBREVS[date.getDay()]}`;
+  if (diffDays <= 0) {
+    return label;
+  }
+
+  const currentWeekday = nowMidnight.getDay();
+  const targetWeekday = dateMidnight.getDay();
+  let nextOccurrenceOffset = (targetWeekday - currentWeekday + 7) % 7;
+  if (nextOccurrenceOffset === 0) {
+    nextOccurrenceOffset = 7;
+  }
+
+  const occurrence = 1 + Math.floor((diffDays - nextOccurrenceOffset) / 7);
+
+  return occurrence > 1 ? `${label}${toSuperscript(occurrence)}` : label;
 }

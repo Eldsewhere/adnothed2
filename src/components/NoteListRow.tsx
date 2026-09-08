@@ -77,6 +77,32 @@ const getBulletCount = (text: string): number | null => {
   return count === 0 ? null : count;
 };
 
+const renderWeekdayLabel = (weekdayText: string) => {
+  const match = weekdayText.match(/^(.*?)([⁰¹²³⁴⁵⁶⁷⁸⁹]+)$/);
+  if (!match) {
+    return weekdayText;
+  }
+
+  const [, baseText, superscriptText] = match;
+  return (
+    <>
+      {baseText}
+      <Box
+        component="sup"
+        sx={{
+          display: "inline-block",
+          fontSize: "1em",
+          lineHeight: 1,
+          verticalAlign: "super",
+          ml: 0.15,
+        }}
+      >
+        {superscriptText}
+      </Box>
+    </>
+  );
+};
+
 const isTomorrow = (timestamp: number): boolean => {
   const target = dayjs.unix(timestamp).startOf("day");
   const tomorrow = dayjs().add(1, "day").startOf("day");
@@ -865,7 +891,7 @@ const NoteListRow = ({
                         •
                       </Box>
                     )}
-                    {formatWeekday(displayedTimestamp)}
+                    {renderWeekdayLabel(formatWeekday(displayedTimestamp) ?? "")}
                   </Box>
                 )}
               </Typography>

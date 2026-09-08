@@ -666,6 +666,112 @@ function App() {
         .trim();
     }
 
+    const weekdayLookup: Record<string, number> = {
+      sun: 0,
+      mon: 1,
+      tue: 2,
+      wed: 3,
+      thu: 4,
+      fri: 5,
+      sat: 6,
+    };
+
+    const weekdayMatch =
+      /(^|[\s(])((?:sun|mon|tue|wed|thu|fri|sat))(?:(\d+|[⁰¹²³⁴⁵⁶⁷⁸⁹]+))?(g)?(?=$|[\s)\],;.!?])/i.exec(
+        workingText,
+      );
+
+    if (weekdayMatch) {
+      const weekdayKey = weekdayMatch[2].toLowerCase();
+      const targetWeekday = weekdayLookup[weekdayKey];
+      const rawOccurrence = weekdayMatch[3] ?? "1";
+      const occurrence = Number.parseInt(
+        rawOccurrence.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) =>
+          "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit)],
+        ),
+        10,
+      );
+
+      if (!Number.isInteger(targetWeekday) || occurrence < 1) {
+        return { cleanedText: textWithToday };
+      }
+
+      const anchorDate = effectiveDate.clone().startOf("day");
+      const currentWeekday = anchorDate.day();
+      let offset = (targetWeekday - currentWeekday + 7) % 7;
+      if (offset === 0) {
+        offset = 7;
+      }
+
+      const targetDate = anchorDate
+        .clone()
+        .add(offset + (occurrence - 1) * 7, "day");
+
+      const dateText = workingText
+        .replace(weekdayMatch[0], weekdayMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      const timeMatch =
+        /(^|[\s(])((?:[01]?\d|2[0-3]):(?:0|5|10|15|20|25|30|35|40|45|50|55)|(?:[01]?\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?)(g)?(?=$|[\s)\],;.!?])/i.exec(
+          dateText,
+        );
+
+      if (!timeMatch) {
+        return {
+          cleanedText: dateText,
+          dueTimestamp: targetDate.unix(),
+          openCalendar: Boolean(weekdayMatch[4]),
+        };
+      }
+
+      const rawToken = timeMatch[2].toLowerCase();
+      const isHourSyntax = rawToken.includes("h");
+      const hour = isHourSyntax
+        ? Number.parseInt(rawToken.replace(/h.*$/, ""), 10)
+        : Number.parseInt(rawToken.split(":")[0], 10);
+      const minute = isHourSyntax
+        ? Number.parseInt(rawToken.replace(/^[0-9]+h/, ""), 10) || 0
+        : Number.parseInt(rawToken.split(":")[1], 10);
+
+      if (!Number.isInteger(hour) || hour < 0 || hour > 23) {
+        return { cleanedText: textWithToday };
+      }
+
+      if (
+        !isHourSyntax &&
+        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
+      ) {
+        return { cleanedText: textWithToday };
+      }
+
+      if (
+        isHourSyntax &&
+        ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute) &&
+        rawToken !== `${hour}h`
+      ) {
+        return { cleanedText: textWithToday };
+      }
+
+      const finalDue = targetDate
+        .clone()
+        .hour(hour)
+        .minute(minute)
+        .second(0)
+        .millisecond(0);
+
+      const cleanedText = dateText
+        .replace(timeMatch[0], timeMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      return {
+        cleanedText,
+        dueTimestamp: finalDue.unix(),
+        openCalendar: Boolean(weekdayMatch[4] || timeMatch[3]),
+      };
+    }
+
     const monthDateMatch =
       /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
         workingText,
