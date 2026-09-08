@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import { Box, Alert, Button } from "@mui/material";
+import { Alert, Box, Button, Chip, colors } from "@mui/material";
 import type {
   Label,
   LabelFormValues,
@@ -647,16 +647,18 @@ const NoteList = ({
     }
 
     const items: Array<{
-      type: "header" | "note" | "footer";
+      type: "header" | "note" | "gap" | "footer";
       key: string;
       note?: Note;
       index?: number;
+      gapDays?: number;
     }> = [];
 
     const addNotes = (
       matchesSection: (note: Note) => boolean,
       headerKey?: string,
       isExpanded = true,
+      addScheduleGaps = false,
     ) => {
       const sectionNotes = filteredNotes.filter(matchesSection);
       if (sectionNotes.length === 0) return;
@@ -664,13 +666,30 @@ const NoteList = ({
         items.push({ type: "header", key: headerKey });
       }
       if (!isExpanded) return;
-      sectionNotes.forEach((note) => {
+      sectionNotes.forEach((note, sectionIndex) => {
         items.push({
           type: "note",
           key: `note-${note.id}`,
           note,
           index: filteredNotes.indexOf(note),
         });
+
+        const nextNote = sectionNotes[sectionIndex + 1];
+        if (addScheduleGaps && nextNote?.due !== undefined && note.due !== undefined) {
+          const gapDays = Math.round(
+            dayjs
+              .unix(nextNote.due)
+              .startOf("day")
+              .diff(dayjs.unix(note.due).startOf("day"), "day", true),
+          );
+          if (gapDays > 0) {
+            items.push({
+              type: "gap",
+              key: `schedule-gap-${note.id}-${nextNote.id}`,
+              gapDays,
+            });
+          }
+        }
       });
     };
 
@@ -692,6 +711,7 @@ const NoteList = ({
         futureScheduledNotes,
         "future-due-section-header",
         futureDueSectionExpanded,
+        true,
       );
       addNotes(ordinaryNotes, "notes-section-header", notesSectionExpanded);
     } else {
@@ -700,6 +720,7 @@ const NoteList = ({
         futureScheduledNotes,
         "future-due-section-header",
         futureDueSectionExpanded,
+        true,
       );
     }
 
@@ -729,6 +750,8 @@ const NoteList = ({
   const rowHeights = displayItems.map((item) =>
     item.type === "header"
       ? ARCHIVED_SECTION_HEADER_HEIGHT
+      : item.type === "gap"
+        ? 0
       : item.type === "footer"
         ? 52
         : overflowingnoteIds.has(item.note!.id)
@@ -1022,6 +1045,39 @@ const NoteList = ({
                     >
                       Import / Export
                     </Button>
+                  </Box>
+                );
+              }
+
+              if (item.type === "gap") {
+                return (
+                  <Box
+                    key={item.key}
+                    sx={{
+                      position: "absolute",
+                      top: rowOffsets[index],
+                      left: 0,
+                      right: 0,
+                      height: 0,
+                      zIndex: 1,
+                    }}
+                  >
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`+${item.gapDays}`}
+                      sx={{
+                        height: 22,
+                        color: "text.secondary",
+                        borderColor: colors.grey[700],
+                        fontSize: "0.72rem",
+                        position: "absolute",
+                        left: 55,
+                        top: 0,
+                        transform: "translate(-50%, -50%)",
+                        backgroundColor: colors.grey[900]
+                      }}
+                    />
                   </Box>
                 );
               }
