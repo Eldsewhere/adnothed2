@@ -1092,7 +1092,7 @@ const NoteList = ({
                         borderColor: colors.grey[700],
                         fontSize: "0.72rem",
                         position: "absolute",
-                        left: 40,
+                        right: 30,
                         top: 0,
                         transform: "translate(0, -50%)",
                         backgroundColor: colors.grey[900]
