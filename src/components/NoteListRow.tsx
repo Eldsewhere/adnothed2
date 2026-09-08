@@ -879,7 +879,20 @@ const NoteListRow = ({
                         •
                       </Box>
                     )}
-                    {renderWeekdayLabel(formatWeekday(displayedTimestamp) ?? "")}
+                    <Box
+                      component="span"
+                      sx={{
+                        textDecoration: dayjs
+                          .unix(displayedTimestamp)
+                          .isBefore(dayjs(), "day")
+                          ? "underline"
+                          : "none",
+                      }}
+                    >
+                      {renderWeekdayLabel(
+                        formatWeekday(displayedTimestamp) ?? "",
+                      )}
+                    </Box>
                   </Box>
                 )}
               </Typography>
