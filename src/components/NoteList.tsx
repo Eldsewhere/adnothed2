@@ -87,6 +87,25 @@ const ARCHIVED_SECTION_HEADER_HEIGHT = 36;
 const OVERSCAN = 6;
 const CHECKBOX_ROW_PATTERN = /^(\[ ?([xX])? ?\])\s?(.*)$/;
 
+const formatScheduleGap = (gapDays: number): string => {
+  let remainingDays = gapDays;
+  const years = Math.floor(remainingDays / 365);
+  remainingDays %= 365;
+  const months = Math.floor(remainingDays / 30);
+  remainingDays %= 30;
+  const weeks = Math.floor(remainingDays / 7);
+  remainingDays %= 7;
+
+  const parts = [
+    years > 1 ? `${years}y` : null,
+    months > 1 ? `${months}m` : null,
+    weeks > 1 ? `${weeks}w` : null,
+    remainingDays > 0 ? `${remainingDays}` : null,
+  ].filter((part): part is string => part !== null);
+
+  return parts.join(" ");
+};
+
 const getSearchQuery = (text: string): string =>
   text
     .split("\n")
@@ -1065,14 +1084,14 @@ const NoteList = ({
                     <Chip
                       size="small"
                       variant="outlined"
-                      label={`+${item.gapDays}`}
+                        label={`+${formatScheduleGap(item.gapDays ?? 0)}`}
                       sx={{
                         height: 22,
                         color: "text.secondary",
                         borderColor: colors.grey[700],
                         fontSize: "0.72rem",
                         position: "absolute",
-                        left: 55,
+                        left: '50%',
                         top: 0,
                         transform: "translate(-50%, -50%)",
                         backgroundColor: colors.grey[900]
