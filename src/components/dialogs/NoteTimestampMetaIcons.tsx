@@ -17,6 +17,8 @@ import {
 import type { Note } from "../../types";
 import { formatDueDate } from "../../utils/formatTimestamp";
 import EmojiStatusPicker from "../dialogs/EmojiStatusPicker";
+import { MultiLayerProgressBar } from "../ui/MultiLayerProgressBar";
+import dayjs from "dayjs";
 
 type NoteTimestampMetaIconsProps = {
   note: Note;
@@ -38,6 +40,12 @@ type NoteTimestampMetaIconsProps = {
   ) => void;
   onEmojiChange: (note: Note, emoji: string | null) => void;
   openDueDateDialog: (note: Note) => void;
+};
+
+const isTomorrow = (timestamp: number): boolean => {
+  const target = dayjs.unix(timestamp).startOf("day");
+  const tomorrow = dayjs().add(1, "day").startOf("day");
+  return target.isSame(tomorrow, "day");
 };
 
 const NoteTimestampMetaIcons = ({
@@ -80,35 +88,48 @@ const NoteTimestampMetaIcons = ({
   return (
     <>
       {shouldShowDueDateIcon && (
-        <Tooltip
-          title={shouldUsePriorityDueDate ? "Scheduled" : "Scheduled date"}
-          aria-label={undefined}
-          arrow
-        >
-          <Box
-            component="span"
-            role="img"
-            sx={interactiveIconSx}
-            onPointerDown={(event) => {
-              if (interactionDisabled) {
-                event.stopPropagation();
-                return;
-              }
-              event.stopPropagation();
-            }}
-            onClick={(event) => {
-              if (interactionDisabled) {
-                event.preventDefault();
-                event.stopPropagation();
-                return;
-              }
-              event.stopPropagation();
-              openDueDateDialog(note);
-            }}
+        <>
+          <Tooltip
+            title={shouldUsePriorityDueDate ? "Scheduled" : "Scheduled date"}
+            aria-label={undefined}
+            arrow
           >
-            <Icon path={mdiClockOutline} size={0.5} />
-          </Box>
-        </Tooltip>
+            <Box
+              component="span"
+              role="img"
+              sx={interactiveIconSx}
+              onPointerDown={(event) => {
+                if (interactionDisabled) {
+                  event.stopPropagation();
+                  return;
+                }
+                event.stopPropagation();
+              }}
+              onClick={(event) => {
+                if (interactionDisabled) {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  return;
+                }
+                event.stopPropagation();
+                openDueDateDialog(note);
+              }}
+            >
+              <Icon path={mdiClockOutline} size={0.5} />
+            </Box>
+          </Tooltip>
+          <MultiLayerProgressBar
+            timestamp={
+              !note.archived &&
+              note.due &&
+              !isTomorrow(note.due) &&
+              !note.pinned &&
+              !note.completed
+                ? note.due
+                : undefined
+            }
+          />
+        </>
       )}
       {shouldShowCompleteIcon && (
         <Tooltip
@@ -254,7 +275,7 @@ const NoteTimestampMetaIcons = ({
               event.stopPropagation();
               onOpenActionsMenu(event, note, false, true);
             }}
-            sx={{ ...iconButtonSx, color: 'white' }}
+            sx={{ ...iconButtonSx, color: "white" }}
           >
             <Icon path={mdiPlus} size={0.6} />
           </Box>

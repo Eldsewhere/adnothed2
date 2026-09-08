@@ -30,7 +30,6 @@ import {
 import { splitTextByUrls } from "../utils/textPatterns";
 import LabelIcon from "./ui/LabelIcon";
 import HashtagChip from "./HashtagChip";
-import { MultiLayerProgressBar } from "./ui/MultiLayerProgressBar";
 import NoteTimestampMetaIcons from "./dialogs/NoteTimestampMetaIcons";
 
 const CHECKBOX_ROW_PATTERN = /^\[ ?([xX])? ?\]\s?(.*)$/;
@@ -861,17 +860,6 @@ const NoteListRow = ({
                   onOpenActionsMenu={selectMode ? undefined : onOpenActionsMenu}
                   onEmojiChange={onEmojiChange}
                   openDueDateDialog={openDueDateDialog}
-                />
-                <MultiLayerProgressBar
-                  timestamp={
-                    !note.archived &&
-                    note.due &&
-                    !isTomorrow(note.due) &&
-                    !note.pinned &&
-                    !note.completed
-                      ? note.due
-                      : undefined
-                  }
                 />
                 {!selectMode && (
                   <Box
