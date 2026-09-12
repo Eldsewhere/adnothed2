@@ -87,16 +87,17 @@ const SHORT_MONTH_LOOKUP: Record<string, number> = {
   dec: 11,
 };
 const TIME_TOKEN_PATTERN =
-  "(?:[01]?\\d|2[0-3])(?::(?:0|5|10|15|20|25|30|35|40|45|50|55)(?:am|pm)?|(?:am|pm))|(?:[01]?\\d|2[0-3])h(?:0|5|10|15|20|25|30|35|40|45|50|55)?";
+  "(?:[01]?\\d|2[0-3])(?::(?:0|00|5|05|10|15|20|25|30|35|40|45|50|55)(?:am|pm)?|(?:am|pm))|(?:[01]?\\d|2[0-3])h(?:0|00|5|05|10|15|20|25|30|35|40|45|50|55)?";
 
-const parseTimeToken = (rawToken: string): { hour: number; minute: number } | null => {
+const parseTimeToken = (
+  rawToken: string,
+): { hour: number; minute: number } | null => {
   const normalized = rawToken.toLowerCase();
-  const meridiem = normalized.endsWith("am") || normalized.endsWith("pm")
-    ? normalized.slice(-2)
-    : null;
-  const timeWithoutMeridiem = meridiem
-    ? normalized.slice(0, -2)
-    : normalized;
+  const meridiem =
+    normalized.endsWith("am") || normalized.endsWith("pm")
+      ? normalized.slice(-2)
+      : null;
+  const timeWithoutMeridiem = meridiem ? normalized.slice(0, -2) : normalized;
   const isHourSyntax = timeWithoutMeridiem.includes("h");
   const hourText = isHourSyntax
     ? timeWithoutMeridiem.replace(/h.*$/, "")
@@ -105,7 +106,7 @@ const parseTimeToken = (rawToken: string): { hour: number; minute: number } | nu
     ? timeWithoutMeridiem.replace(/^[0-9]+h/, "")
     : timeWithoutMeridiem.split(":")[1];
   let hour = Number.parseInt(hourText, 10);
-  const minute = Number.parseInt(minuteText ?? "0", 10);
+  const minute = Number.parseInt(minuteText || "0", 10);
 
   if (!Number.isInteger(hour) || !Number.isInteger(minute)) {
     return null;
@@ -117,7 +118,11 @@ const parseTimeToken = (rawToken: string): { hour: number; minute: number } | nu
     if (meridiem === "pm" && hour !== 12) hour += 12;
   }
 
-  if (hour < 0 || hour > 23 || ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)) {
+  if (
+    hour < 0 ||
+    hour > 23 ||
+    ![0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].includes(minute)
+  ) {
     return null;
   }
 
@@ -723,8 +728,9 @@ function App() {
       const targetWeekday = weekdayLookup[weekdayKey];
       const rawOccurrence = weekdayMatch[3] ?? "1";
       const occurrence = Number.parseInt(
-        rawOccurrence.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (digit) =>
-          "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit)],
+        rawOccurrence.replace(
+          /[⁰¹²³⁴⁵⁶⁷⁸⁹]/g,
+          (digit) => "0123456789"["⁰¹²³⁴⁵⁶⁷⁸⁹".indexOf(digit)],
         ),
         10,
       );
@@ -749,10 +755,10 @@ function App() {
         .replace(/\s{2,}/g, " ")
         .trim();
 
-      const timeMatch =
-        new RegExp(`(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`, "i").exec(
-          dateText,
-        );
+      const timeMatch = new RegExp(
+        `(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`,
+        "i",
+      ).exec(dateText);
 
       if (!timeMatch) {
         return {
@@ -786,20 +792,87 @@ function App() {
       };
     }
 
-    const monthDateMatch = /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+    const dayOfMonthMatch = /(^|[\s(])(\d{1,2})d(g)?(?=$|[\s)\],;.!?])/i.exec(
       workingText,
     );
-    const monthBeforeDayMatch = /(^|[\s(])(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(\d{1,2})(g)?(?=$|[\s)\],;.!?])/i.exec(
-      workingText,
-    );
+
+    if (dayOfMonthMatch) {
+      const dayValue = Number.parseInt(dayOfMonthMatch[2], 10);
+      const parsedDate = today.clone().date(dayValue).startOf("day");
+
+      if (
+        !Number.isInteger(dayValue) ||
+        dayValue < 1 ||
+        dayValue > 31 ||
+        !parsedDate.isValid() ||
+        parsedDate.month() !== today.month() ||
+        !parsedDate.isAfter(today, "day")
+      ) {
+        return { cleanedText: textWithToday };
+      }
+
+      const dateText = workingText
+        .replace(dayOfMonthMatch[0], dayOfMonthMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      const timeMatch = new RegExp(
+        `(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`,
+        "i",
+      ).exec(dateText);
+
+      if (!timeMatch) {
+        return {
+          cleanedText: dateText,
+          dueTimestamp: parsedDate.unix(),
+          openCalendar: Boolean(dayOfMonthMatch[3]),
+        };
+      }
+
+      const parsedTime = parseTimeToken(timeMatch[2]);
+      if (!parsedTime) {
+        return { cleanedText: textWithToday };
+      }
+
+      const finalDue = parsedDate
+        .clone()
+        .hour(parsedTime.hour)
+        .minute(parsedTime.minute)
+        .second(0)
+        .millisecond(0);
+
+      const cleanedText = dateText
+        .replace(timeMatch[0], timeMatch[1] ?? "")
+        .replace(/\s{2,}/g, " ")
+        .trim();
+
+      return {
+        cleanedText,
+        dueTimestamp: finalDue.unix(),
+        openCalendar: Boolean(dayOfMonthMatch[3] || timeMatch[3]),
+      };
+    }
+
+    const monthDateMatch =
+      /(^|[\s(])(\d{1,2})(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(g)?(?=$|[\s)\],;.!?])/i.exec(
+        workingText,
+      );
+    const monthBeforeDayMatch =
+      /(^|[\s(])(jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez|feb|apr|may|aug|sep|oct|dec)(\d{1,2})(g)?(?=$|[\s)\],;.!?])/i.exec(
+        workingText,
+      );
     const dateMatch = monthDateMatch ?? monthBeforeDayMatch;
 
     if (dateMatch) {
       const isMonthBeforeDay = dateMatch === monthBeforeDayMatch;
-      const dayValue = Number.parseInt(isMonthBeforeDay ? dateMatch[3] : dateMatch[2], 10);
-      const monthValue = SHORT_MONTH_LOOKUP[
-        (isMonthBeforeDay ? dateMatch[2] : dateMatch[3]).toLowerCase()
-      ];
+      const dayValue = Number.parseInt(
+        isMonthBeforeDay ? dateMatch[3] : dateMatch[2],
+        10,
+      );
+      const monthValue =
+        SHORT_MONTH_LOOKUP[
+          (isMonthBeforeDay ? dateMatch[2] : dateMatch[3]).toLowerCase()
+        ];
       if (!Number.isInteger(dayValue) || dayValue < 1 || dayValue > 31) {
         return { cleanedText: textWithToday };
       }
@@ -828,10 +901,10 @@ function App() {
         .replace(/\s{2,}/g, " ")
         .trim();
 
-      const timeMatch =
-        new RegExp(`(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`, "i").exec(
-          dateText,
-        );
+      const timeMatch = new RegExp(
+        `(^|[\\s(])(${TIME_TOKEN_PATTERN})(g)?(?=$|[\\s)\\],;.!?])`,
+        "i",
+      ).exec(dateText);
 
       if (!timeMatch) {
         return {
