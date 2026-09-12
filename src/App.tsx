@@ -792,21 +792,22 @@ function App() {
       };
     }
 
-    const dayOfMonthMatch = /(^|[\s(])(\d{1,2})d(g)?(?=$|[\s)\],;.!?])/i.exec(
-      workingText,
-    );
+    const dayOfMonthMatch =
+      /(^|[\s(])(\d{1,2})(d|n)(g)?(?=$|[\s)\],;.!?])/i.exec(workingText);
 
     if (dayOfMonthMatch) {
       const dayValue = Number.parseInt(dayOfMonthMatch[2], 10);
-      const parsedDate = today.clone().date(dayValue).startOf("day");
+      const isNextMonth = dayOfMonthMatch[3].toLowerCase() === "n";
+      const monthBase = isNextMonth ? today.add(1, "month") : today;
+      const parsedDate = monthBase.clone().date(dayValue).startOf("day");
 
       if (
         !Number.isInteger(dayValue) ||
         dayValue < 1 ||
         dayValue > 31 ||
         !parsedDate.isValid() ||
-        parsedDate.month() !== today.month() ||
-        !parsedDate.isAfter(today, "day")
+        parsedDate.month() !== monthBase.month() ||
+        (!isNextMonth && !parsedDate.isAfter(today, "day"))
       ) {
         return { cleanedText: textWithToday };
       }
@@ -825,7 +826,7 @@ function App() {
         return {
           cleanedText: dateText,
           dueTimestamp: parsedDate.unix(),
-          openCalendar: Boolean(dayOfMonthMatch[3]),
+          openCalendar: Boolean(dayOfMonthMatch[4]),
         };
       }
 
@@ -849,7 +850,7 @@ function App() {
       return {
         cleanedText,
         dueTimestamp: finalDue.unix(),
-        openCalendar: Boolean(dayOfMonthMatch[3] || timeMatch[3]),
+        openCalendar: Boolean(dayOfMonthMatch[4] || timeMatch[3]),
       };
     }
 
